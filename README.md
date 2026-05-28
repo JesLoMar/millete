@@ -53,43 +53,47 @@ Get a bird's-eye view of your financial health:
 ## Technology Stack
 
 ### Frontend
-- React with TypeScript
-- Tailwind CSS for styling
-- TanStack Query for data fetching and caching
-- Recharts for data visualizations
-- Shadcn/ui component library
+- React 19 with TypeScript
+- Vite as build tool
+- Tailwind CSS for utility-first styling
+- TanStack Query (React Query) for data fetching, state management, and caching
+- Recharts for fluid data visualizations
+- Shadcn/ui & Radix UI component libraries
+- Sonner for sleek toast notifications
 
 ### Backend
-- Java 17 with Spring Boot 3
-- Spring Security with JWT authentication
+- **Java 25** (LTS)
+- **Spring Boot 4.x** (Spring Security, Spring Data JPA)
 - PostgreSQL database
-- Flyway for schema migrations
-- MapStruct for entity mapping
-- Hexagonal architecture (ports and adapters)
+- Flyway for database schema migrations
+- MapStruct for fast, type-safe entity mapping
+- Clean/Hexagonal Architecture core (ports and adapters)
 
-### Infrastructure
-- Maven for build automation
-- JPA / Hibernate for ORM
-- BCrypt for password hashing
-- JavaMailSender for email invitations (Brevo SMTP)
-- Scheduled tasks for recurring transactions
+### Infrastructure & Deployment
+- **Docker & Docker Compose** multi-container ecosystem
+- **Nginx** acting as a high-performance Reverse Proxy and Frontend web server
+- Maven for backend build automation
+- Hibernate ORM for relational data mapping
+- BCrypt for robust password hashing
+- JavaMailSender for secure email invitations via Brevo SMTP
+- Spring Scheduled tasks for automated daily background processing
 
 ---
 
 ## API Overview
 
-The backend REST API is organized by domain:
+The production environment maps all routes through Nginx. The backend REST API is organized by domain and exposed without double context path constraints:
 
-- **Authentication** – POST /api/v1/auth/register, POST /api/v1/auth/login, GET /api/v1/auth/me/topnav
-- **Transactions** – GET, POST, PUT, DELETE /api/v1/transactions + GET /metrics
-- **Categories** – GET, POST, PUT, DELETE /api/v1/categories
-- **Planned Transactions** – GET, POST, PUT, DELETE /api/v1/planned-transactions
-- **Investments** – GET, POST, PATCH /price, DELETE /api/v1/investments
-- **Dashboard** – GET /metrics, /history, /categories, /budgets, /recent-transactions, etc.
-- **Family** – GET, POST, PUT, DELETE /api/v1/families + invitations and contributions
-- **Data** – GET /api/v1/data/export, POST /api/v1/data/import
+- **Authentication** – `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me/topnav`
+- **Transactions** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/transactions` + `/metrics`
+- **Categories** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/categories`
+- **Planned Transactions** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/planned-transactions`
+- **Investments** – `GET`, `POST`, `PATCH /price`, `DELETE` `/api/v1/investments`
+- **Dashboard** – `GET` `/metrics`, `/history`, `/categories`, `/budgets`, `/recent-transactions`
+- **Family** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/families` (including invitations and contributions)
+- **Data Exchange** – `GET /api/v1/data/export`, `POST /api/v1/data/import`
 
-All endpoints, except authentication endpoints, require a valid JWT bearer token.
+All endpoints, except public authentication routes, require a valid JWT bearer token inside the `Authorization` header.
 
 ---
 
@@ -97,34 +101,33 @@ All endpoints, except authentication endpoints, require a valid JWT bearer token
 
 The application uses 9 main tables with soft delete support (active flag):
 
-- users – account information with anonymization support
-- categories – user-defined spending categories
-- transactions – all income and expense records
-- planned_transactions – recurring transaction templates
-- investments – asset holdings
-- family_units, family_members, family_invitations, family_contributions
+- `users` – account information with anonymization support
+- `categories` – user-defined spending categories
+- `transactions` – all income and expense records
+- `planned_transactions` – recurring transaction templates
+- `investments` – asset holdings
+- `family_units`, `family_members`, `family_invitations`, `family_contributions`
 
-Foreign keys use CASCADE for ownership and SET NULL for optional relationships (e.g., transactions when a category is deleted).
+Foreign keys use `CASCADE` for ownership and `SET NULL` for optional relationships (e.g., transactions when a category is deleted).
 
 ---
 
 ## Security Highlights
 
-- JWT-based authentication with 12-hour expiration
-- BCrypt password hashing (no plain-text storage)
-- Anti-IDOR protection: every request validates resource ownership
-- Soft delete pattern preserves data history
-- Anonymization support for user data upon account deletion
-- Export files are ownership-validated before import
+- **JWT-Based Stateless Auth:** Token-based security with 12-hour expiration.
+- **Strict CORS & Routing:** Production-hardened Spring Security configuration mapped precisely with Nginx reverse proxy origins.
+- **Password Hashing:** BCrypt hashing with custom workload factors (no plain-text storage).
+- **Anti-IDOR Protection:** Complete resource isolation; every single request validates cross-entity resource ownership.
+- **Soft Delete Pattern:** Preserves transaction history and financial integrity across deleted categories.
+- **Data Privacy:** Full anonymization support for user data upon account deletion and client-side encryption ready.
 
 ---
 
 ## Known Limitations
 
-- Recurring transaction logic is currently a placeholder (only start date is evaluated). Full interval-based scheduling is under development.
-- Investment price updates are manual; no automatic price feeds are integrated.
-- Family invitations expire after 48 hours; no resend functionality yet.
-- The export format is currently at version 0.0.1; future major versions may break backward compatibility.
+- Recurring transaction logic is currently evaluating start dates; full interval-based scheduling automation is under active deployment.
+- Investment price updates are handled manually; third-party market data API integration is planned for future versions.
+- Family invitations expire strictly after 48 hours; resend features are being developed.
 
 ---
 
@@ -151,7 +154,7 @@ The Software may not be used for commercial purposes. Commercial purposes means 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+THE SOFTWARE IS PROVIDED "AS is", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ---
 
