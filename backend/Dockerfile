@@ -1,35 +1,34 @@
-# =============================================
-# ETAPA 1: BUILD (compila la aplicación)
-# =============================================
-FROM eclipse-temurin:25-jdk-alpine AS builder
+# =========================================================================
+# FASE 1: Compilación del Backend (JDK 25 nativo + Maven manual)
+# =========================================================================
+FROM eclipse-temurin:25-jdk-jammy AS builder
+
+# Instalamos Maven manualmente usando el gestor de paquetes de Ubuntu/Debian (Jammy)
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copiar archivos de Maven y descargar dependencias primero (cacheo)
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
-RUN chmod +x mvnw && ./mvnw dependency:resolve -B
+# Copiamos solo el pom.xml para descargar las dependencias primero (aprovecha la caché)
+COPY pom.xml ./
+RUN mvn dependency:resolve -B
 
-# Copiar el código fuente y compilar
-COPY src src
-RUN ./mvnw package -DskipTests -B
+# Copiamos el código fuente del proyecto
+COPY src ./src
 
-# =============================================
-# ETAPA 2: RUNTIME (imagen ligera de ejecución)
-# =============================================
-FROM eclipse-temurin:25-jre-alpine
+# Compilamos el archivo JAR saltándonos los tests
+RUN mvn clean package -DskipTests
 
+# =========================================================================
+# FASE 2: Entorno de Ejecución Ligero y Seguro (¡Mantenemos tu JRE 25!)
+# =========================================================================
+FROM eclipse-temurin:25-jre-jammy
 WORKDIR /app
 
-# Crear usuario no root para seguridad
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-# Copiar el JAR compilado desde la etapa de build
+# Copiamos el artefacto .jar generado en la fase anterior
 COPY --from=builder /app/target/*.jar app.jar
 
-# Puerto por defecto de Spring Boot
+# Exponemos el puerto de escucha nativo de Spring Boot
 EXPOSE 8080
 
-# La aplicación se inicia con perfil prod por defecto
+# Comando de arranque por defecto de la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]

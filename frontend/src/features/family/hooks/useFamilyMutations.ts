@@ -18,10 +18,14 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
 
   const createFamily = useMutation({
     mutationFn: async ({ name, monthlyGoal }: { name: string; monthlyGoal: number }) => {
-      return apiClient.post('/families', { name, monthlyTarget: monthlyGoal, distributionMode: "EQUITATIVE" })
+      return apiClient.post('families', { 
+        name, 
+        monthlyTarget: monthlyGoal, 
+        distributionMode: "EQUITATIVE" 
+      })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['families'] })
+      invalidateAll()
       notify.success(t("family.alerts.createSuccess") || "Familia creada correctamente")
     },
     onError: (err: ApiError) => {
@@ -32,7 +36,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const inviteMember = useMutation({
     mutationFn: async (email: string) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.post(`/families/${selectedFamilyId}/invitations`, { email })
+      return apiClient.post(`families/${selectedFamilyId}/invitations`, { email })
     },
     onSuccess: () => {
       invalidateAll()
@@ -46,7 +50,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const changeMode = useMutation({
     mutationFn: async (mode: string) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.put(`/families/${selectedFamilyId}`, { distributionMode: mode })
+      return apiClient.put(`families/${selectedFamilyId}`, { distributionMode: mode })
     },
     onSuccess: () => {
       invalidateAll()
@@ -61,7 +65,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const updateGoal = useMutation({
     mutationFn: async (newGoal: number) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.put(`/families/${selectedFamilyId}`, { monthlyTarget: newGoal })
+      return apiClient.put(`families/${selectedFamilyId}`, { monthlyTarget: newGoal })
     },
     onSuccess: () => {
       invalidateAll()
@@ -75,7 +79,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const editMember = useMutation({
     mutationFn: async (member: FamilyMember) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.put(`/families/${selectedFamilyId}/members/${member.id}`, {
+      return apiClient.put(`families/${selectedFamilyId}/members/${member.id}`, {
         role: member.role,
         salary: member.salary,
         customPercentage: member.customPercentage
@@ -93,7 +97,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const deleteMember = useMutation({
     mutationFn: async (memberId: string) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.delete(`/families/${selectedFamilyId}/members/${memberId}`)
+      return apiClient.delete(`families/${selectedFamilyId}/members/${memberId}`)
     },
     onSuccess: () => {
       invalidateAll()
@@ -107,7 +111,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const addContribution = useMutation({
     mutationFn: async (amount: number) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.post(`/families/${selectedFamilyId}/contributions`, { amount })
+      return apiClient.post(`families/${selectedFamilyId}/contributions`, { amount })
     },
     onSuccess: () => {
       invalidateAll()

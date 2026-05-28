@@ -63,7 +63,7 @@ export function useDashboardQueries(period: PeriodFilter) {
   const metrics = useQuery<DashboardMetrics>({
     queryKey: ['dashboardMetrics', period],
     queryFn: async () => {
-      const response = await apiClient.get(`/dashboard/metrics?period=${period}`)
+      const response = await apiClient.get(`dashboard/metrics?period=${period}`)
       return response.data
     },
     retry: 1,
@@ -73,7 +73,7 @@ export function useDashboardQueries(period: PeriodFilter) {
   const history = useQuery<ChartDataPoint[]>({
     queryKey: ['historyChart', period],
     queryFn: async () => {
-      const response = await apiClient.get<HistoryResponse>(`/dashboard/history?period=${period}`)
+      const response = await apiClient.get<HistoryResponse>(`dashboard/history?period=${period}`)
       return mapHistoryToChart(response.data)
     },
     retry: 1,
@@ -83,7 +83,7 @@ export function useDashboardQueries(period: PeriodFilter) {
   const categories = useQuery<CategoryData[]>({
     queryKey: ['categoryStats', period],
     queryFn: async () => {
-      const response = await apiClient.get<CategoriesResponse>(`/dashboard/categories?period=${period}`)
+      const response = await apiClient.get<CategoriesResponse>(`dashboard/categories?period=${period}`)
       return mapCategoriesToDonut(response.data)
     },
     retry: 1,
@@ -93,7 +93,7 @@ export function useDashboardQueries(period: PeriodFilter) {
   const budgets = useQuery<BudgetItem[]>({
     queryKey: ['budgets', period],
     queryFn: async () => {
-      const response = await apiClient.get<BudgetsResponse>(`/dashboard/budgets?period=${period}`)
+      const response = await apiClient.get<BudgetsResponse>(`dashboard/budgets?period=${period}`)
       return mapBudgets(response.data)
     },
     retry: 1,
@@ -103,7 +103,7 @@ export function useDashboardQueries(period: PeriodFilter) {
   const recentTransactions = useQuery<TransactionItem[]>({
     queryKey: ['recentTransactions'],
     queryFn: async () => {
-      const response = await apiClient.get<TransactionsResponse>('/dashboard/recent-transactions?limit=5')
+      const response = await apiClient.get<TransactionsResponse>('dashboard/recent-transactions?limit=5')
       return response.data.transactions
     },
     retry: 1,

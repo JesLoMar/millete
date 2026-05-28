@@ -74,8 +74,32 @@ class TransactionServiceTest {
     @Test
     @DisplayName("Listar transacciones por usuario")
     void shouldFindAllByUserId() {
-        Transaction tx1 = mock(Transaction.class);
-        Transaction tx2 = mock(Transaction.class);
+        Transaction tx1 = new Transaction(
+                UUID.randomUUID(),
+                userId,
+                null,
+                new BigDecimal("10.00"),
+                LocalDateTime.now(),
+                Transaction.TransactionType.EXPENSE,
+                "Gasto 1",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                true
+        );
+
+        Transaction tx2 = new Transaction(
+                UUID.randomUUID(),
+                userId,
+                null,
+                new BigDecimal("20.00"),
+                LocalDateTime.now(),
+                Transaction.TransactionType.EXPENSE,
+                "Gasto 2",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                true
+        );
+
         when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx1, tx2));
 
         List<Transaction> result = transactionService.findAllByUserId(userId);

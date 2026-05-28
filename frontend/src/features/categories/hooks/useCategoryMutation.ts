@@ -16,6 +16,9 @@ export const useCategoryMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
       queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
       queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
+      queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
+      queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
+      queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
     ]);
   };
 
@@ -30,7 +33,7 @@ export const useCategoryMutations = () => {
 
   const createCategory = useMutation({
     mutationFn: async (data: RegisterCategoryRequest) => {
-      const response = await apiClient.post('/categories', {
+      const response = await apiClient.post('categories', {
         name: data.name.trim(),
         color: data.color,
         budgetLimit: data.budgetLimit ?? null,
@@ -44,13 +47,13 @@ export const useCategoryMutations = () => {
     onError: (error: unknown) => {
       const message = getErrorMessage(error, 'categories.createError');
       console.error('[createCategory] Error:', message);
-      throw new Error(message);
+      notify.error(message);
     },
   });
 
   const updateCategory = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateCategoryRequest }) => {
-      const response = await apiClient.put(`/categories/${id}`, {
+      const response = await apiClient.put(`categories/${id}`, {
         name: data.name.trim(),
         color: data.color,
         budgetLimit: data.budgetLimit ?? null,
@@ -64,13 +67,13 @@ export const useCategoryMutations = () => {
     onError: (error: unknown) => {
       const message = getErrorMessage(error, 'categories.updateError');
       console.error('[updateCategory] Error:', message);
-      throw new Error(message);
+      notify.error(message);
     },
   });
 
   const deleteCategory = useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/categories/${id}`);
+      await apiClient.delete(`categories/${id}`);
       return id;
     },
     onSuccess: async () => {
@@ -79,6 +82,7 @@ export const useCategoryMutations = () => {
     },
     onError: (error: unknown) => {
       const message = getErrorMessage(error, 'categories.deleteError');
+      console.error('[deleteCategory] Error:', message);
       notify.error(message);
     }
   });

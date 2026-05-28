@@ -1,48 +1,28 @@
-# =============================================
-# PRODUCTION CONFIGURATION
-# Activate with: SPRING_PROFILES_ACTIVE=prod
-# All sensitive credentials must be set via environment variables
-# Jasypt is optional: set JASYPT_ENCRYPTOR_PASSWORD to decrypt ENC(...) values
-# =============================================
+# =========================================================================
+# CONFIGURACIÓN ESTRICTA DE PRODUCCIÓN / ENTORNO SEGURO
+# Se activa en el contenedor mediante: SPRING_PROFILES_ACTIVE=prod
+# =========================================================================
 jasypt:
   encryptor:
     password: ${JASYPT_ENCRYPTOR_PASSWORD:}
+
 spring:
+  # Desactivar rastro de consultas SQL en la salida estándar de logs por rendimiento y seguridad
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
     show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  # Credenciales de administración por defecto para endpoints protegidos en prod (si aplica)
   security:
     user:
-      name: ${ADMIN_USERNAME}
-      password: ${ADMIN_PASSWORD}
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USER}
-    password: ${DATABASE_PASSWORD}
-  mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    from: ${MAIL_FROM}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-app:
-  frontend:
-    url: ${FRONTEND_URL}
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:43200000}
+      name: ${ADMIN_USERNAME:admin}
+      password: ${ADMIN_PASSWORD:secure_admin_password_2026}
+
+# =============================================
+# RESTRICCIÓN DE LOGS EN PRODUCCIÓN (Evita saturar el disco)
+# =============================================
 logging:
   level:
     root: WARN

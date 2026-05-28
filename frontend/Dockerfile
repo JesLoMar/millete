@@ -1,70 +1,69 @@
-# =============================================
-# ETAPA 1: BUILD (compila la aplicación React)
-# =============================================
+# =========================================================================
+# ETAPA 1: BUILD (Compila la aplicación React con Node 22 + PNPM)
+# =========================================================================
 FROM node:22-alpine AS builder
-
 WORKDIR /app
 
-# Instalar pnpm
+# Instalar pnpm de forma global (versión exacta requerida)
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
 
-# Copiar archivos de dependencias primero (cacheo de capas)
-COPY package.json pnpm-lock.yaml ./
+# Copiar archivos de dependencias primero (Aprovecha la caché de capas de Docker)
+COPY package.json pnpm-lock.yaml* ./
+
+# Instalar dependencias congelando el lockfile
 RUN pnpm install --frozen-lockfile
 
-# Copiar el código fuente
+# Copiar el resto del código fuente del frontend
 COPY . .
 
-# Variables de entorno para el build
-# ARG permite pasar valores durante el build (docker build --build-arg)
+# Variables de entorno para el proceso de build de Vite (Inyectadas desde el entorno)
 ARG VITE_API_URL
 ARG VITE_APP_VERSION
 
-# Establecer valores por defecto si no se proporcionan
 ENV VITE_API_URL=${VITE_API_URL:-/api/v1}
 ENV VITE_APP_VERSION=${VITE_APP_VERSION:-0.0.1}
 
-# Construir la aplicación
+# Construir la aplicación (Vite generará los estáticos en /app/dist)
 RUN pnpm run build
 
-# =============================================
-# ETAPA 2: RUNTIME (Nginx para servir estáticos)
-# =============================================
+# =========================================================================
+# ETAPA 2: RUNTIME (Servidor Nginx Rootless seguro para producción)
+# =========================================================================
 FROM nginx:1.27-alpine
 
-# Instalar utilidades adicionales (opcional, para debugging)
-RUN apk add --no-cache curl wget
+# Instalar utilidades para debugging y healthcheck
+RUN apk add --no-cache curl
 
-# Crear usuario no root para ejecutar nginx (seguridad)
-RUN addgroup -g 1001 -S nginx-user && \
-    adduser -S nginx-user -u 1001 -G nginx-user
+# Crear usuario no root con un ID explícito por seguridad
+RUN addgroup -g 1001 -S millete-group && \
+    adduser -S millete-user -u 1001 -G millete-group
 
-# Copiar configuración personalizada de Nginx
+# [CORREGIDO] Copiar tu archivo de configuración optimizado en lugar de usar el 'echo'
+# Ojo: Asegúrate de que el archivo se llama 'nginx.conf' y está en la raíz de tu carpeta frontend
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Verificar que la configuración de nginx es válida
-RUN nginx -t
+# -------------------------------------------------------------------------
+# INYECCIÓN CLAVE: Ajustes de permisos para ejecución sin privilegios (Rootless)
+# -------------------------------------------------------------------------
+RUN sed -i '/^pid/d' /etc/nginx/nginx.conf && \
+    sed -i '1s/^/pid \/tmp\/nginx.pid;\n/' /etc/nginx/nginx.conf
 
-# Copiar los archivos compilados desde la etapa de build
-COPY --from=builder --chown=nginx-user:nginx-user /app/dist /usr/share/nginx/html
+# Copiar los archivos compilados desde la etapa anterior
+COPY --from=builder --chown=millete-user:millete-group /app/dist /usr/share/nginx/html
 
-# Crear directorios para logs con permisos correctos
-RUN touch /var/log/nginx/access.log /var/log/nginx/error.log && \
-    chown -R nginx-user:nginx-user /var/log/nginx /var/cache/nginx /var/run && \
-    chmod -R 755 /var/log/nginx /var/cache/nginx
+# Asegurar permisos en directorios temporales que usará Nginx en modo no-root
+RUN chown -R millete-user:millete-group /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx && \
+    touch /tmp/nginx.pid && \
+    chown millete-user:millete-group /tmp/nginx.pid && \
+    mkdir -p /tmp/client_body /tmp/fastcgi_temp /tmp/proxy_temp /tmp/scgi_temp /tmp/uwsgi_temp && \
+    chown -R millete-user:millete-group /tmp
 
-# Eliminar archivos innecesarios del html (opcional)
-RUN rm -rf /usr/share/nginx/html/*.map 2>/dev/null || true
+# Cambiar al usuario seguro sin privilegios
+USER millete-user
 
-# Configurar healthcheck mejorado
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost/health || exit 1
-
-# Exponer puerto
+# Cambiamos al 80; tu nginx.config escucha en el puerto 80 (listen 80;)
 EXPOSE 80
 
-# Cambiar a usuario no root para ejecutar nginx
-USER nginx-user
-
-# Comando para iniciar nginx
 CMD ["nginx", "-g", "daemon off;"]

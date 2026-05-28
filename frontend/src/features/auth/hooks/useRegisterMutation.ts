@@ -32,16 +32,16 @@ export const useRegisterMutation = () => {
         throw new Error(i18n.t('auth.errors.auto_login_failed'));
       }
     },
-    onSuccess: (data) => {
-      login(data.token);
-      queryClient.invalidateQueries();
+    onSuccess: async (data) => {
+      await login(data.token);
+      queryClient.clear();
       
       notify.success(i18n.t('auth.alerts.register_success'));
-      
       navigate('/dashboard', { replace: true });
     },
     onError: (error: ApiError) => {
       const errorMessage = error.response?.data?.message || i18n.t('auth.errors.register_failed');
+      console.error('[registerCategory] Error:', errorMessage);
       notify.error(errorMessage);
     }
   });

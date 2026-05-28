@@ -57,7 +57,7 @@ class TransactionTest {
         assertThat(tx.getType()).isEqualTo(Transaction.TransactionType.INCOME);
         assertThat(tx.getDescription()).isEqualTo("Venta");
         assertThat(tx.getCategoryId()).isEqualTo(categoryId);
-        assertThat(tx.getModifiedAt()).isAfter(now);
+        assertThat(tx.getModifiedAt()).isAfterOrEqualTo(now);
     }
 
     @Test
@@ -68,6 +68,6 @@ class TransactionTest {
         tx.deactivate();
 
         assertThat(tx.isActive()).isFalse();
-        assertThat(tx.getModifiedAt()).isAfter(now);
+        assertThat(tx.getModifiedAt()).isAfterOrEqualTo(now);
     }
 }

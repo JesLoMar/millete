@@ -29,18 +29,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody RegisterUserRequestDTO request) {
-
-        // 1. Traducimos el DTO al Comando de dominio
         RegisterUserUseCase.RegisterUserCommand command = new RegisterUserUseCase.RegisterUserCommand(
                 request.username(),
                 request.email(),
                 request.password()
         );
-
-        // 2. Ejecutamos la lógica de negocio
         User user = registerUserUseCase.register(command);
-
-        // 3. Mapeamos el resultado al DTO de respuesta
         UserResponseDTO response = new UserResponseDTO(
                 user.getId(),
                 user.getUsername(),
@@ -50,20 +44,16 @@ public class AuthController {
                 user.isActive(),
                 user.isAnonymized()
         );
-
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-
         LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(
                 request.identifier(),
                 request.password()
         );
-
         String jwt = loginUserUseCase.login(command);
-
         return ResponseEntity.ok(new TokenResponseDTO(jwt));
     }
 

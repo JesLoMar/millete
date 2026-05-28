@@ -3,11 +3,10 @@ import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/axiosClient"
 import type { FamilyListItem, FamilyUnitData, FamilyMember, FamilyContribution } from "../types"
 
-// Tipo para la respuesta raw del backend
 interface RawFamilyResponse {
   id: string
   name: string
-  monthlyGoal: number
+  monthlyTarget: number
   distributionMode: "EQUITATIVE" | "PROPORTIONAL" | "CUSTOM"
   isAdmin: boolean
   members: RawFamilyMember[]
@@ -36,7 +35,7 @@ export function useFamilyQueries(selectedFamilyId: string | null) {
   const { data: families = [], isLoading } = useQuery<FamilyListItem[]>({
     queryKey: ['families'],
     queryFn: async () => {
-      const response = await apiClient.get('/families')
+      const response = await apiClient.get('families')
       return response.data
     },
   })
@@ -52,7 +51,7 @@ export function useFamilyQueries(selectedFamilyId: string | null) {
   const { data: rawFamily } = useQuery<RawFamilyResponse>({
     queryKey: ['family', selectedFamilyId],
     queryFn: async () => {
-      const response = await apiClient.get(`/families/${selectedFamilyId}`)
+      const response = await apiClient.get(`families/${selectedFamilyId}`)
       return response.data
     },
     enabled: !!selectedFamilyId,
@@ -63,7 +62,7 @@ export function useFamilyQueries(selectedFamilyId: string | null) {
     return {
       id: rawFamily.id,
       name: rawFamily.name,
-      monthlyGoal: rawFamily.monthlyGoal,
+      monthlyGoal: rawFamily.monthlyTarget,
       distributionMode: rawFamily.distributionMode,
       isAdmin: rawFamily.isAdmin,
       members: rawFamily.members.map((m: RawFamilyMember): FamilyMember => ({

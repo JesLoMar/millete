@@ -9,13 +9,10 @@ import type { LoginRequest } from '../types';
 
 function sanitizeRedirect(raw: string | null | undefined): string | null {
   if (!raw) return null;
-
   if (/^(https?:)?\/\/|^javascript:/i.test(raw)) return null;
-
   if (!raw.startsWith('/') || raw.startsWith('//')) return null;
 
   const basePath = raw.split('?')[0].split('#')[0];
-
   const ALLOWED = [
     '/dashboard',
     '/transactions',
@@ -44,8 +41,7 @@ export const useLoginMutation = () => {
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
     onSuccess: async (data) => {
       await login(data.token);
-
-      queryClient.invalidateQueries();
+      queryClient.clear();
       notify.success(t('common.accept'));
 
       const fromState = location.state?.from?.pathname
@@ -58,10 +54,9 @@ export const useLoginMutation = () => {
       navigate(safeRedirect || '/dashboard', { replace: true });
     },
     onError: (error: ApiError) => {
-      console.error(
-        t('auth.alerts.login_error_title'),
-        error?.response?.data?.message || error
-      );
+      const errorMessage = error?.response?.data?.message || t('auth.errors.login_failed');
+      console.error(t('auth.alerts.login_error_title'), errorMessage);
+      notify.error(errorMessage);
     },
   });
 };
