@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # =============================================
+  # BASE DE DATOS POSTGRESQL
+  # =============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: millete-db
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================================
+  # BACKEND SPRING BOOT
+  # =============================================
+  app:
+    build: .
+    container_name: millete-backend
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "${APP_PORT}:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${DATABASE_NAME}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    name: millete_postgres_data

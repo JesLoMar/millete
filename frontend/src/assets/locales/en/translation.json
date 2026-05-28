@@ -1,0 +1,573 @@
+{
+  "app": {
+    "name": "Millete"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "loadingSession": "Loading session...",
+    "save": "Save",
+    "saving": "Saving...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "error": "Error",
+    "goToLogin": "Go to login",
+    "accept": "Accept",
+    "reject": "Reject",
+    "close": "Close",
+    "deleting": "Deleting...",
+    "languages": {
+      "es": "Spanish",
+      "en": "English",
+      "fr": "French",
+      "de": "German",
+      "it": "Italian",
+      "pt": "Portuguese"
+    }
+  },
+  "nav": {
+    "user": "User",
+    "changeLanguage": "Change language",
+    "guest": "Guest",
+    "profile": "My Profile",
+    "logout": "Log Out",
+    "logoutSuccess": "Logged out successfully",
+    "errors": {
+      "languageChangeFailed": "Failed to change language"
+    }
+  },
+  "theme": {
+    "selector": "Theme selector",
+    "palette": "Color palette",
+    "errors": {
+      "themeChangeFailed": "Failed to change theme"
+    }
+  },
+  "carousel": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "sidebar": {
+    "mainNav": "Main navigation",
+    "bottomNav": "Secondary navigation",
+    "noItems": "No sections available",
+    "comingSoon": "Coming soon",
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "categories": "Categories",
+    "investments": "Investments",
+    "family": "Family",
+    "errors": {
+      "featureComingSoon": "{{feature}} will be available soon"
+    }
+  },
+  "auth": {
+    "brand": {
+      "name": "Millete",
+      "tagline": "Track your expenses, reach your goals."
+    },
+    "greeting": "Hello, <br />welcome.",
+    "footer": {
+      "webVersion": "WEB v0.0.1",
+      "apiVersion": "API v0.0.1",
+      "copyright": "© 2026 Millete"
+    },
+    "form": {
+      "optional": "optional",
+      "andOr": "and/or",
+      "registerHint": "Enter your username or email address to continue.",
+      "passwordHint": "Minimum 8 characters",
+      "toggle": {
+        "login": "Login",
+        "register": "Register"
+      },
+      "fields": {
+        "identifier": {
+          "login": "Email or Username",
+          "register": "Email"
+        },
+        "placeholder": {
+          "login": "example@email.com",
+          "register": "you@email.com"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "••••••••"
+        },
+        "username": {
+          "label": "Username",
+          "placeholder": "Username"
+        }
+      },
+      "forgotPassword": "Forgot your password?",
+      "error": {
+        "invalidCredentials": "Invalid credentials. Please try again.",
+        "registerFailed": "Registration failed. Try again.",
+        "required": "Required field"
+      }
+    },
+    "submit": {
+      "default": "Continue",
+      "loading": "Processing...",
+      "register": "Create account"
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "description": "Enter your email address and we will send you a link to reset your password.",
+      "send": "Send link",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "sending": "Sending...",
+      "sendingDescription": "We are processing your request",
+      "success": "Email sent!",
+      "successDescription": "Check your inbox. We have sent you a link to reset your password.",
+      "error": "Failed to send",
+      "errorDescription": "We couldn't process your request. Try again.",
+      "tryAgain": "Try again",
+      "cancel": "Cancel",
+      "backToLogin": "Back to login"
+    },
+    "alerts": {
+      "welcome_back": "Welcome back!",
+      "register_success": "Account created successfully!",
+      "login_error_title": "Login failed"
+    },
+    "errors": {
+      "no_identifier": "You must provide a username or email address",
+      "auto_login_failed": "Account created, but could not log in automatically",
+      "register_failed": "Failed to create account. Try again."
+    }
+  },
+  "info": {
+    "steps": {
+      "title": "Getting started",
+      "subtitle": "Start managing your finances in less than 5 minutes with our quick guide.",
+      "items": [
+        {
+          "number": "01",
+          "title": "Create your account",
+          "description": "No credit card required. Just email and password."
+        },
+        {
+          "number": "02",
+          "title": "Set your budget",
+          "description": "Add income and expense categories on the home screen."
+        },
+        {
+          "number": "03",
+          "title": "Track your expenses",
+          "description": "Manually or by importing a CSV file from your bank."
+        }
+      ]
+    },
+    "wiki": {
+      "link": "Check the full wiki"
+    },
+    "news": {
+      "title": "Recent news",
+      "subtitle": "Discover the latest improvements added to the platform.",
+      "items": [
+        {
+          "tag": "NEW",
+          "title": "AI Engine v2.0",
+          "description": "We have integrated a new language model that analyzes your spending patterns to offer you personalized savings tips every week."
+        },
+        {
+          "title": "Bank API Integration",
+          "description": "Automatic synchronization with more than 15 Spanish financial entities for real-time management."
+        },
+        {
+          "title": "Improved Offline Mode",
+          "description": "Now you can add transactions even without a connection; they will sync as soon as you regain access."
+        }
+      ]
+    }
+  },
+  "dashboard": {
+    "metrics": {
+      "balance": "Total Balance",
+      "income": "Income for {{period}}",
+      "expenses": "Expenses for {{period}}",
+      "savings": "Total Savings",
+      "vsLastWeek": "vs. previous week",
+      "vsLastMonth": "vs. previous month",
+      "vsLastYear": "vs. previous year",
+      "errors": {
+        "noDataAvailable": "No data available"
+      }
+    },
+    "header": {
+      "greeting": {
+        "morning": "Good morning",
+        "afternoon": "Good afternoon",
+        "evening": "Good evening"
+      },
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "months": {
+        "0": "January",
+        "1": "February",
+        "2": "March",
+        "3": "April",
+        "4": "May",
+        "5": "June",
+        "6": "July",
+        "7": "August",
+        "8": "September",
+        "9": "October",
+        "10": "November",
+        "11": "December"
+      },
+      "separator": "•",
+      "dateFormat": "{{month}} {{year}}",
+      "week": "Week {{week}}",
+      "period": {
+        "week": "Wk",
+        "month": "Mo",
+        "year": "Yr"
+      }
+    },
+    "chart": {
+      "title": "Expense History",
+      "empty": "No expenses in this period",
+      "showingLast": "Last {{count}}",
+      "periodLabel": {
+        "week": "Last 7 days",
+        "month": "Last 5 weeks",
+        "year": "Last 12 months"
+      },
+      "tooltip": {
+        "amount": "Expense",
+        "percentage": "Percentage"
+      }
+    },
+    "donut": {
+      "title": "Expenses by Category",
+      "total": "Total",
+      "empty": "No expenses in this period"
+    },
+    "budget": {
+      "title": "Budget Status",
+      "empty": "No budgets configured",
+      "overLimit": "Limit exceeded!",
+      "remaining": "{{amount}} € remaining",
+      "exceededBy": "Exceeded by {{amount}} €"
+    },
+    "transactions": {
+      "title": "Recent Transactions",
+      "viewAll": "View all",
+      "empty": "No recent transactions",
+      "expense": "Expense",
+      "income": "Income"
+    },
+    "goals": {
+      "title": "Active Savings Goals",
+      "empty": "No savings goals configured",
+      "completed": "Completed!",
+      "remaining": "{{amount}} € remaining"
+    },
+    "quickActions": {
+      "addExpense": "Add transaction",
+      "createCategory": "Create category",
+      "importData": "Import data",
+      "importing": "Importing...",
+      "exportData": "Export data",
+      "exporting": "Exporting..."
+    },
+    "importModal": {
+      "title": "Import data",
+      "description": "Drag a JSON file with your transactions",
+      "dropHere": "Drop your file here or click to select",
+      "onlyJson": "Only .json files",
+      "jsonOnly": "Only JSON files are supported",
+      "invalidJson": "Invalid JSON file",
+      "importing": "Importing data...",
+      "success": "Data imported successfully",
+      "importError": "Error importing file",
+      "close": "Close"
+    },
+    "import": {
+      "success": "Data imported successfully",
+      "errorGeneric": "Error importing file",
+      "errorProperty": "You do not have permission to import",
+      "errorFormat": "Invalid file format"
+    },
+    "export": {
+      "success": "Backup exported successfully",
+      "error": "Error exporting data"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g., Weekly shopping at Lidl",
+    "type": "Type",
+    "expense": "Expense",
+    "income": "Income",
+    "amount": "Amount (€)",
+    "category": "Category",
+    "selectCategory": "Select category",
+    "noCategory": "No category",
+    "search": "Search by description...",
+    "empty": "No transactions found",
+    "showingInterval": "{{from}}-{{to}} of {{total}}",
+    "createError": "Error processing transaction. Try again.",
+    "filterAll": "All",
+    "filterIncome": "Income",
+    "filterExpense": "Expenses",
+    "add": "Add",
+    "save": "Save",
+    "edit": "Edit",
+    "editTitle": "Edit Transaction",
+    "delete": "Delete",
+    "new": "New Transaction",
+    "newTitle": "Log Transaction",
+    "recurring": {
+      "label": "Recurring",
+      "newTitle": "New Recurring Transaction",
+      "editTitle": "Edit Recurring Transaction",
+      "listTitle": "Recurring Transactions",
+      "emptyFilter": "No recurring transactions with this filter.",
+      "frequency": "Frequency",
+      "selectFrequency": "Select frequency",
+      "interval": "Interval",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "days": "days",
+      "weeks": "weeks",
+      "months": "months",
+      "years": "years",
+      "everyDay": "Every day",
+      "everyWeek": "Every week",
+      "everyMonth": "Every month",
+      "everyYear": "Every year",
+      "every": "Every {{interval}} {{unit}}",
+      "indefinite": "No end date",
+      "nextExecution": "Next execution",
+      "summary": "Summary",
+      "summaryText": "A transaction of {{amount}} € will be created every {{frequency}} {{type}} starting from {{start}} {{end}}",
+      "units": {
+        "days": "days",
+        "weeks": "weeks",
+        "months": "months",
+        "years": "years"
+      }
+    },
+    "alerts": {
+      "createSuccess": "Transaction created successfully",
+      "updateSuccess": "Transaction updated successfully",
+      "deleteSuccess": "Transaction deleted successfully",
+      "createRecurringSuccess": "Recurring transaction scheduled successfully",
+      "updateRecurringSuccess": "Recurring transaction updated successfully",
+      "deleteRecurringSuccess": "Recurring transaction deleted successfully"
+    },
+    "deleteConfirm": "Are you sure you want to delete this transaction?"
+  },
+  "categories": {
+    "add": "Add category",
+    "newTitle": "New Category",
+    "editTitle": "Edit Category - {{name}}",
+    "name": "Name",
+    "namePlaceholder": "e.g., Food, Travel...",
+    "color": "Color",
+    "budget": "Monthly budget (€)",
+    "budgetHint": "Optional. Monthly spending limit for this category.",
+    "currentBudget": "Current budget: {{amount}} € / month",
+    "family": "Family",
+    "selectFamilyPlaceholder": "Select family",
+    "selectFamily": "Select family",
+    "noFamily": "No family",
+    "noFamilies": "No families available",
+    "familyTitle": "Assign to family - {{name}}",
+    "assign": "Assign",
+    "search": "Search by name...",
+    "showing": "Showing {{total}} categories",
+    "empty": "No categories available. Create one first.",
+    "save": "Save category",
+    "edit": "Edit",
+    "delete": "Delete",
+    "createError": "Failed to create category. Try again.",
+    "updateError": "Failed to update category. Try again.",
+    "deleteTitle": "Delete category",
+    "deleteConfirmation": "Are you sure you want to delete \"{{name}}\"? Associated transactions will not be deleted, but they will lose their classification.",
+    "deleteError": "Error deleting category",
+    "noBudgetTooltip": "Assign a monthly budget to track progress",
+    "createSuccess": "Category created successfully",
+    "updateSuccess": "Category updated successfully",
+    "deleteSuccess": "Category deleted successfully",
+    "nameRequired": "Category name is required",
+    "invalidBudget": "Enter a valid budget",
+    "editDescription": "Modify category details",
+    "nameLabel": "Category name",
+    "budgetLabel": "Monthly budget",
+    "budgetPlaceholder": "e.g., 500",
+    "colorLabel": "Category color"
+  },
+  "investments": {
+    "title": "Investments",
+    "portfolioValue": "Portfolio Value",
+    "monthlyReturn": "Monthly Return",
+    "dividends": "Dividends",
+    "comingSoon": "Coming soon",
+    "evolution": "Wealth Evolution",
+    "lastMonths": "Last {{count}} months",
+    "distribution": "Distribution",
+    "total": "Total",
+    "myAssets": "My Assets",
+    "searchAsset": "Search asset...",
+    "noAssets": "No assets in your portfolio",
+    "shares": "shares",
+    "filterAll": "All",
+    "new": "New Investment",
+    "newTitle": "Register New Investment",
+    "assetName": "Asset Name",
+    "assetNamePlaceholder": "e.g., Apple Inc.",
+    "ticker": "Ticker",
+    "type": "Asset Type",
+    "quantity": "Quantity",
+    "purchasePrice": "Purchase Price",
+    "purchaseDate": "Purchase Date",
+    "save": "Save Investment",
+    "updatePrice": "Update Price",
+    "marketPrice": "Market Price",
+    "newPrice": "New Price",
+    "updateNow": "Update Now",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this investment? This action cannot be undone.",
+    "createError": "Error creating investment. Try again.",
+    "types": {
+      "stock": "Stocks",
+      "crypto": "Cryptocurrencies",
+      "fund": "Funds",
+      "realEstate": "Real Estate",
+      "real_estate": "Real Estate",
+      "other": "Other"
+    },
+    "alerts": {
+      "createSuccess": "Investment registered successfully",
+      "updatePriceSuccess": "Price updated successfully",
+      "deleteSuccess": "Investment deleted successfully",
+      "warningTitle": "Critical deviation detected",
+      "warningDesc": "The entered price varies by more than 50% from the current price. Click again to confirm."
+    },
+    "confirmUpdate": "Confirm critical change",
+    "updatePriceError": "Error updating price",
+    "charts": {
+      "tooltip": {
+        "amount": "Expense",
+        "percentage": "Percentage",
+        "wealth": "Wealth"
+      }
+    }
+  },
+  "family": {
+    "title": "Family Units",
+    "selectOrCreate": "Select a family unit or create a new one",
+    "noFamilies": "You don't have any family units yet",
+    "createFirst": "Create my first family",
+    "createNew": "Create new family unit",
+    "create": "Create",
+    "redirectingToLogin": "Redirecting to login...",
+    "createTitle": "Create New Family Unit",
+    "createDesc": "Define the name and monthly goal for the family",
+    "familyName": "Family Name",
+    "familyNamePlaceholder": "e.g., Martinez Family",
+    "monthlyGoal": "Monthly Goal",
+    "goal": "Goal",
+    "admin": "Admin",
+    "invitationReceived": "You've been invited to a family",
+    "invitationMessage": "You have received an invitation to join a family unit. Do you want to accept?",
+    "member": "Member",
+    "members": "members",
+    "people": "people",
+    "inviteMember": "Invite Member",
+    "inviteTitle": "Invite to Family",
+    "inviteDesc": "Send an email invitation to a registered user",
+    "email": "Email Address",
+    "emailPlaceholder": "example@email.com",
+    "sendInvitation": "Send Invitation",
+    "invalidEmail": "Invalid email format",
+    "changeGoal": "Change Goal",
+    "changeGoalTitle": "Change Monthly Goal",
+    "changeGoalDesc": "Define a new monthly goal for the family",
+    "goalProgress": "Goal Progress",
+    "goalProgressDesc": "Monthly tracking of family contributions",
+    "collected": "Collected",
+    "of": "of",
+    "mode": "Mode",
+    "distribution": "Distribution",
+    "distributionDesc": "{{mode}} Mode: contributions are calculated according to the selected method",
+    "distributionMode": "Distribution Mode",
+    "modes": {
+      "equitative": "Equal",
+      "equitativeDesc": "All members contribute the same amount",
+      "proportional": "Proportional",
+      "proportionalDesc": "Contribution is proportional to each member's salary",
+      "custom": "Custom",
+      "customDesc": "The administrator defines each member's percentage manually"
+    },
+    "memberDetails": "Member Details",
+    "contributions": "Contributions",
+    "contributionsHistory": "Contribution History",
+    "noContributions": "No contributions recorded yet",
+    "addContribution": "Add Contribution",
+    "amount": "Amount",
+    "save": "Save Contribution",
+    "salary": "Salary",
+    "monthlySalary": "Monthly Salary",
+    "toContribute": "To contribute",
+    "contributed": "Contributed",
+    "contribution": "Contribution",
+    "nextPayment": "Next Payment",
+    "inDays": "in {{days}} days",
+    "name": "Name",
+    "role": "Role",
+    "edit": "Edit",
+    "editMember": "Edit Member",
+    "delete": "Delete",
+    "customPercentage": "Custom Percentage",
+    "customPercentageHint": "Percentages add up to {{total}}%. They must add up to 100%.",
+    "customPercentageOk": "Percentages correctly add up to 100%.",
+    "invitationFrom": "Invitation from {{sender}} to join {{family}}",
+    "invalidToken": "Invalid invitation token",
+    "invitationAccepted": "You have successfully joined the family!",
+    "invitationError": "Error processing the invitation",
+    "processingInvitation": "Processing invitation...",
+    "welcome": "Welcome to the family!",
+    "goToFamily": "Go to my family",
+    "error": "Error",
+    "alerts": {
+      "createSuccess": "Family created successfully",
+      "createError": "Error creating family",
+      "inviteSuccess": "Invitation sent successfully",
+      "inviteError": "Error sending invitation",
+      "modeSuccess": "Distribution mode updated",
+      "modeError": "Error changing mode",
+      "goalSuccess": "Monthly goal updated",
+      "goalError": "Error updating goal",
+      "memberEditSuccess": "Member updated successfully",
+      "memberEditError": "Error editing member",
+      "memberDeleteSuccess": "Member removed from family",
+      "memberDeleteError": "Error removing member",
+      "contributionSuccess": "Contribution registered successfully",
+      "contributionError": "Error registering contribution"
+    }
+  },
+  "api": {
+    "errors": {
+      "default": "Unexpected server error.",
+      "status_401": "Your session has expired. Please log in again.",
+      "status_403": "You do not have the required permissions for this section.",
+      "status_404": "The requested resource is not available.",
+      "status_500": "Internal server error. Please try again later.",
+      "timeout": "The request timed out."
+    }
+  }
+}

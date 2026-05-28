@@ -1,0 +1,1 @@
+export { useInvestmentQueries } from './useInvestmentQueries'

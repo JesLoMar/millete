@@ -1,0 +1,66 @@
+# =============================================
+# CONFIGURACIÓN BASE DE LA APLICACIÓN
+# =============================================
+spring:
+  application:
+    name: Millete
+  profiles:
+    active: dev
+  # =============================================
+  # JPA / HIBERNATE
+  # =============================================
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  # =============================================
+  # FLYWAY
+  # =============================================
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  # =============================================
+  # BASE DE DATOS
+  # =============================================
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  # =============================================
+  # CORREO ELECTRÓNICO
+  # =============================================
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    from: ${MAIL_FROM}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+# =============================================
+# APP
+# =============================================
+app:
+  version: 0.0.1
+  frontend:
+    url: ${FRONTEND_URL}
+# =============================================
+# JWT
+# =============================================
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+# =============================================
+# LOGGING
+# =============================================
+logging:
+  level:
+    root: INFO
+    com.puntomartinez: DEBUG
