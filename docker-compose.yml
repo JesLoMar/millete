@@ -57,7 +57,7 @@ services:
       JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       # Configuración CORS adaptada al puerto del frontend expuesto en el host
-      CORS_ALLOWED_ORIGINS: http://localhost:${FRONTEND_PORT:-3000}
+      # CORS_ALLOWED_ORIGINS: http://localhost:${FRONTEND_PORT:-3000}
       # Parámetros JVM óptimos para Java 25
       JAVA_OPTS: "-Xmx512m -Xms256m"
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}

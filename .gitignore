@@ -1,0 +1,42 @@
+# ==========================================
+# UNIFIED .GITIGNORE - ROOT LEVEL
+# ==========================================
+
+# 1. ARCHIVOS SENSIBLES (¡NO TOCAR!)
+# El comodín **/ asegura que ignore cualquier .env en cualquier profundidad
+**/.env
+**/.env.*
+!.env.example
+
+# 2. FRONTEND (Node/NPM)
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 3. BACKEND (Spring Boot / Maven / Gradle)
+target/
+build/
+.gradle/
+.mvn/
+*.jar
+*.war
+*.ear
+*.class
+*.log
+
+# 4. SISTEMA Y EDITORES
+.DS_Store
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+out/
