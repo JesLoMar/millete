@@ -31,20 +31,6 @@ MEJORAS v0.0.2
 
 - [✓] Mejorar y optimizar el cómo se manejan las variables entre los repositorios. (Dockerfile, docker-compose.yml).
 
-- [ ] Dejar actualizada la documentación.
-
-- [ ] Añadir y diseñar wiki (manual de usuario) propia con traducción.
-
-- [ ] Actualizar la info de la página del login.
-
-- [ ] Reducir el uso de dependencias en front.
-
-- [ ] Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
-
-- [ ] Diseñar sistema de errores en back.
-
-- [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
-
 - [✓] Módulo de categorías ultra-robustos. 
     ==============================
     ✅	IDOR en update	CategoryService, CategoryRepository, JpaCategoryRepository, CategoryPostgresAdapter
@@ -57,3 +43,17 @@ MEJORAS v0.0.2
     ✅	Command objects inmutables	RegisterCategoryCommand, UpdateCategoryCommand
     ✅	@Validated en controller	CategoryController
     ==============================
+
+- [ ] Dejar actualizada la documentación. [Actualizado la docu de categorias de back]
+
+- [ ] Añadir y diseñar wiki (manual de usuario) propia con traducción.
+
+- [ ] Actualizar la info de la página del login.
+
+- [ ] Reducir el uso de dependencias en front.
+
+- [ ] Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
+
+- [ ] Diseñar sistema de errores en back.
+
+- [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
