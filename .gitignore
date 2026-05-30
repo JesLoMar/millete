@@ -2,8 +2,7 @@
 # UNIFIED .GITIGNORE - ROOT LEVEL
 # ==========================================
 
-# 1. ARCHIVOS SENSIBLES (¡NO TOCAR!)
-# El comodín **/ asegura que ignore cualquier .env en cualquier profundidad
+# 1. SENSITIVE FILES (DO NOT TOUCH!)
 **/.env
 **/.env.*
 !.env.example
@@ -28,7 +27,7 @@ build/
 *.class
 *.log
 
-# 4. SISTEMA Y EDITORES
+# 4. SYSTEM AND EDITORS
 .DS_Store
 .vscode/
 !.vscode/extensions.json

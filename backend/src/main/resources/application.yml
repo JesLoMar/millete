@@ -1,5 +1,5 @@
 # =========================================================================
-# CONFIGURACIÓN BASE DE LA APLICACIÓN - MILLETE v0.0.1
+# CONFIGURACIÓN BASE DE LA APLICACIÓN - MILLETE v0.0.2
 # =========================================================================
 server:
   port: 8080
@@ -61,7 +61,7 @@ spring:
 # PROPIEDADES DE LA APP (CORS e información)
 # =============================================
 app:
-  version: 0.0.1
+  version: 0.0.2
   frontend:
     # Esta es la propiedad que tu Bean de CORS debe leer en Java
     url: ${CORS_ALLOWED_ORIGINS:${FRONTEND_URL:http://localhost:3000}}
