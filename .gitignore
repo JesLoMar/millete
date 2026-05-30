@@ -3,6 +3,7 @@
 # ==========================================
 
 # 1. SENSITIVE FILES (DO NOT TOUCH!)
+.env
 **/.env
 **/.env.*
 !.env.example

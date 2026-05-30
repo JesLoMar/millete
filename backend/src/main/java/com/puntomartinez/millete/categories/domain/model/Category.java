@@ -1,15 +1,10 @@
 package com.puntomartinez.millete.categories.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@NoArgsConstructor
 @Getter
 public class Category {
     private UUID id;
@@ -25,11 +20,18 @@ public class Category {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("El nombre de la categoría es obligatorio");
         }
+        if (color == null || !color.matches("^#[0-9A-Fa-f]{6}$")) {
+            throw new IllegalArgumentException("El color debe ser un hexadecimal válido (ej: #FF5733)");
+        }
+        if (budgetLimit != null && budgetLimit.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El límite de presupuesto no puede ser negativo");
+        }
+
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.name = name;
-        this.color = (color == null) ? "#FFFFFF" : color;
-        this.budgetLimit = budgetLimit != null ? budgetLimit : BigDecimal.ZERO;
+        this.color = color;
+        this.budgetLimit = budgetLimit;
         this.createdAt = LocalDateTime.now();
         this.modifiedAt = LocalDateTime.now();
         this.active = true;
@@ -42,7 +44,7 @@ public class Category {
         this.userId = userId;
         this.name = name;
         this.color = color;
-        this.budgetLimit = budgetLimit != null ? budgetLimit : BigDecimal.ZERO;
+        this.budgetLimit = budgetLimit;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.active = active;
@@ -52,12 +54,16 @@ public class Category {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre no puede estar vacío");
         }
-        this.name = nombre;
-        this.color = color;
+        if (color != null && !color.matches("^#[0-9A-Fa-f]{6}$")) {
+            throw new IllegalArgumentException("El color debe ser un hexadecimal válido");
+        }
         if (budgetLimit != null && budgetLimit.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("El límite de presupuesto no puede ser negativo");
         }
-        this.budgetLimit = budgetLimit != null ? budgetLimit : BigDecimal.ZERO;
+
+        this.name = nombre;
+        this.color = color;
+        this.budgetLimit = budgetLimit;
         this.modifiedAt = LocalDateTime.now();
     }
 

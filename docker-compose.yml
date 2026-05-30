@@ -51,16 +51,16 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DATABASE_NAME}
       SPRING_DATASOURCE_USERNAME: ${DATABASE_USER}
       SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
-      JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_PASSWORD}
+      JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_ENCRYPTOR_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JAVA_OPTS: "-Xmx512m -Xms256m"
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-docker}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.01/8080 && exec 3<&-"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && exec 3<&-"]
       interval: 15s
       timeout: 5s
       retries: 3

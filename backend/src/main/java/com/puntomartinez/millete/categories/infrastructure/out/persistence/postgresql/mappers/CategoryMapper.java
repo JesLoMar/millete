@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 public class CategoryMapper {
 
     public CategoryEntity toEntity(Category domain) {
-        if (domain == null) return null;
-
         CategoryEntity entity = new CategoryEntity();
         entity.setId(domain.getId());
         entity.setUserId(domain.getUserId());
@@ -19,13 +17,10 @@ public class CategoryMapper {
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setModifiedAt(domain.getModifiedAt());
         entity.setActive(domain.isActive());
-
         return entity;
     }
 
     public Category toDomain(CategoryEntity entity) {
-        if (entity == null) return null;
-
         return new Category(
                 entity.getId(),
                 entity.getUserId(),
