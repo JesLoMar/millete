@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
 import com.puntomartinez.millete.dataexport.application.services.DataExportService;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/data")
 public class DataExportController {
@@ -35,7 +37,7 @@ public class DataExportController {
 
         UUID userId = UUID.fromString(authentication.getName());
 
-        System.out.println("Solicitud de exportación para usuario: " + userId);
+        log.info("Solicitud de exportación para usuario: {}", userId);
 
         UserDataSnapshot snapshot = dataExportService.exportAllUserData(userId);
 

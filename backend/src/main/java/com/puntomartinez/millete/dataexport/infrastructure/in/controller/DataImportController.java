@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
 import com.puntomartinez.millete.dataexport.application.services.DataImportService;
 import com.puntomartinez.millete.dataexport.domain.exception.OwnershipException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/data")
 public class DataImportController {
@@ -39,7 +41,7 @@ public class DataImportController {
             Authentication authentication) {
 
         UUID userId = UUID.fromString(authentication.getName());
-        System.out.println("Solicitud de importación para usuario: " + userId);
+        log.info("Solicitud de importación para usuario: {}", userId);
 
         // ─── Validación: archivo no vacío ──────────────────
         if (file.isEmpty()) {
@@ -73,7 +75,7 @@ public class DataImportController {
 
         } catch (OwnershipException e) {
             // ─── Error de propiedad ────────────────────────
-            System.out.println("Importación rechazada: " + e.getErrorCode());
+            log.warn("Importación rechazada: {}", e.getErrorCode());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(
                             "success", false,
@@ -83,7 +85,7 @@ public class DataImportController {
 
         } catch (RuntimeException e) {
             // ─── Error de formato/versión/BD ───────────────
-            System.out.println("Error en importación: " + e.getMessage());
+            log.error("Error en importación: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(
                             "success", false,

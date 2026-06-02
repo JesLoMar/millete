@@ -6,12 +6,14 @@ import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class DataExportService {
 
@@ -35,7 +37,7 @@ public class DataExportService {
     }
 
     public UserDataSnapshot exportAllUserData(UUID userId) {
-        System.out.println("Exportando datos para usuario: " + userId);
+        log.info("Exportando datos para usuario: {}", userId);
 
         UserDataSnapshot snapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
@@ -50,7 +52,7 @@ public class DataExportService {
                 investmentRepository.findAllByUserId(userId)
         );
 
-        System.out.println("Exportación completada. v" + ExportVersion.CURRENT);
+        log.info("Exportación completada. v{}", ExportVersion.CURRENT);
         return snapshot;
     }
 }
