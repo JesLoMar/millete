@@ -1,0 +1,124 @@
+{
+  "sections": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "El panel principal donde ves de un vistazo el estado de tus finanzas familiares.",
+      "topics": [
+        {
+          "title": "Métricas principales",
+          "content": "En la parte superior encontrarás cuatro tarjetas con tu balance actual, ingresos, gastos y ahorro del período seleccionado. Cada una muestra la tendencia respecto al período anterior con un porcentaje en verde o rojo.\n\nUsa el selector de período (semana, mes, año) para cambiar el rango de tiempo."
+        },
+        {
+          "title": "Gráfico de gastos",
+          "content": "El gráfico de historial te muestra la evolución de tus gastos a lo largo del tiempo. En modo semana verás el gasto diario, en modo mes el gasto semanal y en modo año el gasto mensual.\n\nPasa el ratón por encima de cada barra para ver el importe exacto."
+        },
+        {
+          "title": "Gastos por categoría",
+          "content": "El gráfico de donut te muestra cómo se distribuyen tus gastos entre categorías. Las categorías con menos del 5% se agrupan automáticamente en 'Otros' para mantener la visualización limpia.\n\nHaz clic en una categoría para ver el detalle de sus transacciones."
+        }
+      ]
+    },
+    "categories": {
+      "title": "Categorías",
+      "description": "Organiza tus ingresos y gastos con categorías personalizables.",
+      "topics": [
+        {
+          "title": "Crear una categoría",
+          "content": "Haz clic en el botón 'Nueva categoría' en la esquina superior derecha. Asigna un nombre, elige un color con el selector visual y opcionalmente establece un presupuesto mensual.\n\nEl color debe ser un código hexadecimal válido (ej: #FF5733)."
+        },
+        {
+          "title": "Editar o eliminar",
+          "content": "Usa los iconos de lápiz y papelera en cada fila de la tabla. Al eliminar una categoría, esta se desactiva pero no se borra de la base de datos, por lo que las transacciones antiguas mantienen su categoría.\n\nNo puedes eliminar categorías que tengan transacciones activas asociadas."
+        }
+      ]
+    },
+    "transactions": {
+      "title": "Transacciones",
+      "description": "Registra y gestiona todos los movimientos de dinero.",
+      "topics": [
+        {
+          "title": "Añadir una transacción",
+          "content": "Haz clic en 'Nueva transacción'. Selecciona si es un ingreso o un gasto con el toggle superior. Rellena la cantidad, descripción, categoría y fecha.\n\nLa fecha se rellena automáticamente con el día actual, pero puedes cambiarla si necesitas registrar un movimiento pasado."
+        },
+        {
+          "title": "Filtros y resumen",
+          "content": "Usa el selector de período para filtrar las transacciones por semana, mes o año. El resumen superior te mostrará los totales de ingresos y gastos del período seleccionado.\n\nLas transacciones se ordenan por fecha, mostrando primero las más recientes."
+        }
+      ]
+    },
+    "planned-transactions": {
+      "title": "Transacciones recurrentes",
+      "description": "Automatiza ingresos y gastos que se repiten periódicamente.",
+      "topics": [
+        {
+          "title": "Crear una plantilla",
+          "content": "Haz clic en 'Nueva recurrente'. Define la cantidad, categoría, tipo (ingreso o gasto) y la frecuencia.\n\nLa frecuencia puede ser cada X días, semanas, meses o años. Por ejemplo: 'cada 1 mes' para el alquiler, 'cada 2 semanas' para la compra semanal."
+        },
+        {
+          "title": "¿Cuándo se ejecutan?",
+          "content": "El sistema procesa las plantillas automáticamente cada día. Si una plantilla tiene fecha de inicio el 15 de enero y frecuencia mensual, se ejecutará el 15 de cada mes.\n\nPuedes establecer una fecha de fin para que la recurrencia se detenga automáticamente."
+        }
+      ]
+    },
+    "family": {
+      "title": "Familia",
+      "description": "Gestiona las finanzas compartidas con tu unidad familiar.",
+      "topics": [
+        {
+          "title": "Crear una familia",
+          "content": "Haz clic en 'Crear familia'. Asigna un nombre y un objetivo mensual de gasto conjunto. Elige el modo de distribución:\n\n- Equitativo: todos los miembros pagan lo mismo.\n- Proporcional: cada miembro paga según su salario.\n- Personalizado: asignas porcentajes manualmente a cada miembro."
+        },
+        {
+          "title": "Invitar miembros",
+          "content": "Desde la vista de tu familia, usa el botón 'Invitar miembro'. Introduce el email de la persona. Recibirá un correo con un enlace para unirse.\n\nLas invitaciones expiran a las 48 horas. Solo los administradores pueden invitar."
+        },
+        {
+          "title": "Aportaciones",
+          "content": "Cada miembro puede registrar sus aportaciones al fondo familiar. El progreso se muestra en una barra visual respecto al objetivo mensual.\n\nLas aportaciones se ordenan por fecha, mostrando primero las más recientes."
+        }
+      ]
+    },
+    "investments": {
+      "title": "Inversiones",
+      "description": "Haz seguimiento de tu cartera de inversiones y su evolución.",
+      "topics": [
+        {
+          "title": "Añadir una inversión",
+          "content": "Haz clic en 'Nueva inversión'. Introduce el nombre del activo, ticker (opcional), cantidad, precio de compra y tipo (acción, ETF, cripto, etc.).\n\nEl sistema calculará automáticamente el valor actual, el retorno y el porcentaje de ganancia o pérdida cuando actualices el precio."
+        },
+        {
+          "title": "Actualizar precios",
+          "content": "Usa el icono de actualización en cada activo para modificar el precio actual. El sistema recalculará automáticamente las métricas de tu cartera.\n\nTambién puedes ver la evolución histórica de tu patrimonio en el gráfico de la parte inferior."
+        }
+      ]
+    },
+    "data-export": {
+      "title": "Exportar datos",
+      "description": "Descarga una copia de todos tus datos en formato JSON.",
+      "topics": [
+        {
+          "title": "¿Qué se exporta?",
+          "content": "La exportación incluye todas tus categorías, transacciones, transacciones recurrentes e inversiones. El archivo generado contiene también metadatos de versión para garantizar la compatibilidad en futuras importaciones.\n\nEl propietario de los datos queda registrado en el archivo mediante tu ID de usuario."
+        },
+        {
+          "title": "¿Cómo exportar?",
+          "content": "Ve a la sección de Dashboard y haz clic en 'Exportar datos'. Se descargará un archivo JSON con el nombre 'familybudget_export.json'.\n\nGuarda este archivo en un lugar seguro. Contiene información financiera personal."
+        }
+      ]
+    },
+    "import": {
+      "title": "Importar datos",
+      "description": "Restaura tus datos desde un archivo exportado previamente.",
+      "topics": [
+        {
+          "title": "¿Cómo importar?",
+          "content": "En el Dashboard, haz clic en 'Importar datos' y selecciona el archivo JSON que exportaste anteriormente.\n\nSolo puedes importar archivos que te pertenezcan. El sistema verifica que el propietario del archivo coincida con tu usuario."
+        },
+        {
+          "title": "Compatibilidad de versiones",
+          "content": "El sistema comprueba la versión del archivo. Si es compatible con la versión actual, los datos se importan directamente. Si es una versión anterior, el sistema la migra automáticamente al formato actual.\n\nNo se pueden importar archivos de versiones futuras o incompatibles."
+        }
+      ]
+    }
+  }
+}
