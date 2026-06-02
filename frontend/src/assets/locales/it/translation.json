@@ -144,19 +144,9 @@
       "subtitle": "Inizia a gestire le tue finanze in meno di 5 minuti con la nostra guida rapida.",
       "items": [
         {
-          "number": "01",
-          "title": "Crea il tuo account",
-          "description": "Nessuna carta di credito richiesta. Solo email e password."
-        },
-        {
-          "number": "02",
-          "title": "Definisci il tuo budget",
-          "description": "Aggiungi entrate e categorie di spesa nella schermata principale."
-        },
-        {
-          "number": "03",
-          "title": "Registra le tue spese",
-          "description": "Manualmente o importando un file CSV dalla tua banca."
+          "tag": "v0.0.1",
+          "title": "Prima versione pubblica",
+          "description": "Millete è ora disponibile per tutti! Registrati e inizia a gestire le tue finanze personali in modo semplice ed efficace."
         }
       ]
     },

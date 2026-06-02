@@ -3,7 +3,7 @@ package com.puntomartinez.millete.family.infrastructure.out.persistence.postgres
 import com.puntomartinez.millete.family.domain.model.FamilyContribution;
 import com.puntomartinez.millete.family.domain.ports.out.FamilyContributionRepository;
 import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.entity.FamilyContributionEntity;
-import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.mappers.FamilyContributionMapper;
+import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.mappers.FamilyContributionEntityMapper;
 import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.repository.JpaFamilyContributionRepository;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 public class FamilyContributionPostgresAdapter implements FamilyContributionRepository {
 
     private final JpaFamilyContributionRepository jpaRepository;
-    private final FamilyContributionMapper mapper;
+    private final FamilyContributionEntityMapper mapper;
 
-    public FamilyContributionPostgresAdapter(JpaFamilyContributionRepository jpaRepository, FamilyContributionMapper mapper) {
+    public FamilyContributionPostgresAdapter(JpaFamilyContributionRepository jpaRepository, FamilyContributionEntityMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }

@@ -3,7 +3,7 @@ package com.puntomartinez.millete.categories.infrastructure.out.persistence.post
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
-import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers.CategoryMapper;
+import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers.CategoryEntityMapper;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.repository.JpaCategoryRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 public class CategoryPostgresAdapter implements CategoryRepository {
 
     private final JpaCategoryRepository jpaRepository;
-    private final CategoryMapper mapper;
+    private final CategoryEntityMapper mapper;
 
-    public CategoryPostgresAdapter(JpaCategoryRepository jpaRepository, CategoryMapper mapper) {
+    public CategoryPostgresAdapter(JpaCategoryRepository jpaRepository, CategoryEntityMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }

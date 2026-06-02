@@ -146,17 +146,17 @@
         {
           "number": "01",
           "title": "Create your account",
-          "description": "No credit card required. Just email and password."
+          "description": "No credit card required. Just a username and/or email and password."
         },
         {
           "number": "02",
-          "title": "Set your budget",
-          "description": "Add income and expense categories on the home screen."
+          "title": "Create your first category",
+          "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure...)."
         },
         {
           "number": "03",
-          "title": "Track your expenses",
-          "description": "Manually or by importing a CSV file from your bank."
+          "title": "Record your expenses",
+          "description": "Add transactions from their section or easily from the dashboard."
         }
       ]
     },
@@ -168,17 +168,9 @@
       "subtitle": "Discover the latest improvements added to the platform.",
       "items": [
         {
-          "tag": "NEW",
-          "title": "AI Engine v2.0",
-          "description": "We have integrated a new language model that analyzes your spending patterns to offer you personalized savings tips every week."
-        },
-        {
-          "title": "Bank API Integration",
-          "description": "Automatic synchronization with more than 15 Spanish financial entities for real-time management."
-        },
-        {
-          "title": "Improved Offline Mode",
-          "description": "Now you can add transactions even without a connection; they will sync as soon as you regain access."
+          "tag": "v0.0.1",
+          "title": "First public release",
+          "description": "Millete is now available to everyone! Sign up and start managing your personal finances simply and effectively."
         }
       ]
     }

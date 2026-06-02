@@ -209,7 +209,7 @@ public class DashboardService implements GetDashboardDataUseCase {
 
         double returnTrend = investedCapital.compareTo(BigDecimal.ZERO) > 0
                 ? currentReturn.divide(investedCapital, 4, RoundingMode.HALF_UP)
-                  .multiply(new BigDecimal("100")).doubleValue()
+                .multiply(new BigDecimal("100")).doubleValue()
                 : 0.0;
 
         return new InvestmentMetricsResponseDTO(currentValue, currentReturn, BigDecimal.ZERO,
@@ -249,7 +249,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         List<String> labels = new ArrayList<>();
         List<BigDecimal> data = new ArrayList<>();
         LocalDate today = LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM", new Locale("es"));
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM", Locale.of("es"));
 
         for (int i = 5; i >= 0; i--) {
             LocalDate monthStart = today.minusMonths(i).withDayOfMonth(1);
@@ -343,24 +343,21 @@ public class DashboardService implements GetDashboardDataUseCase {
     private LocalDateTime[] getPreviousPeriod(String period) {
         LocalDateTime[] currentRange = getDateRange(period);
         LocalDateTime previousStart;
-        LocalDateTime previousEnd;
-
-        switch (period.toLowerCase()) {
-            case "week":
+        LocalDateTime previousEnd = switch (period.toLowerCase()) {
+            case "week" -> {
                 previousStart = currentRange[0].minusWeeks(1);
-                previousEnd = currentRange[1].minusWeeks(1);
-                break;
-            case "month":
+                yield currentRange[1].minusWeeks(1);
+            }
+            case "month" -> {
                 previousStart = currentRange[0].minusMonths(1);
-                previousEnd = currentRange[0].minusDays(1).withHour(23).withMinute(59).withSecond(59);
-                break;
-            case "year":
+                yield currentRange[0].minusDays(1).withHour(23).withMinute(59).withSecond(59);
+            }
+            case "year" -> {
                 previousStart = currentRange[0].minusYears(1);
-                previousEnd = currentRange[0].minusDays(1).withHour(23).withMinute(59).withSecond(59);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid period: " + period);
-        }
+                yield currentRange[0].minusDays(1).withHour(23).withMinute(59).withSecond(59);
+            }
+            default -> throw new IllegalArgumentException("Invalid period: " + period);
+        };
 
         return new LocalDateTime[]{previousStart, previousEnd};
     }

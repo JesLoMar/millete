@@ -128,7 +128,7 @@ class FamilyServiceTest {
 
         assertThatRuntimeException()
                 .isThrownBy(() -> familyService.acceptInvitation(userId, "token123"))
-                .withMessage("La invitación no es válida o ha expirado");
+                .withMessage("The invitation is not valid or has expired");
     }
 
     @Test
@@ -227,7 +227,11 @@ class FamilyServiceTest {
         when(requester.isAdmin()).thenReturn(true);
         FamilyMember member = mock(FamilyMember.class);
 
+        FamilyUnit family = mock(FamilyUnit.class);
+        when(family.getDistributionMode()).thenReturn(DistributionMode.PROPORTIONAL);
+
         when(familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)).thenReturn(Optional.of(requester));
+        when(familyUnitRepository.findById(familyId)).thenReturn(Optional.of(family));
         when(familyMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
         UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
@@ -293,7 +297,7 @@ class FamilyServiceTest {
 
         assertThatRuntimeException()
                 .isThrownBy(() -> familyService.updateFamily(familyId, userId, request))
-                .withMessage("Solo los administradores pueden editar la familia");
+                .withMessage("Only administrators can edit the family");
     }
 
     @Test
@@ -307,6 +311,6 @@ class FamilyServiceTest {
 
         assertThatRuntimeException()
                 .isThrownBy(() -> familyService.deleteMember(familyId, memberId, userId))
-                .withMessage("Solo los administradores pueden eliminar miembros");
+                .withMessage("Only administrators can delete members");
     }
 }

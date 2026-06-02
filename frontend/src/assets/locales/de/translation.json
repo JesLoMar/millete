@@ -144,19 +144,9 @@
       "subtitle": "Beginnen Sie mit unserer Kurzanleitung in weniger als 5 Minuten, Ihre Finanzen zu verwalten.",
       "items": [
         {
-          "number": "01",
-          "title": "Konto erstellen",
-          "description": "Keine Kreditkarte erforderlich. Nur E-Mail und Passwort."
-        },
-        {
-          "number": "02",
-          "title": "Budget festlegen",
-          "description": "Fügen Sie Einnahmen und Ausgabenkategorien auf dem Startbildschirm hinzu."
-        },
-        {
-          "number": "03",
-          "title": "Ausgaben erfassen",
-          "description": "Manuell oder durch Importieren einer CSV-Datei Ihrer Bank."
+          "tag": "v0.0.1",
+          "title": "Erste öffentliche Version",
+          "description": "Millete ist jetzt für alle verfügbar! Registriere dich und beginne damit, deine persönlichen Finanzen einfach und effektiv zu verwalten."
         }
       ]
     },

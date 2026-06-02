@@ -146,17 +146,17 @@
         {
           "number": "01",
           "title": "Crea tu cuenta",
-          "description": "Sin tarjeta de crédito. Solo correo y contraseña."
+          "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
         },
         {
           "number": "02",
-          "title": "Define tu presupuesto",
-          "description": "Añade ingresos y categorías de gasto en la pantalla de inicio."
+          "title": "Crea tu primera categoría",
+          "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
         },
         {
           "number": "03",
           "title": "Registra tus gastos",
-          "description": "Manualmente o importando un CSV de tu banco."
+          "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
         }
       ]
     },
@@ -168,17 +168,9 @@
       "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
       "items": [
         {
-          "tag": "NUEVO",
-          "title": "Motor de Inteligencia Artificial v2.0",
-          "description": "Hemos integrado un nuevo modelo de lenguaje que analiza tus patrones de gasto para ofrecerte consejos de ahorro personalizados cada semana."
-        },
-        {
-          "title": "Integración con APIs Bancarias",
-          "description": "Sincronización automática con más de 15 entidades financieras españolas para una gestión en tiempo real."
-        },
-        {
-          "title": "Modo Offline Mejorado",
-          "description": "Ahora puedes añadir transacciones incluso sin conexión; se sincronizarán en cuanto recuperes el acceso."
+          "tag": "v0.0.1",
+          "title": "Primer lanzamiento público",
+          "description": "¡Millete ya está disponible para todos! Regístrate y comienza a gestionar tus finanzas personales de forma sencilla y efectiva."
         }
       ]
     }
