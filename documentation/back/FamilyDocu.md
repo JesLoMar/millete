@@ -2,8 +2,8 @@
 
 ## Estructura de archivos
 
-- **application/services/FamilyService.java** — Servicio central con toda la lógica de familia
-- **domain/model/FamilyUnit.java** — Entidad de dominio con cálculo de contribuciones
+- **application/services/FamilyService.java** — Servicio central con toda la lógica de familia y validaciones de consistencia
+- **domain/model/FamilyUnit.java** — Entidad de dominio con cálculo de contribuciones y validaciones
 - **domain/model/FamilyMember.java** — Miembro de familia con rol y salario
 - **domain/model/FamilyInvitation.java** — Invitación con lógica de aceptación
 - **domain/model/FamilyContribution.java** — Aportación individual
@@ -40,13 +40,13 @@ Obtiene el detalle de una familia. Verifica que el usuario sea miembro activo. D
 Crea una nueva familia. El usuario creador se convierte automáticamente en ADMIN. Responde 201 con FamilyResponseDTO.
 
 ### PUT /{familyId}
-Actualiza la familia (objetivo mensual o modo de distribución). Solo el ADMIN puede hacerlo.
+Actualiza la familia (objetivo mensual o modo de distribución). Solo el ADMIN puede hacerlo. Al cambiar a modo CUSTOM, valida que todos los miembros activos tengan customPercentage asignado.
 
 ### POST /{familyId}/invitations
 Invita a un usuario por email. Verifica que el email esté registrado, que no sea ya miembro y que no tenga invitación pendiente. Envía email con enlace. La invitación expira en 48 horas.
 
 ### PUT /{familyId}/members/{memberId}
-Actualiza el rol, salario o porcentaje personalizado de un miembro. Solo ADMIN.
+Actualiza el rol, salario o porcentaje personalizado de un miembro. Solo ADMIN. Solo acepta los campos aplicables según el modo de distribución de la familia.
 
 ### DELETE /{familyId}/members/{memberId}
 Elimina lógicamente a un miembro (soft delete). Solo ADMIN.
@@ -64,13 +64,14 @@ Acepta una invitación. Verifica que el token sea válido, no haya expirado y el
 
 ## FamilyService.java
 
-Servicio central que implementa los 4 casos de uso y contiene métodos adicionales para el controlador.
+Servicio central que implementa los 4 casos de uso y contiene métodos adicionales para el controlador. Utiliza @Slf4j de Lombok para logging estructurado con niveles de severidad. Todos los mensajes de excepción y logs están en inglés.
 
 ### Crear familia (createFamilyUnit)
 1. Crea la FamilyUnit con UUID aleatorio, nombre, objetivo y modo de distribución.
 2. Guarda en base de datos.
 3. Crea un FamilyMember como ADMIN para el usuario creador.
-4. Devuelve la unidad familiar.
+4. Registra el evento mediante log.info.
+5. Devuelve la unidad familiar.
 
 ### Invitar miembro (inviteMember)
 1. Verifica que el solicitante sea ADMIN de la familia.
@@ -78,7 +79,7 @@ Servicio central que implementa los 4 casos de uso y contiene métodos adicional
 3. Verifica que no sea ya miembro activo.
 4. Verifica que no tenga invitación PENDING.
 5. Crea FamilyInvitation con token único y expiración de 48 horas.
-6. Guarda y envía email mediante EmailSenderPort.
+6. Guarda, envía email y registra el evento mediante log.info.
 
 ### Aceptar invitación (acceptInvitation)
 1. Busca la invitación por token.
@@ -86,19 +87,40 @@ Servicio central que implementa los 4 casos de uso y contiene métodos adicional
 3. Verifica que el usuario no sea ya miembro.
 4. Crea FamilyMember con rol MEMBER.
 5. Marca la invitación como ACCEPTED.
+6. Registra el evento mediante log.info.
 
 ### Calcular contribuciones (calculateContributions)
 1. Busca la unidad familiar y sus miembros.
 2. Delega en familyUnit.calculateContributions().
 
+### Actualizar miembro (updateMember)
+1. Verifica que el solicitante sea ADMIN de la familia.
+2. Obtiene la familia para conocer el modo de distribución actual.
+3. Busca el miembro a actualizar.
+4. Aplica solo los campos relevantes según el modo de distribución:
+   - EQUITATIVE: rechaza salary y customPercentage (lanza IllegalArgumentException).
+   - PROPORTIONAL: rechaza customPercentage, acepta salary.
+   - CUSTOM: rechaza salary, acepta customPercentage.
+5. Guarda y registra el evento mediante log.info.
+
+### Actualizar familia (updateFamily)
+1. Verifica que el solicitante sea ADMIN.
+2. Si se cambia el modo de distribución a CUSTOM, valida que todos los miembros activos tengan customPercentage asignado. Si falta algún miembro, lanza IllegalStateException con la lista de IDs.
+3. Aplica los cambios y registra el cambio de modo mediante log.info.
+
+### Eliminar miembro (deleteMember)
+1. Verifica que el solicitante sea ADMIN.
+2. Soft delete del miembro (active = false).
+3. Registra el evento mediante log.info.
+
+### Añadir aportación (addContribution)
+1. Crea la aportación con UUID aleatorio y fecha actual.
+2. Guarda y registra mediante log.info.
+
 ### Métodos adicionales
 
 - getFamiliesByUserId: obtiene las familias donde el usuario es miembro activo.
 - getFamilyDetail: obtiene el detalle con miembros y aportaciones. Resuelve nombres desde UserRepository.
-- updateMember: actualiza rol, salario y porcentaje personalizado.
-- updateFamily: actualiza objetivo mensual y modo de distribución.
-- deleteMember: soft delete de un miembro.
-- addContribution: añade una aportación al historial.
 
 ---
 
@@ -111,7 +133,7 @@ Entidad rica con lógica de negocio para calcular contribuciones.
 Según el modo de distribución:
 
 - EQUITATIVE: divide el objetivo mensual entre el número de miembros a partes iguales.
-- PROPORTIONAL: distribuye el objetivo según el porcentaje del salario de cada miembro respecto al total de salarios.
+- PROPORTIONAL: distribuye el objetivo según el porcentaje del salario de cada miembro respecto al total de salarios. Si totalSalary es 0, lanza IllegalStateException con mensaje descriptivo.
 - CUSTOM: distribuye según los porcentajes personalizados asignados a cada miembro.
 
 Devuelve un mapa de userId → cantidad a aportar.
@@ -199,6 +221,21 @@ Las aportaciones se ordenan por fecha descendente. Los miembros y aportaciones f
 - FamilyMemberDTO: id, userId, name, role, salary, customPercentage
 - FamilyContributionDTO: id, userId, name, amount, date
 - AddContributionRequestDTO: amount
+
+---
+
+## Validaciones de consistencia por modo de distribución
+
+### En updateMember (FamilyService)
+- EQUITATIVE: no se permite asignar salary ni customPercentage. Todos los miembros pagan lo mismo.
+- PROPORTIONAL: no se permite asignar customPercentage. Las contribuciones se calculan según salary.
+- CUSTOM: no se permite asignar salary. Las contribuciones se calculan según customPercentage.
+
+### En updateFamily (FamilyService)
+- Al cambiar el modo a CUSTOM, se valida que todos los miembros activos tengan customPercentage asignado. Si falta algún miembro, se lanza IllegalStateException con la lista de IDs afectados.
+
+### En calculateContributions (FamilyUnit)
+- Modo PROPORTIONAL: si totalSalary es 0, se lanza IllegalStateException con el mensaje "Cannot calculate contributions in PROPORTIONAL mode: no member has a salary assigned or the total sum is 0."
 
 ---
 

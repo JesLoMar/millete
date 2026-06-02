@@ -48,7 +48,10 @@ public class FamilyUnit {
                         .map(FamilyMember::getSalary)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                if (totalSalary.compareTo(BigDecimal.ZERO) == 0) break;
+                if (totalSalary.compareTo(BigDecimal.ZERO) == 0) {
+                    throw new IllegalStateException(
+                            "Cannot calculate contributions in PROPORTIONAL mode: no member has a salary assigned or the total sum is 0.");
+                }
 
                 for (FamilyMember member : members) {
                     BigDecimal percentage = member.getSalary().divide(totalSalary, 4, RoundingMode.HALF_UP);

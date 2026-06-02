@@ -18,23 +18,6 @@
 
 ---
 
-## 2. Validacion de consistencia entre modo de distribucion y datos de miembros
-
-**Archivos:** FamilyService.updateMember(), FamilyUnit.calculateContributions()
-
-**Problema:** No hay validacion que impida asignar customPercentage cuando el modo es EQUITATIVE o PROPORTIONAL, ni que impida tener salary = 0 en modo PROPORTIONAL. Los calculos pueden ser incorrectos.
-
-**Impacto:** El administrador puede configurar datos inconsistentes sin saberlo, resultando en contribuciones mal calculadas.
-
-**Solucion propuesta:**
-- En updateMember(): si el modo es EQUITATIVE, ignorar customPercentage y salary. Si es PROPORTIONAL, ignorar customPercentage. Si es CUSTOM, ignorar salary
-- En calculateContributions(): si modo PROPORTIONAL y totalSalary = 0, lanzar excepcion con mensaje claro
-- Al cambiar el modo de distribucion a CUSTOM, requerir que todos los miembros tengan customPercentage asignado
-
-**Complejidad:** Baja. Principalmente validaciones en servicio.
-
----
-
 ## 3. Doble logica de borrado: soft delete manual + ON DELETE SET NULL
 
 **Archivos:** CategoryService.delete(), V1__initial_schema.sql
@@ -64,45 +47,3 @@
 - Si no se planea usar: eliminar el endpoint, el metodo del servicio y los DTOs relacionados
 
 **Complejidad:** Baja. Decision de producto.
-
----
-
-## 5. Observaciones menores
-
-### 5.1 CORS hardcodeado a localhost
-
-**Archivo:** SecurityConfig.java
-
-**Problema:** CORS solo permite http://localhost:5173. En produccion, la URL del frontend sera diferente.
-
-**Solucion:** Mover la URL permitida a la propiedad app.frontend.url que ya existe en application.yml.
-
-**Complejidad:** Baja.
-
----
-
-### 5.2 JWT sin refresh token
-
-**Archivos:** JwtTokenAdapter.java, AuthContext.tsx
-
-**Problema:** El token expira a las 12 horas y el usuario debe volver a iniciar sesion. No hay mecanismo de refresh token para sesiones prolongadas.
-
-**Solucion:**
-- Backend: endpoint POST /auth/refresh que acepte un refresh token y devuelva un nuevo JWT
-- Frontend: interceptor en apiClient que detecte 401, llame al refresh y reintente la peticion
-
-**Complejidad:** Media. Requiere cambios en backend y frontend.
-
----
-
-### 5.3 Inconsistencia MapStruct vs mapeo manual
-
-**Archivos:** InvestmentEntityMapper.java (MapStruct), CategoryMapper.java (manual)
-
-**Problema:** Algunos modulos usan MapStruct con anotaciones, otros usan mapeo manual con setters/getters. No afecta al funcionamiento, pero es inconsistente.
-
-**Solucion:** Unificar a MapStruct en todos los modulos. Es mas limpio, menos codigo y menos propenso a errores.
-
-**Complejidad:** Baja. Refactorizar los mappers manuales a interfaces MapStruct.
-
----

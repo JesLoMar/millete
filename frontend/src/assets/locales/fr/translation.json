@@ -146,17 +146,17 @@
         {
           "number": "01",
           "title": "Créez votre compte",
-          "description": "Sans carte de crédit. Juste un e-mail et un mot de passe."
+          "description": "Aucune carte de crédit nécessaire. Juste un nom d'utilisateur et/ou un email et un mot de passe."
         },
         {
           "number": "02",
-          "title": "Définissez votre budget",
-          "description": "Ajoutez des revenus et des catégories de dépenses sur l'écran d'accueil."
+          "title": "Créez votre première catégorie",
+          "description": "Définissez des catégories personnalisées pour organiser vos dépenses (ex. Alimentation, Transport, Loisirs...)."
         },
         {
           "number": "03",
           "title": "Enregistrez vos dépenses",
-          "description": "Manuellement ou en important un fichier CSV de votre banque."
+          "description": "Ajoutez des transactions depuis leur section ou facilement depuis le tableau de bord."
         }
       ]
     },
@@ -168,17 +168,9 @@
       "subtitle": "Découvrez les dernières améliorations ajoutées à la plateforme.",
       "items": [
         {
-          "tag": "NOUVEAU",
-          "title": "Moteur d'Intelligence Artificielle v2.0",
-          "description": "Nous avons intégré un nouveau modèle de langage qui analyse vos habitudes de dépenses pour vous offrir des conseils d'épargne personnalisés chaque semaine."
-        },
-        {
-          "title": "Intégration des API Bancaires",
-          "description": "Synchronisation automatique avec plus de 15 institutions financières espagnoles pour une gestion en temps réel."
-        },
-        {
-          "title": "Mode Hors-ligne Amélioré",
-          "description": "Vous pouvez désormais ajouter des transactions même sans connexion ; elles se synchroniseront dès que vous retrouverez un accès."
+          "tag": "v0.0.1",
+          "title": "Première version publique",
+          "description": "Millete est maintenant disponible pour tous ! Inscrivez-vous et commencez à gérer vos finances personnelles de manière simple et efficace."
         }
       ]
     }

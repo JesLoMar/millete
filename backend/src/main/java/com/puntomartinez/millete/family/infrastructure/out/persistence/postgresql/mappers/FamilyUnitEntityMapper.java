@@ -3,38 +3,27 @@ package com.puntomartinez.millete.family.infrastructure.out.persistence.postgres
 import com.puntomartinez.millete.family.domain.model.DistributionMode;
 import com.puntomartinez.millete.family.domain.model.FamilyUnit;
 import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.entity.FamilyUnitEntity;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.Named;
 
-@Component
-public class FamilyUnitEntityMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface FamilyUnitEntityMapper {
 
-    public FamilyUnitEntity toEntity(FamilyUnit domain) {
-        if (domain == null) return null;
+    @Mapping(target = "distributionMode", source = "distributionMode", qualifiedByName = "mapDistributionModeToString")
+    FamilyUnitEntity toEntity(FamilyUnit domain);
 
-        FamilyUnitEntity entity = new FamilyUnitEntity();
-        entity.setId(domain.getId());
-        entity.setName(domain.getName());
-        entity.setMonthlyTarget(domain.getMonthlyTarget());
-        entity.setDistributionMode(domain.getDistributionMode().name());
-        entity.setCreatedAt(domain.getCreatedAt());
-        entity.setModifiedAt(domain.getModifiedAt());
-        entity.setActive(domain.isActive());
+    @Mapping(target = "distributionMode", source = "distributionMode", qualifiedByName = "mapStringToDistributionMode")
+    FamilyUnit toDomain(FamilyUnitEntity entity);
 
-        return entity;
+    @Named("mapDistributionModeToString")
+    default String mapDistributionModeToString(DistributionMode mode) {
+        return mode != null ? mode.name() : null;
     }
 
-    public FamilyUnit toDomain(FamilyUnitEntity entity) {
-        if (entity == null) return null;
-
-        FamilyUnit domain = new FamilyUnit();
-        domain.setId(entity.getId());
-        domain.setName(entity.getName());
-        domain.setMonthlyTarget(entity.getMonthlyTarget());
-        domain.setDistributionMode(DistributionMode.valueOf(entity.getDistributionMode()));
-        domain.setCreatedAt(entity.getCreatedAt());
-        domain.setModifiedAt(entity.getModifiedAt());
-        domain.setActive(entity.isActive());
-
-        return domain;
+    @Named("mapStringToDistributionMode")
+    default DistributionMode mapStringToDistributionMode(String mode) {
+        return mode != null ? DistributionMode.valueOf(mode) : null;
     }
 }

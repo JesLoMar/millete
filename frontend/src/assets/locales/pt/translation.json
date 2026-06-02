@@ -144,19 +144,9 @@
       "subtitle": "Comece a gerenciar suas finanças em menos de 5 minutos com nosso guia rápido.",
       "items": [
         {
-          "number": "01",
-          "title": "Crie sua conta",
-          "description": "Sem cartão de crédito. Apenas e-mail e senha."
-        },
-        {
-          "number": "02",
-          "title": "Defina seu orçamento",
-          "description": "Adicione receitas e categorias de gastos na tela inicial."
-        },
-        {
-          "number": "03",
-          "title": "Registre seus gastos",
-          "description": "Manualmente ou importando um arquivo CSV do seu banco."
+          "tag": "v0.0.1",
+          "title": "Primeiro lançamento público",
+          "description": "O Millete já está disponível para todos! Cadastre-se e comece a gerenciar suas finanças pessoais de forma simples e eficaz."
         }
       ]
     },
