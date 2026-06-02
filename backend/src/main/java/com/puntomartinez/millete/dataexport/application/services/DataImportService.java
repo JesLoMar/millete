@@ -14,6 +14,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransac
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class DataImportService {
 
@@ -51,10 +53,9 @@ public class DataImportService {
     public String importUserData(MultipartFile file, UUID loggedInUserId) {
         try (InputStream inputStream = file.getInputStream()) {
 
-            System.out.println("Leyendo archivo de importación...");
+            log.debug("Leyendo archivo de importación...");
             UserDataSnapshot snapshot = objectMapper.readValue(inputStream, UserDataSnapshot.class);
-            System.out.println("Archivo leído. v" + snapshot.metadata().version()
-                    + ", Propietario: " + snapshot.metadata().userId());
+            log.info("Archivo leído. v{}, Propietario: {}", snapshot.metadata().version(), snapshot.metadata().userId());
 
             validateOwnership(snapshot, loggedInUserId);
             snapshot = validateAndMigrate(snapshot);
@@ -68,12 +69,13 @@ public class DataImportService {
                     "Importación exitosa. %d registros importados. v%s",
                     totalImported, ExportVersion.CURRENT);
 
-            System.out.println(summary);
+            log.info(summary);
             return summary;
 
         } catch (OwnershipException e) {
             throw e;
         } catch (Exception e) {
+            log.error("Error al importar: {}", e.getMessage(), e);
             throw new RuntimeException(
                     "Error al importar: " + e.getMessage()
                             + ". Asegúrate de que el archivo sea compatible con v"
@@ -100,7 +102,7 @@ public class DataImportService {
             );
         }
 
-        System.out.println("✓ Validación de propiedad superada");
+        log.debug("Validación de propiedad superada");
     }
 
     private UserDataSnapshot validateAndMigrate(UserDataSnapshot snapshot) {
@@ -113,11 +115,11 @@ public class DataImportService {
         }
 
         if (fileVersion.needsMigration(ExportVersion.CURRENT)) {
-            System.out.println("Migrando de v" + fileVersion + " a v" + ExportVersion.CURRENT);
+            log.warn("Migrando de v{} a v{}", fileVersion, ExportVersion.CURRENT);
             return migrationChain.migrateToLatest(snapshot);
         }
 
-        System.out.println("✓ v" + fileVersion + " compatible");
+        log.debug("v{} compatible", fileVersion);
         return snapshot;
     }
 
@@ -137,7 +139,7 @@ public class DataImportService {
             categoryRepository.save(safeCat);
             count++;
         }
-        System.out.println("  Categorías: " + count);
+        log.debug("Categorías: {}", count);
         return count;
     }
 
@@ -156,7 +158,7 @@ public class DataImportService {
             transactionRepository.save(safeTx);
             count++;
         }
-        System.out.println("  Transacciones: " + count);
+        log.debug("Transacciones: {}", count);
         return count;
     }
 
@@ -176,7 +178,7 @@ public class DataImportService {
             plannedTransactionRepository.save(safePtx);
             count++;
         }
-        System.out.println("  Transacciones programadas: " + count);
+        log.debug("Transacciones programadas: {}", count);
         return count;
     }
 
@@ -196,7 +198,7 @@ public class DataImportService {
             investmentRepository.save(safeInv);
             count++;
         }
-        System.out.println("  Inversiones: " + count);
+        log.debug("Inversiones: {}", count);
         return count;
     }
 }

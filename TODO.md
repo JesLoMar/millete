@@ -14,6 +14,7 @@ IDEAS A CHOLÓN
 - Crear perfil de usuario y pestaña de settings. (configuraciones, borrados de cuenta, elegir temas e idiomas movidos ahí)
 - Hacer comprobaciones de usabilidad y accesibilidad.
 - Mejorar y definir mejor el código de conducta, el cómo contribuir al proyecto y el tema de seguridad.
+- Agregar serialización a los archivos descargables e importables.
 
 ===================================
 MEJORAS v0.0.2
@@ -24,9 +25,9 @@ MEJORAS v0.0.2
         - [✓] Módulo Categorías (IDOR en Actualización): Modificar el método update en CategoryService y CategoryController para que reciba el userId extraído del JWT de forma que valide que la categoría pertenece al usuario autenticado antes de aplicar los cambios.
         - [✓] Módulo Categorías (IDOR en Eliminación): Modificar el método delete en CategoryService y CategoryController para que también reciba el userId y bloquee el borrado lógico de categorías que pertenezcan a otros identificadores de usuario.
     🟠 Prioridad Media: Despliegue y Configuración
-        - [ ] Limpieza de Logs de Depuración: Localizar y sustituir todos los restos de System.out.println() (especialmente en los controladores y servicios de dataexport y dataimport) por el uso de loggers paramétricos utilizando la anotación @Slf4j de Lombok o instanciando SLF4J de forma nativa.
+        - [✓] Limpieza de Logs de Depuración: Localizar y sustituir todos los restos de System.out.println() (especialmente en los controladores y servicios de dataexport y dataimport) por el uso de loggers paramétricos utilizando la anotación @Slf4j de Lombok o instanciando SLF4J de forma nativa.
     🟡 Prioridad Baja: Funcionalidad de Negocio y Deuda Técnica
-        - [ ] Lógica de Transacciones Recurrentes: Reemplazar la comparación exacta de fechas en shouldExecuteToday dentro de PlannedTransactionService. Implementar en su lugar un motor de cálculo temporal que use aritmética de fechas (días, semanas, meses entre el inicio de la plantilla y hoy) para que la recurrencia funcione después del primer ciclo.
+        - [✓] Lógica de Transacciones Recurrentes: Reemplazar la comparación exacta de fechas en shouldExecuteToday dentro de PlannedTransactionService. Implementar en su lugar un motor de cálculo temporal que use aritmética de fechas (días, semanas, meses entre el inicio de la plantilla y hoy) para que la recurrencia funcione después del primer ciclo.
         - [ ] Corrección de Versiones en pom.xml: Ajustar la etiqueta <parent> a una versión comercialmente estable y disponible de la rama de desarrollo, asegurando que las propiedades de versiones de librerías dependientes como jjwt y mapstruct no creen conflictos en tu entorno de integración continua (CI/CD).
 
 - [✓] Mejorar y optimizar el cómo se manejan las variables entre los repositorios. (Dockerfile, docker-compose.yml).
