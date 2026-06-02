@@ -16,7 +16,6 @@ IDEAS A CHOLÓN
 - Mejorar y definir mejor el código de conducta, el cómo contribuir al proyecto y el tema de seguridad.
 - Agregar serialización a los archivos descargables e importables.
 - [ ] Dejar actualizada la documentación. [Actualizado la docu de categorias, plannedtransactions y family de back]
-- [ ] Añadir y diseñar wiki (manual de usuario) propia con traducción.
 - [ ] Reducir el uso de dependencias en front.
 - [ ] Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
 - [ ] Diseñar sistema de errores en back.
@@ -44,6 +43,8 @@ MEJORAS v0.0.2
 
 - [✓] Actualizar la info de la página del login.
 
+- [✓] Añadir y diseñar wiki (manual de usuario) propia con traducción.
+
 - [✓] Módulo de categorías ultra-robustos. 
     ==============================
     ✅	IDOR en update	CategoryService, CategoryRepository, JpaCategoryRepository, CategoryPostgresAdapter
@@ -56,3 +57,38 @@ MEJORAS v0.0.2
     ✅	Command objects inmutables	RegisterCategoryCommand, UpdateCategoryCommand
     ✅	@Validated en controller	CategoryController
     ==============================
+
+===================================
+v0.1.0: Persistencia de última ejecución en transacciones recurrentes
+===================================
+
+**Contexto:** Actualmente shouldExecuteToday() en PlannedTransactionService calcula
+matemáticamente si hoy corresponde una ocurrencia usando startDate, frequencyType
+y frequencyInterval. Funciona correctamente siempre que el scheduler se ejecute
+al menos una vez al día.
+
+**Problema:** Si el scheduler falla un día (caída del servidor, mantenimiento, etc.),
+las ocurrencias de ese día se pierden y no se ejecutan cuando el scheduler vuelve
+a estar activo.
+
+**Solución propuesta:**
+- Añadir columna last_executed_date DATE a la tabla planned_transactions
+- Crear migración Flyway para la nueva columna
+- Añadir campo lastExecutedDate (LocalDate) a PlannedTransaction (dominio)
+- Añadir campo lastExecutedDate (LocalDate) a PlannedTransactionEntity (JPA)
+- Modificar shouldExecuteToday() para detectar ocurrencias no ejecutadas entre
+  lastExecutedDate y today, y ejecutar la primera pendiente
+- En processScheduledTasks(), actualizar lastExecutedDate después de crear la
+  transacción real
+- Actualizar tests de PlannedTransactionService para cubrir el nuevo comportamiento
+
+**Archivos afectados:**
+- domain/model/PlannedTransaction.java
+- infrastructure/out/persistence/postgresql/entity/PlannedTransactionEntity.java
+- infrastructure/out/persistence/postgresql/mappers/PlannedTransactionEntityMapper.java
+- application/services/PlannedTransactionService.java
+- src/main/resources/db/migration/V0_1_0__add_last_executed_date.sql
+- Test: PlannedTransactionServiceTest.java
+
+**Complejidad:** Media. Requiere cambios en modelo, entidad, mapper, servicio,
+migración Flyway y tests.

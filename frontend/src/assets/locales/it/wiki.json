@@ -1,0 +1,14 @@
+{
+  "header": {
+    "goToApp": "Ir a la app"
+  },
+  "index": {
+    "title": "Guía de uso",
+    "description": "Selecciona una sección en el menú lateral para ver su contenido."
+  },
+  "notFound": {
+    "title": "Sección no encontrada",
+    "description": "La sección que buscas no existe o no está disponible en este idioma."
+  },
+  "sections": {}
+}

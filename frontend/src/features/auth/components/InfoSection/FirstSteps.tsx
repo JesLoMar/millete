@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 import { Info, ExternalLink } from "lucide-react"
 
 export function FirstSteps() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const steps = t('info.steps.items', { returnObjects: true }) as Array<{
     number: string
@@ -41,7 +43,10 @@ export function FirstSteps() {
         </div>
 
         <div className="pt-4">
-          <div className="w-full p-5 rounded-xl bg-secondary/20 border border-border/50 flex items-center justify-between group cursor-pointer hover:bg-secondary/40 transition-all">
+          <button
+            onClick={() => navigate('/wiki')}
+            className="w-full p-5 rounded-xl bg-secondary/20 border border-border/50 flex items-center justify-between group cursor-pointer hover:bg-secondary/40 transition-all"
+          >
             <div className="flex items-center gap-4">
               <div className="bg-primary/10 p-2 rounded-lg">
                 <Info className="size-5 text-primary" />
@@ -51,7 +56,7 @@ export function FirstSteps() {
               </span>
             </div>
             <ExternalLink className="size-5 text-primary group-hover:translate-x-1 transition-transform" />
-          </div>
+          </button>
         </div>
       </div>
     </div>
