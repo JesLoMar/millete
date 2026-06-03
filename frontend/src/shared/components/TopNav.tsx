@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { LanguageSelector } from "@/shared/components/LanguageSelector"
 import { ThemeSelector } from "@/shared/components/ThemeSelector"
-import { Wallet2, User, LogOut } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import {
   DropdownMenu,
@@ -67,8 +67,12 @@ export function TopNav({ className }: TopNavProps) {
       className
     )}>
       <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("/dashboard")}>
-        <div className="bg-primary/10 p-2 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10">
-          <Wallet2 className="size-5" />
+        <div className="bg-primary/10 p-0.5 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center">
+          <img 
+            src="/web-app-icon.png" 
+            alt={t("app.name")} 
+            className="size-10 object-contain" 
+          />
         </div>
         <span className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           {t("app.name")}
