@@ -68,8 +68,8 @@
     },
     "greeting": "Hallo, <br />willkommen.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -144,6 +144,11 @@
       "subtitle": "Beginnen Sie mit unserer Kurzanleitung in weniger als 5 Minuten, Ihre Finanzen zu verwalten.",
       "items": [
         {
+          "tag": "v0.0.2",
+          "title": "Benutzer-Wiki, erhöhte Sicherheit und Systemoptimierung",
+          "description": "Wir starten unser Wiki mit mehrsprachiger Unterstützung. Absolute Sicherheit bei der Kategorieverwaltung, optimierte Engine für wiederkehrende Transaktionen und eine verbesserte visuelle Oberfläche mit neuen Icons."
+        },
+        {
           "tag": "v0.0.1",
           "title": "Erste öffentliche Version",
           "description": "Millete ist jetzt für alle verfügbar! Registriere dich und beginne damit, deine persönlichen Finanzen einfach und effektiv zu verwalten."
@@ -158,17 +163,14 @@
       "subtitle": "Entdecken Sie die neuesten Verbesserungen auf der Plattform.",
       "items": [
         {
-          "tag": "NEU",
-          "title": "Künstliche Intelligenz v2.0",
-          "description": "Wir haben ein neues Sprachmodell integriert, das Ihre Ausgabenmuster analysiert, um Ihnen jede Woche personalisierte Spartipps zu geben."
+          "tag": "v0.0.2",
+          "title": "Benutzer-Wiki, erhöhte Sicherheit und Systemoptimierung",
+          "description": "Wir starten unser Wiki mit mehrsprachiger Unterstützung. Absolute Sicherheit bei der Kategorieverwaltung, optimierte Engine für wiederkehrende Transaktionen und eine verbesserte visuelle Oberfläche mit neuen Icons."
         },
         {
-          "title": "Bank-API-Integration",
-          "description": "Automatische Synchronisierung mit mehr als 15 spanischen Finanzinstituten für ein Echtzeit-Management."
-        },
-        {
-          "title": "Verbesserter Offline-Modus",
-          "description": "Jetzt können Sie Transaktionen auch ohne Verbindung hinzufügen; sie werden synchronisiert, sobald Sie wieder Zugriff haben."
+          "tag": "v0.0.1",
+          "title": "Erste öffentliche Version",
+          "description": "Millete ist ab sofort für alle verfügbar! Registriere dich und beginne, deine persönlichen Finanzen einfach und effektiv zu verwalten."
         }
       ]
     }

@@ -68,8 +68,8 @@
     },
     "greeting": "Olá, <br />bem-vindo.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -158,17 +158,14 @@
       "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
       "items": [
         {
-          "tag": "NOVO",
-          "title": "Motor de Inteligência Artificial v2.0",
-          "description": "Integramos un novo modelo de linguagem que analisa seus padrões de consumo para oferecer conselhos de economia personalizados toda semana."
+          "tag": "v0.0.2",
+          "title": "Wiki do usuário, segurança reforçada e otimização do sistema",
+          "description": "Estreamos nossa wiki com suporte multilíngue. Segurança blindada na gestão de categorias, motor de transações recorrentes otimizado e interface visual aprimorada com novos ícones."
         },
         {
-          "title": "Integração com APIs Bancárias",
-          "description": "Sincronização automática com mais de 15 entidades financeiras espanholas para uma gestão em tempo real."
-        },
-        {
-          "title": "Modo Offline Melhorado",
-          "description": "Agora você pode adicionar transações mesmo sem conexão; elas serão sincronizadas assim que recuperar o acesso."
+          "tag": "v0.0.1",
+          "title": "Primeiro lançamento público",
+          "description": "O Millete já está disponível para todos! Registe-se e comece a gerir as suas finanças pessoais de forma simples e eficaz."
         }
       ]
     }

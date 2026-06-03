@@ -3,10 +3,9 @@ IDEAS A CHOLÓN
 ===================================
 
 - Añadir sugerencias con IA. ChatGPT Finance.
-- Arreglar y mejorar la lógica de las Planned Transactions.
 - Añadir escaneo de tickets para que se añada directamente la categoría compra o a lo que pertenezca y el dinero gastado.
 - Diseño propio mobile.
-- Reemplazo de dependencias como shadowcn y componentes rápidos con compoentes propios.
+- Reemplazo de dependencias como shadowcn y componentes rápidos con componentes propios.
 - Importar movimientos con csv bancarios, investigar bancos más usados en España.
 - Añadir animaciones y feedback visual a todas las vistas.
 - Eliminar la necesidad de correo, invitaciones por notificación in-app.
@@ -15,19 +14,14 @@ IDEAS A CHOLÓN
 - Hacer comprobaciones de usabilidad y accesibilidad.
 - Mejorar y definir mejor el código de conducta, el cómo contribuir al proyecto y el tema de seguridad.
 - Agregar serialización a los archivos descargables e importables.
+- Diseñar sistema de errores en back.
+- Reducir el uso de dependencias en front.
+- Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
 - [ ] Dejar actualizada la documentación. [Actualizado la docu de categorias, plannedtransactions y family de back]
-- [ ] Reducir el uso de dependencias en front.
-- [ ] Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
-- [ ] Diseñar sistema de errores en back.
-- [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
 
 ===================================
 MEJORAS v0.0.2
 ===================================
-
-- [✓] Módulo Categorías (IDOR en Actualización): Modificar el método update en CategoryService y CategoryController para que reciba el userId extraído del JWT de forma que valide que la categoría pertenece al usuario autenticado antes de aplicar los cambios.
-
-- [✓] Módulo Categorías (IDOR en Eliminación): Modificar el método delete en CategoryService y CategoryController para que también reciba el userId y bloquee el borrado lógico de categorías que pertenezcan a otros identificadores de usuario.
 
 - [✓] Limpieza de Logs de Depuración: Localizar y sustituir todos los restos de System.out.println() (especialmente en los controladores y servicios de dataexport y dataimport) por el uso de loggers paramétricos utilizando la anotación @Slf4j de Lombok o instanciando SLF4J de forma nativa.
 
@@ -58,8 +52,18 @@ MEJORAS v0.0.2
     ✅	@Validated en controller	CategoryController
     ==============================
 
+- [✓] Añadir icono a la interfaz
+
+
 ===================================
-v0.1.0: Persistencia de última ejecución en transacciones recurrentes
+v0.1.0 [CAMBIOS EN BD]
+===================================
+
+- [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
+- [ ] Persistencia de última ejecución en transacciones recurrentes
+
+===================================
+Persistencia de última ejecución en transacciones recurrentes + Info
 ===================================
 
 **Contexto:** Actualmente shouldExecuteToday() en PlannedTransactionService calcula

@@ -68,8 +68,8 @@
     },
     "greeting": "Hello, <br />welcome.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -168,9 +168,14 @@
       "subtitle": "Discover the latest improvements added to the platform.",
       "items": [
         {
+          "tag": "v0.0.2",
+          "title": "User Wiki, enhanced security, and system optimization",
+          "description": "We are launching our wiki with multi-language support. Built-in security in category management, optimized recurring transactions engine, and an improved visual interface with new icons."
+        },
+        {
           "tag": "v0.0.1",
           "title": "First public release",
-          "description": "Millete is now available to everyone! Sign up and start managing your personal finances simply and effectively."
+          "description": "Millete is now available to everyone! Sign up and start managing your personal finances easily and effectively."
         }
       ]
     }
