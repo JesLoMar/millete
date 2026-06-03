@@ -68,8 +68,8 @@
     },
     "greeting": "Bonjour, <br />bienvenue.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -168,9 +168,14 @@
       "subtitle": "Découvrez les dernières améliorations ajoutées à la plateforme.",
       "items": [
         {
+          "tag": "v0.0.2",
+          "title": "Wiki utilisateur, sécurité renforcée et optimisation du système",
+          "description": "Nous lançons notre wiki avec support multilingue. Sécurité blindée dans la gestion des catégories, moteur de transactions récurrentes optimisé et interface visuelle améliorée avec de nouvelles icônes."
+        },
+        {
           "tag": "v0.0.1",
-          "title": "Première version publique",
-          "description": "Millete est maintenant disponible pour tous ! Inscrivez-vous et commencez à gérer vos finances personnelles de manière simple et efficace."
+          "title": "Premier lancement public",
+          "description": "Millete est désormais disponible pour tous ! Inscrivez-vous et commencez à gérer vos finances personnelles de manière simple et efficace."
         }
       ]
     }
