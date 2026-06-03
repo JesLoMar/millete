@@ -88,7 +88,7 @@ export function FamilyDetail({
                 <p className="text-sm text-muted-foreground">{t("family.collected")}</p>
                 <p className="text-3xl font-headline">
                   {totalContributed.toLocaleString()} €
-                  <span className="text-sm text-muted-foreground"> / {family.monthlyGoal.toLocaleString()} €</span>
+                  <span className="text-sm text-muted-foreground"> / {(family.monthlyGoal ?? 0).toLocaleString()} €</span>
                 </p>
               </div>
               <p className="text-3xl font-semibold text-primary">{Math.round(percentageCompleted)}%</p>

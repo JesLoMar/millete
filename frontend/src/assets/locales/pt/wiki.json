@@ -1,14 +1,94 @@
 {
-  "header": {
-    "goToApp": "Ir a la app"
-  },
-  "index": {
-    "title": "Guía de uso",
-    "description": "Selecciona una sección en el menú lateral para ver su contenido."
-  },
-  "notFound": {
-    "title": "Sección no encontrada",
-    "description": "La sección que buscas no existe o no está disponible en este idioma."
-  },
-  "sections": {}
+  "sections": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "O painel principal onde você vê o status de suas finanças e acessa as funções principais.",
+      "topics": [
+        {
+          "title": "Acessos rápidos",
+          "content": "A partir do Dashboard, você tem acesso rápido a: \n\n- Adicionar transação: Permite adicionar receitas ou despesas ao saldo da conta. Elas devem ser categorizadas.\n\n- Criar categoria: Permite criar novas categorias para organizar suas transações. Um orçamento pode ser atribuído a elas.\n\n- Importar dados: Permite importar dados de usuário de uma versão anterior à atual.\n\n- Exportar dados: Permite exportar os dados para importação posterior."
+        },
+        {
+          "title": "Métricas principais",
+          "content": "Logo abaixo da seção anterior, você encontrará quatro cartões com seu saldo atual, receitas, despesas e saldo livre. Cada um mostra a tendência em relação ao período anterior com uma porcentagem em verde ou vermelho.\n\nUse o seletor de período (semana, mês, ano) para alterar o intervalo de tempo."
+        },
+        {
+          "title": "Painéis de informação",
+          "content": "Abaixo das métricas principais, você encontrará painéis com gráficos e informações resumidas de suas despesas e orçamentos.\n\n- Histórico de despesas: Mostra um gráfico de barras com a evolução de suas despesas ao longo do tempo.\n\n- Gráfico de despesas por categoria: Mostra um gráfico de rosca com o total gasto em cada categoria durante o período selecionado.\n\n- Orçamentos: Se você tem categorias com orçamento, verá uma barra indicando quanto você gastou em relação ao orçamento."
+        }
+      ]
+    },
+    "transactions": {
+      "title": "Transações",
+      "description": "O módulo onde você registra e gerencia todos os seus movimentos financeiros, sejam eles operações pontuais ou automatizadas.",
+      "topics": [
+        {
+          "title": "Registrar Transação",
+          "content": "Para adicionar um movimento único, clique no botão '+ Nova Transação'. Será aberto um formulário onde você deve indicar:\n\n- Descrição: Um nome ou conceito de identificação (ex. Compra semanal no Lidl).\n- Tipo: Permite classificar a operação como 'Despesa' ou 'Receita'.\n- Valor (€): O valor exato da operação.\n- Categoria: Permite atribuir o movimento a uma categoria existente através de um menu suspenso."
+        },
+        {
+          "title": "Nova Transação Recorrente",
+          "content": "Se você tem pagamentos ou recebimentos fixos, pode automatizá-los através do botão 'Recorrentes'. Este formulário inclui os campos básicos de uma transação normal, adicionando opções de agendamento:\n\n- Frequência e Intervalo: Permite configurar com que frequência a operação será repetida.\n- Data de início: Define o dia exato em que o sistema começará a registrar o movimento automaticamente.\n- Data de fim (opcional): Estabelece um limite de tempo para que a transação pare de se repetir."
+        },
+        {
+          "title": "Filtragem e Busca",
+          "content": "O sistema inclui ferramentas para localizar rapidamente seus registros:\n\n- Guias rápidas: Botões para filtrar a lista mostrando 'Todas', apenas 'Receitas' ou apenas 'Despesas'. Inclui um contador com o total de operações encontradas.\n- Buscador: Uma barra de texto ('Buscar por descrição...') que permite encontrar um movimento específico digitando as palavras-chave de seu conceito."
+        }
+      ]
+    },
+    "categories": {
+      "title": "Categorias",
+      "description": "O módulo projetado para classificar seus movimentos financeiros e estabelecer limites de despesas mensais para manter seus orçamentos sob controle.",
+      "topics": [
+        {
+          "title": "Criar Nova Categoria",
+          "content": "Para registrar uma nova classificação, clique no botão '+ Nova Categoria'. Um formulário flutuante será exibido com os seguintes campos obrigatórios:\n\n- Nome: O termo de identificação da categoria (ex. Alimentação, Transporte, Lazer).\n- Cor: Um seletor visual ou campo de texto para atribuir uma cor personalizada no formato hexadecimal (ex. #FF5733), o que facilitará sua identificação visual nos gráficos.\n- Orçamento mensal (€): O limite máximo de dinheiro que você planeja gastar nesta categoria ao longo do mês."
+        },
+        {
+          "title": "Painel de Gestão e Visualização",
+          "content": "Na tela principal do módulo, você verá uma grade com todas as suas categorias ativas. Cada cartão mostra claramente a você:\n\n- O nome da categoria e sua cor distintiva associada.\n- O orçamento mensal atribuído (ou a indicação correspondente se foi configurado sem limite de orçamento).\n- Os botões de ação rápida para gerenciar o elemento em tempo real."
+        },
+        {
+          "title": "Modificar e Excluir",
+          "content": "Cada cartão de categoria tem dois ícones de ação direta no canto superior direito:\n\n- Ícone de Edição (Lápis): Abre o formulário novamente para modificar o nome, mudar a paleta de cores ou ajustar o limite do orçamento mensal.\n- Ícone de Exclusão (Lixeira): Permite remover a categoria do sistema de forma segura."
+        }
+      ]
+    },
+    "investments": {
+      "title": "Investimentos",
+      "description": "O módulo projetado para o acompanhamento de seus ativos financeiros variáveis, permitindo que você controle a evolução do valor de sua carteira e sua rentabilidade em tempo real.",
+      "topics": [
+        {
+          "title": "Métricas e Gráficos da Carteira",
+          "content": "Na parte superior do painel, são mostrados três cartões analíticos que consolidam o status global de sua carteira:\n\n- Capital Investido: A soma total de dinheiro que você alocou para a compra de seus ativos.\n- Valor Atual: O valor atual de mercado de todos os seus bens combinados.\n- Rendimento / Lucro: O lucro ou prejuízo líquido acumulado (com uma porcentagem e indicador de tendência em verde ou vermelho).\n\nLogo abaixo você tem painéis visuais avançados, incluindo um gráfico de linhas que desenha a evolução temporal do valor de seu patrimônio e um gráfico que detalha a distribuição de seus fundos de acordo com o tipo de ativo."
+        },
+        {
+          "title": "Registrar Novo Investimento",
+          "content": "Para adicionar um novo ativo à sua carteira, clique no botão '+ Novo Investimento'. Um formulário flutuante será aberto com os seguintes campos obrigatórios:\n\n- Nome e Ticker: O nome do ativo (ex. Apple) e seu código de negociação abreviado (ex. AAPL).\n- Quantidade: O número total de unidades ou ações adquiridas.\n- Preço de compra (€): O custo unitário que você pagou ao adquirir o ativo.\n- Preço atual (€): O valor unitário de cotação atual no mercado.\n- Tipo de investimento: Menu suspenso para classificar a natureza do ativo."
+        },
+        {
+          "title": "Atualização de Preços e Operações",
+          "content": "Na grade ou lista inferior, todos os investimentos ativos são mostrados. Cada elemento possui botões de ação rápida para manter seus dados atualizados:\n\n- Atualizar Preço Atual: Um atalho exclusivo que permite modificar rapidamente a cotação de mercado do ativo isoladamente para recalcular imediatamente os lucros sem ter que editar a ficha inteira.\n- Editar Investimento: Permite corrigir qualquer um dos parâmetros originais do registro.\n- Remover (Lixeira): Realiza uma exclusão lógica para remover de forma segura o ativo da visualização de sua carteira ativa."
+        }
+      ]
+    },
+    "family": {
+      "title": "Família",
+      "description": "O módulo cooperativo que permite gerenciar um orçamento compartilhado, convidar outros usuários e monitorar as contribuições de cada membro em direção a um objetivo comum.",
+      "topics": [
+        {
+          "title": "Progresso e Configurações da Família",
+          "content": "Na parte superior, você visualizará sua 'Meta Mensal' e uma barra de 'Progresso deste mês' que reflete graficamente a porcentagem e o valor total arrecadado. Você pode modificar as regras do grupo a partir do ícone de engrenagem (Configurações da família), onde definirá:\n\n- Nome da Família: Identificador do grupo.\n- Objetivo Mensal (€): A quantia econômica total que o grupo pretende arrecadar no mês.\n- Modo de Distribuição: Permite escolher como o pagamento do objetivo é dividido entre os usuários através de três opções: 'Partes iguais', 'Proporcional ao salário' ou 'Porcentagens personalizadas'."
+        },
+        {
+          "title": "Gestão de Membros e Convites",
+          "content": "O painel central 'Membros da Família' detalha os membros, seu papel (ADMIN ou MEMBER), sua configuração de distribuição (salário/porcentagem), sua 'Cota' atribuída (o que devem pagar) e o que já 'Contribuíram'.\n\n- + Convidar Membro: Abre uma caixa de diálogo para adicionar alguém novo inserindo o 'Email do usuário a convidar'.\n- Ações individuais: No final da linha de cada membro há um menu de opções (três pontos) que permite 'Editar membro' (para ajustar seus parâmetros financeiros) ou 'Remover membro' para tirá-lo do grupo."
+        },
+        {
+          "title": "Registro e Controle de Contribuições",
+          "content": "Na tabela inferior 'Contribuições Recentes' é mantido o registro histórico das injeções de capital no fundo comum:\n\n- Botão + Adicionar: Abre o formulário 'Registrar Contribuição' onde você deve indicar a 'Quantidade a contribuir (€)'. Isso atualizará automaticamente a barra de progresso geral.\n- Histórico: Mostra o nome do membro, a quantia contribuída e a data da operação. Possui um ícone de lixeira sob a coluna 'Ações' para excluir contribuições registradas por engano."
+        }
+      ]
+    }
+  }
 }

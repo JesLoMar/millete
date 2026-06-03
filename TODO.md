@@ -8,9 +8,7 @@ IDEAS A CHOLÓN
 - Reemplazo de dependencias como shadowcn y componentes rápidos con componentes propios.
 - Importar movimientos con csv bancarios, investigar bancos más usados en España.
 - Añadir animaciones y feedback visual a todas las vistas.
-- Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - Llamar a la Yuli para que me ayude a crear paletas de colores, iconos y diseño en general.
-- Crear perfil de usuario y pestaña de settings. (configuraciones, borrados de cuenta, elegir temas e idiomas movidos ahí)
 - Hacer comprobaciones de usabilidad y accesibilidad.
 - Mejorar y definir mejor el código de conducta, el cómo contribuir al proyecto y el tema de seguridad.
 - Agregar serialización a los archivos descargables e importables.
@@ -18,6 +16,8 @@ IDEAS A CHOLÓN
 - Reducir el uso de dependencias en front.
 - Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
 - [ ] Dejar actualizada la documentación. [Actualizado la docu de categorias, plannedtransactions y family de back]
+- Añadir posibilidad de añadir más tipos de monedas.
+- Integración con bots de telegram y whatsapp. Resúmenes mensuales y avisos de pagos.
 
 ===================================
 MEJORAS v0.0.2
@@ -54,13 +54,17 @@ MEJORAS v0.0.2
 
 - [✓] Añadir icono a la interfaz
 
+- [] Corregir errores de la pestaña Family
+
 
 ===================================
 v0.1.0 [CAMBIOS EN BD]
 ===================================
 
 - [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
-- [ ] Persistencia de última ejecución en transacciones recurrentes
+- [ ] Persistencia de última ejecución en transacciones recurrentes.
+- [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app.
+- [ ] Crear perfil de usuario y pestaña de settings. (configuraciones, borrados de cuenta, elegir temas e idiomas movidos ahí)
 
 ===================================
 Persistencia de última ejecución en transacciones recurrentes + Info

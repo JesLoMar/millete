@@ -1,14 +1,94 @@
 {
-  "header": {
-    "goToApp": "Ir a la app"
-  },
-  "index": {
-    "title": "Guía de uso",
-    "description": "Selecciona una sección en el menú lateral para ver su contenido."
-  },
-  "notFound": {
-    "title": "Sección no encontrada",
-    "description": "La sección que buscas no existe o no está disponible en este idioma."
-  },
-  "sections": {}
+  "sections": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "description": "Le panneau principal où vous voyez l'état de vos finances et accédez aux fonctions clés.",
+      "topics": [
+        {
+          "title": "Accès rapides",
+          "content": "Depuis le tableau de bord, vous avez un accès rapide à : \n\n- Ajouter une transaction : Permet d'ajouter des revenus ou des dépenses au solde du compte. Ils doivent être catégorisés.\n\n- Créer une catégorie : Permet de créer de nouvelles catégories pour organiser vos transactions. Un budget peut leur être assigné.\n\n- Importer des données : Permet d'importer les données de l'utilisateur à partir d'une version antérieure à l'actuelle.\n\n- Exporter des données : Permet d'exporter les données pour une importation ultérieure."
+        },
+        {
+          "title": "Indicateurs principaux",
+          "content": "Juste en dessous de la section précédente, vous trouverez quatre cartes avec votre solde actuel, vos revenus, vos dépenses et votre solde libre. Chacune montre la tendance par rapport à la période précédente avec un pourcentage en vert ou en rouge.\n\nUtilisez le sélecteur de période (semaine, mois, année) pour changer la plage horaire."
+        },
+        {
+          "title": "Panneaux d'information",
+          "content": "Sous les indicateurs principaux, vous trouverez des panneaux avec des graphiques et des informations résumées sur vos dépenses et budgets.\n\n- Historique des dépenses : Affiche un graphique à barres avec l'évolution de vos dépenses dans le temps.\n\n- Graphique des dépenses par catégorie : Affiche un graphique en anneau avec le total dépensé dans chaque catégorie pendant la période sélectionnée.\n\n- Budgets : Si vous avez des catégories avec un budget, vous verrez une barre indiquant combien vous avez dépensé par rapport au budget."
+        }
+      ]
+    },
+    "transactions": {
+      "title": "Transactions",
+      "description": "Le module où vous enregistrez et gérez tous vos mouvements financiers, qu'il s'agisse d'opérations ponctuelles ou automatisées.",
+      "topics": [
+        {
+          "title": "Enregistrer une transaction",
+          "content": "Pour ajouter un mouvement unique, cliquez sur le bouton '+ Nouvelle Transaction'. Un formulaire s'ouvrira où vous devrez indiquer :\n\n- Description : Un nom ou concept d'identification (ex. Achat hebdomadaire chez Lidl).\n- Type : Permet de classer l'opération en 'Dépense' ou 'Revenu'.\n- Montant (€) : Le montant exact de l'opération.\n- Catégorie : Permet d'attribuer le mouvement à une catégorie existante via un menu déroulant."
+        },
+        {
+          "title": "Nouvelle transaction récurrente",
+          "content": "Si vous avez des paiements ou des encaissements fixes, vous pouvez les automatiser via le bouton 'Récurrentes'. Ce formulaire comprend les champs de base d'une transaction normale, en ajoutant des options de planification :\n\n- Fréquence et intervalle : Permet de configurer la fréquence de répétition de l'opération.\n- Date de début : Définit le jour exact où le système commencera à enregistrer automatiquement le mouvement.\n- Date de fin (optionnelle) : Fixe une limite de temps pour que la transaction cesse de se répéter."
+        },
+        {
+          "title": "Filtrage et recherche",
+          "content": "Le système inclut des outils pour localiser rapidement vos enregistrements :\n\n- Onglets rapides : Boutons pour filtrer la liste affichant 'Toutes', seulement 'Revenus' ou seulement 'Dépenses'. Inclut un compteur avec le total des opérations trouvées.\n- Moteur de recherche : Une barre de texte ('Rechercher par description...') qui vous permet de trouver un mouvement spécifique en tapant les mots-clés de son concept."
+        }
+      ]
+    },
+    "categories": {
+      "title": "Catégories",
+      "description": "Le module conçu pour classer vos mouvements financiers et fixer des limites de dépenses mensuelles pour garder vos budgets sous contrôle.",
+      "topics": [
+        {
+          "title": "Créer une nouvelle catégorie",
+          "content": "Pour enregistrer une nouvelle classification, cliquez sur le bouton '+ Nouvelle catégorie'. Un formulaire flottant s'affichera avec les champs obligatoires suivants :\n\n- Nom : Le terme d'identification de la catégorie (ex. Alimentation, Transport, Loisirs).\n- Couleur : Un sélecteur visuel ou un champ de texte pour attribuer une couleur personnalisée au format hexadécimal (ex. #FF5733), ce qui facilitera son identification visuelle sur les graphiques.\n- Budget mensuel (€) : La limite maximale d'argent que vous prévoyez de dépenser dans cette catégorie tout au long du mois."
+        },
+        {
+          "title": "Panneau de gestion et de visualisation",
+          "content": "Sur l'écran principal du module, vous verrez une grille avec toutes vos catégories actives. Chaque carte vous montre clairement :\n\n- Le nom de la catégorie et sa couleur distinctive associée.\n- Le budget mensuel attribué (ou l'indication correspondante s'il a été configuré sans limite de budget).\n- Les boutons d'action rapide pour gérer l'élément en temps réel."
+        },
+        {
+          "title": "Modifier et supprimer",
+          "content": "Chaque carte de catégorie comporte deux icônes d'action directe dans le coin supérieur droit :\n\n- Icône d'édition (Crayon) : Ouvre à nouveau le formulaire pour modifier le nom, changer la palette de couleurs ou ajuster la limite du budget mensuel.\n- Icône de suppression (Corbeille) : Permet de retirer la catégorie du système en toute sécurité."
+        }
+      ]
+    },
+    "investments": {
+      "title": "Investissements",
+      "description": "Le module conçu pour le suivi de vos actifs financiers variables, vous permettant de contrôler l'évolution de la valeur de votre portefeuille et sa rentabilité en temps réel.",
+      "topics": [
+        {
+          "title": "Indicateurs et graphiques du portefeuille",
+          "content": "En haut du panneau, trois cartes analytiques consolident l'état global de votre portefeuille :\n\n- Capital investi : La somme totale d'argent que vous avez allouée à l'achat de vos actifs.\n- Valeur actuelle : La valeur marchande actuelle de toutes vos possessions combinées.\n- Rendement / Profit : Le bénéfice ou la perte nette accumulée (avec un pourcentage et un indicateur de tendance en vert ou en rouge).\n\nJuste en dessous, vous disposez de panneaux visuels avancés, y compris un graphique linéaire qui dessine l'évolution temporelle de la valeur de votre patrimoine et un graphique qui détaille la répartition de vos fonds selon le type d'actif."
+        },
+        {
+          "title": "Enregistrer un nouvel investissement",
+          "content": "Pour ajouter un nouvel actif à votre portefeuille, cliquez sur le bouton '+ Nouvel Investissement'. Un formulaire flottant s'ouvrira avec les champs obligatoires suivants :\n\n- Nom et Ticker : Le nom de l'actif (ex. Apple) et son code de négociation abrégé (ex. AAPL).\n- Quantité : Le nombre total d'unités ou d'actions acquises.\n- Prix d'achat (€) : Le coût unitaire que vous avez payé lors de l'acquisition de l'actif.\n- Prix actuel (€) : La valeur unitaire actuelle sur le marché.\n- Type d'investissement : Menu déroulant pour classer la nature de l'actif."
+        },
+        {
+          "title": "Mise à jour des prix et opérations",
+          "content": "La grille ou la liste inférieure montre tous les investissements actifs. Chaque élément dispose de boutons d'action rapide pour garder vos données à jour :\n\n- Mettre à jour le prix actuel : Un raccourci exclusif qui vous permet de modifier rapidement la cote boursière de l'actif de manière isolée pour recalculer immédiatement les bénéfices sans avoir à éditer l'intégralité du dossier.\n- Éditer l'investissement : Permet de corriger n'importe lequel des paramètres originaux de l'enregistrement.\n- Désinscrire (Corbeille) : Effectue une suppression logique pour retirer en toute sécurité l'actif de la vue active de votre portefeuille."
+        }
+      ]
+    },
+    "family": {
+      "title": "Famille",
+      "description": "Le module coopératif qui vous permet de gérer un budget partagé, d'inviter d'autres utilisateurs et de surveiller les contributions de chaque membre vers un objectif commun.",
+      "topics": [
+        {
+          "title": "Progrès et paramètres de la famille",
+          "content": "En haut, vous visualiserez votre 'Objectif Mensuel' et une barre de 'Progrès de ce mois' qui reflète graphiquement le pourcentage et le montant total réuni. Vous pouvez modifier les règles du groupe à partir de l'icône d'engrenage (Paramètres de la famille), où vous définirez :\n\n- Nom de la famille : Identifiant du groupe.\n- Objectif mensuel (€) : Le montant économique total que le groupe vise à réunir dans le mois.\n- Mode de distribution : Permet de choisir comment le paiement de l'objectif est divisé entre les utilisateurs via trois options : 'Parts égales', 'Proportionnel au salaire' ou 'Pourcentages personnalisés'."
+        },
+        {
+          "title": "Gestion des membres et invitations",
+          "content": "Le panneau central 'Membres de la Famille' détaille les membres, leur rôle (ADMIN ou MEMBER), leur configuration de répartition (salaire/pourcentage), leur 'Quota' assigné (ce qu'ils doivent payer) et ce qu'ils ont déjà 'Contribué'.\n\n- + Inviter un membre : Ouvre une boîte de dialogue pour ajouter une nouvelle personne en saisissant 'l'Email de l'utilisateur à inviter'.\n- Actions individuelles : À la fin de la ligne de chaque membre, il y a un menu d'options (trois points) qui permet de 'Modifier le membre' (pour ajuster ses paramètres financiers) ou 'Supprimer le membre' pour le retirer du groupe."
+        },
+        {
+          "title": "Enregistrement et contrôle des contributions",
+          "content": "Dans le tableau inférieur 'Contributions Récentes', l'historique des injections de capital au fonds commun est conservé :\n\n- Bouton + Ajouter : Ouvre le formulaire 'Enregistrer une contribution' où vous devez indiquer le 'Montant à contribuer (€)'. Cela mettra automatiquement à jour la barre de progression générale.\n- Historique : Affiche le nom du membre, le montant de la contribution et la date de l'opération. Il possède une icône de corbeille sous la colonne 'Actions' pour supprimer les contributions enregistrées par erreur."
+        }
+      ]
+    }
+  }
 }
