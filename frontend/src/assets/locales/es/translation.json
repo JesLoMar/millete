@@ -29,6 +29,8 @@
     "user": "Usuario",
     "changeLanguage": "Cambiar idioma",
     "guest": "Invitado",
+    "goToDashboard": "Ir al dashboard",
+    "userMenu": "Menú de usuario",
     "profile": "Mi Perfil",
     "logout": "Cerrar Sesión",
     "logoutSuccess": "Sesión cerrada correctamente",
@@ -50,6 +52,7 @@
   "sidebar": {
     "mainNav": "Navegación principal",
     "bottomNav": "Navegación secundaria",
+    "open":"Abrir Menú",
     "noItems": "No hay secciones disponibles",
     "comingSoon": "Próximamente",
     "dashboard": "Dashboard",
@@ -57,6 +60,7 @@
     "categories": "Categorías",
     "investments": "Inversiones",
     "family": "Familia",
+    "mobileTitle": "Millete",
     "errors": {
       "featureComingSoon": "{{feature}} estará disponible próximamente"
     }
@@ -226,6 +230,7 @@
       "dateFormat": "{{month}} {{year}}",
       "week": "Semana {{week}}",
       "period": {
+        "ariaLabel": "Período de tiempo",
         "week": "Sem",
         "month": "Mes",
         "year": "Año"
@@ -262,7 +267,8 @@
       "viewAll": "Ver todas",
       "empty": "No hay transacciones recientes",
       "expense": "Gasto",
-      "income": "Ingreso"
+      "income": "Ingreso",
+      "moreOptions": "Más opciones.."
     },
     "goals": {
       "title": "Metas de Ahorro Activas",
@@ -276,7 +282,14 @@
       "importData": "Importar datos",
       "importing": "Importando...",
       "exportData": "Exportar datos",
-      "exporting": "Exportando..."
+      "exporting": "Exportando...",
+      "addExpenseAria": "Añadir gasto",
+      "createCategoryAria": "Crear categoría",
+      "importDataAria": "Importar datos",
+      "importingAria": "Importando...",
+      "exportDataAria": "Exportar datos",
+      "exportingAria": "Exportando...",
+      "groupLabel": "Acciones rápidas"
     },
     "importModal": {
       "title": "Importar datos",

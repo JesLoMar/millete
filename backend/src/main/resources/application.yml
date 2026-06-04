@@ -32,8 +32,8 @@ spring:
   mail:
     host: smtp-relay.brevo.com
     port: 587
-    username: **
-    password: **
+    username:
+    password:
     from: contact@millete.online
     properties:
       mail:

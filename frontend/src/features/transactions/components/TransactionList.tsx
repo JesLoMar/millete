@@ -75,7 +75,6 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     initialPage: 1,
   })
 
-  // Resetear página cuando cambia el filtro o búsqueda
   useEffect(() => {
     goToPage(1)
   }, [filter, searchTerm, goToPage])
@@ -107,15 +106,15 @@ export function TransactionList({ period: _period }: TransactionListProps) {
   if (isLoading) {
     return (
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-            <div key={`skeleton-${i}`} className="flex items-center gap-4">
-              <div className="size-10 rounded-full bg-muted animate-pulse" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                <div className="h-3 w-20 bg-muted rounded animate-pulse" />
+            <div key={`skeleton-${i}`} className="flex items-center gap-3 sm:gap-4">
+              <div className="size-8 sm:size-10 rounded-full bg-muted animate-pulse shrink-0" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-4 w-28 sm:w-32 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-16 sm:w-20 bg-muted rounded animate-pulse" />
               </div>
-              <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+              <div className="h-4 w-12 sm:w-16 bg-muted rounded animate-pulse shrink-0" />
             </div>
           ))}
         </div>
@@ -125,9 +124,10 @@ export function TransactionList({ period: _period }: TransactionListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-card p-1 rounded-lg border border-border">
+      {/* FILTROS Y BÚSQUEDA */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 bg-card p-1 rounded-lg border border-border">
             {FILTERS.map((f) => (
               <Button
                 key={f}
@@ -135,7 +135,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                 size="sm"
                 onClick={() => handleFilterChange(f)}
                 className={cn(
-                  "rounded-md text-sm transition-all h-8",
+                  "rounded-md text-xs sm:text-sm transition-all h-7 sm:h-8 px-2 sm:px-3",
                   filter === f ? "bg-primary/20 text-primary" : "text-muted-foreground"
                 )}
               >
@@ -143,7 +143,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
               </Button>
             ))}
           </div>
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs shrink-0">
             {filteredData.length}
           </Badge>
         </div>
@@ -152,98 +152,187 @@ export function TransactionList({ period: _period }: TransactionListProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder={t("transactions.search")}
-            className="pl-10 bg-card border-border h-10"
+            className="pl-10 bg-card border-border h-9 sm:h-10 text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
+      {/* LISTA DE TRANSACCIONES */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="flex flex-col">
-          {paginatedData.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12 text-sm">
-              {t("transactions.empty")}
-            </p>
-          ) : (
-            paginatedData.map((tx) => {
-              const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
-              const isIncome = tx.type === "INCOME"
+        {paginatedData.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            {t("transactions.empty")}
+          </p>
+        ) : (
+          <>
+            {/* ========= VERSIÓN DESKTOP (sm+): Diseño de tabla horizontal ========= */}
+            <div className="hidden sm:flex flex-col">
+              {paginatedData.map((tx) => {
+                const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
+                const isIncome = tx.type === "INCOME"
 
-              return (
-                <div
-                  key={tx.id}
-                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group"
-                >
-                  <div className={cn(
-                    "p-2.5 rounded-full shrink-0",
-                    isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
-                  )}>
-                    {isIncome ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group"
+                  >
+                    {/* Icono tipo */}
+                    <div className={cn(
+                      "p-2.5 rounded-full shrink-0",
+                      isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                    )}>
+                      {isIncome ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                    </div>
+
+                    {/* Descripción + categoría */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+                        {tx.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(tx.date)}
+                        </span>
+                        <span className="size-1 rounded-full bg-border" />
+                        <Badge variant="outline" className={cn("border-none text-xs font-medium", color)}>
+                          {tx.category}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Importe */}
+                    <div className="text-right shrink-0">
+                      <p className={cn(
+                        "text-sm font-bold tabular-nums",
+                        isIncome ? "text-emerald-500" : "text-foreground"
+                      )}>
+                        {isIncome ? "+" : "-"}
+                        {Math.abs(tx.amount).toLocaleString("es-ES", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })} €
+                      </p>
+                    </div>
+
+                    {/* Acciones - visible en hover en desktop */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label={t("transactions.moreOptions")}
+                        >
+                          <MoreHorizontal size={16} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-card border-border">
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => setEditingTransaction(tx)}
+                        >
+                          {t("transactions.edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive cursor-pointer"
+                          onClick={() => handleDelete(tx.id)}
+                        >
+                          {t("transactions.delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
+                )
+              })}
+            </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+            {/* ========= VERSIÓN MÓVIL (<640px): Diseño de tarjetas apiladas ========= */}
+            <div className="sm:hidden divide-y divide-border">
+              {paginatedData.map((tx) => {
+                const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
+                const isIncome = tx.type === "INCOME"
+
+                return (
+                  <div
+                    key={tx.id}
+                    className="p-4 hover:bg-accent/30 transition-colors"
+                  >
+                    {/* Línea superior: Icono + Importe + Acciones */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "p-2 rounded-full shrink-0",
+                          isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                        )}>
+                          {isIncome ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
+                        </div>
+                        <p className={cn(
+                          "text-base font-bold tabular-nums",
+                          isIncome ? "text-emerald-500" : "text-foreground"
+                        )}>
+                          {isIncome ? "+" : "-"}
+                          {Math.abs(tx.amount).toLocaleString("es-ES", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })} €
+                        </p>
+                      </div>
+
+                      {/* Acciones siempre visibles en móvil */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label={t("transactions.moreOptions")}
+                          >
+                            <MoreHorizontal size={16} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-card border-border">
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => setEditingTransaction(tx)}
+                          >
+                            {t("transactions.edit")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive cursor-pointer"
+                            onClick={() => handleDelete(tx.id)}
+                          >
+                            {t("transactions.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Línea inferior: Descripción + fecha + categoría */}
+                    <p className="text-sm font-medium truncate mb-1.5">
                       {tx.description}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-muted-foreground">
                         {formatDate(tx.date)}
                       </span>
-                      <span className="size-1 rounded-full bg-border" />
+                      <span className="size-1 rounded-full bg-border hidden xs:inline-block" />
                       <Badge variant="outline" className={cn("border-none text-xs font-medium", color)}>
                         {tx.category}
                       </Badge>
                     </div>
                   </div>
+                )
+              })}
+            </div>
+          </>
+        )}
 
-                  <div className="text-right">
-                    <p className={cn(
-                      "text-sm font-bold tabular-nums",
-                      isIncome ? "text-emerald-500" : "text-foreground"
-                    )}>
-                      {isIncome ? "+" : "-"}
-                      {Math.abs(tx.amount).toLocaleString("es-ES", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })} €
-                    </p>
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <MoreHorizontal size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-card border-border">
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => setEditingTransaction(tx)}
-                      >
-                        {t("transactions.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive cursor-pointer"
-                        onClick={() => handleDelete(tx.id)}
-                      >
-                        {t("transactions.delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )
-            })
-          )}
-        </div>
-
+        {/* PAGINACIÓN */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 flex items-center justify-between border-t border-border bg-background/20">
-            <p className="text-xs text-muted-foreground font-medium">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
+            <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
               {t("transactions.showingInterval", {
                 from: (currentPage - 1) * ITEMS_PER_PAGE + 1,
                 to: Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length),
@@ -260,7 +349,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
               >
                 <ChevronLeft size={16} />
               </Button>
-              <span className="text-sm text-muted-foreground min-w-15 text-center">
+              <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
                 {currentPage} / {totalPages}
               </span>
               <Button
