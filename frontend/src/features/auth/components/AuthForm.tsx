@@ -65,24 +65,24 @@ export function AuthForm() {
   }
 
   return (
-    <div className="flex flex-col h-screen p-12 w-full bg-background relative z-20">
+    <div className="flex flex-col min-h-dvh p-6 sm:p-8 md:p-12 w-full bg-background relative z-20">
       <AuthHeader />
 
-      <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
-        <div className="space-y-12">
-          <div className="space-y-4">
-            <h1 className="text-6xl font-serif text-white leading-tight">
+      <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto py-8 sm:py-0">
+        <div className="space-y-8 sm:space-y-12">
+          <div className="space-y-3 sm:space-y-4">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-foreground leading-tight">
               <Trans i18nKey="auth.greeting" />
             </h1>
-            <p className="text-muted-foreground text-sm font-medium uppercase tracking-[0.2em]">
+            <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
               {t("auth.brand.tagline")}
             </p>
           </div>
 
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10">
             <AuthToggle mode={mode} onToggle={handleModeChange} />
 
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
               {mode === "register" && (
                 <RegisterFields
                   register={register}
@@ -112,14 +112,14 @@ export function AuthForm() {
               <Button
                 type="submit"
                 disabled={isPending || !isValid}
-                className="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-bold rounded-xl transition-all group mt-4"
+                className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg font-bold rounded-xl transition-all group mt-4"
               >
                 {isPending
                   ? t("auth.submit.loading")
                   : mode === "login"
                     ? t("auth.submit.default")
                     : t("auth.submit.register")}
-                <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </form>
           </div>

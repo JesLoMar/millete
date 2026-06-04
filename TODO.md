@@ -58,6 +58,8 @@ MEJORAS v0.0.2
 
 - [✓] Corregir errores de la pestaña Family
 
+- [] Mejoras en el apartado visual
+
 
 ===================================
 v0.1.0 [CAMBIOS EN BD]
@@ -102,3 +104,4 @@ a estar activo.
 
 **Complejidad:** Media. Requiere cambios en modelo, entidad, mapper, servicio,
 migración Flyway y tests.
+
