@@ -128,9 +128,14 @@ public class FamilyService implements
         invitation.setActive(true);
 
         invitation = familyInvitationRepository.save(invitation);
-        emailSenderPort.sendInvitationEmail(guestEmail, invitation.getToken());
 
-        log.info("Invitation sent to {} for family {}", guestEmail, familyId);
+        try {
+            emailSenderPort.sendInvitationEmail(guestEmail, invitation.getToken());
+            log.info("Invitation sent to {} for family {}", guestEmail, familyId);
+        } catch (Exception e) {
+            log.error("Failed to send invitation email to {}: {}", guestEmail, e.getMessage(), e);
+        }
+
         return invitation;
     }
 

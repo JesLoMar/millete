@@ -17,7 +17,9 @@ IDEAS A CHOLÓN
 - Añadir más avisos y alertas. (O simplemente revisar, no llenar por llenar)
 - [ ] Dejar actualizada la documentación. [Actualizado la docu de categorias, plannedtransactions y family de back]
 - Añadir posibilidad de añadir más tipos de monedas.
-- Integración con bots de telegram y whatsapp. Resúmenes mensuales y avisos de pagos.
+- Integración con bots de telegram. Resúmenes mensuales y avisos de pagos.
+- Exportar tambien en csv para visualizar en hoja de calculo.
+- Exportar en pdf.
 
 ===================================
 MEJORAS v0.0.2
@@ -54,7 +56,7 @@ MEJORAS v0.0.2
 
 - [✓] Añadir icono a la interfaz
 
-- [] Corregir errores de la pestaña Family
+- [✓] Corregir errores de la pestaña Family
 
 
 ===================================
