@@ -13,6 +13,7 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
     queryClient.invalidateQueries({ queryKey: ['families'] })
     if (selectedFamilyId) {
       queryClient.invalidateQueries({ queryKey: ['family', selectedFamilyId] })
+      queryClient.refetchQueries({ queryKey: ['family', selectedFamilyId] })
     }
   }
 
@@ -79,11 +80,13 @@ export function useFamilyMutations(selectedFamilyId: string | null) {
   const editMember = useMutation({
     mutationFn: async (member: FamilyMember) => {
       if (!selectedFamilyId) throw new Error("No family selected")
-      return apiClient.put(`families/${selectedFamilyId}/members/${member.id}`, {
-        role: member.role,
-        salary: member.salary,
-        customPercentage: member.customPercentage
-      })
+      
+      const payload: Record<string, unknown> = {}
+      if (member.role) payload.role = member.role
+      if (member.salary !== undefined) payload.salary = member.salary
+      if (member.customPercentage !== undefined) payload.customPercentage = member.customPercentage
+
+      return apiClient.put(`families/${selectedFamilyId}/members/${member.id}`, payload)
     },
     onSuccess: () => {
       invalidateAll()

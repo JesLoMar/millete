@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react"
+import { TopNav } from "@/shared/components/TopNav"
 import { Sidebar } from "@/shared/components/Sidebar"
 import { FamilySelector } from "../components/FamilySelector"
 import { FamilyDetail } from "../components/FamilyDetail"
@@ -39,12 +40,19 @@ export const FamilyPage = () => {
   const monthlyGoal = selectedFamily?.monthlyGoal ?? 0
   const percentageCompleted = monthlyGoal > 0 ? (totalContributed / monthlyGoal) * 100 : 0
 
-  const handleCustomPercentageChange = useCallback((memberId: string, percentage: number) => {
+  const handleCustomPercentageChange = useCallback((member: ContributionMember, percentage: number) => {
     setCustomPercentages(prev => ({
       ...prev,
-      [memberId]: Math.max(0, Math.min(100, percentage))
+      [member.id]: percentage
     }))
-  }, [])
+    mutations.handleEditMember({
+      id: member.id,
+      name: member.name,
+      role: member.role,
+      salary: member.salary,
+      customPercentage: percentage,
+    })
+  }, [mutations])
 
   const handleCreateFamily = async (name: string, monthlyGoal: number) => {
     await mutations.handleCreateFamily({ name, monthlyGoal })
@@ -81,6 +89,7 @@ export const FamilyPage = () => {
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
+        <TopNav />
         <main className="flex-1 overflow-y-auto p-6">
           {!selectedFamilyId ? (
             <FamilySelector

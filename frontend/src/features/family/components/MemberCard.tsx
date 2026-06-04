@@ -19,7 +19,7 @@ interface MemberCardProps {
   isAdmin: boolean
   isCustomMode: boolean
   customPercentage: number
-  onCustomPercentageChange: (memberId: string, percentage: number) => void
+  onCustomPercentageChange: (member: ContributionMember, percentage: number) => void
   onEdit: (member: ContributionMember) => void
   onDelete: (memberId: string) => void
 }
@@ -35,6 +35,16 @@ export function MemberCard({
   onDelete,
 }: MemberCardProps) {
   const { t } = useTranslation()
+
+  const handlePercentageBlur = () => {
+    onCustomPercentageChange(member, customPercentage)
+  }
+
+  const handlePercentageChange = (value: number) => {
+    const clamped = Math.max(0, Math.min(100, value))
+    // Llamamos con el objeto member completo para que el padre pueda persistir
+    onCustomPercentageChange({ ...member, customPercentage: clamped }, clamped)
+  }
 
   return (
     <Card className="border-subtle group">
@@ -78,7 +88,8 @@ export function MemberCard({
                 max="100"
                 step="0.1"
                 value={customPercentage}
-                onChange={(e) => onCustomPercentageChange(member.id, Number(e.target.value))}
+                onChange={(e) => handlePercentageChange(Number(e.target.value))}
+                onBlur={handlePercentageBlur}
                 className="h-8 w-20 bg-background border-border text-sm"
               />
               <span className="text-sm text-muted-foreground">%</span>

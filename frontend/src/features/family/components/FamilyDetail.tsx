@@ -15,7 +15,7 @@ interface FamilyDetailProps {
   totalContributed: number
   percentageCompleted: number
   customPercentages: Record<string, number>
-  onCustomPercentageChange: (memberId: string, percentage: number) => void
+  onCustomPercentageChange: (member: ContributionMember, percentage: number) => void
   totalCustomPercentage: number
   onBack: () => void
   onInviteClick: () => void
@@ -133,7 +133,7 @@ export function FamilyDetail({
               index={index}
               isAdmin={isAdmin}
               isCustomMode={isCustomMode}
-              customPercentage={customPercentages[member.id] ?? 0}
+              customPercentage={customPercentages[member.id] ?? member.customPercentage ?? 0}
               onCustomPercentageChange={onCustomPercentageChange}
               onEdit={onEditMember}
               onDelete={onDeleteMember}
