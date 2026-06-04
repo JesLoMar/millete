@@ -88,9 +88,10 @@ export function NewRecurringTransactionDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 border-border h-10 px-4 font-semibold bg-card hover:bg-background transition-colors">
-          <RefreshCcw size={16} />
-          {t("transactions.recurring.label")}
+        <Button variant="outline" className="gap-2 border-border h-9 sm:h-10 px-3 sm:px-4 font-semibold bg-card hover:bg-background transition-colors text-xs sm:text-sm">
+          <RefreshCcw size={15} />
+          <span className="hidden xs:inline">{t("transactions.recurring.label")}</span>
+          <span className="xs:hidden">{t("transactions.recurring.shortLabel")}</span>
         </Button>
       </DialogTrigger>
 
@@ -101,87 +102,89 @@ export function NewRecurringTransactionDialog() {
           inputRef.current?.focus()
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {t("transactions.recurring.newTitle")}
-          </DialogTitle>
-        </DialogHeader>
+        <div className="max-h-[85dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {t("transactions.recurring.newTitle")}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("transactions.description")}</Label>
-            <Input ref={inputRef} placeholder={t("transactions.descriptionPlaceholder")} value={description} onChange={(e) => setDescription(e.target.value)} disabled={isCreating} className="bg-background border-border" />
+          <div className="space-y-4 py-2 sm:py-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t("transactions.description")}</Label>
+              <Input ref={inputRef} placeholder={t("transactions.descriptionPlaceholder")} value={description} onChange={(e) => setDescription(e.target.value)} disabled={isCreating} className="bg-background border-border" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.type")}</Label>
+                <TypeToggle value={type} onChange={setType} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.amount")}</Label>
+                <Input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={isCreating} className="bg-background border-border" min="0.01" step="0.01" />
+              </div>
+            </div>
+
+            <CategorySelect value={category} onValueChange={setCategory} />
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.recurring.frequency")}</Label>
+                <Select value={frequencyType} onValueChange={setFrequencyType}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue placeholder={t("transactions.recurring.selectFrequency")} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {FREQUENCY_TYPES.map((freq) => (
+                      <SelectItem key={freq.value} value={freq.value}>{t(freq.labelKey)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.recurring.interval")}</Label>
+                <Input type="number" placeholder="1" value={frequencyInterval} onChange={(e) => setFrequencyInterval(e.target.value)} disabled={isCreating} className="bg-background border-border" min="1" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.recurring.startDate")}</Label>
+                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} disabled={isCreating} className="bg-background border-border" min={today} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("transactions.recurring.endDate")}<span className="text-xs text-muted-foreground ml-1">({t("auth.form.optional")})</span></Label>
+                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={isCreating} className="bg-background border-border" min={startDate || today} />
+              </div>
+            </div>
+
+            {frequencyType && startDate && (
+              <div className="bg-accent/20 rounded-lg p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground mb-1">{t("transactions.recurring.summary")}</p>
+                <p>
+                  {t("transactions.recurring.summaryText", {
+                    description: description || "...",
+                    amount: amount || "0",
+                    frequency: frequencyInterval,
+                    type: frequencyType === "DAYS" ? "días" : frequencyType === "WEEKS" ? "semanas" : frequencyType === "MONTHS" ? "meses" : "años",
+                    start: startDate || "...",
+                    end: endDate || t("transactions.recurring.indefinite"),
+                  })}
+                </p>
+              </div>
+            )}
+
+            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.type")}</Label>
-              <TypeToggle value={type} onChange={setType} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.amount")}</Label>
-              <Input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={isCreating} className="bg-background border-border" min="0.01" step="0.01" />
-            </div>
-          </div>
-
-          <CategorySelect value={category} onValueChange={setCategory} />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.recurring.frequency")}</Label>
-              <Select value={frequencyType} onValueChange={setFrequencyType}>
-                <SelectTrigger className="bg-background border-border">
-                  <SelectValue placeholder={t("transactions.recurring.selectFrequency")} />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  {FREQUENCY_TYPES.map((freq) => (
-                    <SelectItem key={freq.value} value={freq.value}>{t(freq.labelKey)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.recurring.interval")}</Label>
-              <Input type="number" placeholder="1" value={frequencyInterval} onChange={(e) => setFrequencyInterval(e.target.value)} disabled={isCreating} className="bg-background border-border" min="1" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.recurring.startDate")}</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} disabled={isCreating} className="bg-background border-border" min={today} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("transactions.recurring.endDate")}<span className="text-xs text-muted-foreground ml-1">({t("auth.form.optional")})</span></Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} disabled={isCreating} className="bg-background border-border" min={startDate || today} />
-            </div>
-          </div>
-
-          {frequencyType && startDate && (
-            <div className="bg-accent/20 rounded-lg p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">{t("transactions.recurring.summary")}</p>
-              <p>
-                {t("transactions.recurring.summaryText", {
-                  description: description || "...",
-                  amount: amount || "0",
-                  frequency: frequencyInterval,
-                  type: frequencyType === "DAYS" ? "días" : frequencyType === "WEEKS" ? "semanas" : frequencyType === "MONTHS" ? "meses" : "años",
-                  start: startDate || "...",
-                  end: endDate || t("transactions.recurring.indefinite"),
-                })}
-              </p>
-            </div>
-          )}
-
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">{t("common.cancel")}</Button>
+            <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("transactions.add")}
+            </Button>
+          </DialogFooter>
         </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">{t("common.cancel")}</Button>
-          <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
-            {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("transactions.add")}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

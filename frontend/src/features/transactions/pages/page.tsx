@@ -16,22 +16,26 @@ export const TransactionsPage = () => {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav />
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Header + Selector centrado + Acciones */}
-          <div className="flex items-center justify-between gap-4">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <Header 
               onPeriodChange={handlePeriodChange} 
               defaultPeriod={period} 
               hidePeriodSelector 
             />
-            <PeriodSelector period={period} onPeriodChange={handlePeriodChange} />
-            <TransactionActions />
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <PeriodSelector 
+                period={period} 
+                onPeriodChange={handlePeriodChange}
+                className="w-full xs:flex-1 sm:flex-none"
+              />
+              <TransactionActions className="w-full xs:w-auto" />
+            </div>
           </div>
-
           <TransactionSummary period={period} />
           <TransactionList period={period} />
           <RecurringTransactionsList />
