@@ -53,6 +53,7 @@
     "mainNav": "Navegación principal",
     "bottomNav": "Navegación secundaria",
     "open": "Abrir Menú",
+    "close": "Cerrar Menú",
     "noItems": "No hay secciones disponibles",
     "comingSoon": "Próximamente",
     "dashboard": "Dashboard",
@@ -166,13 +167,11 @@
     },
     "wiki": {
       "link": "Consultar la wiki completa",
-      "header": [
-        {
-          "openMenu": "Abrir menú lateral",
-          "closeMenu": "Cerrar menú lateral",
-          "navigation": "Navegación"
-        }
-      ]
+      "header": {
+        "openMenu": "Abrir menú de navegación",
+        "closeMenu": "Cerrar menú",
+        "navigation": "Navegación"
+      }
     },
     "news": {
       "title": "Novedades recientes",
@@ -237,7 +236,7 @@
       "dateFormat": "{{month}} {{year}}",
       "week": "Semana {{week}}",
       "period": {
-        "ariaLabel": "Período de tiempo",
+        "ariaLabel": "Seleccionar período de tiempo",
         "week": "Sem",
         "month": "Mes",
         "year": "Año"
@@ -275,7 +274,7 @@
       "empty": "No hay transacciones recientes",
       "expense": "Gasto",
       "income": "Ingreso",
-      "moreOptions": "Más opciones.."
+      "moreOptions": "Más opciones"
     },
     "goals": {
       "title": "Metas de Ahorro Activas",
@@ -290,12 +289,12 @@
       "importing": "Importando...",
       "exportData": "Exportar datos",
       "exporting": "Exportando...",
-      "addExpenseAria": "Añadir gasto",
-      "createCategoryAria": "Crear categoría",
-      "importDataAria": "Importar datos",
-      "importingAria": "Importando...",
-      "exportDataAria": "Exportar datos",
-      "exportingAria": "Exportando...",
+      "addExpenseAria": "Añadir nueva transacción",
+      "createCategoryAria": "Crear nueva categoría",
+      "importDataAria": "Importar datos desde archivo",
+      "importingAria": "Importando datos, espere",
+      "exportDataAria": "Exportar copia de seguridad",
+      "exportingAria": "Exportando datos, espere",
       "groupLabel": "Acciones rápidas"
     },
     "importModal": {
@@ -344,10 +343,14 @@
     "edit": "Editar",
     "editTitle": "Editar Transacción",
     "delete": "Eliminar",
+    "deleteConfirm": "¿Estás seguro de eliminar esta transacción?",
     "new": "Nueva Transacción",
+    "newShort": "+ Trans.",
     "newTitle": "Registrar Transacción",
+    "moreOptions": "Más opciones",
     "recurring": {
       "label": "Recurrentes",
+      "shortLabel": "Recurrente",
       "newTitle": "Nueva Transacción Recurrente",
       "editTitle": "Editar Transacción Recurrente",
       "listTitle": "Transacciones Recurrentes",
@@ -384,8 +387,7 @@
       "createRecurringSuccess": "Transacción recurrente programada correctamente",
       "updateRecurringSuccess": "Transacción recurrente actualizada correctamente",
       "deleteRecurringSuccess": "Transacción recurrente eliminada correctamente"
-    },
-    "deleteConfirm": "¿Estás seguro de eliminar esta transacción?"
+    }
   },
   "categories": {
     "add": "Añadir categoría",
@@ -459,6 +461,7 @@
     "delete": "Eliminar",
     "deleteConfirm": "¿Estás seguro de eliminar esta inversión? Esta acción no se puede deshacer.",
     "createError": "Error al crear la inversión. Inténtalo de nuevo.",
+    "assetOptions": "Opciones de {{name}}",
     "types": {
       "stock": "Acciones",
       "crypto": "Criptomonedas",
@@ -505,6 +508,7 @@
     "members": "miembros",
     "people": "personas",
     "inviteMember": "Invitar Miembro",
+    "inviteShort": "Invitar",
     "inviteTitle": "Invitar a la Familia",
     "inviteDesc": "Envía una invitación por correo electrónico a un usuario registrado",
     "email": "Correo Electrónico",
@@ -512,6 +516,7 @@
     "sendInvitation": "Enviar Invitación",
     "invalidEmail": "El formato del email no es válido",
     "changeGoal": "Cambiar Objetivo",
+    "goalShort": "Meta",
     "changeGoalTitle": "Cambiar Objetivo Mensual",
     "changeGoalDesc": "Define un nuevo objetivo mensual para la familia",
     "goalProgress": "Progreso del Objetivo",
@@ -535,10 +540,13 @@
       "customDesc": "El administrador define el porcentaje de cada miembro manualmente"
     },
     "memberDetails": "Detalle de Miembros",
+    "memberOptions": "Opciones de {{name}}",
+    "memberProgress": "Progreso de {{name}}",
     "contributions": "Contribuciones",
     "contributionsHistory": "Historial de Contribuciones",
     "noContributions": "No hay contribuciones registradas aún",
     "addContribution": "Añadir Aporte",
+    "addContributionShort": "+ Añadir",
     "amount": "Cantidad",
     "save": "Guardar Aporte",
     "salary": "Salario",
@@ -564,6 +572,8 @@
     "welcome": "¡Bienvenido a la familia!",
     "goToFamily": "Ir a mi familia",
     "error": "Error",
+    "back": "Volver",
+    "selectFamily": "Seleccionar familia {{name}}",
     "alerts": {
       "createSuccess": "Familia creada correctamente",
       "createError": "Error al crear la familia",

@@ -39,8 +39,9 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
             "size-10 text-muted-foreground hover:text-foreground",
             className
           )}
+          aria-label={t("theme.selector")}
         >
-          <Palette className="size-5" />
+          <Palette className="size-5" aria-hidden="true" />
           <span className="sr-only">{t("theme.selector")}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -57,9 +58,9 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
                 isSelected && "bg-accent font-medium"
               )}
             >
-              <span className="text-base">{t.icon}</span>
+              <span className="text-base" aria-hidden="true">{t.icon}</span>
               <span className="flex-1">{t.label}</span>
-              {isSelected && <Check className="size-4 text-primary" />}
+              {isSelected && <Check className="size-4 text-primary" aria-hidden="true" />}
             </DropdownMenuItem>
           )
         })}
