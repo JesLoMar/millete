@@ -58,7 +58,7 @@ MEJORAS v0.0.2
 
 - [✓] Corregir errores de la pestaña Family
 
-- [] Mejoras en el apartado visual
+- [✓] Mejoras en el apartado visual
 
 
 ===================================

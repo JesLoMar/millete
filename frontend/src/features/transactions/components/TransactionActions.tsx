@@ -1,5 +1,6 @@
 import { NewTransactionDialog } from "./dialogs/NewTransactionDialog"
 import { NewRecurringTransactionDialog } from './dialogs/NewRecurringTransactionDialog'
+import { cn } from "@/lib/utils"
 
 interface TransactionActionsProps {
   className?: string
@@ -7,7 +8,7 @@ interface TransactionActionsProps {
 
 export function TransactionActions({ className }: TransactionActionsProps) {
   return (
-    <div className={`flex items-center gap-3 ${className || ""}`}>
+    <div className={cn("flex items-center gap-2 sm:gap-3", className)}>
       <NewRecurringTransactionDialog />
       <NewTransactionDialog />
     </div>

@@ -52,7 +52,7 @@
   "sidebar": {
     "mainNav": "Navegación principal",
     "bottomNav": "Navegación secundaria",
-    "open":"Abrir Menú",
+    "open": "Abrir Menú",
     "noItems": "No hay secciones disponibles",
     "comingSoon": "Próximamente",
     "dashboard": "Dashboard",
@@ -165,7 +165,14 @@
       ]
     },
     "wiki": {
-      "link": "Consultar la wiki completa"
+      "link": "Consultar la wiki completa",
+      "header": [
+        {
+          "openMenu": "Abrir menú lateral",
+          "closeMenu": "Cerrar menú lateral",
+          "navigation": "Navegación"
+        }
+      ]
     },
     "news": {
       "title": "Novedades recientes",
@@ -515,6 +522,10 @@
     "distribution": "Distribución",
     "distributionDesc": "Modo {{mode}}: los aportes se calculan según el método seleccionado",
     "distributionMode": "Modo de Reparto",
+    "progressBar": {
+      "label": "Progreso del objetivo mensual",
+      "of": "de"
+    },
     "modes": {
       "equitative": "Equitativo",
       "equitativeDesc": "Todos los miembros aportan la misma cantidad",
