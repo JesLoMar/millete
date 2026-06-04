@@ -14,7 +14,7 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -30,11 +30,11 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   mail:
-    host: localhost
-    port: 25
-    username:
-    password:
-    from: noreply@millete.online
+    host: smtp-relay.brevo.com
+    port: 587
+    username: **
+    password: **
+    from: contact@millete.online
     properties:
       mail:
         smtp:
