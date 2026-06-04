@@ -15,7 +15,7 @@ export function LoginFields({ register, disabled, errors }: LoginFieldsProps) {
 
   return (
     <div className="space-y-3">
-      <Label htmlFor="identifier" className="text-lg text-secondary-foreground/70 ml-1">
+      <Label htmlFor="identifier" className="text-sm font-medium text-foreground/80 ml-1">
         {t("auth.form.fields.identifier.login")}
       </Label>
       <Input
@@ -24,11 +24,11 @@ export function LoginFields({ register, disabled, errors }: LoginFieldsProps) {
         autoComplete="username"
         placeholder={t("auth.form.fields.placeholder.login")}
         disabled={disabled}
-        className="bg-secondary/30 border-border/50 h-14 text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 text-white"
+        className="bg-background border-border h-14 text-base sm:text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 text-foreground"
         {...register("identifier", { required: true })}
       />
       {errors.identifier && (
-        <p className="text-red-400 text-xs ml-1">{t("auth.form.error.required")}</p>
+        <p className="text-destructive text-xs ml-1">{t("auth.form.error.required")}</p>
       )}
     </div>
   )
