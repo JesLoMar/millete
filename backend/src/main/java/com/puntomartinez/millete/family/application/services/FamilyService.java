@@ -228,9 +228,6 @@ public class FamilyService implements
             throw new RuntimeException("Only administrators can edit members");
         }
 
-        FamilyUnit family = familyUnitRepository.findById(familyId)
-                .orElseThrow(() -> new RuntimeException("Family not found"));
-
         FamilyMember member = familyMemberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
@@ -238,34 +235,12 @@ public class FamilyService implements
             member.setRole(FamilyRole.valueOf(request.getRole()));
         }
 
-        DistributionMode mode = family.getDistributionMode();
-        switch (mode) {
-            case EQUITATIVE:
-                if (request.getSalary() != null || request.getCustomPercentage() != null) {
-                    throw new IllegalArgumentException(
-                            "Cannot assign salary or customPercentage in EQUITATIVE mode. All members pay the same amount.");
-                }
-                break;
+        if (request.getSalary() != null) {
+            member.setSalary(request.getSalary());
+        }
 
-            case PROPORTIONAL:
-                if (request.getCustomPercentage() != null) {
-                    throw new IllegalArgumentException(
-                            "Cannot assign customPercentage in PROPORTIONAL mode. Contributions are calculated based on salary.");
-                }
-                if (request.getSalary() != null) {
-                    member.setSalary(request.getSalary());
-                }
-                break;
-
-            case CUSTOM:
-                if (request.getSalary() != null) {
-                    throw new IllegalArgumentException(
-                            "Cannot assign salary in CUSTOM mode. Contributions are calculated based on customPercentage.");
-                }
-                if (request.getCustomPercentage() != null) {
-                    member.setCustomPercentage(request.getCustomPercentage());
-                }
-                break;
+        if (request.getCustomPercentage() != null) {
+            member.setCustomPercentage(request.getCustomPercentage());
         }
 
         member.setModifiedAt(LocalDateTime.now());
@@ -294,16 +269,35 @@ public class FamilyService implements
 
             if (newMode == DistributionMode.CUSTOM && oldMode != DistributionMode.CUSTOM) {
                 List<FamilyMember> members = familyMemberRepository.findByFamilyId(familyId);
-                List<UUID> membersWithoutPercentage = members.stream()
+                List<FamilyMember> activeMembers = members.stream()
                         .filter(FamilyMember::isActive)
+                        .toList();
+
+                List<FamilyMember> membersWithoutPercentage = activeMembers.stream()
                         .filter(m -> m.getCustomPercentage() == null)
-                        .map(FamilyMember::getUserId)
                         .toList();
 
                 if (!membersWithoutPercentage.isEmpty()) {
-                    throw new IllegalStateException(
-                            "Cannot switch to CUSTOM mode. The following members do not have customPercentage assigned: "
-                                    + membersWithoutPercentage);
+                    int totalMembers = activeMembers.size();
+                    BigDecimal equalShare = new BigDecimal("100.00").divide(
+                            new BigDecimal(totalMembers), 2, java.math.RoundingMode.HALF_UP);
+
+                    BigDecimal sum = equalShare.multiply(new BigDecimal(membersWithoutPercentage.size() - 1));
+                    BigDecimal lastShare = new BigDecimal("100.00").subtract(sum);
+
+                    for (int i = 0; i < membersWithoutPercentage.size(); i++) {
+                        FamilyMember m = membersWithoutPercentage.get(i);
+                        if (i == membersWithoutPercentage.size() - 1) {
+                            m.setCustomPercentage(lastShare);
+                        } else {
+                            m.setCustomPercentage(equalShare);
+                        }
+                        m.setModifiedAt(LocalDateTime.now());
+                        familyMemberRepository.save(m);
+                    }
+
+                    log.info("Auto-assigned customPercentage to {} members in family {} for CUSTOM mode",
+                            membersWithoutPercentage.size(), familyId);
                 }
             }
 
