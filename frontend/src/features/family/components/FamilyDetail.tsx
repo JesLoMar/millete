@@ -106,22 +106,42 @@ export function FamilyDetail({
             </div>
 
             <ProgressBar contributions={contributions} monthlyGoal={family.monthlyGoal} />
-            <div className="space-y-2 mt-4 overflow-x-auto">
-              {contributions.map((member, index) => (
-                <div key={member.id} className="flex items-center justify-between text-xs sm:text-sm gap-2 min-w-70">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={`size-2.5 sm:size-3 rounded-full shrink-0 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`} />
-                    <span className="text-muted-foreground truncate">{member.name}</span>
+
+            <div className="mt-4">
+              <div className="hidden sm:block space-y-2">
+                {contributions.map((member, index) => (
+                  <div key={member.id} className="flex items-center justify-between text-sm gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className={`size-3 rounded-full shrink-0 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`} />
+                      <span className="text-muted-foreground truncate">{member.name}</span>
+                    </div>
+                    <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
+                      {member.contributed.toLocaleString()} € / {member.expectedContribution.toLocaleString()} €
+                      <span className="text-muted-foreground ml-1">({member.percentage.toFixed(0)}%)</span>
+                    </span>
                   </div>
-                  <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
-                    {member.contributed.toLocaleString()} € / {member.expectedContribution.toLocaleString()} €
-                    <span className="text-muted-foreground ml-1">({member.percentage.toFixed(0)}%)</span>
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              <div className="sm:hidden space-y-2">
+                {contributions.map((member, index) => (
+                  <div key={member.id} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className={`size-2.5 rounded-full shrink-0 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`} />
+                      <span className="text-xs text-muted-foreground truncate">{member.name}</span>
+                    </div>
+                    <div className="text-xs font-medium whitespace-nowrap shrink-0 tabular-nums text-right">
+                      <span>{member.contributed.toLocaleString()} €</span>
+                      <span className="text-muted-foreground"> / {member.expectedContribution.toLocaleString()} €</span>
+                      <span className="text-muted-foreground ml-1">({member.percentage.toFixed(0)}%)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
+
         <div className="lg:col-span-3">
           <DistributionCard
             distributionMode={family.distributionMode}
@@ -132,6 +152,7 @@ export function FamilyDetail({
           />
         </div>
       </div>
+
       <div>
         <h2 className="text-lg sm:text-xl font-headline mb-3 sm:mb-4">{t("family.memberDetails")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -150,6 +171,7 @@ export function FamilyDetail({
           ))}
         </div>
       </div>
+
       <ContributionHistory contributions={family.contributions} onAddClick={onAddContribution} />
     </div>
   )

@@ -35,14 +35,14 @@
     "logout": "Log Out",
     "logoutSuccess": "Logged out successfully",
     "errors": {
-      "languageChangeFailed": "Error changing language"
+      "languageChangeFailed": "Failed to change language"
     }
   },
   "theme": {
     "selector": "Theme selector",
     "palette": "Color palette",
     "errors": {
-      "themeChangeFailed": "Error changing theme"
+      "themeChangeFailed": "Failed to change theme"
     }
   },
   "carousel": {
@@ -55,7 +55,7 @@
     "open": "Open Menu",
     "close": "Close Menu",
     "noItems": "No sections available",
-    "comingSoon": "Coming soon",
+    "comingSoon": "Coming Soon",
     "dashboard": "Dashboard",
     "transactions": "Transactions",
     "categories": "Categories",
@@ -69,7 +69,7 @@
   "auth": {
     "brand": {
       "name": "Millete",
-      "tagline": "Track your expenses, achieve your goals."
+      "tagline": "Control your expenses, achieve your goals."
     },
     "greeting": "Hello, <br />welcome.",
     "footer": {
@@ -83,7 +83,7 @@
       "registerHint": "Enter your username or email address to continue.",
       "passwordHint": "Minimum 8 characters",
       "toggle": {
-        "login": "Login",
+        "login": "Log In",
         "register": "Register"
       },
       "fields": {
@@ -92,7 +92,7 @@
           "register": "Email"
         },
         "placeholder": {
-          "login": "example@email.com",
+          "login": "example@mail.com",
           "register": "your@email.com"
         },
         "password": {
@@ -107,7 +107,7 @@
       "forgotPassword": "Forgot your password?",
       "error": {
         "invalidCredentials": "Invalid credentials. Please try again.",
-        "registerFailed": "Registration failed. Please try again.",
+        "registerFailed": "Failed to register. Please try again.",
         "required": "Required field"
       }
     },
@@ -117,7 +117,7 @@
       "register": "Create account"
     },
     "forgotPassword": {
-      "title": "Reset password",
+      "title": "Recover password",
       "description": "Enter your email address and we will send you a link to reset your password.",
       "send": "Send link",
       "emailRequired": "Email is required",
@@ -138,14 +138,14 @@
       "login_error_title": "Login error"
     },
     "errors": {
-      "no_identifier": "You must provide a username or email",
+      "no_identifier": "You must provide a username or email address",
       "auto_login_failed": "Account created, but could not log in automatically",
-      "register_failed": "Error creating account. Please try again."
+      "register_failed": "Failed to create account. Please try again."
     }
   },
   "info": {
     "steps": {
-      "title": "Getting started",
+      "title": "First steps",
       "subtitle": "Start managing your finances in less than 5 minutes with our quick guide.",
       "items": [
         {
@@ -156,17 +156,17 @@
         {
           "number": "02",
           "title": "Create your first category",
-          "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure...)."
+          "description": "Define custom categories to organize your spending (e.g., Food, Transport, Leisure...)."
         },
         {
           "number": "03",
           "title": "Record your expenses",
-          "description": "Add transactions from its section or easily from the dashboard."
+          "description": "Add transactions from their section or easily directly from the dashboard."
         }
       ]
     },
     "wiki": {
-      "link": "Check the full wiki",
+      "link": "Consult the full wiki",
       "header": {
         "openMenu": "Open navigation menu",
         "closeMenu": "Close menu",
@@ -180,12 +180,12 @@
         {
           "tag": "v0.0.2",
           "title": "User wiki, reinforced security and system optimization",
-          "description": "We launch the wiki with multi-language support. Ironclad security in category management, optimized recurring transactions engine, and improved visual interface with new icons."
+          "description": "We launch the wiki with multi-language support. Bulletproof security in category management, optimized recurring transactions engine and improved visual interface with new icons."
         },
         {
           "tag": "v0.0.1",
           "title": "First public release",
-          "description": "Millete is now available to everyone! Register and start managing your personal finances in a simple and effective way."
+          "description": "Millete is now available to everyone! Register and start managing your personal finances easily and effectively."
         }
       ]
     }
@@ -193,8 +193,8 @@
   "dashboard": {
     "metrics": {
       "balance": "Total Balance",
-      "income": "Income for {{period}}",
-      "expenses": "Expenses for {{period}}",
+      "income": "Income of the {{period}}",
+      "expenses": "Expenses of the {{period}}",
       "savings": "Total Savings",
       "vsLastWeek": "vs. previous week",
       "vsLastMonth": "vs. previous month",
@@ -280,7 +280,7 @@
       "title": "Active Saving Goals",
       "empty": "No saving goals configured",
       "completed": "Completed!",
-      "remaining": "{{amount}} € remaining"
+      "remaining": "{{amount}} € left"
     },
     "quickActions": {
       "addExpense": "Add transaction",
@@ -299,7 +299,7 @@
     },
     "importModal": {
       "title": "Import data",
-      "description": "Drag a JSON file with your transactions",
+      "description": "Drag a JSON file with your transactions here",
       "dropHere": "Drop your file here or click to select",
       "onlyJson": "Only .json files",
       "jsonOnly": "Only JSON files are supported",
@@ -323,7 +323,7 @@
   "transactions": {
     "title": "Transactions",
     "description": "Description",
-    "descriptionPlaceholder": "e.g., Weekly grocery at Lidl",
+    "descriptionPlaceholder": "e.g., Weekly shopping at Lidl",
     "type": "Type",
     "expense": "Expense",
     "income": "Income",
@@ -397,7 +397,7 @@
     "namePlaceholder": "e.g., Food, Travel...",
     "color": "Color",
     "budget": "Monthly budget (€)",
-    "budgetHint": "Optional. Monthly expense limit for this category.",
+    "budgetHint": "Optional. Monthly spending limit for this category.",
     "currentBudget": "Current budget: {{amount}} € / month",
     "family": "Family",
     "selectFamilyPlaceholder": "Select family",
@@ -423,7 +423,7 @@
     "deleteSuccess": "Category successfully deleted",
     "nameRequired": "Category name is required",
     "invalidBudget": "Enter a valid budget",
-    "editDescription": "Modify category details",
+    "editDescription": "Modify category data",
     "nameLabel": "Category name",
     "budgetLabel": "Monthly budget",
     "budgetPlaceholder": "e.g., 500",
@@ -490,13 +490,13 @@
   "family": {
     "title": "Family Units",
     "selectOrCreate": "Select a family unit or create a new one",
-    "noFamilies": "You don't have any family units yet",
+    "noFamilies": "You don't have family units yet",
     "createFirst": "Create my first family",
     "createNew": "Create new family unit",
     "create": "Create",
     "redirectingToLogin": "Redirecting to login...",
     "createTitle": "Create New Family Unit",
-    "createDesc": "Define the family name and monthly goal",
+    "createDesc": "Define the name and monthly goal of the family",
     "familyName": "Family Name",
     "familyNamePlaceholder": "e.g., Martinez Family",
     "monthlyGoal": "Monthly Goal",
@@ -512,7 +512,7 @@
     "inviteTitle": "Invite to Family",
     "inviteDesc": "Send an email invitation to a registered user",
     "email": "Email Address",
-    "emailPlaceholder": "example@email.com",
+    "emailPlaceholder": "example@mail.com",
     "sendInvitation": "Send Invitation",
     "invalidEmail": "The email format is invalid",
     "changeGoal": "Change Goal",
@@ -520,12 +520,12 @@
     "changeGoalTitle": "Change Monthly Goal",
     "changeGoalDesc": "Define a new monthly goal for the family",
     "goalProgress": "Goal Progress",
-    "goalProgressDesc": "Monthly tracking of family contributions",
+    "goalProgressDesc": "Monthly monitoring of family contributions",
     "collected": "Collected",
     "of": "of",
     "mode": "Mode",
     "distribution": "Distribution",
-    "distributionDesc": "{{mode}} Mode: contributions are calculated according to the selected method",
+    "distributionDesc": "Mode {{mode}}: contributions are calculated according to the selected method",
     "distributionMode": "Distribution Mode",
     "progressBar": {
       "label": "Monthly goal progress",
@@ -546,7 +546,7 @@
     "contributionsHistory": "Contributions History",
     "noContributions": "No contributions recorded yet",
     "addContribution": "Add Contribution",
-    "addContributionShort": "+ Add",
+    "addContributionShort": "Add",
     "amount": "Amount",
     "save": "Save Contribution",
     "salary": "Salary",
@@ -567,7 +567,7 @@
     "invitationFrom": "Invitation from {{sender}} to join {{family}}",
     "invalidToken": "Invalid invitation token",
     "invitationAccepted": "You have joined the family successfully!",
-    "invitationError": "Error processing invitation",
+    "invitationError": "Error processing the invitation",
     "processingInvitation": "Processing invitation...",
     "welcome": "Welcome to the family!",
     "goToFamily": "Go to my family",
@@ -576,24 +576,24 @@
     "selectFamily": "Select family {{name}}",
     "alerts": {
       "createSuccess": "Family successfully created",
-      "createError": "Error creating family",
+      "createError": "Error creating the family",
       "inviteSuccess": "Invitation successfully sent",
-      "inviteError": "Error sending invitation",
+      "inviteError": "Error sending the invitation",
       "modeSuccess": "Distribution mode updated",
       "modeError": "Error changing mode",
       "goalSuccess": "Monthly goal updated",
-      "goalError": "Error updating goal",
+      "goalError": "Error updating the goal",
       "memberEditSuccess": "Member successfully updated",
-      "memberEditError": "Error editing member",
-      "memberDeleteSuccess": "Member removed from family",
-      "memberDeleteError": "Error removing member",
-      "contributionSuccess": "Contribution successfully recorded",
-      "contributionError": "Error recording contribution"
+      "memberEditError": "Error editing the member",
+      "memberDeleteSuccess": "Member removed from the family",
+      "memberDeleteError": "Error removing the member",
+      "contributionSuccess": "Contribution successfully registered",
+      "contributionError": "Error registering contribution"
     }
   },
   "api": {
     "errors": {
-      "default": "Unexpected error on the server.",
+      "default": "Unexpected server error.",
       "status_401": "Your session has expired. Please log in again.",
       "status_403": "You do not have the required permissions for this section.",
       "status_404": "The requested resource is not available.",

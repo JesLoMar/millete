@@ -3,9 +3,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   PieChart,
-  FileText,
-  Settings,
-  HelpCircle,
   TrendingUp,
   LayoutGrid
 } from "lucide-react"
@@ -73,36 +70,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     enabled: true,       //✅ Implementado
     section: "main",
     order: 5,
-  },
-  {
-    id: "reports",
-    icon: FileText,
-    labelKey: "sidebar.reports",
-    path: "/reports",
-    enabled: false,       // ⏳ Pendiente
-    section: "main",
-    order: 6,
-  },
-
-  // ─── Bottom Navigation ─────────────────────────────────
-  {
-    id: "settings",
-    icon: Settings,
-    labelKey: "sidebar.settings",
-    path: "/settings",
-    enabled: false,       // ⏳ Pendiente
-    section: "bottom",
-    order: 1,
-  },
-  {
-    id: "help",
-    icon: HelpCircle,
-    labelKey: "sidebar.help",
-    path: "/help",
-    enabled: false,       // ⏳ Pendiente
-    section: "bottom",
-    order: 2,
-  },
+  }
 ]
 
 // ─── Helpers ──────────────────────────────────────────────

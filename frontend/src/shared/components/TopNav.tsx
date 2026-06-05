@@ -21,7 +21,7 @@ interface TopNavProps {
 }
 
 function getUserDisplay(
-  user: { name?: string; email?: string } | null, 
+  user: { name?: string; email?: string } | null,
   t: (key: string) => string
 ): {
   primary: string
@@ -61,9 +61,8 @@ export function TopNav({ className }: TopNavProps) {
     logout()
   }, [logout, t])
 
-  // ✅ Función para abrir el sidebar en móvil
   const handleOpenSidebar = useCallback(() => {
-    ;(window as any).__sidebarOpen?.()
+    ; (window as any).__sidebarOpen?.()
   }, [])
 
   return (
@@ -73,7 +72,6 @@ export function TopNav({ className }: TopNavProps) {
     )}>
       {/* ============ LADO IZQUIERDO ============ */}
       <div className="flex items-center gap-2">
-        {/* BOTÓN HAMBURGUESA - Solo visible en móvil */}
         <Button
           variant="ghost"
           size="icon"
@@ -84,33 +82,31 @@ export function TopNav({ className }: TopNavProps) {
           <Menu size={20} aria-hidden="true" />
         </Button>
 
-        {/* Logo convertido en botón accesible */}
         <button
           onClick={() => handleNavigate("/dashboard")}
           className="flex items-center gap-2.5 select-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t("nav.goToDashboard")}
         >
           <div className="bg-primary/10 p-0.5 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center">
-            <img 
-              src="/web-app-icon.png" 
-              alt="" 
-              className="size-9 sm:size-10 object-contain" 
+            <img
+              src="/web-app-icon.png"
+              alt=""
+              className="size-9 sm:size-10 object-contain"
               aria-hidden="true"
             />
           </div>
-          <span className="font-bold text-base sm:text-lg tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent hidden xs:inline">
+          <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
             {t("app.name")}
           </span>
         </button>
       </div>
 
-      {/* ============ LADO DERECHO ============ */}
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
-        
+
         <div className="h-8 w-px bg-border/60 mx-1 sm:mx-2" />
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -118,11 +114,9 @@ export function TopNav({ className }: TopNavProps) {
               className="relative h-10 flex items-center gap-2 px-2 sm:px-3 rounded-full hover:bg-accent/50"
               aria-label={t("nav.userMenu")}
             >
-              {/* Avatar circular con iniciales */}
               <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <User size={16} aria-hidden="true" />
               </div>
-              {/* Texto - oculto en móviles muy pequeños */}
               <div className="hidden sm:block text-right">
                 <p className={cn(
                   "font-medium leading-none text-sm",

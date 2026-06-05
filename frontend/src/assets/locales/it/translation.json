@@ -31,18 +31,18 @@
     "guest": "Ospite",
     "goToDashboard": "Vai alla dashboard",
     "userMenu": "Menu utente",
-    "profile": "Il mio Profilo",
-    "logout": "Disconnetti",
+    "profile": "Il Mio Profilo",
+    "logout": "Chiudi Sessione",
     "logoutSuccess": "Sessione chiusa correttamente",
     "errors": {
-      "languageChangeFailed": "Errore durante il cambio di lingua"
+      "languageChangeFailed": "Errore durante il cambio della lingua"
     }
   },
   "theme": {
-    "selector": "Selettore tema",
-    "palette": "Tavolozza colori",
+    "selector": "Selettore del tema",
+    "palette": "Tavolozza dei colori",
     "errors": {
-      "themeChangeFailed": "Errore durante il cambio di tema"
+      "themeChangeFailed": "Errore durante il cambio del tema"
     }
   },
   "carousel": {
@@ -80,7 +80,7 @@
     "form": {
       "optional": "opzionale",
       "andOr": "e/o",
-      "registerHint": "Inserisci il tuo nome utente o indirizzo email per continuare.",
+      "registerHint": "Inserisci il tuo nome utente o l'indirizzo email per continuare.",
       "passwordHint": "Minimo 8 caratteri",
       "toggle": {
         "login": "Accedi",
@@ -88,11 +88,11 @@
       },
       "fields": {
         "identifier": {
-          "login": "Email o Nome utente",
+          "login": "Indirizzo email o nome utente",
           "register": "Email"
         },
         "placeholder": {
-          "login": "esempio@mail.com",
+          "login": "esempio@email.com",
           "register": "tua@email.com"
         },
         "password": {
@@ -106,7 +106,7 @@
       },
       "forgotPassword": "Hai dimenticato la password?",
       "error": {
-        "invalidCredentials": "Credenziali non valide. Riprova.",
+        "invalidCredentials": "Credenziali non valide. Per favore, riprova.",
         "registerFailed": "Errore durante la registrazione. Riprova.",
         "required": "Campo richiesto"
       }
@@ -114,20 +114,20 @@
     "submit": {
       "default": "Continua",
       "loading": "Elaborazione...",
-      "register": "Crea un account"
+      "register": "Crea account"
     },
     "forgotPassword": {
       "title": "Recupera password",
-      "description": "Inserisci la tua email e ti invieremo un link per reimpostare la tua password.",
+      "description": "Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la tua password.",
       "send": "Invia link",
-      "emailRequired": "L'email è obbligatoria",
+      "emailRequired": "L'indirizzo email è obbligatorio",
       "emailInvalid": "Inserisci un indirizzo email valido",
       "sending": "Invio in corso...",
       "sendingDescription": "Stiamo elaborando la tua richiesta",
       "success": "Email inviata!",
       "successDescription": "Controlla la tua casella di posta. Ti abbiamo inviato un link per reimpostare la tua password.",
       "error": "Errore durante l'invio",
-      "errorDescription": "Impossibile elaborare la richiesta. Riprova.",
+      "errorDescription": "Non abbiamo potuto elaborare la tua richiesta. Riprova.",
       "tryAgain": "Riprova",
       "cancel": "Annulla",
       "backToLogin": "Torna al login"
@@ -139,7 +139,7 @@
     },
     "errors": {
       "no_identifier": "Devi fornire un nome utente o un indirizzo email",
-      "auto_login_failed": "Account creato, ma impossibile accedere automaticamente",
+      "auto_login_failed": "Account creato, ma non è stato possibile accedere automaticamente",
       "register_failed": "Errore durante la creazione dell'account. Riprova."
     }
   },
@@ -151,7 +151,7 @@
         {
           "number": "01",
           "title": "Crea il tuo account",
-          "description": "Nessuna carta di credito richiesta. Solo nome utente e/o email e password."
+          "description": "Senza carta di credito. Solo nome utente e/o email e password."
         },
         {
           "number": "02",
@@ -161,7 +161,7 @@
         {
           "number": "03",
           "title": "Registra le tue spese",
-          "description": "Aggiungi transazioni dalla relativa sezione o facilmente dalla dashboard."
+          "description": "Aggiungi transazioni dalla relativa sezione o facilmente direttamente dalla dashboard."
         }
       ]
     },
@@ -169,18 +169,18 @@
       "link": "Consulta la wiki completa",
       "header": {
         "openMenu": "Apri il menu di navigazione",
-        "closeMenu": "Chiudi il menu",
+        "closeMenu": "Chiudi menu",
         "navigation": "Navigazione"
       }
     },
     "news": {
-      "title": "Ultime novità",
-      "subtitle": "Scopri i recenti miglioramenti aggiunti alla piattaforma.",
+      "title": "Novità recenti",
+      "subtitle": "Scopri i più recenti miglioramenti aggiunti alla piattaforma.",
       "items": [
         {
           "tag": "v0.0.2",
           "title": "Wiki utente, sicurezza rafforzata e ottimizzazione del sistema",
-          "description": "Inauguriamo la wiki con supporto multilingua. Sicurezza blindata nella gestione delle categorie, ottimizzazione del motore delle transazioni ricorrenti e interfaccia visiva migliorata con nuove icone."
+          "description": "Inauguriamo la wiki con supporto multilingua. Sicurezza blindata nella gestione delle categorie, ottimizzato il motore delle transazioni ricorrenti e migliorata l'interfaccia visiva con nuove icone."
         },
         {
           "tag": "v0.0.1",
@@ -236,14 +236,14 @@
       "dateFormat": "{{month}} {{year}}",
       "week": "Settimana {{week}}",
       "period": {
-        "ariaLabel": "Seleziona periodo di tempo",
+        "ariaLabel": "Seleziona il periodo di tempo",
         "week": "Sett",
         "month": "Mese",
         "year": "Anno"
       }
     },
     "chart": {
-      "title": "Storico Spese",
+      "title": "Storico delle Spese",
       "empty": "Nessuna spesa in questo periodo",
       "showingLast": "Ultimi {{count}}",
       "periodLabel": {
@@ -270,11 +270,11 @@
     },
     "transactions": {
       "title": "Ultime Transazioni",
-      "viewAll": "Visualizza tutte",
+      "viewAll": "Vedi tutte",
       "empty": "Nessuna transazione recente",
       "expense": "Spesa",
       "income": "Entrata",
-      "moreOptions": "Altre opzioni"
+      "moreOptions": "Più opzioni"
     },
     "goals": {
       "title": "Obiettivi di Risparmio Attivi",
@@ -292,15 +292,15 @@
       "addExpenseAria": "Aggiungi una nuova transazione",
       "createCategoryAria": "Crea una nuova categoria",
       "importDataAria": "Importa dati da file",
-      "importingAria": "Importazione dei dati, attendere",
+      "importingAria": "Importazione dati in corso, attendere",
       "exportDataAria": "Esporta copia di backup",
-      "exportingAria": "Esportazione dei dati, attendere",
+      "exportingAria": "Esportazione dati in corso, attendere",
       "groupLabel": "Azioni rapide"
     },
     "importModal": {
       "title": "Importa dati",
       "description": "Trascina un file JSON con le tue transazioni",
-      "dropHere": "Rilascia il file qui o fai clic per selezionare",
+      "dropHere": "Rilascia il tuo file qui o fai clic per selezionarlo",
       "onlyJson": "Solo file .json",
       "jsonOnly": "Sono supportati solo i file JSON",
       "invalidJson": "Il file JSON non è valido",
@@ -323,7 +323,7 @@
   "transactions": {
     "title": "Transazioni",
     "description": "Descrizione",
-    "descriptionPlaceholder": "es. Spesa settimanale da Lidl",
+    "descriptionPlaceholder": "es. Spesa settimanale alla Lidl",
     "type": "Tipo",
     "expense": "Spesa",
     "income": "Entrata",
@@ -347,7 +347,7 @@
     "new": "Nuova Transazione",
     "newShort": "+ Trans.",
     "newTitle": "Registra Transazione",
-    "moreOptions": "Altre opzioni",
+    "moreOptions": "Più opzioni",
     "recurring": {
       "label": "Ricorrenti",
       "shortLabel": "Ricorrente",
@@ -384,7 +384,7 @@
       "createSuccess": "Transazione creata correttamente",
       "updateSuccess": "Transazione aggiornata correttamente",
       "deleteSuccess": "Transazione eliminata correttamente",
-      "createRecurringSuccess": "Transazione ricorrente pianificata correttamente",
+      "createRecurringSuccess": "Transazione ricorrente programmata correttamente",
       "updateRecurringSuccess": "Transazione ricorrente aggiornata correttamente",
       "deleteRecurringSuccess": "Transazione ricorrente eliminata correttamente"
     }
@@ -417,7 +417,7 @@
     "deleteTitle": "Elimina categoria",
     "deleteConfirmation": "Sei sicuro di voler eliminare \"{{name}}\"? Le transazioni associate non verranno cancellate, ma perderanno la loro classificazione.",
     "deleteError": "Errore durante l'eliminazione della categoria",
-    "noBudgetTooltip": "Assegna un budget mensile per vedere il progresso",
+    "noBudgetTooltip": "Assegna un budget mensile per vedere i progressi",
     "createSuccess": "Categoria creata correttamente",
     "updateSuccess": "Categoria aggiornata correttamente",
     "deleteSuccess": "Categoria eliminata correttamente",
@@ -439,7 +439,7 @@
     "lastMonths": "Ultimi {{count}} mesi",
     "distribution": "Distribuzione",
     "total": "Totale",
-    "myAssets": "I miei Asset",
+    "myAssets": "I Miei Asset",
     "searchAsset": "Cerca asset...",
     "noAssets": "Nessun asset nel tuo portafoglio",
     "shares": "quote",
@@ -451,8 +451,8 @@
     "ticker": "Ticker",
     "type": "Tipo di Asset",
     "quantity": "Quantità",
-    "purchasePrice": "Prezzo d'Acquisto",
-    "purchaseDate": "Data d'Acquisto",
+    "purchasePrice": "Prezzo di Acquisto",
+    "purchaseDate": "Data di Acquisto",
     "save": "Salva Investimento",
     "updatePrice": "Aggiorna Prezzo",
     "marketPrice": "Prezzo di Mercato",
@@ -474,8 +474,8 @@
       "createSuccess": "Investimento registrato correttamente",
       "updatePriceSuccess": "Prezzo aggiornato correttamente",
       "deleteSuccess": "Investimento eliminato correttamente",
-      "warningTitle": "Rilevato scostamento critico",
-      "warningDesc": "Il prezzo inserito varia di oltre il 50% rispetto al prezzo attuale. Fai di nuovo clic per confermare."
+      "warningTitle": "Rilevata deviazione critica",
+      "warningDesc": "Il prezzo inserito varia più del 50% rispetto al prezzo attuale. Fai clic di nuovo per confermare."
     },
     "confirmUpdate": "Conferma modifica critica",
     "updatePriceError": "Errore durante l'aggiornamento del prezzo",
@@ -490,34 +490,34 @@
   "family": {
     "title": "Nuclei Familiari",
     "selectOrCreate": "Seleziona un nucleo familiare o creane uno nuovo",
-    "noFamilies": "Non hai ancora nessun nucleo familiare",
+    "noFamilies": "Non hai ancora dei nuclei familiari",
     "createFirst": "Crea la mia prima famiglia",
     "createNew": "Crea nuovo nucleo familiare",
     "create": "Crea",
     "redirectingToLogin": "Reindirizzamento al login...",
-    "createTitle": "Crea Nuovo Nucleo Familiare",
+    "createTitle": "Crea Nuovo Nucleo Familiar",
     "createDesc": "Definisci il nome e l'obiettivo mensile della famiglia",
     "familyName": "Nome della Famiglia",
-    "familyNamePlaceholder": "Es: Famiglia Martínez",
+    "familyNamePlaceholder": "Es: Famiglia Martinez",
     "monthlyGoal": "Obiettivo Mensile",
     "goal": "Obiettivo",
     "admin": "Admin",
-    "invitationReceived": "Sei stato invitato in una famiglia",
-    "invitationMessage": "Hai ricevuto un invito per unirti a un nucleo familiare. Vuoi accettare?",
+    "invitationReceived": "Ti hanno invitato in una famiglia",
+    "invitationMessage": "Hai ricevuto un invito a unirti a un nucleo familiare. Vuoi accettare?",
     "member": "Membro",
     "members": "membri",
     "people": "persone",
     "inviteMember": "Invita Membro",
     "inviteShort": "Invita",
-    "inviteTitle": "Invita nella Famiglia",
+    "inviteTitle": "Invita alla Famiglia",
     "inviteDesc": "Invia un invito via email a un utente registrato",
-    "email": "Email",
-    "emailPlaceholder": "esempio@mail.com",
+    "email": "Posta Elettronica",
+    "emailPlaceholder": "esempio@email.com",
     "sendInvitation": "Invia Invito",
     "invalidEmail": "Il formato dell'email non è valido",
     "changeGoal": "Cambia Obiettivo",
     "goalShort": "Meta",
-    "changeGoalTitle": "Cambia Obiettivo Mensile",
+    "changeGoalTitle": "Cambia Obiettivo Mensual",
     "changeGoalDesc": "Definisci un nuovo obiettivo mensile per la famiglia",
     "goalProgress": "Progresso dell'Obiettivo",
     "goalProgressDesc": "Monitoraggio mensile dei contributi familiari",
@@ -525,7 +525,7 @@
     "of": "di",
     "mode": "Modalità",
     "distribution": "Distribuzione",
-    "distributionDesc": "Modalità {{mode}}: i contributi sono calcolati in base al metodo selezionato",
+    "distributionDesc": "Modalità {{mode}}: i contributi vengono calcolati secondo il metodo selezionato",
     "distributionMode": "Modalità di Riparto",
     "progressBar": {
       "label": "Progresso dell'obiettivo mensile",
@@ -535,34 +535,34 @@
       "equitative": "Equo",
       "equitativeDesc": "Tutti i membri contribuiscono con la stessa quota",
       "proportional": "Proporzionale",
-      "proportionalDesc": "Il contributo è proporzionale allo stipendio di ciascun membro",
+      "proportionalDesc": "La quota è proporzionale allo stipendio di ciascun membro",
       "custom": "Personalizzato",
-      "customDesc": "L'amministratore definisce manualmente la percentuale di ciascun membro"
+      "customDesc": "L'amministratore definisce la percentuale di ciascun membro manualmente"
     },
-    "memberDetails": "Dettaglio Membri",
+    "memberDetails": "Dettaglio dei Membri",
     "memberOptions": "Opzioni di {{name}}",
     "memberProgress": "Progresso di {{name}}",
     "contributions": "Contributi",
     "contributionsHistory": "Cronologia dei Contributi",
-    "noContributions": "Nessun contributo registrato ancora",
-    "addContribution": "Aggiungi Contributo",
-    "addContributionShort": "+ Aggiungi",
-    "amount": "Importo",
-    "save": "Salva Contributo",
+    "noContributions": "Non ci sono ancora contributi registrati",
+    "addContribution": "Aggiungi Quota",
+    "addContributionShort": "Aggiungi",
+    "amount": "Quantità",
+    "save": "Salva Quota",
     "salary": "Stipendio",
     "monthlySalary": "Stipendio Mensile",
-    "toContribute": "Da contribuire",
-    "contributed": "Contribuito",
+    "toContribute": "Da versare",
+    "contributed": "Versato",
     "contribution": "Contributo",
     "nextPayment": "Prossimo Pagamento",
-    "inDays": "tra {{days}} giorni",
+    "inDays": "in {{days}} giorni",
     "name": "Nome",
     "role": "Ruolo",
     "edit": "Modifica",
     "editMember": "Modifica Membro",
     "delete": "Elimina",
     "customPercentage": "Percentuale Personalizzata",
-    "customPercentageHint": "Le percentuali sommano {{total}}%. Devono sommare al 100%.",
+    "customPercentageHint": "Le percentuali sommano {{total}}%. Devono sommare 100%.",
     "customPercentageOk": "Le percentuali sommano correttamente al 100%.",
     "invitationFrom": "Invito da parte di {{sender}} a unirti a {{family}}",
     "invalidToken": "Token di invito non valido",
@@ -580,7 +580,7 @@
       "inviteSuccess": "Invito inviato correttamente",
       "inviteError": "Errore durante l'invio dell'invito",
       "modeSuccess": "Modalità di distribuzione aggiornata",
-      "modeError": "Errore durante il cambio di modalità",
+      "modeError": "Errore durante il cambio della modalità",
       "goalSuccess": "Obiettivo mensile aggiornato",
       "goalError": "Errore durante l'aggiornamento dell'obiettivo",
       "memberEditSuccess": "Membro aggiornato correttamente",
@@ -593,8 +593,8 @@
   },
   "api": {
     "errors": {
-      "default": "Errore imprevisto sul server.",
-      "status_401": "La sessione è scaduta. Per favore, effettua nuovamente l'accesso.",
+      "default": "Errore imprevisto del server.",
+      "status_401": "La sessione è scaduta. Per favore, accedi di nuovo.",
       "status_403": "Non hai i permessi necessari per questa sezione.",
       "status_404": "La risorsa richiesta non è disponibile.",
       "status_500": "Problema interno del server. Riprova più tardi.",
