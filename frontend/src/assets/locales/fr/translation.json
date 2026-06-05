@@ -345,7 +345,7 @@
     "delete": "Supprimer",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?",
     "new": "Nouvelle transaction",
-    "newShort": "+ Trans.",
+    "newShort": "Trans.",
     "newTitle": "Enregistrer une transaction",
     "moreOptions": "Plus d'options",
     "recurring": {
@@ -356,7 +356,7 @@
       "listTitle": "Transactions récurrentes",
       "emptyFilter": "Aucune transaction récurrente avec ce filtre.",
       "frequency": "Fréquence",
-      "selectFrequency": "Sélectionner la fréquence",
+      "selectFrequency": "Fréquence...",
       "interval": "Intervalle",
       "startDate": "Date de début",
       "endDate": "Date de fin",

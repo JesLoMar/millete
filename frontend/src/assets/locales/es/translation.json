@@ -345,7 +345,7 @@
     "delete": "Eliminar",
     "deleteConfirm": "¿Estás seguro de eliminar esta transacción?",
     "new": "Nueva Transacción",
-    "newShort": "+ Trans.",
+    "newShort": "Trans.",
     "newTitle": "Registrar Transacción",
     "moreOptions": "Más opciones",
     "recurring": {
@@ -356,7 +356,7 @@
       "listTitle": "Transacciones Recurrentes",
       "emptyFilter": "No hay transacciones recurrentes con este filtro.",
       "frequency": "Frecuencia",
-      "selectFrequency": "Seleccionar frecuencia",
+      "selectFrequency": "Frecuencia...",
       "interval": "Intervalo",
       "startDate": "Fecha de inicio",
       "endDate": "Fecha de fin",

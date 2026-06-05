@@ -227,11 +227,7 @@ class FamilyServiceTest {
         when(requester.isAdmin()).thenReturn(true);
         FamilyMember member = mock(FamilyMember.class);
 
-        FamilyUnit family = mock(FamilyUnit.class);
-        when(family.getDistributionMode()).thenReturn(DistributionMode.PROPORTIONAL);
-
         when(familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)).thenReturn(Optional.of(requester));
-        when(familyUnitRepository.findById(familyId)).thenReturn(Optional.of(family));
         when(familyMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
         UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();

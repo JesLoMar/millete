@@ -99,15 +99,43 @@ services:
     networks:
       - millete-network
 
+  # =============================================
+  # 4. DAILY AUTOMATIC BACKUP
+  # =============================================
+  db-backup:
+    image: postgres:16-alpine
+    container_name: millete-db-backup
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${DATABASE_NAME}
+      PGUSER: ${DATABASE_USER}
+      PGPASSWORD: ${DATABASE_PASSWORD}
+      BACKUP_RETENTION_DAYS: 7
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    command: sh /backup.sh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - millete-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
 # =============================================
-# UNIFIED PERSISTENT VOLUMES
+# EXTERNAL PERSISTENT VOLUME
 # =============================================
 volumes:
   postgres_data:
     name: millete_postgres_data
-    labels:
-      com.millete.description: "PostgreSQL persistent data"
-      com.millete.backup: "required"
+    external: true
 
 # =============================================
 # INTERNAL NETWORK

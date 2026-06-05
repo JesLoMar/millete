@@ -345,7 +345,7 @@
     "delete": "Delete",
     "deleteConfirm": "Are you sure you want to delete this transaction?",
     "new": "New Transaction",
-    "newShort": "+ Trans.",
+    "newShort": "Trans.",
     "newTitle": "Record Transaction",
     "moreOptions": "More options",
     "recurring": {
