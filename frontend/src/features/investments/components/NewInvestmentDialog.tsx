@@ -71,7 +71,7 @@ export function NewInvestmentDialog() {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) resetForm() }}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4">
+        <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4 shrink-0">
           <Plus size={16} />
           {t("investments.new")}
         </Button>
@@ -84,106 +84,108 @@ export function NewInvestmentDialog() {
           inputRef.current?.focus()
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <TrendingUp className="text-primary size-5" />
-            {t("investments.newTitle")}
-          </DialogTitle>
-        </DialogHeader>
+        <div className="max-h-[85dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              <TrendingUp className="text-primary size-5" />
+              {t("investments.newTitle")}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2 space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.assetName")}</Label>
-              <Input
-                ref={inputRef}
-                placeholder={t("investments.assetNamePlaceholder")}
-                value={assetName}
-                onChange={(e) => setAssetName(e.target.value)}
-                disabled={isCreating}
-                className="bg-background border-border"
-              />
+          <div className="space-y-4 py-2 sm:py-4">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              <div className="col-span-2 space-y-2">
+                <Label className="text-sm font-semibold">{t("investments.assetName")}</Label>
+                <Input
+                  ref={inputRef}
+                  placeholder={t("investments.assetNamePlaceholder")}
+                  value={assetName}
+                  onChange={(e) => setAssetName(e.target.value)}
+                  disabled={isCreating}
+                  className="bg-background border-border"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("investments.ticker")}</Label>
+                <Input
+                  placeholder="AAPL"
+                  value={ticker}
+                  onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                  disabled={isCreating}
+                  className="bg-background border-border"
+                />
+              </div>
             </div>
+
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.ticker")}</Label>
-              <Input
-                placeholder="AAPL"
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                disabled={isCreating}
-                className="bg-background border-border"
-              />
+              <Label className="text-sm font-semibold">{t("investments.type")}</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger className="bg-background border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {INVESTMENT_TYPES.map((invType) => (
+                    <SelectItem key={invType.value} value={invType.value}>
+                      <div className="flex items-center gap-2">
+                        <invType.icon size={14} className={invType.color} />
+                        {t(invType.labelKey)}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("investments.type")}</Label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="bg-background border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {INVESTMENT_TYPES.map((invType) => (
-                  <SelectItem key={invType.value} value={invType.value}>
-                    <div className="flex items-center gap-2">
-                      <invType.icon size={14} className={invType.color} />
-                      {t(invType.labelKey)}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("investments.quantity")}</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  disabled={isCreating}
+                  className="bg-background border-border"
+                  min="0.0001"
+                  step="any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">{t("investments.purchasePrice")}</Label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  disabled={isCreating}
+                  className="bg-background border-border"
+                  min="0.01"
+                  step="0.01"
+                />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.quantity")}</Label>
+              <Label className="text-sm font-semibold">{t("investments.purchaseDate")}</Label>
               <Input
-                type="number"
-                placeholder="0.00"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                type="date"
+                value={purchaseDate}
+                onChange={(e) => setPurchaseDate(e.target.value)}
                 disabled={isCreating}
                 className="bg-background border-border"
-                min="0.0001"
-                step="any"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.purchasePrice")}</Label>
-              <Input
-                type="number"
-                placeholder="0.00"
-                value={purchasePrice}
-                onChange={(e) => setPurchasePrice(e.target.value)}
-                disabled={isCreating}
-                className="bg-background border-border"
-                min="0.01"
-                step="0.01"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("investments.purchaseDate")}</Label>
-            <Input
-              type="date"
-              value={purchaseDate}
-              onChange={(e) => setPurchaseDate(e.target.value)}
-              disabled={isCreating}
-              className="bg-background border-border"
-            />
-          </div>
+          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("investments.save")}
+            </Button>
+          </DialogFooter>
         </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
-            {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("investments.save")}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

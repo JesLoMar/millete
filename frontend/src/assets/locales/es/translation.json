@@ -29,6 +29,8 @@
     "user": "Usuario",
     "changeLanguage": "Cambiar idioma",
     "guest": "Invitado",
+    "goToDashboard": "Ir al dashboard",
+    "userMenu": "Menú de usuario",
     "profile": "Mi Perfil",
     "logout": "Cerrar Sesión",
     "logoutSuccess": "Sesión cerrada correctamente",
@@ -50,6 +52,8 @@
   "sidebar": {
     "mainNav": "Navegación principal",
     "bottomNav": "Navegación secundaria",
+    "open": "Abrir Menú",
+    "close": "Cerrar Menú",
     "noItems": "No hay secciones disponibles",
     "comingSoon": "Próximamente",
     "dashboard": "Dashboard",
@@ -57,6 +61,7 @@
     "categories": "Categorías",
     "investments": "Inversiones",
     "family": "Familia",
+    "mobileTitle": "Millete",
     "errors": {
       "featureComingSoon": "{{feature}} estará disponible próximamente"
     }
@@ -68,8 +73,8 @@
     },
     "greeting": "Hola, <br />bienvenido.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -146,39 +151,41 @@
         {
           "number": "01",
           "title": "Crea tu cuenta",
-          "description": "Sin tarjeta de crédito. Solo correo y contraseña."
+          "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
         },
         {
           "number": "02",
-          "title": "Define tu presupuesto",
-          "description": "Añade ingresos y categorías de gasto en la pantalla de inicio."
+          "title": "Crea tu primera categoría",
+          "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
         },
         {
           "number": "03",
           "title": "Registra tus gastos",
-          "description": "Manualmente o importando un CSV de tu banco."
+          "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
         }
       ]
     },
     "wiki": {
-      "link": "Consultar la wiki completa"
+      "link": "Consultar la wiki completa",
+      "header": {
+        "openMenu": "Abrir menú de navegación",
+        "closeMenu": "Cerrar menú",
+        "navigation": "Navegación"
+      }
     },
     "news": {
       "title": "Novedades recientes",
       "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
       "items": [
         {
-          "tag": "NUEVO",
-          "title": "Motor de Inteligencia Artificial v2.0",
-          "description": "Hemos integrado un nuevo modelo de lenguaje que analiza tus patrones de gasto para ofrecerte consejos de ahorro personalizados cada semana."
+          "tag": "v0.0.2",
+          "title": "Wiki de usuario, seguridad reforzada y optimización del sistema",
+          "description": "Estrenamos wiki con soporte multiidioma. Seguridad blindada en la gestión de categorías, optimizado el motor de transacciones recurrentes y mejorado la interfaz visual con nuevos iconos."
         },
         {
-          "title": "Integración con APIs Bancarias",
-          "description": "Sincronización automática con más de 15 entidades financieras españolas para una gestión en tiempo real."
-        },
-        {
-          "title": "Modo Offline Mejorado",
-          "description": "Ahora puedes añadir transacciones incluso sin conexión; se sincronizarán en cuanto recuperes el acceso."
+          "tag": "v0.0.1",
+          "title": "Primer lanzamiento público",
+          "description": "¡Millete ya está disponible para todos! Regístrate y comienza a gestionar tus finanzas personales de forma sencilla y efectiva."
         }
       ]
     }
@@ -229,6 +236,7 @@
       "dateFormat": "{{month}} {{year}}",
       "week": "Semana {{week}}",
       "period": {
+        "ariaLabel": "Seleccionar período de tiempo",
         "week": "Sem",
         "month": "Mes",
         "year": "Año"
@@ -265,7 +273,8 @@
       "viewAll": "Ver todas",
       "empty": "No hay transacciones recientes",
       "expense": "Gasto",
-      "income": "Ingreso"
+      "income": "Ingreso",
+      "moreOptions": "Más opciones"
     },
     "goals": {
       "title": "Metas de Ahorro Activas",
@@ -279,7 +288,14 @@
       "importData": "Importar datos",
       "importing": "Importando...",
       "exportData": "Exportar datos",
-      "exporting": "Exportando..."
+      "exporting": "Exportando...",
+      "addExpenseAria": "Añadir nueva transacción",
+      "createCategoryAria": "Crear nueva categoría",
+      "importDataAria": "Importar datos desde archivo",
+      "importingAria": "Importando datos, espere",
+      "exportDataAria": "Exportar copia de seguridad",
+      "exportingAria": "Exportando datos, espere",
+      "groupLabel": "Acciones rápidas"
     },
     "importModal": {
       "title": "Importar datos",
@@ -327,16 +343,20 @@
     "edit": "Editar",
     "editTitle": "Editar Transacción",
     "delete": "Eliminar",
+    "deleteConfirm": "¿Estás seguro de eliminar esta transacción?",
     "new": "Nueva Transacción",
+    "newShort": "Trans.",
     "newTitle": "Registrar Transacción",
+    "moreOptions": "Más opciones",
     "recurring": {
       "label": "Recurrentes",
+      "shortLabel": "Recurrente",
       "newTitle": "Nueva Transacción Recurrente",
       "editTitle": "Editar Transacción Recurrente",
       "listTitle": "Transacciones Recurrentes",
       "emptyFilter": "No hay transacciones recurrentes con este filtro.",
       "frequency": "Frecuencia",
-      "selectFrequency": "Seleccionar frecuencia",
+      "selectFrequency": "Frecuencia...",
       "interval": "Intervalo",
       "startDate": "Fecha de inicio",
       "endDate": "Fecha de fin",
@@ -367,8 +387,7 @@
       "createRecurringSuccess": "Transacción recurrente programada correctamente",
       "updateRecurringSuccess": "Transacción recurrente actualizada correctamente",
       "deleteRecurringSuccess": "Transacción recurrente eliminada correctamente"
-    },
-    "deleteConfirm": "¿Estás seguro de eliminar esta transacción?"
+    }
   },
   "categories": {
     "add": "Añadir categoría",
@@ -442,6 +461,7 @@
     "delete": "Eliminar",
     "deleteConfirm": "¿Estás seguro de eliminar esta inversión? Esta acción no se puede deshacer.",
     "createError": "Error al crear la inversión. Inténtalo de nuevo.",
+    "assetOptions": "Opciones de {{name}}",
     "types": {
       "stock": "Acciones",
       "crypto": "Criptomonedas",
@@ -488,6 +508,7 @@
     "members": "miembros",
     "people": "personas",
     "inviteMember": "Invitar Miembro",
+    "inviteShort": "Invitar",
     "inviteTitle": "Invitar a la Familia",
     "inviteDesc": "Envía una invitación por correo electrónico a un usuario registrado",
     "email": "Correo Electrónico",
@@ -495,6 +516,7 @@
     "sendInvitation": "Enviar Invitación",
     "invalidEmail": "El formato del email no es válido",
     "changeGoal": "Cambiar Objetivo",
+    "goalShort": "Meta",
     "changeGoalTitle": "Cambiar Objetivo Mensual",
     "changeGoalDesc": "Define un nuevo objetivo mensual para la familia",
     "goalProgress": "Progreso del Objetivo",
@@ -505,6 +527,10 @@
     "distribution": "Distribución",
     "distributionDesc": "Modo {{mode}}: los aportes se calculan según el método seleccionado",
     "distributionMode": "Modo de Reparto",
+    "progressBar": {
+      "label": "Progreso del objetivo mensual",
+      "of": "de"
+    },
     "modes": {
       "equitative": "Equitativo",
       "equitativeDesc": "Todos los miembros aportan la misma cantidad",
@@ -514,10 +540,13 @@
       "customDesc": "El administrador define el porcentaje de cada miembro manualmente"
     },
     "memberDetails": "Detalle de Miembros",
+    "memberOptions": "Opciones de {{name}}",
+    "memberProgress": "Progreso de {{name}}",
     "contributions": "Contribuciones",
     "contributionsHistory": "Historial de Contribuciones",
     "noContributions": "No hay contribuciones registradas aún",
     "addContribution": "Añadir Aporte",
+    "addContributionShort": "Añadir",
     "amount": "Cantidad",
     "save": "Guardar Aporte",
     "salary": "Salario",
@@ -543,6 +572,8 @@
     "welcome": "¡Bienvenido a la familia!",
     "goToFamily": "Ir a mi familia",
     "error": "Error",
+    "back": "Volver",
+    "selectFamily": "Seleccionar familia {{name}}",
     "alerts": {
       "createSuccess": "Familia creada correctamente",
       "createError": "Error al crear la familia",

@@ -89,12 +89,13 @@ export const DashboardPage = () => {
   const periodLabel = t(`dashboard.metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav />
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} />
+          
           <QuickActions
             onImportClick={() => setIsImportOpen(true)}
             onExportClick={handleExport}
@@ -103,58 +104,62 @@ export const DashboardPage = () => {
             isExporting={isExporting}
             isImporting={isImporting}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <FormattedMetricCard
-              title={t("dashboard.metrics.balance")}
-              value={metrics.data?.balance ?? 0}
-              trend={metrics.data?.balanceTrend ?? 0}
-              icon={Wallet}
-              color="bg-primary/10 text-primary"
-              periodLabel={periodLabel}
-              loading={metrics.isLoading}
-            />
-            <FormattedMetricCard
-              title={t("dashboard.metrics.income", { period: t(`dashboard.header.period.${period}`) })}
-              value={metrics.data?.income ?? 0}
-              trend={metrics.data?.incomeTrend ?? 0}
-              icon={TrendingUp}
-              color="bg-emerald-500/10 text-emerald-500"
-              periodLabel={periodLabel}
-              loading={metrics.isLoading}
-            />
-            <FormattedMetricCard
-              title={t("dashboard.metrics.expenses", { period: t(`dashboard.header.period.${period}`) })}
-              value={metrics.data?.expenses ?? 0}
-              trend={metrics.data?.expensesTrend ?? 0}
-              icon={TrendingDown}
-              color="bg-rose-500/10 text-rose-500"
-              periodLabel={periodLabel}
-              loading={metrics.isLoading}
-              invertedTrend
-            />
-            <FormattedMetricCard
-              title={t("dashboard.metrics.savings")}
-              value={metrics.data?.savings ?? 0}
-              trend={metrics.data?.savingsTrend ?? 0}
-              icon={PiggyBank}
-              color="bg-amber-500/10 text-amber-500"
-              periodLabel={periodLabel}
-              loading={metrics.isLoading}
-            />
+
+          <div className="min-h-30">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <FormattedMetricCard
+                title={t("dashboard.metrics.balance")}
+                value={metrics.data?.balance ?? 0}
+                trend={metrics.data?.balanceTrend ?? 0}
+                icon={Wallet}
+                color="bg-primary/10 text-primary"
+                periodLabel={periodLabel}
+                loading={metrics.isLoading}
+              />
+              <FormattedMetricCard
+                title={t("dashboard.metrics.income", { period: t(`dashboard.header.period.${period}`) })}
+                value={metrics.data?.income ?? 0}
+                trend={metrics.data?.incomeTrend ?? 0}
+                icon={TrendingUp}
+                color="bg-emerald-500/10 text-emerald-500"
+                periodLabel={periodLabel}
+                loading={metrics.isLoading}
+              />
+              <FormattedMetricCard
+                title={t("dashboard.metrics.expenses", { period: t(`dashboard.header.period.${period}`) })}
+                value={metrics.data?.expenses ?? 0}
+                trend={metrics.data?.expensesTrend ?? 0}
+                icon={TrendingDown}
+                color="bg-rose-500/10 text-rose-500"
+                periodLabel={periodLabel}
+                loading={metrics.isLoading}
+                invertedTrend
+              />
+              <FormattedMetricCard
+                title={t("dashboard.metrics.savings")}
+                value={metrics.data?.savings ?? 0}
+                trend={metrics.data?.savingsTrend ?? 0}
+                icon={PiggyBank}
+                color="bg-amber-500/10 text-amber-500"
+                periodLabel={periodLabel}
+                loading={metrics.isLoading}
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8">
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            <div className="lg:col-span-8 min-h-87.5">
               <HistoryChart period={period} data={history.data} loading={history.isLoading} />
             </div>
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 min-h-87.5">
               <CategoryDonut data={categories.data} loading={categories.isLoading} />
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            <div className="lg:col-span-5 min-h-100">
               <BudgetBars data={budgets.data} loading={budgets.isLoading} />
             </div>
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-7 min-h-100">
               <RecentTransactions data={recentTransactions.data} loading={recentTransactions.isLoading} />
             </div>
           </div>

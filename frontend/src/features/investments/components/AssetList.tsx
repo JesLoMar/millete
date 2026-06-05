@@ -31,24 +31,23 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
   if (isLoading) return <AssetListSkeleton />
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold text-foreground font-headline">
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground font-headline">
           {t("investments.myAssets")}
         </h2>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder={t("investments.searchAsset")}
-            className="pl-10 bg-background border-border h-10"
+            className="pl-10 bg-background border-border h-9 sm:h-10 text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Filtro por tipo */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         <Button
           variant={typeFilter === "all" ? "secondary" : "ghost"}
           size="sm"
@@ -65,25 +64,27 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
             onClick={() => setTypeFilter(invType.value)}
             className="h-7 text-xs rounded-md gap-1.5"
           >
-            <invType.icon size={12} className={invType.color} />
+            <invType.icon size={12} className={invType.color} aria-hidden="true" />
             {t(invType.labelKey)}
           </Button>
         ))}
-        <Badge variant="outline" className="text-xs ml-auto">
+        <Badge variant="outline" className="text-xs ml-auto shrink-0">
           {filteredData.length}
         </Badge>
       </div>
 
-      <div className="flex flex-col gap-2">
-        {filteredData.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12 text-sm">
-            {t("investments.noAssets")}
-          </p>
-        ) : (
-          filteredData.map((inv) => (
-            <AssetRow key={inv.id} investment={inv} onDelete={onDelete} />
-          ))
-        )}
+      <div className="overflow-x-auto">
+        <div className="flex flex-col gap-1 sm:gap-2 min-w-100">
+          {filteredData.length === 0 ? (
+            <p className="text-center text-muted-foreground py-12 text-sm">
+              {t("investments.noAssets")}
+            </p>
+          ) : (
+            filteredData.map((inv) => (
+              <AssetRow key={inv.id} investment={inv} onDelete={onDelete} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

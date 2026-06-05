@@ -29,18 +29,20 @@
     "user": "Utilisateur",
     "changeLanguage": "Changer de langue",
     "guest": "Invité",
+    "goToDashboard": "Aller au tableau de bord",
+    "userMenu": "Menu utilisateur",
     "profile": "Mon Profil",
     "logout": "Se déconnecter",
     "logoutSuccess": "Session clôturée avec succès",
     "errors": {
-      "languageChangeFailed": "Erreur lors du changement de langue"
+      "languageChangeFailed": "Échec du changement de langue"
     }
   },
   "theme": {
     "selector": "Sélecteur de thème",
     "palette": "Palette de couleurs",
     "errors": {
-      "themeChangeFailed": "Erreur lors du changement de thème"
+      "themeChangeFailed": "Échec du changement de thème"
     }
   },
   "carousel": {
@@ -50,6 +52,8 @@
   "sidebar": {
     "mainNav": "Navigation principale",
     "bottomNav": "Navigation secondaire",
+    "open": "Ouvrir le menu",
+    "close": "Fermer le menu",
     "noItems": "Aucune section disponible",
     "comingSoon": "Bientôt disponible",
     "dashboard": "Tableau de bord",
@@ -57,8 +61,9 @@
     "categories": "Catégories",
     "investments": "Investissements",
     "family": "Famille",
+    "mobileTitle": "Millete",
     "errors": {
-      "featureComingSoon": "{{feature}} sera bientôt disponible"
+      "featureComingSoon": "{{feature}} sera disponible bientôt"
     }
   },
   "auth": {
@@ -68,64 +73,64 @@
     },
     "greeting": "Bonjour, <br />bienvenue.",
     "footer": {
-      "webVersion": "WEB v0.0.1",
-      "apiVersion": "API v0.0.1",
+      "webVersion": "WEB v0.0.2",
+      "apiVersion": "API v0.0.2",
       "copyright": "© 2026 Millete"
     },
     "form": {
       "optional": "optionnel",
       "andOr": "et/ou",
-      "registerHint": "Entrez votre nom d'utilisateur ou votre adresse e-mail pour continuer.",
+      "registerHint": "Saisissez votre nom d'utilisateur ou votre adresse e-mail pour continuer.",
       "passwordHint": "Minimum 8 caractères",
       "toggle": {
-        "login": "Connexion",
-        "register": "Inscription"
+        "login": "Se connecter",
+        "register": "S'inscrire"
       },
       "fields": {
         "identifier": {
-          "login": "E-mail ou Nom d'utilisateur",
+          "login": "Adresse e-mail ou nom d'utilisateur",
           "register": "E-mail"
         },
         "placeholder": {
-          "login": "exemple@mail.com",
-          "register": "votre@mail.com"
+          "login": "exemple@courrier.com",
+          "register": "votre@email.com"
         },
         "password": {
           "label": "Mot de passe",
           "placeholder": "••••••••"
         },
         "username": {
-          "label": "Nom d'utilisateur",
+          "label": "Utilisateur",
           "placeholder": "Nom d'utilisateur"
         }
       },
       "forgotPassword": "Mot de passe oublié ?",
       "error": {
         "invalidCredentials": "Identifiants invalides. Veuillez réessayer.",
-        "registerFailed": "Échec de l'inscription. Réessayez.",
+        "registerFailed": "Échec de l'inscription. Veuillez réessayer.",
         "required": "Champ requis"
       }
     },
     "submit": {
       "default": "Continuer",
-      "loading": "Traitement en cours...",
+      "loading": "Traitement...",
       "register": "Créer un compte"
     },
     "forgotPassword": {
       "title": "Récupérer le mot de passe",
-      "description": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      "description": "Saisissez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
       "send": "Envoyer le lien",
-      "emailRequired": "L'e-mail est obligatoire",
-      "emailInvalid": "Entrez une adresse e-mail valide",
+      "emailRequired": "L'adresse e-mail est obligatoire",
+      "emailInvalid": "Saisissez une adresse e-mail valide",
       "sending": "Envoi en cours...",
       "sendingDescription": "Nous traitons votre demande",
       "success": "E-mail envoyé !",
       "successDescription": "Vérifiez votre boîte de réception. Nous vous avons envoyé un lien pour réinitialiser votre mot de passe.",
-      "error": "Échec de l'envoi",
-      "errorDescription": "Nous n'avons pas pu traiter votre demande. Réessayez.",
+      "error": "Erreur lors de l'envoi",
+      "errorDescription": "Nous n'avons pas pu traiter votre demande. Veuillez réessayer.",
       "tryAgain": "Réessayer",
       "cancel": "Annuler",
-      "backToLogin": "Retour à la connexion"
+      "backToLogin": "Retour à la page de connexion"
     },
     "alerts": {
       "welcome_back": "Bon retour parmi nous !",
@@ -135,7 +140,7 @@
     "errors": {
       "no_identifier": "Vous devez fournir un nom d'utilisateur ou une adresse e-mail",
       "auto_login_failed": "Compte créé, mais la connexion automatique a échoué",
-      "register_failed": "Erreur lors de la création du compte. Réessayez."
+      "register_failed": "Erreur lors de la création du compte. Veuillez réessayer."
     }
   },
   "info": {
@@ -146,49 +151,51 @@
         {
           "number": "01",
           "title": "Créez votre compte",
-          "description": "Sans carte de crédit. Juste un e-mail et un mot de passe."
+          "description": "Sans carte de crédit. Uniquement un nom d'utilisateur et/ou un e-mail et un mot de passe."
         },
         {
           "number": "02",
-          "title": "Définissez votre budget",
-          "description": "Ajoutez des revenus et des catégories de dépenses sur l'écran d'accueil."
+          "title": "Créez votre première catégorie",
+          "description": "Définissez des catégories personnalisées pour organiser vos dépenses (ex. Alimentation, Transport, Loisirs...)."
         },
         {
           "number": "03",
           "title": "Enregistrez vos dépenses",
-          "description": "Manuellement ou en important un fichier CSV de votre banque."
+          "description": "Ajoutez des transactions depuis leur section dédiée ou facilement depuis le tableau de bord."
         }
       ]
     },
     "wiki": {
-      "link": "Consulter le wiki complet"
+      "link": "Consulter le wiki complet",
+      "header": {
+        "openMenu": "Ouvrir le menu de navigation",
+        "closeMenu": "Fermer le menu",
+        "navigation": "Navigation"
+      }
     },
     "news": {
       "title": "Nouveautés récentes",
       "subtitle": "Découvrez les dernières améliorations ajoutées à la plateforme.",
       "items": [
         {
-          "tag": "NOUVEAU",
-          "title": "Moteur d'Intelligence Artificielle v2.0",
-          "description": "Nous avons intégré un nouveau modèle de langage qui analyse vos habitudes de dépenses pour vous offrir des conseils d'épargne personnalisés chaque semaine."
+          "tag": "v0.0.2",
+          "title": "Wiki utilisateur, sécurité renforcée et optimisation du système",
+          "description": "Nous lançons le wiki avec un support multilingue. Sécurité blindée dans la gestion des catégories, optimisation du moteur de transactions récurrentes et amélioration de l'interface visuelle avec de nouvelles icônes."
         },
         {
-          "title": "Intégration des API Bancaires",
-          "description": "Synchronisation automatique avec plus de 15 institutions financières espagnoles pour une gestion en temps réel."
-        },
-        {
-          "title": "Mode Hors-ligne Amélioré",
-          "description": "Vous pouvez désormais ajouter des transactions même sans connexion ; elles se synchroniseront dès que vous retrouverez un accès."
+          "tag": "v0.0.1",
+          "title": "Premier lancement public",
+          "description": "Millete est désormais disponible pour tous ! Inscrivez-vous et commencez à gérer vos finances personnelles de manière simple et efficace."
         }
       ]
     }
   },
   "dashboard": {
     "metrics": {
-      "balance": "Solde Global",
-      "income": "Revenus du {{period}}",
-      "expenses": "Dépenses du {{period}}",
-      "savings": "Épargne Totale",
+      "balance": "Solde total",
+      "income": "Revenus de la {{period}}",
+      "expenses": "Dépenses de la {{period}}",
+      "savings": "Épargne totale",
       "vsLastWeek": "vs. semaine précédente",
       "vsLastMonth": "vs. mois précédent",
       "vsLastYear": "vs. année précédente",
@@ -229,15 +236,16 @@
       "dateFormat": "{{month}} {{year}}",
       "week": "Semaine {{week}}",
       "period": {
+        "ariaLabel": "Sélectionner la période",
         "week": "Sem",
         "month": "Mois",
         "year": "An"
       }
     },
     "chart": {
-      "title": "Historique des Dépenses",
+      "title": "Historique des dépenses",
       "empty": "Aucune dépense sur cette période",
-      "showingLast": "{{count}} derniers",
+      "showingLast": "Les {{count}} derniers",
       "periodLabel": {
         "week": "7 derniers jours",
         "month": "5 dernières semaines",
@@ -249,26 +257,27 @@
       }
     },
     "donut": {
-      "title": "Dépenses par Catégorie",
+      "title": "Dépenses par catégorie",
       "total": "Total",
       "empty": "Aucune dépense sur cette période"
     },
     "budget": {
-      "title": "État du Budget",
+      "title": "État du budget",
       "empty": "Aucun budget configuré",
       "overLimit": "Limite dépassée !",
       "remaining": "Il vous reste {{amount}} €",
       "exceededBy": "Dépassé de {{amount}} €"
     },
     "transactions": {
-      "title": "Dernières Transactions",
+      "title": "Dernières transactions",
       "viewAll": "Voir tout",
       "empty": "Aucune transaction récente",
       "expense": "Dépense",
-      "income": "Revenu"
+      "income": "Revenu",
+      "moreOptions": "Plus d'options"
     },
     "goals": {
-      "title": "Objectifs d'Épargne Actifs",
+      "title": "Objectifs d'épargne actifs",
       "empty": "Aucun objectif d'épargne configuré",
       "completed": "Complété !",
       "remaining": "Il manque {{amount}} €"
@@ -279,13 +288,20 @@
       "importData": "Importer des données",
       "importing": "Importation...",
       "exportData": "Exporter des données",
-      "exporting": "Exportation..."
+      "exporting": "Exportation...",
+      "addExpenseAria": "Ajouter une nouvelle transaction",
+      "createCategoryAria": "Créer une nouvelle catégorie",
+      "importDataAria": "Importer des données depuis un fichier",
+      "importingAria": "Importation des données, veuillez patienter",
+      "exportDataAria": "Exporter une copie de sauvegarde",
+      "exportingAria": "Exportation des données, veuillez patienter",
+      "groupLabel": "Actions rapides"
     },
     "importModal": {
       "title": "Importer des données",
       "description": "Glissez un fichier JSON contenant vos transactions",
       "dropHere": "Déposez votre fichier ici ou cliquez pour le sélectionner",
-      "onlyJson": "Fichiers .json uniquement",
+      "onlyJson": "Uniquement les fichiers .json",
       "jsonOnly": "Seuls les fichiers JSON sont acceptés",
       "invalidJson": "Le fichier JSON n'est pas valide",
       "importing": "Importation des données...",
@@ -300,7 +316,7 @@
       "errorFormat": "Format de fichier invalide"
     },
     "export": {
-      "success": "Sauvegarde exportée avec succès",
+      "success": "Copie de sauvegarde exportée avec succès",
       "error": "Erreur lors de l'exportation des données"
     }
   },
@@ -317,26 +333,30 @@
     "noCategory": "Sans catégorie",
     "search": "Rechercher par description...",
     "empty": "Aucune transaction trouvée",
-    "showingInterval": "{{from}}-{{to}} sur {{total}}",
-    "createError": "Erreur lors du traitement de la transaction. Réessayez.",
+    "showingInterval": "{{from}}-{{to}} de {{total}}",
+    "createError": "Erreur lors du traitement de la transaction. Veuillez réessayer.",
     "filterAll": "Toutes",
     "filterIncome": "Revenus",
     "filterExpense": "Dépenses",
     "add": "Ajouter",
     "save": "Enregistrer",
     "edit": "Modifier",
-    "editTitle": "Modifier la Transaction",
+    "editTitle": "Modifier la transaction",
     "delete": "Supprimer",
-    "new": "Nouvelle Transaction",
-    "newTitle": "Enregistrer une Transaction",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?",
+    "new": "Nouvelle transaction",
+    "newShort": "Trans.",
+    "newTitle": "Enregistrer une transaction",
+    "moreOptions": "Plus d'options",
     "recurring": {
       "label": "Récurrentes",
-      "newTitle": "Nouvelle Transaction Récurrente",
-      "editTitle": "Modifier la Transaction Récurrente",
-      "listTitle": "Transactions Récurrentes",
+      "shortLabel": "Récurrente",
+      "newTitle": "Nouvelle transaction récurrente",
+      "editTitle": "Modifier la transaction récurrente",
+      "listTitle": "Transactions récurrentes",
       "emptyFilter": "Aucune transaction récurrente avec ce filtre.",
       "frequency": "Fréquence",
-      "selectFrequency": "Sélectionner la fréquence",
+      "selectFrequency": "Fréquence...",
       "interval": "Intervalle",
       "startDate": "Date de début",
       "endDate": "Date de fin",
@@ -364,21 +384,20 @@
       "createSuccess": "Transaction créée avec succès",
       "updateSuccess": "Transaction mise à jour avec succès",
       "deleteSuccess": "Transaction supprimée avec succès",
-      "createRecurringSuccess": "Transaction récurrente planifiée avec succès",
+      "createRecurringSuccess": "Transaction récurrente programmée avec succès",
       "updateRecurringSuccess": "Transaction récurrente mise à jour avec succès",
       "deleteRecurringSuccess": "Transaction récurrente supprimée avec succès"
-    },
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?"
+    }
   },
   "categories": {
     "add": "Ajouter une catégorie",
-    "newTitle": "Nouvelle Catégorie",
-    "editTitle": "Modifier la Catégorie - {{name}}",
+    "newTitle": "Nouvelle catégorie",
+    "editTitle": "Modifier la catégorie - {{name}}",
     "name": "Nom",
-    "namePlaceholder": "Ex. Alimentation, Voyages...",
+    "namePlaceholder": "Ex : Alimentation, Voyages...",
     "color": "Couleur",
     "budget": "Budget mensuel (€)",
-    "budgetHint": "Optionnel. Limite de dépenses mensuelles pour cette catégorie.",
+    "budgetHint": "Optionnel. Limite de dépense mensuelle pour cette catégorie.",
     "currentBudget": "Budget actuel : {{amount}} € / mois",
     "family": "Famille",
     "selectFamilyPlaceholder": "Sélectionner une famille",
@@ -393,55 +412,56 @@
     "save": "Enregistrer la catégorie",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "createError": "Erreur lors de la création de la catégorie. Réessayez.",
-    "updateError": "Erreur lors de la mise à jour de la catégorie. Réessayez.",
+    "createError": "Erreur lors de la création de la catégorie. Veuillez réessayer.",
+    "updateError": "Erreur lors de la mise à jour de la catégorie. Veuillez réessayer.",
     "deleteTitle": "Supprimer la catégorie",
     "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Les transactions associées ne seront pas supprimées, mais elles perdront leur classification.",
     "deleteError": "Erreur lors de la suppression de la catégorie",
-    "noBudgetTooltip": "Assignez un budget mensuel pour voir l'évolution",
+    "noBudgetTooltip": "Assignez un budget mensuel pour voir la progression",
     "createSuccess": "Catégorie créée avec succès",
     "updateSuccess": "Catégorie mise à jour avec succès",
     "deleteSuccess": "Catégorie supprimée avec succès",
-    "nameRequired": "Le nom de la catégorie est obligatoire",
-    "invalidBudget": "Entrez un budget valide",
-    "editDescription": "Modifiez les données de la catégorie",
+    "nameRequired": "Le nom de la catégorie es obligatoire",
+    "invalidBudget": "Saisissez un budget valide",
+    "editDescription": "Modifier les données de la catégorie",
     "nameLabel": "Nom de la catégorie",
     "budgetLabel": "Budget mensuel",
-    "budgetPlaceholder": "Ex. 500",
+    "budgetPlaceholder": "Ex : 500",
     "colorLabel": "Couleur de la catégorie"
   },
   "investments": {
     "title": "Investissements",
-    "portfolioValue": "Valeur du Portefeuille",
-    "monthlyReturn": "Rendement Mensuel",
+    "portfolioValue": "Valeur du portefeuille",
+    "monthlyReturn": "Rentabilité mensuelle",
     "dividends": "Dividendes",
     "comingSoon": "Bientôt disponible",
-    "evolution": "Évolution du Patrimoine",
+    "evolution": "Évolution du patrimoine",
     "lastMonths": "{{count}} derniers mois",
-    "distribution": "Répartition",
+    "distribution": "Distribution",
     "total": "Total",
-    "myAssets": "Mes Actifs",
+    "myAssets": "Mes actifs",
     "searchAsset": "Rechercher un actif...",
     "noAssets": "Aucun actif dans votre portefeuille",
     "shares": "parts",
     "filterAll": "Tous",
-    "new": "Nouvel Investissement",
-    "newTitle": "Enregistrer un Nouvel Investissement",
-    "assetName": "Nom de l'Actif",
-    "assetNamePlaceholder": "Ex. Apple Inc.",
+    "new": "Nouvel investissement",
+    "newTitle": "Enregistrer un nouvel investissement",
+    "assetName": "Nom de l'actif",
+    "assetNamePlaceholder": "Ex : Apple Inc.",
     "ticker": "Ticker",
-    "type": "Type d'Actif",
+    "type": "Type d'actif",
     "quantity": "Quantité",
-    "purchasePrice": "Prix d'Achat",
-    "purchaseDate": "Date d'Achat",
-    "save": "Enregistrer l'Investissement",
-    "updatePrice": "Actualiser le Prix",
-    "marketPrice": "Prix du Marché",
-    "newPrice": "Nouveau Prix",
-    "updateNow": "Actualiser Maintenant",
+    "purchasePrice": "Prix d'achat",
+    "purchaseDate": "Date d'achat",
+    "save": "Enregistrer l'investissement",
+    "updatePrice": "Actualiser le prix",
+    "marketPrice": "Prix du marché",
+    "newPrice": "Nouveau prix",
+    "updateNow": "Actualiser maintenant",
     "delete": "Supprimer",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet investissement ? Cette action est irréversible.",
-    "createError": "Erreur lors de la création de l'investissement. Réessayez.",
+    "createError": "Erreur lors de la création de l'investissement. Veuillez réessayer.",
+    "assetOptions": "Options de {{name}}",
     "types": {
       "stock": "Actions",
       "crypto": "Cryptomonnaies",
@@ -468,74 +488,83 @@
     }
   },
   "family": {
-    "title": "Unités Familiales",
+    "title": "Unités familiales",
     "selectOrCreate": "Sélectionnez une unité familiale ou créez-en une nouvelle",
     "noFamilies": "Vous n'avez pas encore d'unités familiales",
     "createFirst": "Créer ma première famille",
     "createNew": "Créer une nouvelle unité familiale",
     "create": "Créer",
     "redirectingToLogin": "Redirection vers la page de connexion...",
-    "createTitle": "Créer une Nouvelle Unité Familiale",
+    "createTitle": "Créer une nouvelle unité familiale",
     "createDesc": "Définissez le nom et l'objectif mensuel de la famille",
-    "familyName": "Nom de la Famille",
-    "familyNamePlaceholder": "Ex. Famille Martínez",
-    "monthlyGoal": "Objectif Mensuel",
+    "familyName": "Nom de la famille",
+    "familyNamePlaceholder": "Ex : Famille Martinez",
+    "monthlyGoal": "Objectif mensuel",
     "goal": "Objectif",
     "admin": "Admin",
     "invitationReceived": "Vous avez été invité dans une famille",
-    "invitationMessage": "Vous avez reçu une invitation à rejoindre une unité familiale. Voulez-vous accepter ?",
+    "invitationMessage": "Vous avez reçu une invitation pour rejoindre une unité familiale. Voulez-vous accepter ?",
     "member": "Membre",
     "members": "membres",
     "people": "personnes",
-    "inviteMember": "Inviter un Membre",
-    "inviteTitle": "Inviter à la Famille",
+    "inviteMember": "Inviter un membre",
+    "inviteShort": "Inviter",
+    "inviteTitle": "Inviter dans la famille",
     "inviteDesc": "Envoyez une invitation par e-mail à un utilisateur enregistré",
-    "email": "E-mail",
-    "emailPlaceholder": "exemple@mail.com",
-    "sendInvitation": "Envoyer l'Invitation",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "exemple@courrier.com",
+    "sendInvitation": "Envoyer l'invitation",
     "invalidEmail": "Le format de l'e-mail n'est pas valide",
-    "changeGoal": "Changer d'Objectif",
-    "changeGoalTitle": "Changer l'Objectif Mensuel",
+    "changeGoal": "Changer d'objectif",
+    "goalShort": "Objectif",
+    "changeGoalTitle": "Changer l'objectif mensuel",
     "changeGoalDesc": "Définissez un nouvel objectif mensuel pour la famille",
-    "goalProgress": "Progression de l'Objectif",
+    "goalProgress": "Progression de l'objectif",
     "goalProgressDesc": "Suivi mensuel des contributions familiales",
-    "collected": "Récolté",
+    "collected": "Collecté",
     "of": "sur",
     "mode": "Mode",
-    "distribution": "Répartition",
+    "distribution": "Distribution",
     "distributionDesc": "Mode {{mode}} : les contributions sont calculées selon la méthode sélectionnée",
-    "distributionMode": "Mode de Répartition",
+    "distributionMode": "Mode de répartition",
+    "progressBar": {
+      "label": "Progression de l'objectif mensuel",
+      "of": "sur"
+    },
     "modes": {
       "equitative": "Équitable",
       "equitativeDesc": "Tous les membres apportent le même montant",
       "proportional": "Proportionnel",
       "proportionalDesc": "La contribution est proportionnelle au salaire de chaque membre",
       "custom": "Personnalisé",
-      "customDesc": "L'administrateur définit manuellement le pourcentage de chaque membre"
+      "customDesc": "L'administrateur définit le pourcentage de chaque membre manuellement"
     },
-    "memberDetails": "Détails des Membres",
+    "memberDetails": "Détails des membres",
+    "memberOptions": "Options de {{name}}",
+    "memberProgress": "Progression de {{name}}",
     "contributions": "Contributions",
-    "contributionsHistory": "Historique des Contributions",
+    "contributionsHistory": "Historique des contributions",
     "noContributions": "Aucune contribution enregistrée pour le moment",
-    "addContribution": "Ajouter un Apport",
+    "addContribution": "Ajouter une contribution",
+    "addContributionShort": "Ajouter",
     "amount": "Montant",
-    "save": "Enregistrer l'Apport",
+    "save": "Enregistrer la contribution",
     "salary": "Salaire",
-    "monthlySalary": "Salaire Mensuel",
-    "toContribute": "À apporter",
-    "contributed": "Apporté",
+    "monthlySalary": "Salaire mensuel",
+    "toContribute": "À contribuer",
+    "contributed": "Contribué",
     "contribution": "Contribution",
-    "nextPayment": "Prochain Paiement",
+    "nextPayment": "Prochain paiement",
     "inDays": "dans {{days}} jours",
     "name": "Nom",
     "role": "Rôle",
     "edit": "Modifier",
-    "editMember": "Modifier le Membre",
+    "editMember": "Modifier le membre",
     "delete": "Supprimer",
-    "customPercentage": "Pourcentage Personnalisé",
-    "customPercentageHint": "La somme des pourcentages est de {{total}}%. Elle doit être de 100%.",
-    "customPercentageOk": "La somme des pourcentages est bien de 100%.",
-    "invitationFrom": "Invitation de {{sender}} à rejoindre {{family}}",
+    "customPercentage": "Pourcentage personnalisé",
+    "customPercentageHint": "Les pourcentages totalisent {{total}}%. Ils doivent totaliser 100%.",
+    "customPercentageOk": "Les pourcentages totalisent bien 100%.",
+    "invitationFrom": "Invitation de {{sender}} pour rejoindre {{family}}",
     "invalidToken": "Jeton d'invitation invalide",
     "invitationAccepted": "Vous avez rejoint la famille avec succès !",
     "invitationError": "Erreur lors du traitement de l'invitation",
@@ -543,12 +572,14 @@
     "welcome": "Bienvenue dans la famille !",
     "goToFamily": "Aller à ma famille",
     "error": "Erreur",
+    "back": "Retour",
+    "selectFamily": "Sélectionner la famille {{name}}",
     "alerts": {
       "createSuccess": "Famille créée avec succès",
       "createError": "Erreur lors de la création de la famille",
       "inviteSuccess": "Invitation envoyée avec succès",
       "inviteError": "Erreur lors de l'envoi de l'invitation",
-      "modeSuccess": "Mode de répartition mis à jour",
+      "modeSuccess": "Mode de distribution mis à jour",
       "modeError": "Erreur lors du changement de mode",
       "goalSuccess": "Objectif mensuel mis à jour",
       "goalError": "Erreur lors de la mise à jour de l'objectif",
@@ -556,18 +587,18 @@
       "memberEditError": "Erreur lors de la modification du membre",
       "memberDeleteSuccess": "Membre retiré de la famille",
       "memberDeleteError": "Erreur lors du retrait du membre",
-      "contributionSuccess": "Apport enregistré avec succès",
-      "contributionError": "Erreur lors de l'enregistrement de l'apport"
+      "contributionSuccess": "Contribution enregistrée avec succès",
+      "contributionError": "Erreur lors de l'enregistrement de la contribution"
     }
   },
   "api": {
     "errors": {
-      "default": "Erreur serveur inattendue.",
+      "default": "Erreur inattendue sur le serveur.",
       "status_401": "Votre session a expiré. Veuillez vous reconnecter.",
       "status_403": "Vous ne disposez pas des autorisations nécessaires pour cette section.",
       "status_404": "La ressource demandée n'est pas disponible.",
       "status_500": "Problème interne du serveur. Veuillez réessayer plus tard.",
-      "timeout": "La requête a mis trop de temps à répondre."
+      "timeout": "La demande a mis trop de temps à répondre."
     }
   }
 }

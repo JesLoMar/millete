@@ -1,7 +1,7 @@
-import { useCallback } from "react"
+import { useCallback, useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Construction } from "lucide-react"
+import { Construction, X } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getEnabledNavItems, getDisabledNavItems, type NavItem } from "@/shared/config/navigation"
@@ -17,12 +17,33 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isMobileOpen])
+
+  useEffect(() => {
+    ;(window as any).__sidebarOpen = () => setIsMobileOpen(true)
+    return () => {
+      delete (window as any).__sidebarOpen
+    }
+  }, [])
+
   const mainItems = getEnabledNavItems("main")
   const bottomItems = getEnabledNavItems("bottom")
   const disabledItems = showDisabled ? getDisabledNavItems() : []
 
   const handleNavigate = useCallback((path: string) => {
     navigate(path)
+    setIsMobileOpen(false)
   }, [navigate])
 
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
@@ -40,9 +61,9 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     return location.pathname.startsWith(item.path)
   }
 
-  return (
-    <aside className={cn("w-64 border-r bg-card/50 backdrop-blur-md flex flex-col h-[calc(100vh-4rem)] sticky top-16 select-none", className)}>
-      <nav className="flex-1 p-4" aria-label={t("sidebar.mainNav")}>
+  const sidebarContent = (
+    <>
+      <nav className="flex-1 p-4 overflow-y-auto" aria-label={t("sidebar.mainNav")}>
         <ul className="space-y-1">
           {mainItems.map((item) => {
             const active = isActive(item)
@@ -115,6 +136,53 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           </ul>
         </nav>
       )}
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* ============ OVERLAY OSCURO EN MÓVIL ============ */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ============ SIDEBAR ============ */}
+      <aside
+        className={cn(
+          // Estilos base
+          "border-r bg-card/50 backdrop-blur-md flex flex-col select-none",
+
+          "fixed inset-y-0 left-0 z-50 w-64",
+          "transition-transform duration-300 ease-in-out",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+
+          "md:static md:translate-x-0 md:z-auto",
+          "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
+
+          className
+        )}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-border md:hidden">
+          <span className="font-semibold text-sm text-foreground">
+            {t("sidebar.mobileTitle")}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileOpen(false)}
+            className="size-8"
+            aria-label={t("sidebar.close")}
+          >
+            <X size={18} />
+          </Button>
+        </div>
+
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

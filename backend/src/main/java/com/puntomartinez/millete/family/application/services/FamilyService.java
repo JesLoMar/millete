@@ -9,6 +9,7 @@ import com.puntomartinez.millete.family.domain.ports.out.*;
 import com.puntomartinez.millete.family.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class FamilyService implements
         CreateFamilyUnitUseCase,
@@ -76,6 +78,7 @@ public class FamilyService implements
 
         familyMemberRepository.save(adminMember);
 
+        log.info("Family unit created: {} (ID: {}) by user {}", name, familyUnit.getId(), adminUserId);
         return familyUnit;
     }
 
@@ -98,22 +101,19 @@ public class FamilyService implements
             throw new RuntimeException("Only Admins can invite new members");
         }
 
-        // Verificar que el email pertenece a un usuario registrado
         User invitedUser = userRepository.findByEmail(guestEmail)
-                .orElseThrow(() -> new RuntimeException("No existe un usuario con ese email"));
+                .orElseThrow(() -> new RuntimeException("No user found with that email"));
 
-        // Verificar que no sea ya miembro activo
         List<FamilyMember> members = familyMemberRepository.findByFamilyId(familyId);
         boolean alreadyMember = members.stream()
                 .anyMatch(m -> m.getUserId().equals(invitedUser.getId()) && m.isActive());
         if (alreadyMember) {
-            throw new RuntimeException("El usuario ya es miembro de esta familia");
+            throw new RuntimeException("User is already a member of this family");
         }
 
-        // Verificar que no tenga ya invitación PENDING
         familyInvitationRepository.findByFamilyIdAndEmailAndStatus(familyId, guestEmail, InvitationStatus.PENDING)
                 .ifPresent(i -> {
-                    throw new RuntimeException("Ya existe una invitación pendiente para este email");
+                    throw new RuntimeException("A pending invitation already exists for this email");
                 });
 
         FamilyInvitation invitation = new FamilyInvitation();
@@ -128,7 +128,13 @@ public class FamilyService implements
         invitation.setActive(true);
 
         invitation = familyInvitationRepository.save(invitation);
-        emailSenderPort.sendInvitationEmail(guestEmail, invitation.getToken());
+
+        try {
+            emailSenderPort.sendInvitationEmail(guestEmail, invitation.getToken());
+            log.info("Invitation sent to {} for family {}", guestEmail, familyId);
+        } catch (Exception e) {
+            log.error("Failed to send invitation email to {}: {}", guestEmail, e.getMessage(), e);
+        }
 
         return invitation;
     }
@@ -165,12 +171,12 @@ public class FamilyService implements
 
     public FamilyDetailResponseDTO getFamilyDetail(UUID familyId, UUID userId) {
         FamilyUnit family = familyUnitRepository.findById(familyId)
-                .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Family not found"));
 
         List<FamilyMember> allMembers = familyMemberRepository.findByFamilyId(familyId);
         boolean isMember = allMembers.stream().anyMatch(m -> m.getUserId().equals(userId) && m.isActive());
         if (!isMember) {
-            throw new RuntimeException("No tienes acceso a esta familia");
+            throw new RuntimeException("You do not have access to this family");
         }
 
         boolean isAdmin = allMembers.stream()
@@ -181,7 +187,7 @@ public class FamilyService implements
                 .map(m -> {
                     String memberName = userRepository.findById(m.getUserId())
                             .map(u -> u.getUsername() != null ? u.getUsername() : u.getEmail())
-                            .orElse("Miembro");
+                            .orElse("Member");
                     return new FamilyMemberDTO(
                             m.getId(),
                             m.getUserId(),
@@ -198,7 +204,7 @@ public class FamilyService implements
                 .map(c -> {
                     String userName = userRepository.findById(c.getUserId())
                             .map(u -> u.getUsername() != null ? u.getUsername() : u.getEmail())
-                            .orElse("Miembro");
+                            .orElse("Member");
                     return new FamilyContributionDTO(
                             c.getId(),
                             c.getUserId(),
@@ -222,52 +228,106 @@ public class FamilyService implements
 
     public void updateMember(UUID familyId, UUID memberId, UUID userId, UpdateMemberRequestDTO request) {
         FamilyMember requester = familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)
-                .orElseThrow(() -> new RuntimeException("No eres miembro de esta familia"));
+                .orElseThrow(() -> new RuntimeException("You are not a member of this family"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Solo los administradores pueden editar miembros");
+            throw new RuntimeException("Only administrators can edit members");
         }
 
         FamilyMember member = familyMemberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        if (request.getRole() != null) member.setRole(FamilyRole.valueOf(request.getRole()));
-        if (request.getSalary() != null) member.setSalary(request.getSalary());
-        if (request.getCustomPercentage() != null) member.setCustomPercentage(request.getCustomPercentage());
+        if (request.getRole() != null) {
+            member.setRole(FamilyRole.valueOf(request.getRole()));
+        }
+
+        if (request.getSalary() != null) {
+            member.setSalary(request.getSalary());
+        }
+
+        if (request.getCustomPercentage() != null) {
+            member.setCustomPercentage(request.getCustomPercentage());
+        }
+
         member.setModifiedAt(LocalDateTime.now());
-
         familyMemberRepository.save(member);
+        log.info("Member {} updated in family {} by admin {}", memberId, familyId, userId);
     }
 
     public void updateFamily(UUID familyId, UUID userId, UpdateFamilyRequestDTO request) {
         FamilyMember requester = familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)
-                .orElseThrow(() -> new RuntimeException("No eres miembro de esta familia"));
+                .orElseThrow(() -> new RuntimeException("You are not a member of this family"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Solo los administradores pueden editar la familia");
+            throw new RuntimeException("Only administrators can edit the family");
         }
 
         FamilyUnit family = familyUnitRepository.findById(familyId)
-                .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Family not found"));
 
-        if (request.getMonthlyTarget() != null) family.setMonthlyTarget(request.getMonthlyTarget());
-        if (request.getDistributionMode() != null) family.setDistributionMode(DistributionMode.valueOf(request.getDistributionMode()));
+        DistributionMode oldMode = family.getDistributionMode();
+
+        if (request.getMonthlyTarget() != null) {
+            family.setMonthlyTarget(request.getMonthlyTarget());
+        }
+
+        if (request.getDistributionMode() != null) {
+            DistributionMode newMode = DistributionMode.valueOf(request.getDistributionMode());
+
+            if (newMode == DistributionMode.CUSTOM && oldMode != DistributionMode.CUSTOM) {
+                List<FamilyMember> members = familyMemberRepository.findByFamilyId(familyId);
+                List<FamilyMember> activeMembers = members.stream()
+                        .filter(FamilyMember::isActive)
+                        .toList();
+
+                List<FamilyMember> membersWithoutPercentage = activeMembers.stream()
+                        .filter(m -> m.getCustomPercentage() == null)
+                        .toList();
+
+                if (!membersWithoutPercentage.isEmpty()) {
+                    int totalMembers = activeMembers.size();
+                    BigDecimal equalShare = new BigDecimal("100.00").divide(
+                            new BigDecimal(totalMembers), 2, java.math.RoundingMode.HALF_UP);
+
+                    BigDecimal sum = equalShare.multiply(new BigDecimal(membersWithoutPercentage.size() - 1));
+                    BigDecimal lastShare = new BigDecimal("100.00").subtract(sum);
+
+                    for (int i = 0; i < membersWithoutPercentage.size(); i++) {
+                        FamilyMember m = membersWithoutPercentage.get(i);
+                        if (i == membersWithoutPercentage.size() - 1) {
+                            m.setCustomPercentage(lastShare);
+                        } else {
+                            m.setCustomPercentage(equalShare);
+                        }
+                        m.setModifiedAt(LocalDateTime.now());
+                        familyMemberRepository.save(m);
+                    }
+
+                    log.info("Auto-assigned customPercentage to {} members in family {} for CUSTOM mode",
+                            membersWithoutPercentage.size(), familyId);
+                }
+            }
+
+            family.setDistributionMode(newMode);
+            log.info("Family {} distribution mode changed from {} to {}", familyId, oldMode, newMode);
+        }
+
         family.setModifiedAt(LocalDateTime.now());
-
         familyUnitRepository.save(family);
     }
 
     public void deleteMember(UUID familyId, UUID memberId, UUID userId) {
         FamilyMember requester = familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)
-                .orElseThrow(() -> new RuntimeException("No eres miembro de esta familia"));
+                .orElseThrow(() -> new RuntimeException("You are not a member of this family"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Solo los administradores pueden eliminar miembros");
+            throw new RuntimeException("Only administrators can delete members");
         }
 
         FamilyMember member = familyMemberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Miembro no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Member not found"));
 
         member.setActive(false);
         member.setModifiedAt(LocalDateTime.now());
         familyMemberRepository.save(member);
+        log.info("Member {} removed from family {} by admin {}", memberId, familyId, userId);
     }
 
     public void addContribution(UUID familyId, UUID userId, AddContributionRequestDTO request) {
@@ -282,25 +342,24 @@ public class FamilyService implements
         contribution.setActive(true);
 
         contributionRepository.save(contribution);
+        log.info("Contribution of {} added to family {} by user {}", request.getAmount(), familyId, userId);
     }
 
     @Override
     @Transactional
     public FamilyInvitation acceptInvitation(UUID userId, String token) {
         FamilyInvitation invitation = familyInvitationRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invitación no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
         if (!invitation.isAcceptable()) {
-            throw new RuntimeException("La invitación no es válida o ha expirado");
+            throw new RuntimeException("The invitation is not valid or has expired");
         }
 
-        // Verificar que el usuario no sea ya miembro
         familyMemberRepository.findByFamilyIdAndUserId(invitation.getFamilyId(), userId)
                 .ifPresent(m -> {
-                    throw new RuntimeException("Ya eres miembro de esta familia");
+                    throw new RuntimeException("You are already a member of this family");
                 });
 
-        // Añadir miembro
         FamilyMember member = new FamilyMember();
         member.setId(UUID.randomUUID());
         member.setFamilyId(invitation.getFamilyId());
@@ -313,9 +372,9 @@ public class FamilyService implements
         member.setActive(true);
         familyMemberRepository.save(member);
 
-        // Marcar invitación aceptada
         invitation.markAsAccepted();
         familyInvitationRepository.save(invitation);
+        log.info("User {} accepted invitation to family {}", userId, invitation.getFamilyId());
 
         return invitation;
     }

@@ -44,7 +44,7 @@ export function calculateContributions(
   }
 
   return members.map((m) => {
-    const contributed = contributedMap[m.id] || 0
+    const contributed = contributedMap[m.userId || m.id] || 0
     const expected = expectedMap[m.id] || 0
     return {
       ...m,

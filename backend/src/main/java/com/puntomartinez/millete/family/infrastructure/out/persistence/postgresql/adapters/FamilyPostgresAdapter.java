@@ -3,7 +3,7 @@ package com.puntomartinez.millete.family.infrastructure.out.persistence.postgres
 import com.puntomartinez.millete.family.domain.model.FamilyUnit;
 import com.puntomartinez.millete.family.domain.ports.out.FamilyUnitRepository;
 import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.entity.FamilyUnitEntity;
-import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.mappers.FamilyPersistenceMapper;
+import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.mappers.FamilyUnitEntityMapper;
 import com.puntomartinez.millete.family.infrastructure.out.persistence.postgresql.repository.JpaFamilyUnitRepository;
 
 import org.springframework.stereotype.Component;
@@ -14,9 +14,9 @@ import java.util.UUID;
 public class FamilyPostgresAdapter implements FamilyUnitRepository {
 
     private final JpaFamilyUnitRepository jpaRepository;
-    private final FamilyPersistenceMapper mapper;
+    private final FamilyUnitEntityMapper mapper;
 
-    public FamilyPostgresAdapter(JpaFamilyUnitRepository jpaRepository, FamilyPersistenceMapper mapper) {
+    public FamilyPostgresAdapter(JpaFamilyUnitRepository jpaRepository, FamilyUnitEntityMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
     }

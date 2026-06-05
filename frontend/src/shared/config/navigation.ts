@@ -3,9 +3,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   PieChart,
-  FileText,
-  Settings,
-  HelpCircle,
   TrendingUp,
   LayoutGrid
 } from "lucide-react"
@@ -34,18 +31,9 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     icon: LayoutDashboard,
     labelKey: "sidebar.dashboard",
     path: "/dashboard",
-    enabled: true,        // ✅ Implementado
+    enabled: true,
     section: "main",
     order: 1,
-  },
-  {
-    id: "transactions",
-    icon: ArrowLeftRight,
-    labelKey: "sidebar.transactions",
-    path: "/transactions",
-    enabled: true,       // ✅ Implementado
-    section: "main",
-    order: 2,
   },
   {
     id: "categories",
@@ -54,6 +42,15 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     path: "/categories",
     enabled: true,      //✅ Implementado
     section: "main",
+    order: 2,
+  },
+  {
+    id: "transactions",
+    icon: ArrowLeftRight,
+    labelKey: "sidebar.transactions",
+    path: "/transactions",
+    enabled: true,
+    section: "main",
     order: 3,
   },
   {
@@ -61,7 +58,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     icon: TrendingUp,
     labelKey: "sidebar.investments",
     path: "/investments",
-    enabled: true,       //✅ Implementado
+    enabled: true,
     section: "main",
     order: 4,
   },
@@ -70,39 +67,10 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     icon: PieChart,
     labelKey: "sidebar.family",
     path: "/family",
-    enabled: true,       //✅ Implementado
+    enabled: true,
     section: "main",
     order: 5,
-  },
-  {
-    id: "reports",
-    icon: FileText,
-    labelKey: "sidebar.reports",
-    path: "/reports",
-    enabled: false,       // ⏳ Pendiente
-    section: "main",
-    order: 6,
-  },
-
-  // ─── Bottom Navigation ─────────────────────────────────
-  {
-    id: "settings",
-    icon: Settings,
-    labelKey: "sidebar.settings",
-    path: "/settings",
-    enabled: false,       // ⏳ Pendiente
-    section: "bottom",
-    order: 1,
-  },
-  {
-    id: "help",
-    icon: HelpCircle,
-    labelKey: "sidebar.help",
-    path: "/help",
-    enabled: false,       // ⏳ Pendiente
-    section: "bottom",
-    order: 2,
-  },
+  }
 ]
 
 // ─── Helpers ──────────────────────────────────────────────

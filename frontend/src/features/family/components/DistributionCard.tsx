@@ -29,17 +29,19 @@ export function DistributionCard({
   const { t } = useTranslation()
 
   return (
-    <Card className="col-span-12 lg:col-span-3 border-subtle bg-primary/5 relative overflow-hidden">
+    <Card className="border-subtle bg-primary/5 relative overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center justify-between">
-          {t("family.distributionMode")}
-          {isChangingMode && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+        <CardTitle className="text-base flex items-center justify-between gap-2">
+          <span className="truncate">{t("family.distributionMode")}</span>
+          {isChangingMode && (
+            <Loader2 size={14} className="animate-spin text-muted-foreground shrink-0" aria-hidden="true" />
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {isAdmin ? (
           <Select value={distributionMode} onValueChange={onModeChange} disabled={isChangingMode}>
-            <SelectTrigger className="bg-background border-border">
+            <SelectTrigger className="bg-background border-border w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
@@ -49,7 +51,7 @@ export function DistributionCard({
             </SelectContent>
           </Select>
         ) : (
-          <p className="text-sm font-medium">
+          <p className="text-sm font-medium truncate">
             {t(`family.modes.${distributionMode.toLowerCase()}`)}
           </p>
         )}
@@ -58,19 +60,17 @@ export function DistributionCard({
         </p>
 
         {isCustomMode && (
-          <div className={`flex items-start gap-2 p-2 rounded-lg border text-xs transition-colors ${
+          <div className={`flex items-start gap-2 p-2 sm:p-3 rounded-lg border text-xs transition-colors ${
             isPercentageInvalid 
               ? "bg-amber-500/10 border-amber-500/20 text-amber-400" 
               : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
           }`}>
             {isPercentageInvalid ? (
-              <AlertCircle className="size-4 shrink-0 mt-0.5" />
+              <AlertCircle className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
             ) : (
-              <CheckCircle2 className="size-4 shrink-0 mt-0.5" />
+              <CheckCircle2 className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
             )}
-            <span>
-              {isPercentageInvalid ? t("family.customPercentageHint") : t("family.customPercentageOk")}
-            </span>
+            <span>{isPercentageInvalid ? t("family.customPercentageHint") : t("family.customPercentageOk")}</span>
           </div>
         )}
       </CardContent>

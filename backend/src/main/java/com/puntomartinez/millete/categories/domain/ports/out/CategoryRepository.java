@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface CategoryRepository {
     Category save(Category category);
-    Optional<Category> findById(UUID idEtiqueta);
-    List<Category> findAll();
-    List<Category> findByIdUsuario(UUID idUsuario);
+    Optional<Category> findById(UUID id);
+    Optional<Category> findByIdAndUserId(UUID id, UUID userId);
+    List<Category> findByIdUsuario(UUID userId);
     List<Category> findCategoriesWithBudgetByUserId(UUID userId);
 }

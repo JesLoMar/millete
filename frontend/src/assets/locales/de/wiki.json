@@ -1,0 +1,94 @@
+{
+  "sections": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Das Hauptpanel, auf dem Sie den Status Ihrer Finanzen sehen und auf die wichtigsten Funktionen zugreifen können.",
+      "topics": [
+        {
+          "title": "Schnellzugriff",
+          "content": "Vom Dashboard aus haben Sie schnellen Zugriff auf: \n\n- Transaktion hinzufügen: Ermöglicht das Hinzufügen von Einnahmen oder Ausgaben zum Kontostand. Sie müssen kategorisiert werden.\n\n- Kategorie erstellen: Ermöglicht das Erstellen neuer Kategorien zur Organisation Ihrer Transaktionen. Ihnen kann ein Budget zugewiesen werden.\n\n- Daten importieren: Ermöglicht den Import von Benutzerdaten aus einer früheren Version.\n\n- Daten exportieren: Ermöglicht den Export von Daten für einen späteren Import."
+        },
+        {
+          "title": "Wichtigste Kennzahlen",
+          "content": "Direkt unter dem vorherigen Abschnitt finden Sie vier Karten mit Ihrem aktuellen Kontostand, Einnahmen, Ausgaben und dem frei verfügbaren Guthaben. Jede zeigt den Trend im Vergleich zum vorherigen Zeitraum mit einem Prozentsatz in Grün oder Rot.\n\nVerwenden Sie die Zeitraumauswahl (Woche, Monat, Jahr), um den Zeitrahmen zu ändern."
+        },
+        {
+          "title": "Informationspanels",
+          "content": "Unter den Hauptkennzahlen finden Sie Panels mit Diagrammen und zusammenfassenden Informationen zu Ihren Ausgaben und Budgets.\n\n- Ausgabenverlauf: Zeigt ein Balkendiagramm mit der Entwicklung Ihrer Ausgaben im Laufe der Zeit.\n\n- Ausgaben nach Kategorie: Zeigt ein Ringdiagramm mit den Gesamtausgaben für jede Kategorie im ausgewählten Zeitraum.\n\n- Budgets: Wenn Sie Kategorien mit einem Budget haben, sehen Sie einen Balken, der anzeigt, wie viel Sie im Verhältnis zum Budget ausgegeben haben."
+        }
+      ]
+    },
+    "transactions": {
+      "title": "Transaktionen",
+      "description": "Das Modul, in dem Sie alle Ihre finanziellen Bewegungen, ob einmalige oder automatisierte Vorgänge, erfassen und verwalten.",
+      "topics": [
+        {
+          "title": "Transaktion erfassen",
+          "content": "Um eine einzelne Bewegung hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Transaktion'. Es öffnet sich ein Formular, in dem Sie Folgendes angeben müssen:\n\n- Beschreibung: Ein identifizierender Name oder Begriff (z. B. Wocheneinkauf bei Lidl).\n- Typ: Ermöglicht die Klassifizierung des Vorgangs als 'Ausgabe' oder 'Einnahme'.\n- Betrag (€): Der genaue Betrag des Vorgangs.\n- Kategorie: Ermöglicht die Zuweisung der Bewegung zu einer bestehenden Kategorie über ein Dropdown-Menü."
+        },
+        {
+          "title": "Neue wiederkehrende Transaktion",
+          "content": "Wenn Sie feste Zahlungen oder Einnahmen haben, können Sie diese über die Schaltfläche 'Wiederkehrend' automatisieren. Dieses Formular enthält die grundlegenden Felder einer normalen Transaktion und fügt Planungsoptionen hinzu:\n\n- Häufigkeit und Intervall: Ermöglicht die Konfiguration, wie oft der Vorgang wiederholt wird.\n- Startdatum: Legt den genauen Tag fest, an dem das System beginnt, die Bewegung automatisch zu erfassen.\n- Enddatum (optional): Legt ein Zeitlimit fest, ab dem die Transaktion nicht mehr wiederholt wird."
+        },
+        {
+          "title": "Filtern und Suchen",
+          "content": "Das System enthält Tools, um Ihre Einträge schnell zu finden:\n\n- Schnelle Registerkarten: Schaltflächen zum Filtern der Liste, die 'Alle', nur 'Einnahmen' oder nur 'Ausgaben' anzeigen. Enthält einen Zähler mit der Gesamtzahl der gefundenen Vorgänge.\n- Suchmaschine: Eine Textleiste ('Suche nach Beschreibung...'), mit der Sie eine bestimmte Bewegung finden können, indem Sie die Schlüsselwörter des Begriffs eingeben."
+        }
+      ]
+    },
+    "categories": {
+      "title": "Kategorien",
+      "description": "Das Modul zur Klassifizierung Ihrer finanziellen Bewegungen und zur Festlegung monatlicher Ausgabenlimits, um Ihre Budgets unter Kontrolle zu halten.",
+      "topics": [
+        {
+          "title": "Neue Kategorie erstellen",
+          "content": "Um eine neue Klassifizierung zu registrieren, klicken Sie auf die Schaltfläche '+ Neue Kategorie'. Es wird ein schwebendes Formular mit den folgenden Pflichtfeldern angezeigt:\n\n- Name: Der identifizierende Begriff der Kategorie (z. B. Lebensmittel, Transport, Freizeit).\n- Farbe: Eine visuelle Auswahl oder ein Textfeld zur Zuweisung einer benutzerdefinierten Farbe im Hexadezimalformat (z. B. #FF5733), was die visuelle Identifizierung in den Diagrammen erleichtert.\n- Monatliches Budget (€): Das maximale Limit an Geld, das Sie in diesem Monat in dieser Kategorie ausgeben möchten."
+        },
+        {
+          "title": "Verwaltungs- und Visualisierungspanel",
+          "content": "Auf dem Hauptbildschirm des Moduls sehen Sie ein Raster mit all Ihren aktiven Kategorien. Jede Karte zeigt Ihnen übersichtlich:\n\n- Den Namen der Kategorie und die dazugehörige markante Farbe.\n- Das zugewiesene monatliche Budget (oder der entsprechende Hinweis, wenn es ohne Budgetlimit konfiguriert wurde).\n- Schnellaktionsschaltflächen, um das Element in Echtzeit zu verwalten."
+        },
+        {
+          "title": "Ändern und Löschen",
+          "content": "Jede Kategoriekarte verfügt über zwei direkte Aktionssymbole in der oberen rechten Ecke:\n\n- Bearbeiten-Symbol (Stift): Öffnet das Formular erneut, um den Namen zu ändern, die Farbpalette anzupassen oder das monatliche Budgetlimit zu ändern.\n- Löschen-Symbol (Mülleimer): Ermöglicht das sichere Entfernen der Kategorie aus dem System."
+        }
+      ]
+    },
+    "investments": {
+      "title": "Investitionen",
+      "description": "Das Modul zur Verfolgung Ihrer variablen Finanzanlagen, mit dem Sie die Entwicklung des Wertes Ihres Portfolios und seiner Rentabilität in Echtzeit kontrollieren können.",
+      "topics": [
+        {
+          "title": "Portfolio-Kennzahlen und Diagramme",
+          "content": "Im oberen Teil des Panels werden drei Analysekarten angezeigt, die den Gesamtstatus Ihres Portfolios konsolidieren:\n\n- Investiertes Kapital: Die Gesamtsumme des Geldes, das Sie für den Kauf Ihrer Anlagen bereitgestellt haben.\n- Aktueller Wert: Der aktuelle Marktwert aller Ihrer kombinierten Bestände.\n- Rendite / Gewinn: Der kumulierte Nettogewinn oder -verlust (mit einem Prozentsatz und einem Trendindikator in Grün oder Rot).\n\nDirekt darunter finden Sie erweiterte visuelle Panels, darunter ein Liniendiagramm, das die zeitliche Entwicklung Ihres Vermögenswertes darstellt, und ein Diagramm, das die Verteilung Ihrer Mittel nach Anlageklasse aufschlüsselt."
+        },
+        {
+          "title": "Neue Investition erfassen",
+          "content": "Um eine neue Anlage zu Ihrem Portfolio hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Investition'. Es öffnet sich ein schwebendes Formular mit den folgenden Pflichtfeldern:\n\n- Name und Ticker: Der Name des Vermögenswerts (z. B. Apple) und sein abgekürzter Börsencode (z. B. AAPL).\n- Menge: Die Gesamtzahl der erworbenen Einheiten oder Aktien.\n- Kaufpreis (€): Die Stückkosten, die Sie beim Erwerb der Anlage bezahlt haben.\n- Aktueller Preis (€): Der aktuelle Marktwert der Einheit.\n- Anlageart: Dropdown-Menü zur Klassifizierung der Art des Vermögenswerts."
+        },
+        {
+          "title": "Preisaktualisierung und Operationen",
+          "content": "Im unteren Raster oder der Liste werden alle aktiven Investitionen angezeigt. Jedes Element verfügt über Schnellaktionsschaltflächen, um Ihre Daten auf dem neuesten Stand zu halten:\n\n- Aktuellen Preis aktualisieren: Eine exklusive Verknüpfung, mit der Sie den Marktpreis der Anlage isoliert schnell ändern können, um den Gewinn sofort neu zu berechnen, ohne den gesamten Datensatz bearbeiten zu müssen.\n- Investition bearbeiten: Ermöglicht die Korrektur der ursprünglichen Parameter des Datensatzes.\n- Abmelden (Mülleimer): Führt eine logische Löschung durch, um den Vermögenswert sicher aus Ihrer aktiven Portfolioansicht zu entfernen."
+        }
+      ]
+    },
+    "family": {
+      "title": "Familie",
+      "description": "Das kooperative Modul, mit dem Sie ein gemeinsames Budget verwalten, andere Benutzer einladen und die Beiträge jedes Mitglieds zu einem gemeinsamen Ziel überwachen können.",
+      "topics": [
+        {
+          "title": "Fortschritt und Familieneinstellungen",
+          "content": "Oben sehen Sie Ihr 'Monatsziel' und einen Fortschrittsbalken ('Fortschritt diesen Monat'), der den Prozentsatz und die gesammelte Gesamtsumme grafisch widerspiegelt. Sie können die Gruppenregeln über das Zahnradsymbol (Familieneinstellungen) ändern, wo Sie Folgendes definieren:\n\n- Name der Familie: Identifikator der Gruppe.\n- Monatsziel (€): Der wirtschaftliche Gesamtbetrag, den die Gruppe im Monat sammeln möchte.\n- Verteilungsmodus: Ermöglicht die Auswahl, wie die Zahlung des Ziels unter den Benutzern aufgeteilt wird, mit drei Optionen: 'Gleiche Teile', 'Proportional zum Gehalt' oder 'Benutzerdefinierte Prozentsätze'."
+        },
+        {
+          "title": "Mitgliederverwaltung und Einladungen",
+          "content": "Das zentrale Panel 'Familienmitglieder' schlüsselt die Mitglieder, ihre Rolle (ADMIN oder MEMBER), ihre Verteilungskonfiguration (Gehalt/Prozentsatz), ihre zugewiesene 'Quote' (was sie zahlen müssen) und das, was sie bereits 'Beigetragen' haben, auf.\n\n- + Mitglied einladen: Öffnet ein Dialogfeld, um eine neue Person hinzuzufügen, indem die 'E-Mail des einzuladenden Benutzers' eingegeben wird.\n- Individuelle Aktionen: Am Ende jeder Mitgliederzeile befindet sich ein Optionsmenü (drei Punkte), das es ermöglicht, 'Mitglied bearbeiten' (um die finanziellen Parameter anzupassen) oder 'Mitglied entfernen', um es aus der Gruppe zu nehmen."
+        },
+        {
+          "title": "Registrierung und Kontrolle von Beiträgen",
+          "content": "In der unteren Tabelle 'Letzte Beiträge' wird das historische Protokoll der Kapitalzufuhren in den gemeinsamen Fonds geführt:\n\n- Schaltfläche + Hinzufügen: Öffnet das Formular 'Beitrag erfassen', in dem Sie den 'Einzuzahlenden Betrag (€)' angeben müssen. Dadurch wird der allgemeine Fortschrittsbalken automatisch aktualisiert.\n- Verlauf: Zeigt den Namen des Mitglieds, den beigetragenen Betrag und das Datum der Transaktion an. Es verfügt über ein Mülleimer-Symbol unter der Spalte 'Aktionen', um versehentlich erfasste Beiträge zu löschen."
+        }
+      ]
+    }
+  }
+}

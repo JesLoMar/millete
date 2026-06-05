@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { LanguageSelector } from "@/shared/components/LanguageSelector"
 import { ThemeSelector } from "@/shared/components/ThemeSelector"
-import { Wallet2, User, LogOut } from "lucide-react"
+import { User, LogOut, Menu } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ interface TopNavProps {
 }
 
 function getUserDisplay(
-  user: { name?: string; email?: string } | null, 
+  user: { name?: string; email?: string } | null,
   t: (key: string) => string
 ): {
   primary: string
@@ -61,40 +61,71 @@ export function TopNav({ className }: TopNavProps) {
     logout()
   }, [logout, t])
 
+  const handleOpenSidebar = useCallback(() => {
+    ; (window as any).__sidebarOpen?.()
+  }, [])
+
   return (
     <header className={cn(
-      "h-16 border-b bg-card/50 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-40 transition-all",
+      "h-16 border-b bg-card/50 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-all",
       className
     )}>
-      <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => handleNavigate("/dashboard")}>
-        <div className="bg-primary/10 p-2 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10">
-          <Wallet2 className="size-5" />
-        </div>
-        <span className="font-bold text-lg tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-          {t("app.name")}
-        </span>
+      {/* ============ LADO IZQUIERDO ============ */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden size-9 -ml-1"
+          onClick={handleOpenSidebar}
+          aria-label={t("sidebar.open")}
+        >
+          <Menu size={20} aria-hidden="true" />
+        </Button>
+
+        <button
+          onClick={() => handleNavigate("/dashboard")}
+          className="flex items-center gap-2.5 select-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label={t("nav.goToDashboard")}
+        >
+          <div className="bg-primary/10 p-0.5 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center">
+            <img
+              src="/web-app-icon.png"
+              alt=""
+              className="size-9 sm:size-10 object-contain"
+              aria-hidden="true"
+            />
+          </div>
+          <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
+            {t("app.name")}
+          </span>
+        </button>
       </div>
 
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
-        <div className="h-8 w-px bg-border mx-2" />
-        
+
+        <div className="h-8 w-px bg-border/60 mx-1 sm:mx-2" />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-10 flex items-center gap-2 px-3 rounded-full hover:bg-accent/50"
+              className="relative h-10 flex items-center gap-2 px-2 sm:px-3 rounded-full hover:bg-accent/50"
+              aria-label={t("nav.userMenu")}
             >
-              <div className="text-right">
+              <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <User size={16} aria-hidden="true" />
+              </div>
+              <div className="hidden sm:block text-right">
                 <p className={cn(
-                  "font-medium leading-none",
-                  hasOnlyOneField ? "text-sm" : "text-sm"
+                  "font-medium leading-none text-sm",
+                  hasOnlyOneField && "text-sm"
                 )}>
                   {primary}
                 </p>
                 {secondary && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-30">
                     {secondary}
                   </p>
                 )}
@@ -103,7 +134,7 @@ export function TopNav({ className }: TopNavProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => handleNavigate("/profile")}>
-              <User className="mr-2 size-4" />
+              <User className="mr-2 size-4" aria-hidden="true" />
               {t("nav.profile")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -111,7 +142,7 @@ export function TopNav({ className }: TopNavProps) {
               onClick={handleLogout}
               className="text-destructive focus:text-destructive"
             >
-              <LogOut className="mr-2 size-4" />
+              <LogOut className="mr-2 size-4" aria-hidden="true" />
               {t("nav.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>

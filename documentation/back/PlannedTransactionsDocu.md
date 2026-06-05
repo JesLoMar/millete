@@ -2,7 +2,7 @@
 
 ## Estructura de archivos
 
-- **application/services/PlannedTransactionService.java** — Servicio central con CRUD y procesamiento automático
+- **application/services/PlannedTransactionService.java** — Servicio central con CRUD, procesamiento automático y lógica de recurrencia completa
 - **domain/model/PlannedTransaction.java** — Entidad de dominio con validaciones
 - **domain/ports/in/RegisterPlannedTransactionUseCase.java** — Interfaz de registro
 - **domain/ports/in/UpdatePlannedTransactionUseCase.java** — Interfaz de actualización
@@ -40,7 +40,7 @@ Elimina lógicamente una plantilla (soft delete). Verifica propiedad del usuario
 
 ## PlannedTransactionService.java
 
-Servicio central que implementa los 4 casos de uso.
+Servicio central que implementa los 4 casos de uso. Utiliza @Slf4j de Lombok para logging estructurado con niveles de severidad (INFO, DEBUG, ERROR).
 
 ### Registrar plantilla (register)
 1. Si se especifica categoría, verifica que exista.
@@ -50,9 +50,10 @@ Servicio central que implementa los 4 casos de uso.
 ### Procesar tareas programadas (processScheduledTasks)
 1. Obtiene todas las plantillas activas.
 2. Para cada una, evalúa si debe ejecutarse hoy mediante shouldExecuteToday.
-3. Si corresponde, crea una transacción real llamando a RegisterTransactionUseCase.
-4. La transacción se crea con fecha de hoy a las 00:00 y descripción con sufijo "(Recurrente)".
-5. Anotado con @Transactional para garantizar atomicidad.
+3. Si corresponde, registra la ejecución mediante log.info con los datos relevantes (descripción, importe, usuario).
+4. Crea una transacción real llamando a RegisterTransactionUseCase.
+5. La transacción se crea con fecha de hoy a las 00:00 y descripción con sufijo "(Recurring)".
+6. Anotado con @Transactional para garantizar atomicidad.
 
 ### Actualizar plantilla (update)
 1. Busca la plantilla por ID.
@@ -65,8 +66,27 @@ Servicio central que implementa los 4 casos de uso.
 2. Verifica que pertenezca al usuario.
 3. Marca active = false (soft delete).
 
-### Lógica shouldExecuteToday
-Actualmente compara la fecha de inicio con la fecha actual. Es un placeholder para una implementación futura que calculará intervalos (cada X días/semanas/meses/años).
+### Lógica de recurrencia (shouldExecuteToday)
+
+Implementación completa del cálculo de recurrencia que determina si una plantilla debe ejecutarse en una fecha concreta.
+
+**Validaciones previas:**
+- Si la fecha actual es anterior a startDate, retorna false.
+- Si existe endDate y la fecha actual es posterior, retorna false.
+
+**Cálculo de ocurrencias:**
+1. Calcula cuántos períodos han pasado desde startDate hasta hoy usando el método calculatePeriodsPassed. Divide la diferencia temporal por el intervalo de frecuencia para obtener el número de períodos completos transcurridos.
+2. Calcula la fecha de la última ocurrencia con addPeriods, multiplicando los períodos por el intervalo y sumándolos a startDate.
+3. Si la fecha resultante coincide exactamente con hoy, retorna true.
+
+**Soporte para todos los tipos de frecuencia:**
+- DAYS: calcula días transcurridos y suma días.
+- WEEKS: calcula semanas transcurridas y suma semanas.
+- MONTHS: calcula meses transcurridos y suma meses.
+- YEARS: calcula años transcurridos y suma años.
+
+**Ejemplo de funcionamiento:**
+Una plantilla con startDate = 2026-01-15, frequencyType = MONTHS y frequencyInterval = 1 se ejecutará los días 15 de enero, 15 de febrero, 15 de marzo, etc. Con frequencyInterval = 3 se ejecutaría cada 3 meses: 15 de enero, 15 de abril, 15 de julio, etc.
 
 ---
 
@@ -117,7 +137,7 @@ Implementa PlannedTransactionRepository. findAllByUserId ordena por fecha de ini
 
 ## Conexión con el scheduler
 
-TransactionScheduler (en shared/infrastructure) ejecuta processScheduledTasks cada día a las 00:01 AM. Este método itera sobre todas las plantillas activas y crea transacciones reales para las que corresponda ejecutarse ese día.
+TransactionScheduler (en shared/infrastructure) ejecuta processScheduledTasks cada día a las 00:01 AM. Este método itera sobre todas las plantillas activas y crea transacciones reales para las que corresponda ejecutarse ese día según la lógica de recurrencia implementada.
 
 ---
 

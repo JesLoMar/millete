@@ -85,62 +85,64 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
           inputRef.current?.focus()
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {t("categories.newTitle")}
-          </DialogTitle>
-        </DialogHeader>
+        <div className="max-h-[85dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {t("categories.newTitle")}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("categories.name")}</Label>
-            <Input
-              ref={inputRef}
-              placeholder={t("categories.namePlaceholder")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isCreating}
-              className="bg-background border-border"
-            />
+          <div className="space-y-4 py-2 sm:py-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t("categories.name")}</Label>
+              <Input
+                ref={inputRef}
+                placeholder={t("categories.namePlaceholder")}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isCreating}
+                className="bg-background border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t("categories.color")}</Label>
+              <ColorPicker value={color} onChange={setColor} />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t("categories.budget")}</Label>
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={budgetLimit}
+                onChange={(e) => setBudgetLimit(e.target.value)}
+                disabled={isCreating}
+                className="bg-background border-border"
+                min="0"
+                step="0.01"
+              />
+              <p className="text-xs text-muted-foreground">{t("categories.budgetHint")}</p>
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("categories.color")}</Label>
-            <ColorPicker value={color} onChange={setColor} />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("categories.budget")}</Label>
-            <Input
-              type="number"
-              placeholder="0.00"
-              value={budgetLimit}
-              onChange={(e) => setBudgetLimit(e.target.value)}
-              disabled={isCreating}
-              className="bg-background border-border"
-              min="0"
-              step="0.01"
-            />
-            <p className="text-xs text-muted-foreground">{t("categories.budgetHint")}</p>
-          </div>
-
-          {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
-          )}
+          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isCreating || !name.trim()}
+              className="bg-primary hover:bg-primary/90 px-6"
+            >
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("categories.save")}
+            </Button>
+          </DialogFooter>
         </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isCreating || !name.trim()}
-            className="bg-primary hover:bg-primary/90 px-6"
-          >
-            {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("categories.save")}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

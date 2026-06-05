@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/ui/button"
 import { Input } from "@/shared/components/ui/input"
@@ -30,16 +30,20 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
   const { t } = useTranslation()
   const [role, setRole] = useState<string>(member?.role || "MEMBER")
   const [salary, setSalary] = useState(member?.salary?.toString() || "")
-  const [customPercentage, setCustomPercentage] = useState(member?.customPercentage?.toString() || "")
+
+  useEffect(() => {
+    if (member) {
+      setRole(member.role || "MEMBER")
+      setSalary(member.salary?.toString() || "")
+    }
+  }, [member])
 
   const handleSave = () => {
     if (member) {
-      const clampedPercentage = Math.max(0, Math.min(100, Number(customPercentage) || 0))
       onSave({
         ...member,
         role: role as FamilyMember["role"],
         salary: Number(salary) || 0,
-        customPercentage: clampedPercentage,
       })
     }
   }
@@ -81,19 +85,6 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
               onChange={(e) => setSalary(e.target.value)}
               className="bg-background border-border"
               min="0"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("family.customPercentage")}</Label>
-            <Input
-              type="number"
-              value={customPercentage}
-              onChange={(e) => setCustomPercentage(e.target.value)}
-              className="bg-background border-border"
-              min="0"
-              max="100"
-              step="0.1"
             />
           </div>
         </div>

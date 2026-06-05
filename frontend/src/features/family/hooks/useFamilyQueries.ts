@@ -6,7 +6,7 @@ import type { FamilyListItem, FamilyUnitData, FamilyMember, FamilyContribution }
 interface RawFamilyResponse {
   id: string
   name: string
-  monthlyTarget: number
+  monthlyGoal: number
   distributionMode: "EQUITATIVE" | "PROPORTIONAL" | "CUSTOM"
   isAdmin: boolean
   members: RawFamilyMember[]
@@ -18,17 +18,16 @@ interface RawFamilyMember {
   name?: string
   role: string
   salary?: number
+  customPercentage?: number
   userId?: string
 }
 
 interface RawFamilyContribution {
   id: string
-  memberId: string
-  memberName?: string
+  userId: string
+  name: string
   amount: number
   date: string
-  contributionDate?: string
-  name?: string
 }
 
 export function useFamilyQueries(selectedFamilyId: string | null) {
@@ -62,22 +61,23 @@ export function useFamilyQueries(selectedFamilyId: string | null) {
     return {
       id: rawFamily.id,
       name: rawFamily.name,
-      monthlyGoal: rawFamily.monthlyTarget,
+      monthlyGoal: rawFamily.monthlyGoal ?? 0,
       distributionMode: rawFamily.distributionMode,
       isAdmin: rawFamily.isAdmin,
       members: rawFamily.members.map((m: RawFamilyMember): FamilyMember => ({
         id: m.id,
-        name: m.name || "Miembro",
+        name: m.name || "Member",
         role: m.role === "ADMIN" ? "ADMIN" : "MEMBER",
         salary: m.salary || 0,
+        customPercentage: m.customPercentage,
         userId: m.userId,
       })),
       contributions: (rawFamily.contributions || []).map((c: RawFamilyContribution): FamilyContribution => ({
         id: c.id,
-        memberId: c.memberId,
-        memberName: c.memberName || c.name || "Miembro",
+        memberId: c.userId,
+        memberName: c.name || "Member",
         amount: c.amount,
-        date: c.date || c.contributionDate || "",
+        date: c.date || "",
       })),
     }
   }, [rawFamily])

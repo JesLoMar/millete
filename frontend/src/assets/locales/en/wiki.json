@@ -1,0 +1,94 @@
+{
+  "sections": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "The main panel where you can see the status of your finances and access key features.",
+      "topics": [
+        {
+          "title": "Quick access",
+          "content": "From the Dashboard you have quick access to: \n\n- Add transaction: Allows you to add income or expenses to your account balance. They must be categorized.\n\n- Create category: Allows you to create new categories to organize your transactions. You can assign a budget to them.\n\n- Import data: Allows you to import user data from a version prior to the current one.\n\n- Export data: Allows you to export data for later import."
+        },
+        {
+          "title": "Main metrics",
+          "content": "Immediately below the previous section you will find four cards with your current balance, income, expenses, and free balance. Each shows the trend compared to the previous period with a percentage in green or red.\n\nUse the period selector (week, month, year) to change the time range."
+        },
+        {
+          "title": "Information panels",
+          "content": "Below the main metrics, you will find panels with charts and summarized information about your expenses and budgets.\n\n- Expense history: Shows a bar chart with the evolution of your expenses over time.\n\n- Expenses by category chart: Shows a donut chart with the total spent in each category during the selected period.\n\n- Budgets: If you have categories with a budget, you will see a bar indicating how much you have spent against the budget."
+        }
+      ]
+    },
+    "transactions": {
+      "title": "Transactions",
+      "description": "The module where you record and manage all your financial movements, whether punctual or automated operations.",
+      "topics": [
+        {
+          "title": "Record Transaction",
+          "content": "To add a single movement, click the '+ New Transaction' button. A form will open where you must indicate:\n\n- Description: An identifying name or concept (e.g. Weekly shopping at Lidl).\n- Type: Allows classifying the operation as 'Expense' or 'Income'.\n- Amount (€): The exact amount of the operation.\n- Category: Allows assigning the movement to an existing category through a dropdown menu."
+        },
+        {
+          "title": "New Recurring Transaction",
+          "content": "If you have fixed payments or collections, you can automate them using the 'Recurring' button. This form includes the basic fields of a normal transaction, adding scheduling options:\n\n- Frequency and Interval: Allows configuring how often the operation will repeat.\n- Start date: Defines the exact day the system will start recording the movement automatically.\n- End date (optional): Sets a time limit for the transaction to stop repeating."
+        },
+        {
+          "title": "Filtering and Search",
+          "content": "The system includes tools to quickly locate your records:\n\n- Quick tabs: Buttons to filter the list showing 'All', only 'Income' or only 'Expenses'. Includes a counter with the total operations found.\n- Search engine: A text bar ('Search by description...') that allows you to find a specific movement by typing its concept keywords."
+        }
+      ]
+    },
+    "categories": {
+      "title": "Categories",
+      "description": "The module designed to classify your financial movements and set monthly spending limits to keep your budgets under control.",
+      "topics": [
+        {
+          "title": "Create New Category",
+          "content": "To register a new classification, click the '+ New Category' button. A floating form will be displayed with the following mandatory fields:\n\n- Name: The identifying term of the category (e.g. Food, Transport, Leisure).\n- Color: A visual selector or text field to assign a custom color in hexadecimal format (e.g. #FF5733), which will ease its visual identification in charts.\n- Monthly budget (€): The maximum limit of money you plan to spend in this category throughout the month."
+        },
+        {
+          "title": "Management and Visualization Panel",
+          "content": "On the module's main screen you will see a grid with all your active categories. Each card clearly shows you:\n\n- The name of the category and its associated distinctive color.\n- The assigned monthly budget (or the corresponding indication if it was configured without a budget limit).\n- Quick action buttons to manage the element in real time."
+        },
+        {
+          "title": "Modify and Delete",
+          "content": "Each category card has two direct action icons in the top right corner:\n\n- Edit Icon (Pencil): Opens the form again to modify the name, change the color palette or adjust the monthly budget limit.\n- Delete Icon (Trash): Allows safely deregistering the category from the system."
+        }
+      ]
+    },
+    "investments": {
+      "title": "Investments",
+      "description": "The module designed for tracking your variable financial assets, allowing you to control the evolution of your portfolio's value and its profitability in real time.",
+      "topics": [
+        {
+          "title": "Portfolio Metrics and Charts",
+          "content": "At the top of the panel there are three analytical cards that consolidate the overall status of your portfolio:\n\n- Invested Capital: The total sum of money you have allocated to purchase your assets.\n- Current Value: The current market value of all your combined assets.\n- Yield / Profit: The accumulated net profit or loss (with a percentage and trend indicator in green or red).\n\nJust below you have advanced visual panels, including a line chart that draws the temporal evolution of your equity value and a chart detailing the distribution of your funds according to asset type."
+        },
+        {
+          "title": "Record New Investment",
+          "content": "To add a new asset to your portfolio, click the '+ New Investment' button. A floating form will open with the following mandatory fields:\n\n- Name and Ticker: The name of the asset (e.g. Apple) and its abbreviated trading code (e.g. AAPL).\n- Quantity: The total number of units or shares acquired.\n- Purchase price (€): The unit cost you paid when acquiring the asset.\n- Current price (€): The current market quotation unit value.\n- Investment type: Dropdown to classify the nature of the asset."
+        },
+        {
+          "title": "Price Update and Operations",
+          "content": "The bottom grid or list shows all active investments. Each element has quick action buttons to keep your data updated:\n\n- Update Current Price: An exclusive shortcut that allows you to quickly modify the market quote of the asset in isolation to immediately recalculate profits without having to edit the whole file.\n- Edit Investment: Allows you to correct any of the original parameters of the record.\n- Deregister (Trash): Performs a logical deletion to safely remove the asset from your active portfolio view."
+        }
+      ]
+    },
+    "family": {
+      "title": "Family",
+      "description": "The cooperative module that allows you to manage a shared budget, invite other users and monitor each member's contributions towards a common goal.",
+      "topics": [
+        {
+          "title": "Family Progress and Settings",
+          "content": "At the top you will view your 'Monthly Goal' and a 'Progress this month' bar that graphically reflects the percentage and total amount gathered. You can modify the group rules from the gear icon (Family Settings), where you will define:\n\n- Family Name: Group identifier.\n- Monthly Goal (€): The total economic amount the group aims to gather in the month.\n- Distribution Mode: Allows choosing how the goal payment is divided among users through three options: 'Equal parts', 'Proportional to salary' or 'Custom percentages'."
+        },
+        {
+          "title": "Member Management and Invitations",
+          "content": "The central 'Family Members' panel breaks down the members, their role (ADMIN or MEMBER), their sharing configuration (salary/percentage), their assigned 'Quota' (what they must pay) and what they have already 'Contributed'.\n\n- + Invite Member: Opens a dialog box to add someone new by entering the 'Email of the user to invite'.\n- Individual actions: At the end of each member's row there is an options menu (three dots) that allows to 'Edit member' (to adjust their financial parameters) or 'Delete member' to remove them from the group."
+        },
+        {
+          "title": "Contribution Record and Control",
+          "content": "In the lower 'Recent Contributions' table, the historical record of capital injections to the common fund is kept:\n\n- + Add Button: Opens the 'Record Contribution' form where you must indicate the 'Amount to contribute (€)'. This will automatically update the general progress bar.\n- History: Shows the member's name, the contributed amount and the transaction date. It has a trash icon under the 'Actions' column to delete mistakenly recorded contributions."
+        }
+      ]
+    }
+  }
+}
