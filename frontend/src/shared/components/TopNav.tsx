@@ -101,6 +101,7 @@ export function TopNav({ className }: TopNavProps) {
         </button>
       </div>
 
+      {/* ============ LADO DERECHO ============ */}
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
@@ -111,21 +112,22 @@ export function TopNav({ className }: TopNavProps) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-10 flex items-center gap-2 px-2 sm:px-3 rounded-full hover:bg-accent/50"
+              className="relative h-10 sm:h-auto flex items-center gap-2 px-2 sm:px-3 rounded-full sm:rounded-lg hover:bg-accent/50 transition-all py-1.5"
               aria-label={t("nav.userMenu")}
             >
-              <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 sm:hidden">
                 <User size={16} aria-hidden="true" />
               </div>
-              <div className="hidden sm:block text-right">
+              
+              <div className="hidden sm:block text-left min-w-0">
                 <p className={cn(
-                  "font-medium leading-none text-sm",
+                  "font-medium leading-none text-sm text-foreground",
                   hasOnlyOneField && "text-sm"
                 )}>
                   {primary}
                 </p>
                 {secondary && (
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-30">
+                  <p className="text-xs text-muted-foreground mt-1 truncate max-w-37.5">
                     {secondary}
                   </p>
                 )}

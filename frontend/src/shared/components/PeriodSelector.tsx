@@ -21,8 +21,7 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
   return (
     <div 
       className={cn(
-        "inline-flex p-1 bg-secondary/50 backdrop-blur-sm rounded-xl border border-border/50",
-        "w-full sm:w-auto",
+        "flex sm:inline-flex p-1 bg-secondary/40 backdrop-blur-md rounded-xl border border-border/40 w-full sm:w-auto min-w-0",
         className
       )}
       role="group"
@@ -36,18 +35,19 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
             onClick={() => onPeriodChange(option.value)}
             type="button"
             className={cn(
-              "flex-1 sm:flex-none px-3 sm:px-5 py-2",
-              "text-xs sm:text-sm font-bold uppercase tracking-wide sm:tracking-wider",
-              "rounded-lg transition-all",
+              "flex-1 sm:flex-none px-2 sm:px-5 py-2",
+              "text-xs sm:text-sm font-bold uppercase tracking-wider",
+              "rounded-lg transition-all duration-200 cursor-pointer min-w-17.5 sm:min-w-21.25 h-10 flex items-center justify-center select-none",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-              "min-h-11",
               isActive
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                ? "bg-primary text-primary-foreground shadow-sm font-extrabold"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
             )}
             aria-current={isActive ? "true" : undefined}
           >
-            {t(option.labelKey)}
+            <span className="truncate w-full block text-center">
+              {t(option.labelKey)}
+            </span>
           </button>
         )
       })}

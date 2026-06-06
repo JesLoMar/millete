@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export const LoginPage = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -23,18 +23,20 @@ export const LoginPage = () => {
 
   return (
     <main 
-      className="min-h-screen flex bg-background selection:bg-primary/30 selection:text-white"
+      className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background relative overflow-x-hidden select-none"
       aria-label="Página de inicio de sesión"
     >
       <section 
-        className="w-full lg:w-1/3 shrink-0 relative z-10"
+        className="w-full flex items-start justify-center p-6 sm:p-12 md:p-16 relative z-10 min-w-0"
         aria-label="Formulario de autenticación"
       >
-        <AuthForm />
+        <div className="w-full max-w-md mx-auto">
+          <AuthForm />
+        </div>
       </section>
 
       <section 
-        className="hidden lg:block lg:w-2/3"
+        className="hidden lg:flex w-full min-w-0 relative z-10"
         aria-label="Información y novedades"
       >
         <InfoSection />

@@ -73,8 +73,8 @@
     },
     "greeting": "Hello, <br />welcome.",
     "footer": {
-      "webVersion": "WEB v0.0.2",
-      "apiVersion": "API v0.0.2",
+      "webVersion": "WEB v0.0.3",
+      "apiVersion": "API v0.0.3",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -177,6 +177,11 @@
       "title": "Recent news",
       "subtitle": "Discover the latest improvements added to the platform.",
       "items": [
+        {
+          "tag": "v0.0.3",
+          "title": "Visual and logic bug fixes",
+          "description": "Adaptation of styles to be compatible with browsers like Safari. Deleted categories and transactions are no longer taken into account for metrics calculation."
+        },
         {
           "tag": "v0.0.2",
           "title": "User wiki, reinforced security and system optimization",

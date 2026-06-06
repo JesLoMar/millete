@@ -73,8 +73,8 @@
     },
     "greeting": "Hola, <br />bienvenido.",
     "footer": {
-      "webVersion": "WEB v0.0.2",
-      "apiVersion": "API v0.0.2",
+      "webVersion": "WEB v0.0.3",
+      "apiVersion": "API v0.0.3",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -177,6 +177,11 @@
       "title": "Novedades recientes",
       "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
       "items": [
+        {
+          "tag": "v0.0.3",
+          "title": "Arreglos de fallos visuales y de lógica",
+          "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+        },
         {
           "tag": "v0.0.2",
           "title": "Wiki de usuario, seguridad reforzada y optimización del sistema",
