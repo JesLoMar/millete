@@ -44,16 +44,10 @@ public class DashboardService implements GetDashboardDataUseCase {
         LocalDateTime[] previousRange = getPreviousPeriod(period);
 
         List<Transaction> currentTransactions = transactionRepository
-                .findByUserIdAndDateBetween(userId, currentRange[0], currentRange[1])
-                .stream()
-                .filter(Transaction::isActive)
-                .toList();
+                .findByUserIdAndDateBetween(userId, currentRange[0], currentRange[1]);
 
         List<Transaction> previousTransactions = transactionRepository
-                .findByUserIdAndDateBetween(userId, previousRange[0], previousRange[1])
-                .stream()
-                .filter(Transaction::isActive)
-                .toList();
+                .findByUserIdAndDateBetween(userId, previousRange[0], previousRange[1]);
 
         BigDecimal currentIncome = sumByType(currentTransactions, TransactionType.INCOME);
         BigDecimal currentExpenses = sumByType(currentTransactions, TransactionType.EXPENSE);
@@ -71,8 +65,8 @@ public class DashboardService implements GetDashboardDataUseCase {
                 calculateTrend(currentBalance, previousBalance),
                 calculateTrend(currentIncome, previousIncome),
                 calculateTrend(currentExpenses, previousExpenses),
-                calculateTrend(currentIncome.subtract(currentExpenses), previousIncome.subtract(previousExpenses))
-        );
+                calculateTrend(currentIncome.subtract(currentExpenses), previousIncome.subtract(previousExpenses)
+                ));
     }
 
     // =====================================================
@@ -98,7 +92,6 @@ public class DashboardService implements GetDashboardDataUseCase {
         List<Transaction> expenses = transactionRepository
                 .findByUserIdAndDateBetween(userId, range[0], range[1])
                 .stream()
-                .filter(Transaction::isActive)
                 .filter(t -> t.getType() == TransactionType.EXPENSE)
                 .toList();
 
@@ -106,43 +99,86 @@ public class DashboardService implements GetDashboardDataUseCase {
                 .map(t -> t.getAmount().abs())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Map<UUID, List<Transaction>> byCategory = expenses.stream()
-                .collect(Collectors.groupingBy(Transaction::getCategoryId));
+        Map<UUID, List<Transaction>> byCategory = new HashMap<>();
+        List<Transaction> orphanTransactions = new ArrayList<>();
 
-        List<CategoryExpenseItemResponseDTO> categoryItems = byCategory.entrySet().stream()
-                .map(entry -> {
-                    UUID categoryId = entry.getKey();
-                    BigDecimal amount = entry.getValue().stream()
-                            .map(t -> t.getAmount().abs())
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    double percentage = calculatePercentage(amount, totalExpenses);
-                    String categoryName = categoryRepository.findById(categoryId)
-                            .map(Category::getName)
-                            .orElse("Sin categoría");
-                    return new CategoryExpenseItemResponseDTO(categoryName, amount, percentage, entry.getValue().size());
-                })
-                .sorted((a, b) -> b.amount().compareTo(a.amount()))
-                .collect(Collectors.toList());
+        for (Transaction tx : expenses) {
+            if (tx.getCategoryId() == null) {
+                orphanTransactions.add(tx);
+            } else {
+                byCategory.computeIfAbsent(tx.getCategoryId(), k -> new ArrayList<>()).add(tx);
+            }
+        }
+
+        List<CategoryExpenseItemResponseDTO> categoryItems = new ArrayList<>();
+
+        // Procesar categorías con ID
+        for (Map.Entry<UUID, List<Transaction>> entry : byCategory.entrySet()) {
+            UUID categoryId = entry.getKey();
+            BigDecimal amount = entry.getValue().stream()
+                    .map(t -> t.getAmount().abs())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            double percentage = calculatePercentage(amount, totalExpenses);
+
+            String categoryName = categoryRepository.findById(categoryId)
+                    .map(Category::getName)
+                    .orElse("Sin categoría");
+
+            categoryItems.add(new CategoryExpenseItemResponseDTO(
+                    categoryName, amount, percentage, entry.getValue().size()
+            ));
+        }
+
+        // Procesar transacciones huérfanas (sin categoría)
+        if (!orphanTransactions.isEmpty()) {
+            BigDecimal orphanAmount = orphanTransactions.stream()
+                    .map(t -> t.getAmount().abs())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            double orphanPercentage = calculatePercentage(orphanAmount, totalExpenses);
+
+            // Combinar con "Sin categoría" existente o crear nuevo
+            Optional<CategoryExpenseItemResponseDTO> existingOrphan = categoryItems.stream()
+                    .filter(item -> "Sin categoría".equals(item.name()))
+                    .findFirst();
+
+            if (existingOrphan.isPresent()) {
+                CategoryExpenseItemResponseDTO old = existingOrphan.get();
+                BigDecimal combinedAmount = old.amount().add(orphanAmount);
+                double combinedPercentage = calculatePercentage(combinedAmount, totalExpenses);
+                int combinedCount = old.transactionCount() + orphanTransactions.size();
+
+                categoryItems.remove(old);
+                categoryItems.add(new CategoryExpenseItemResponseDTO(
+                        "Sin categoría", combinedAmount, combinedPercentage, combinedCount
+                ));
+            } else {
+                categoryItems.add(new CategoryExpenseItemResponseDTO(
+                        "Sin categoría", orphanAmount, orphanPercentage, orphanTransactions.size()
+                ));
+            }
+        }
+
+        categoryItems.sort((a, b) -> b.amount().compareTo(a.amount()));
 
         return new DashboardCategoriesResponseDTO(totalExpenses, groupSmallCategories(categoryItems, totalExpenses));
     }
 
     // =====================================================
-// 4. PRESUPUESTOS
-// =====================================================
+    // 4. PRESUPUESTOS
+    // =====================================================
     @Override
     public DashboardBudgetsResponseDTO getBudgets(UUID userId, String period) {
         LocalDateTime[] range = getDateRange(period);
-        List<Category> categoriesWithBudget = categoryRepository.findCategoriesWithBudgetByUserId(userId).stream()
-                .filter(Category::isActive).toList();
+
+        List<Category> categoriesWithBudget = categoryRepository.findCategoriesWithBudgetByUserId(userId);
+
         List<Transaction> periodTransactions = transactionRepository
-                .findByUserIdAndDateBetween(userId, range[0], range[1]).stream()
-                .filter(Transaction::isActive).toList();
+                .findByUserIdAndDateBetween(userId, range[0], range[1]);
 
         List<BudgetItemResponseDTO> budgetItems = categoriesWithBudget.stream()
                 .map(category -> {
                     BigDecimal spent = periodTransactions.stream()
-                            .filter(t -> t.getCategoryId().equals(category.getId()))
+                            .filter(t -> t.getCategoryId() != null && t.getCategoryId().equals(category.getId()))
                             .filter(t -> t.getType() == TransactionType.EXPENSE)
                             .map(t -> t.getAmount().abs())
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -167,12 +203,24 @@ public class DashboardService implements GetDashboardDataUseCase {
     // =====================================================
     @Override
     public DashboardTransactionsResponseDTO getRecentTransactions(UUID userId, int limit) {
-        List<Transaction> recentTransactions = transactionRepository.findRecentByUserId(userId, limit).stream()
-                .filter(Transaction::isActive).toList();
+        List<Transaction> recentTransactions = transactionRepository.findRecentByUserId(userId, limit);
+
         List<RecentTransactionResponseDTO> transactionDTOs = recentTransactions.stream()
-                .map(t -> new RecentTransactionResponseDTO(t.getId(), t.getDescription(),
-                        categoryRepository.findById(t.getCategoryId()).map(Category::getName).orElse("Sin categoría"),
-                        t.getCategoryId(), t.getAmount(), t.getDate(), t.getType().name()))
+                .map(t -> {
+                    String catName = "Sin categoría";
+                    String catColor = null;
+                    if (t.getCategoryId() != null) {
+                        var cat = categoryRepository.findById(t.getCategoryId());
+                        if (cat.isPresent()) {
+                            catName = cat.get().getName();
+                            catColor = cat.get().getColor();
+                        }
+                    }
+                    return new RecentTransactionResponseDTO(
+                            t.getId(), t.getDescription(), catName, catColor,
+                            t.getCategoryId(), t.getAmount(), t.getDate(), t.getType().name()
+                    );
+                })
                 .collect(Collectors.toList());
         return new DashboardTransactionsResponseDTO(transactionDTOs);
     }
@@ -184,8 +232,7 @@ public class DashboardService implements GetDashboardDataUseCase {
     public DashboardGoalsResponseDTO getSavingsGoals(UUID userId) {
         LocalDateTime yearAgo = LocalDateTime.now().minusYears(1);
         List<Transaction> yearlyTransactions = transactionRepository
-                .findByUserIdAndDateBetween(userId, yearAgo, LocalDateTime.now()).stream()
-                .filter(Transaction::isActive).toList();
+                .findByUserIdAndDateBetween(userId, yearAgo, LocalDateTime.now());
         return new DashboardGoalsResponseDTO(generateSavingsGoals(yearlyTransactions, userId));
     }
 
@@ -407,7 +454,6 @@ public class DashboardService implements GetDashboardDataUseCase {
             BigDecimal dayExpenses = transactionRepository
                     .findByUserIdAndDateBetween(userId, dayStart, dayEnd)
                     .stream()
-                    .filter(Transaction::isActive)
                     .filter(t -> t.getType() == TransactionType.EXPENSE)
                     .map(t -> t.getAmount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -441,7 +487,6 @@ public class DashboardService implements GetDashboardDataUseCase {
             BigDecimal weekExpenses = transactionRepository
                     .findByUserIdAndDateBetween(userId, startDateTime, endDateTime)
                     .stream()
-                    .filter(Transaction::isActive)
                     .filter(t -> t.getType() == TransactionType.EXPENSE)
                     .map(t -> t.getAmount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -480,7 +525,6 @@ public class DashboardService implements GetDashboardDataUseCase {
             BigDecimal monthExpenses = transactionRepository
                     .findByUserIdAndDateBetween(userId, startDateTime, endDateTime)
                     .stream()
-                    .filter(Transaction::isActive)
                     .filter(t -> t.getType() == TransactionType.EXPENSE)
                     .map(t -> t.getAmount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);

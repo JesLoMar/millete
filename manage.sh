@@ -35,12 +35,18 @@ case "$1" in
         echo "Manual backup..."
         docker compose exec db-backup sh -c '
             FILE="/backups/${PGDATABASE}_manual_$(date +%Y%m%d_%H%M%S).sql.gz"
-            PGPASSWORD="${PGPASSWORD}" pg_dump -h ${PGHOST} -U ${PGUSER} -d ${PGDATABASE} | gzip > "$FILE"
-            echo "Backup: $(basename $FILE)"
+            PGPASSWORD="${PGPASSWORD}" pg_dump -h ${PGHOST} -U ${PGUSER} -d ${PGDATABASE} --no-owner --no-acl | gzip > "$FILE"
+            echo "Backup created: $(basename $FILE)"
         '
         ;;
     restore)
-        docker compose exec db-backup sh /restore.sh
+        echo "Stopping backend to release database connections..."
+        docker compose stop backend
+        echo ""
+        docker compose exec -it db-backup sh /scripts/restore.sh
+        echo ""
+        echo "Restarting backend..."
+        docker compose start backend
         ;;
     init)
         echo "Initializing project..."

@@ -7,8 +7,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -43,14 +43,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             null,
                             Collections.emptyList()
                     );
-
-                    SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    context.setAuthentication(authToken);
-                    SecurityContextHolder.setContext(context);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception ex) {
-            logger.debug("JWT Authentication failed: " + ex.getMessage());
+            logger.error("JWT Authentication failed: " + ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);

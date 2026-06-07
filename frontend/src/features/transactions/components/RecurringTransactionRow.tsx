@@ -58,10 +58,10 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
                             aria-label={t("transactions.moreOptions")}
                         >
                             <MoreHorizontal size={16} aria-hidden="true" />
@@ -96,9 +96,9 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 className="size-8"
                                 aria-label={t("transactions.moreOptions")}
                             >

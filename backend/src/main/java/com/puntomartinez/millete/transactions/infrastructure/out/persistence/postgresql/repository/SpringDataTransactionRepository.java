@@ -12,9 +12,10 @@ import java.util.UUID;
 
 @Repository
 public interface SpringDataTransactionRepository extends JpaRepository<TransactionEntity, UUID> {
+
     List<TransactionEntity> findAllByUserIdOrderByDateDesc(UUID userId);
 
-    @Query("SELECT t FROM TransactionEntity t WHERE t.userId = :userId AND t.date >= :start AND t.date <= :end")
+    @Query("SELECT t FROM TransactionEntity t WHERE t.userId = :userId AND t.date >= :start AND t.date <= :end AND t.active = true")
     List<TransactionEntity> findByUserIdAndDateBetween(
             @Param("userId") UUID userId,
             @Param("start") LocalDateTime start,
@@ -22,5 +23,6 @@ public interface SpringDataTransactionRepository extends JpaRepository<Transacti
     );
 
     List<TransactionEntity> findTop5ByUserIdOrderByDateDesc(UUID userId);
+
     List<TransactionEntity> findAllByCategoryId(UUID categoryId);
 }

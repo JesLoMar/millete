@@ -75,11 +75,10 @@ class DashboardServiceTest {
     @DisplayName("Obtener gastos por categoría")
     void shouldGetCategories() {
         UUID categoryId = UUID.randomUUID();
-        Transaction expense = mock(Transaction.class);
+        Transaction expense = mock(Transaction.class, RETURNS_DEEP_STUBS);
         when(expense.getType()).thenReturn(Transaction.TransactionType.EXPENSE);
         when(expense.getAmount()).thenReturn(new BigDecimal("-300.00"));
         when(expense.getCategoryId()).thenReturn(categoryId);
-        when(expense.isActive()).thenReturn(true);
 
         Category category = mock(Category.class);
         when(category.getName()).thenReturn("Transporte");
@@ -103,13 +102,11 @@ class DashboardServiceTest {
         when(category.getId()).thenReturn(categoryId);
         when(category.getName()).thenReturn("Transporte");
         when(category.getBudgetLimit()).thenReturn(new BigDecimal("500.00"));
-        when(category.isActive()).thenReturn(true);
 
         Transaction expense = mock(Transaction.class);
         when(expense.getCategoryId()).thenReturn(categoryId);
         when(expense.getType()).thenReturn(Transaction.TransactionType.EXPENSE);
         when(expense.getAmount()).thenReturn(new BigDecimal("-300.00"));
-        when(expense.isActive()).thenReturn(true);
 
         when(categoryRepository.findCategoriesWithBudgetByUserId(userId)).thenReturn(List.of(category));
         when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
@@ -131,7 +128,6 @@ class DashboardServiceTest {
         when(category.getId()).thenReturn(categoryId);
         when(category.getName()).thenReturn("Transporte");
         when(category.getBudgetLimit()).thenReturn(new BigDecimal("500.00"));
-        when(category.isActive()).thenReturn(true);
 
         when(categoryRepository.findCategoriesWithBudgetByUserId(userId)).thenReturn(List.of(category));
         when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
@@ -146,6 +142,7 @@ class DashboardServiceTest {
     @DisplayName("Obtener transacciones recientes")
     void shouldGetRecentTransactions() {
         Transaction tx = createTransaction(Transaction.TransactionType.EXPENSE, "-50.00");
+        // Estos stubs adicionales SÍ se usan en el método getRecentTransactions
         when(tx.getDescription()).thenReturn("Compra");
         when(tx.getCategoryId()).thenReturn(UUID.randomUUID());
 
@@ -200,9 +197,8 @@ class DashboardServiceTest {
 
     private Transaction createTransaction(Transaction.TransactionType type, String amount) {
         Transaction tx = mock(Transaction.class);
-        when(tx.getType()).thenReturn(type);
-        when(tx.getAmount()).thenReturn(new BigDecimal(amount));
-        when(tx.isActive()).thenReturn(true);
+        lenient().when(tx.getType()).thenReturn(type);
+        lenient().when(tx.getAmount()).thenReturn(new BigDecimal(amount));
         return tx;
     }
 

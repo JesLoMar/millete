@@ -13,10 +13,10 @@ import { RegisterFields } from "./AuthForm/RegisterFields"
 import { PasswordField } from "./AuthForm/PasswordField"
 import { AuthFooter } from "./AuthForm/AuthFooter"
 
-import { 
-  loginSchema, 
-  registerSchema, 
-  type CombinedAuthFormData 
+import {
+  loginSchema,
+  registerSchema,
+  type CombinedAuthFormData
 } from "@/features/auth/schemas/auth.schema"
 import type { RegisterUserRequest } from "../types"
 
@@ -65,68 +65,64 @@ export function AuthForm() {
   }
 
   return (
-    <div className="flex flex-col min-h-dvh p-6 sm:p-8 md:p-12 w-full bg-background relative z-20">
+    <div className="w-full flex flex-col justify-center space-y-8 sm:space-y-12 py-6">
       <AuthHeader />
 
-      <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto py-8 sm:py-0">
-        <div className="space-y-8 sm:space-y-12">
-          <div className="space-y-3 sm:space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-foreground leading-tight">
-              <Trans i18nKey="auth.greeting" />
-            </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
-              {t("auth.brand.tagline")}
+      <div className="space-y-3 sm:space-y-4">
+        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
+          <Trans i18nKey="auth.greeting" />
+        </h1>
+        <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
+          {t("auth.brand.tagline")}
+        </p>
+      </div>
+
+      <div className="space-y-6 sm:space-y-8">
+        <AuthToggle mode={mode} onToggle={handleModeChange} />
+
+        <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {mode === "register" && (
+            <RegisterFields
+              register={register}
+              errors={errors}
+              disabled={isPending}
+              hasIdentifier={hasIdentifier}
+            />
+          )}
+
+          {mode === "login" && (
+            <LoginFields register={register} disabled={isPending} errors={errors} />
+          )}
+
+          <PasswordField register={register} disabled={isPending} mode={mode} />
+
+          {isLoginError && mode === "login" && (
+            <p className="text-red-400 text-sm font-medium">
+              {t("auth.form.error.invalidCredentials")}
             </p>
-          </div>
+          )}
+          {isRegisterError && mode === "register" && (
+            <p className="text-red-400 text-sm font-medium">
+              {t("auth.form.error.registerFailed")}
+            </p>
+          )}
 
-          <div className="space-y-8 sm:space-y-10">
-            <AuthToggle mode={mode} onToggle={handleModeChange} />
-
-            <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              {mode === "register" && (
-                <RegisterFields
-                  register={register}
-                  errors={errors}
-                  disabled={isPending}
-                  hasIdentifier={hasIdentifier}
-                />
-              )}
-
-              {mode === "login" && (
-                <LoginFields register={register} disabled={isPending} errors={errors} />
-              )}
-
-              <PasswordField register={register} disabled={isPending} mode={mode} />
-
-              {isLoginError && mode === "login" && (
-                <p className="text-red-400 text-sm font-medium">
-                  {t("auth.form.error.invalidCredentials")}
-                </p>
-              )}
-              {isRegisterError && mode === "register" && (
-                <p className="text-red-400 text-sm font-medium">
-                  {t("auth.form.error.registerFailed")}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isPending || !isValid}
-                className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg font-bold rounded-xl transition-all group mt-4"
-              >
-                {isPending
-                  ? t("auth.submit.loading")
-                  : mode === "login"
-                    ? t("auth.submit.default")
-                    : t("auth.submit.register")}
-                <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </form>
-          </div>
-        </div>
+          <Button
+            type="submit"
+            disabled={isPending || !isValid}
+            className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg font-bold rounded-xl transition-all group mt-4 cursor-pointer"
+          >
+            {isPending
+              ? t("auth.submit.loading")
+              : mode === "login"
+                ? t("auth.submit.default")
+                : t("auth.submit.register")}
+            <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </form>
       </div>
 
       <AuthFooter />
     </div>
-  )
+  );
 }

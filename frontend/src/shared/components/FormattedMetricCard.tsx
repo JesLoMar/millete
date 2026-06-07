@@ -58,33 +58,33 @@ export function FormattedMetricCard({
       icon={icon}
       color={color}
       loading={loading}
-      className={className}
+      className={cn("w-full min-w-0 flex flex-col justify-between p-4 sm:p-5", className)}
     >
       {hasValidTrend ? (
-        <div className="flex items-center gap-1.5">
-          <span className={cn("flex items-center text-sm font-medium", trendColor)}>
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-2 w-full min-w-0">
+          <span className={cn("flex items-center text-xs sm:text-sm font-semibold shrink-0", trendColor)}>
             {isTrendUp ? (
-              <ArrowUpRight className="size-4 mr-0.5" />
+              <ArrowUpRight className="size-3.5 mr-0.5 shrink-0" />
             ) : (
-              <ArrowDownRight className="size-4 mr-0.5" />
+              <ArrowDownRight className="size-3.5 mr-0.5 shrink-0" />
             )}
             {Math.abs(trend)}%
           </span>
 
           {formattedTrendValue && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] sm:text-xs text-muted-foreground truncate max-w-full">
               {formattedTrendValue}
             </span>
           )}
 
           {periodLabel && (
-            <span className="text-xs text-muted-foreground/80">
+            <span className="text-[11px] sm:text-xs text-muted-foreground/70 truncate max-w-full">
               {periodLabel}
             </span>
           )}
         </div>
       ) : (
-        <span className="text-xs text-muted-foreground/60 italic">
+        <span className="text-xs text-muted-foreground/60 italic block mt-2">
           {t("metrics.errors.noDataAvailable")}
         </span>
       )}

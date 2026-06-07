@@ -1,5 +1,7 @@
 package com.puntomartinez.millete.transactions.infrastructure.in.controller;
 
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.in.*;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase.RegisterTransactionCommand;
@@ -29,6 +31,8 @@ public class TransactionController {
     private final ListTransactionsUseCase listTransactionsUseCase;
     private final GetTransactionMetricsUseCase transactionMetricsUseCase;
 
+    private final CategoryRepository categoryRepository;
+
     // =======================================================
     // GET: MÉTRICAS DE TRANSACCIONES (NUEVO)
     // =======================================================
@@ -50,7 +54,7 @@ public class TransactionController {
 
         List<TransactionResponseDTO> transactions = listTransactionsUseCase.findAllByUserId(userId)
                 .stream()
-                .map(this::mapToDTO)
+                .map(tx -> mapToDTO(tx, userId))  // ✅ Pasamos userId para resolver categoría
                 .toList();
 
         return ResponseEntity.ok(transactions);
@@ -77,7 +81,7 @@ public class TransactionController {
 
         RegisterTransactionUseCase.RegisterTransactionResult result = registerTransactionUseCase.register(command);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(result.transaction()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(result.transaction(), userId));
     }
 
     // =======================================================
@@ -97,7 +101,7 @@ public class TransactionController {
     public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable UUID id, Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         Transaction tx = getTransactionUseCase.getByIdAndUserId(id, userId);
-        return ResponseEntity.ok(mapToDTO(tx));
+        return ResponseEntity.ok(mapToDTO(tx, userId));
     }
 
     // =======================================================
@@ -121,16 +125,33 @@ public class TransactionController {
         );
 
         Transaction updatedTransaction = updateTransactionUseCase.update(id, command);
-        return ResponseEntity.ok(mapToDTO(updatedTransaction));
+        return ResponseEntity.ok(mapToDTO(updatedTransaction, userId));
     }
 
     // =======================================================
     // MÉTODOS AUXILIARES
     // =======================================================
-    private TransactionResponseDTO mapToDTO(Transaction tx) {
+
+    private record CategoryInfo(String name, String color) {}
+
+    private CategoryInfo resolveCategoryInfo(UUID categoryId, UUID userId) {
+        if (categoryId == null) {
+            return new CategoryInfo("Sin categoría", null);
+        }
+
+        return categoryRepository.findByIdAndUserId(categoryId, userId)
+                .map(c -> new CategoryInfo(c.getName(), c.getColor()))
+                .orElse(new CategoryInfo("Sin categoría", null));
+    }
+
+    private TransactionResponseDTO mapToDTO(Transaction tx, UUID userId) {
+        CategoryInfo info = resolveCategoryInfo(tx.getCategoryId(), userId);
+
         return new TransactionResponseDTO(
                 tx.getId(),
                 tx.getCategoryId(),
+                info.name(),
+                info.color(),
                 tx.getAmount(),
                 tx.getDate(),
                 tx.getType(),

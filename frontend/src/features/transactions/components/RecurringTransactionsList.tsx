@@ -116,6 +116,8 @@ export function RecurringTransactionsList() {
         onOpenChange={(open) => { if (!open) setDeletingTransaction(null) }}
         itemName={deletingTransaction?.description || ""}
         onConfirm={handleDelete}
+        title={t("transactions.recurring.deleteTitle")}
+        description={t("transactions.recurring.deleteConfirmation", { name: deletingTransaction?.description || "" })}
       />
     </div>
   )

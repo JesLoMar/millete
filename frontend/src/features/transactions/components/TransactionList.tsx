@@ -7,7 +7,8 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  HelpCircle
 } from "lucide-react"
 import { Input } from "@/shared/components/ui/input"
 import { Button } from "@/shared/components/ui/button"
@@ -21,7 +22,8 @@ import {
 import { cn } from "@/lib/utils"
 import { apiClient } from "@/shared/api/axiosClient"
 import { EditTransactionDialog } from './dialogs/EditTransactionDialog'
-import { CATEGORY_COLORS, FILTERS, FILTER_LABELS, type Filter } from "../constants"
+import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
+import { FILTERS, FILTER_LABELS, type Filter } from "../constants"
 import { formatDate } from "../utils"
 import { usePagination } from "@/features/categories/hooks/usePagination"
 import type { PeriodFilter } from "@/shared/components/Header"
@@ -30,6 +32,7 @@ interface Transaction {
   id: string
   description: string
   category: string
+  categoryColor?: string | null
   categoryId: string
   amount: number
   date: string
@@ -49,12 +52,26 @@ export function TransactionList({ period: _period }: TransactionListProps) {
   const [filter, setFilter] = useState<Filter>("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
-  
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
     queryKey: ['transactions'],
     queryFn: async () => {
       const response = await apiClient.get('/transactions')
-      return response.data.filter((tx: Transaction) => tx.active !== false)
+      return response.data
+        .filter((tx: any) => tx.active !== false)
+        .map((tx: any) => ({
+          id: tx.id,
+          description: tx.description,
+          category: tx.categoryName || "Sin categoría",
+          categoryColor: tx.categoryColor || null,
+          categoryId: tx.categoryId,
+          amount: tx.amount,
+          date: tx.date,
+          type: tx.type,
+          active: tx.active
+        }))
     },
   })
 
@@ -89,17 +106,20 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     setFilter(newFilter)
   }
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(t("transactions.deleteConfirm"))
-    if (!confirmed) return
-    
+  const handleDeleteConfirm = async () => {
+    if (!deletingTransaction) return
+
+    setIsDeleting(true)
     try {
-      await apiClient.delete(`/transactions/${id}`)
+      await apiClient.delete(`/transactions/${deletingTransaction.id}`)
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] })
       queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] })
+      setDeletingTransaction(null)
     } catch (err) {
       console.error("Error al eliminar transacción:", err)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -167,11 +187,12 @@ export function TransactionList({ period: _period }: TransactionListProps) {
           </p>
         ) : (
           <>
-            {/* ========= VERSIÓN DESKTOP (sm+): Diseño de tabla horizontal ========= */}
+            {/* ========= VERSIÓN DESKTOP/TABLET (sm+): Diseño de tabla horizontal ========= */}
             <div className="hidden sm:flex flex-col">
               {paginatedData.map((tx) => {
-                const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
+                const categoryName = tx.category || "Sin categoría"
                 const isIncome = tx.type === "INCOME"
+                const isOrphan = !tx.category || tx.category === "Sin categoría"
 
                 return (
                   <div
@@ -196,9 +217,23 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                           {formatDate(tx.date)}
                         </span>
                         <span className="size-1 rounded-full bg-border" />
-                        <Badge variant="outline" className={cn("border-none text-xs font-medium", color)}>
-                          {tx.category}
-                        </Badge>
+                        {isOrphan ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+                            <HelpCircle size={12} aria-hidden="true" />
+                            <span>{categoryName}</span>
+                          </span>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="border-none text-xs font-medium"
+                            style={tx.categoryColor ? {
+                              color: tx.categoryColor,
+                              backgroundColor: `${tx.categoryColor}20`
+                            } : undefined}
+                          >
+                            {categoryName}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -216,16 +251,16 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                       </p>
                     </div>
 
-                    {/* Acciones - visible en hover en desktop */}
+                    {/* Acciones */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-8"
                           aria-label={t("transactions.moreOptions")}
                         >
-                          <MoreHorizontal size={16} />
+                          <MoreHorizontal size={16} aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card border-border">
@@ -237,7 +272,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive cursor-pointer"
-                          onClick={() => handleDelete(tx.id)}
+                          onClick={() => setDeletingTransaction(tx)}
                         >
                           {t("transactions.delete")}
                         </DropdownMenuItem>
@@ -251,8 +286,9 @@ export function TransactionList({ period: _period }: TransactionListProps) {
             {/* ========= VERSIÓN MÓVIL (<640px): Diseño de tarjetas apiladas ========= */}
             <div className="sm:hidden divide-y divide-border">
               {paginatedData.map((tx) => {
-                const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
+                const categoryName = tx.category || "Sin categoría"
                 const isIncome = tx.type === "INCOME"
+                const isOrphan = !tx.category || tx.category === "Sin categoría"
 
                 return (
                   <div
@@ -289,7 +325,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                             className="size-8"
                             aria-label={t("transactions.moreOptions")}
                           >
-                            <MoreHorizontal size={16} />
+                            <MoreHorizontal size={16} aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-card border-border">
@@ -301,7 +337,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive cursor-pointer"
-                            onClick={() => handleDelete(tx.id)}
+                            onClick={() => setDeletingTransaction(tx)}
                           >
                             {t("transactions.delete")}
                           </DropdownMenuItem>
@@ -318,9 +354,23 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                         {formatDate(tx.date)}
                       </span>
                       <span className="size-1 rounded-full bg-border hidden xs:inline-block" />
-                      <Badge variant="outline" className={cn("border-none text-xs font-medium", color)}>
-                        {tx.category}
-                      </Badge>
+                      {isOrphan ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+                          <HelpCircle size={12} aria-hidden="true" />
+                          <span>{categoryName}</span>
+                        </span>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="border-none text-xs font-medium"
+                          style={tx.categoryColor ? {
+                            color: tx.categoryColor,
+                            backgroundColor: `${tx.categoryColor}20`
+                          } : undefined}
+                        >
+                          {categoryName}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 )
@@ -347,7 +397,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                 disabled={currentPage === 1}
                 className="h-8 border-border"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} aria-hidden="true" />
               </Button>
               <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
                 {currentPage} / {totalPages}
@@ -359,7 +409,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                 disabled={currentPage === totalPages}
                 className="h-8 border-border"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={16} aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -370,6 +420,16 @@ export function TransactionList({ period: _period }: TransactionListProps) {
         transaction={editingTransaction}
         open={!!editingTransaction}
         onOpenChange={(open) => { if (!open) setEditingTransaction(null) }}
+      />
+
+      <ConfirmDeletionDialog
+        open={!!deletingTransaction}
+        onOpenChange={(open) => { if (!open) setDeletingTransaction(null) }}
+        itemName={deletingTransaction?.description || ""}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        title={t("transactions.deleteTitle")}
+        description={t("transactions.deleteConfirmation", { name: deletingTransaction?.description || "" })}
       />
     </div>
   )
