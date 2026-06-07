@@ -69,7 +69,7 @@
   "auth": {
     "brand": {
       "name": "Millete",
-      "tagline": "Control your expenses, achieve your goals."
+      "tagline": "Track your expenses, reach your goals."
     },
     "greeting": "Hello, <br />welcome.",
     "footer": {
@@ -93,7 +93,7 @@
         },
         "placeholder": {
           "login": "example@mail.com",
-          "register": "your@email.com"
+          "register": "you@mail.com"
         },
         "password": {
           "label": "Password",
@@ -134,18 +134,18 @@
     },
     "alerts": {
       "welcome_back": "Welcome back!",
-      "register_success": "Account successfully created!",
+      "register_success": "Account created successfully!",
       "login_error_title": "Login error"
     },
     "errors": {
       "no_identifier": "You must provide a username or email address",
-      "auto_login_failed": "Account created, but could not log in automatically",
+      "auto_login_failed": "Account created, but automatic login failed",
       "register_failed": "Failed to create account. Please try again."
     }
   },
   "info": {
     "steps": {
-      "title": "First steps",
+      "title": "Getting started",
       "subtitle": "Start managing your finances in less than 5 minutes with our quick guide.",
       "items": [
         {
@@ -156,17 +156,17 @@
         {
           "number": "02",
           "title": "Create your first category",
-          "description": "Define custom categories to organize your spending (e.g., Food, Transport, Leisure...)."
+          "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure...)."
         },
         {
           "number": "03",
           "title": "Record your expenses",
-          "description": "Add transactions from their section or easily directly from the dashboard."
+          "description": "Add transactions from their section or easily right from the dashboard."
         }
       ]
     },
     "wiki": {
-      "link": "Consult the full wiki",
+      "link": "Check the full wiki",
       "header": {
         "openMenu": "Open navigation menu",
         "closeMenu": "Close menu",
@@ -180,17 +180,17 @@
         {
           "tag": "v0.0.3",
           "title": "Visual and logic bug fixes",
-          "description": "Adaptation of styles to be compatible with browsers like Safari. Deleted categories and transactions are no longer taken into account for metrics calculation."
+          "description": "Style adaptation for compatibility with browsers like Safari. Deleted categories and transactions are no longer considered for metrics calculation."
         },
         {
           "tag": "v0.0.2",
-          "title": "User wiki, reinforced security and system optimization",
-          "description": "We launch the wiki with multi-language support. Bulletproof security in category management, optimized recurring transactions engine and improved visual interface with new icons."
+          "title": "User wiki, reinforced security, and system optimization",
+          "description": "We launch the wiki with multi-language support. Bulletproof security in category management, optimized recurring transactions engine, and improved visual interface with new icons."
         },
         {
           "tag": "v0.0.1",
-          "title": "First public release",
-          "description": "Millete is now available to everyone! Register and start managing your personal finances easily and effectively."
+          "title": "First public launch",
+          "description": "Millete is now available to everyone! Register and start managing your personal finances simply and effectively."
         }
       ]
     }
@@ -198,8 +198,8 @@
   "dashboard": {
     "metrics": {
       "balance": "Total Balance",
-      "income": "Income of the {{period}}",
-      "expenses": "Expenses of the {{period}}",
+      "income": "Income for {{period}}",
+      "expenses": "Expenses for {{period}}",
       "savings": "Total Savings",
       "vsLastWeek": "vs. previous week",
       "vsLastMonth": "vs. previous month",
@@ -285,7 +285,7 @@
       "title": "Active Saving Goals",
       "empty": "No saving goals configured",
       "completed": "Completed!",
-      "remaining": "{{amount}} € left"
+      "remaining": "{{amount}} € remaining"
     },
     "quickActions": {
       "addExpense": "Add transaction",
@@ -310,18 +310,18 @@
       "jsonOnly": "Only JSON files are supported",
       "invalidJson": "The JSON file is invalid",
       "importing": "Importing data...",
-      "success": "Data successfully imported",
+      "success": "Data imported successfully",
       "importError": "Error importing file",
       "close": "Close"
     },
     "import": {
-      "success": "Data successfully imported",
+      "success": "Data imported successfully",
       "errorGeneric": "Error importing file",
       "errorProperty": "You do not have permission to import",
       "errorFormat": "Invalid file format"
     },
     "export": {
-      "success": "Backup successfully exported",
+      "success": "Backup exported successfully",
       "error": "Error exporting data"
     }
   },
@@ -354,6 +354,8 @@
     "newTitle": "Record Transaction",
     "moreOptions": "More options",
     "recurring": {
+      "deleteTitle": "Delete recurring transaction",
+      "deleteConfirmation": "Are you sure you want to delete the recurring transaction \"{{name}}\"? Future occurrences will not be created.",
       "label": "Recurring",
       "shortLabel": "Recurring",
       "newTitle": "New Recurring Transaction",
@@ -361,7 +363,7 @@
       "listTitle": "Recurring Transactions",
       "emptyFilter": "No recurring transactions with this filter.",
       "frequency": "Frequency",
-      "selectFrequency": "Select frequency",
+      "selectFrequency": "Frequency...",
       "interval": "Interval",
       "startDate": "Start date",
       "endDate": "End date",
@@ -386,13 +388,15 @@
       }
     },
     "alerts": {
-      "createSuccess": "Transaction successfully created",
-      "updateSuccess": "Transaction successfully updated",
-      "deleteSuccess": "Transaction successfully deleted",
-      "createRecurringSuccess": "Recurring transaction successfully scheduled",
-      "updateRecurringSuccess": "Recurring transaction successfully updated",
-      "deleteRecurringSuccess": "Recurring transaction successfully deleted"
-    }
+      "createSuccess": "Transaction created successfully",
+      "updateSuccess": "Transaction updated successfully",
+      "deleteSuccess": "Transaction deleted successfully",
+      "createRecurringSuccess": "Recurring transaction scheduled successfully",
+      "updateRecurringSuccess": "Recurring transaction updated successfully",
+      "deleteRecurringSuccess": "Recurring transaction deleted successfully"
+    },
+    "deleteTitle": "Delete transaction",
+    "deleteConfirmation": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
   },
   "categories": {
     "add": "Add category",
@@ -402,7 +406,7 @@
     "namePlaceholder": "e.g., Food, Travel...",
     "color": "Color",
     "budget": "Monthly budget (€)",
-    "budgetHint": "Optional. Monthly spending limit for this category.",
+    "budgetHint": "Optional. Monthly expense limit for this category.",
     "currentBudget": "Current budget: {{amount}} € / month",
     "family": "Family",
     "selectFamilyPlaceholder": "Select family",
@@ -423,12 +427,12 @@
     "deleteConfirmation": "Are you sure you want to delete \"{{name}}\"? Associated transactions will not be deleted, but they will lose their classification.",
     "deleteError": "Error deleting category",
     "noBudgetTooltip": "Assign a monthly budget to see progress",
-    "createSuccess": "Category successfully created",
-    "updateSuccess": "Category successfully updated",
-    "deleteSuccess": "Category successfully deleted",
+    "createSuccess": "Category created successfully",
+    "updateSuccess": "Category updated successfully",
+    "deleteSuccess": "Category deleted successfully",
     "nameRequired": "Category name is required",
     "invalidBudget": "Enter a valid budget",
-    "editDescription": "Modify category data",
+    "editDescription": "Modify category details",
     "nameLabel": "Category name",
     "budgetLabel": "Monthly budget",
     "budgetPlaceholder": "e.g., 500",
@@ -450,7 +454,7 @@
     "shares": "shares",
     "filterAll": "All",
     "new": "New Investment",
-    "newTitle": "Register New Investment",
+    "newTitle": "Record New Investment",
     "assetName": "Asset Name",
     "assetNamePlaceholder": "e.g., Apple Inc.",
     "ticker": "Ticker",
@@ -467,6 +471,8 @@
     "deleteConfirm": "Are you sure you want to delete this investment? This action cannot be undone.",
     "createError": "Error creating investment. Please try again.",
     "assetOptions": "Options for {{name}}",
+    "deleteTitle": "Delete investment",
+    "deleteConfirmation": "Are you sure you want to delete \"{{name}}\"? All associated history will be deleted.",
     "types": {
       "stock": "Stocks",
       "crypto": "Cryptocurrencies",
@@ -476,9 +482,9 @@
       "other": "Others"
     },
     "alerts": {
-      "createSuccess": "Investment successfully registered",
-      "updatePriceSuccess": "Price successfully updated",
-      "deleteSuccess": "Investment successfully deleted",
+      "createSuccess": "Investment registered successfully",
+      "updatePriceSuccess": "Price updated successfully",
+      "deleteSuccess": "Investment deleted successfully",
       "warningTitle": "Critical deviation detected",
       "warningDesc": "The entered price varies by more than 50% from the current price. Click again to confirm."
     },
@@ -495,15 +501,15 @@
   "family": {
     "title": "Family Units",
     "selectOrCreate": "Select a family unit or create a new one",
-    "noFamilies": "You don't have family units yet",
+    "noFamilies": "You don't have any family units yet",
     "createFirst": "Create my first family",
     "createNew": "Create new family unit",
     "create": "Create",
     "redirectingToLogin": "Redirecting to login...",
     "createTitle": "Create New Family Unit",
-    "createDesc": "Define the name and monthly goal of the family",
+    "createDesc": "Define the family name and monthly goal",
     "familyName": "Family Name",
-    "familyNamePlaceholder": "e.g., Martinez Family",
+    "familyNamePlaceholder": "e.g., Martínez Family",
     "monthlyGoal": "Monthly Goal",
     "goal": "Goal",
     "admin": "Admin",
@@ -525,12 +531,12 @@
     "changeGoalTitle": "Change Monthly Goal",
     "changeGoalDesc": "Define a new monthly goal for the family",
     "goalProgress": "Goal Progress",
-    "goalProgressDesc": "Monthly monitoring of family contributions",
+    "goalProgressDesc": "Monthly tracking of family contributions",
     "collected": "Collected",
     "of": "of",
     "mode": "Mode",
     "distribution": "Distribution",
-    "distributionDesc": "Mode {{mode}}: contributions are calculated according to the selected method",
+    "distributionDesc": "Mode {{mode}}: contributions are calculated based on the selected method",
     "distributionMode": "Distribution Mode",
     "progressBar": {
       "label": "Monthly goal progress",
@@ -549,7 +555,7 @@
     "memberProgress": "Progress of {{name}}",
     "contributions": "Contributions",
     "contributionsHistory": "Contributions History",
-    "noContributions": "No contributions recorded yet",
+    "noContributions": "No contributions registered yet",
     "addContribution": "Add Contribution",
     "addContributionShort": "Add",
     "amount": "Amount",
@@ -565,13 +571,13 @@
     "role": "Role",
     "edit": "Edit",
     "editMember": "Edit Member",
-    "delete": "Delete",
+    "delete": "Remove",
     "customPercentage": "Custom Percentage",
     "customPercentageHint": "Percentages add up to {{total}}%. They must add up to 100%.",
     "customPercentageOk": "Percentages correctly add up to 100%.",
     "invitationFrom": "Invitation from {{sender}} to join {{family}}",
     "invalidToken": "Invalid invitation token",
-    "invitationAccepted": "You have joined the family successfully!",
+    "invitationAccepted": "You have successfully joined the family!",
     "invitationError": "Error processing the invitation",
     "processingInvitation": "Processing invitation...",
     "welcome": "Welcome to the family!",
@@ -580,20 +586,20 @@
     "back": "Back",
     "selectFamily": "Select family {{name}}",
     "alerts": {
-      "createSuccess": "Family successfully created",
-      "createError": "Error creating the family",
-      "inviteSuccess": "Invitation successfully sent",
-      "inviteError": "Error sending the invitation",
+      "createSuccess": "Family created successfully",
+      "createError": "Error creating family",
+      "inviteSuccess": "Invitation sent successfully",
+      "inviteError": "Error sending invitation",
       "modeSuccess": "Distribution mode updated",
       "modeError": "Error changing mode",
       "goalSuccess": "Monthly goal updated",
-      "goalError": "Error updating the goal",
-      "memberEditSuccess": "Member successfully updated",
-      "memberEditError": "Error editing the member",
-      "memberDeleteSuccess": "Member removed from the family",
-      "memberDeleteError": "Error removing the member",
-      "contributionSuccess": "Contribution successfully registered",
-      "contributionError": "Error registering contribution"
+      "goalError": "Error updating goal",
+      "memberEditSuccess": "Member updated successfully",
+      "memberEditError": "Error editing member",
+      "memberDeleteSuccess": "Member removed from family",
+      "memberDeleteError": "Error removing member",
+      "contributionSuccess": "Contribution recorded successfully",
+      "contributionError": "Error recording contribution"
     }
   },
   "api": {
@@ -602,7 +608,7 @@
       "status_401": "Your session has expired. Please log in again.",
       "status_403": "You do not have the required permissions for this section.",
       "status_404": "The requested resource is not available.",
-      "status_500": "Internal server problem. Please try again later.",
+      "status_500": "Internal server issue. Please try again later.",
       "timeout": "The request took too long to respond."
     }
   }

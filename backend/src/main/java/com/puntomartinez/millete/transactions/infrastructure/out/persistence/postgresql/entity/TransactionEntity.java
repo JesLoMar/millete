@@ -2,6 +2,7 @@ package com.puntomartinez.millete.transactions.infrastructure.out.persistence.po
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@SQLRestriction("active = true")
 public class TransactionEntity {
 
     @Id

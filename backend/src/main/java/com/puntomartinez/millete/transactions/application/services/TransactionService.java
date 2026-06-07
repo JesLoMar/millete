@@ -94,9 +94,7 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
     // =======================================================
     @Override
     public List<Transaction> findAllByUserId(UUID userId) {
-        return transactionRepository.findAllByUserId(userId).stream()
-                .filter(Transaction::isActive)
-                .toList();
+        return transactionRepository.findAllByUserId(userId);
     }
 
     // =======================================================

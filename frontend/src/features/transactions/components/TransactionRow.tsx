@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { MoreHorizontal, ArrowUpRight, ArrowDownLeft } from "lucide-react"
+import { MoreHorizontal, ArrowUpRight, ArrowDownLeft, HelpCircle } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import {
@@ -9,13 +9,13 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { CATEGORY_COLORS } from "../constants"
 import { formatDate } from "../utils"
 
 interface Transaction {
   id: string
   description: string
   category: string
+  categoryColor?: string | null
   categoryId: string
   amount: number
   date: string
@@ -30,8 +30,8 @@ interface TransactionRowProps {
 
 export function TransactionRow({ transaction: tx, onEdit, onDelete }: TransactionRowProps) {
   const { t } = useTranslation()
-  const color = CATEGORY_COLORS[tx.category] || "text-muted-foreground bg-muted/10"
   const isIncome = tx.type === "INCOME"
+  const isOrphan = !tx.category || tx.category === "Sin categoría"
 
   return (
     <div className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group">
@@ -49,9 +49,23 @@ export function TransactionRow({ transaction: tx, onEdit, onDelete }: Transactio
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-xs text-muted-foreground">{formatDate(tx.date)}</span>
           <span className="size-1 rounded-full bg-border" />
-          <Badge variant="outline" className={cn("border-none text-xs font-medium", color)}>
-            {tx.category}
-          </Badge>
+          {isOrphan ? (
+            <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+              <HelpCircle size={12} aria-hidden="true" />
+              <span>Sin categoría</span>
+            </span>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-none text-xs font-medium"
+              style={tx.categoryColor ? {
+                color: tx.categoryColor,
+                backgroundColor: `${tx.categoryColor}20`
+              } : undefined}
+            >
+              {tx.category}
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -64,8 +78,13 @@ export function TransactionRow({ transaction: tx, onEdit, onDelete }: Transactio
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8 opacity-0 group-hover:opacity-100 transition-opacity">
-            <MoreHorizontal size={16} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            aria-label={t("transactions.moreOptions")}
+          >
+            <MoreHorizontal size={16} aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-card border-border">

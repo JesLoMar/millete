@@ -2,6 +2,7 @@ package com.puntomartinez.millete.categories.infrastructure.out.persistence.post
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "categories")
 @Data
+@SQLRestriction("active = true")
 public class CategoryEntity {
 
     @Id

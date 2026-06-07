@@ -25,10 +25,14 @@ IDEAS A CHOLÓN
 MEJORAS v0.0.3
 ===================================
 
-- [] Añadir seguridad contra ataques de fuerza bruta en el login.
-- [] Asegurar el diseño correcto de toda la web en navegadores safari.
-- [] Arreglar algunos errores en los que se trataba de autenticar en pantallas incorrectas.
-- [] Corregir la lógica de las peticiones e ignorar categorías y transacciones desactivadas (Con borrado lógico).
+- [✓] Añadir seguridad contra ataques de fuerza bruta en el login. Ban a nivel de IP. -> A nivel de cuenta en v0.1.0.
+- [✓] Asegurar el diseño correcto de toda la web en navegadores safari.
+- [✓] Arreglar algunos errores en los que se trataba de autenticar en pantallas incorrectas.
+- [✓] Corregir la lógica de las peticiones e ignorar categorías y transacciones desactivadas.
+- [✓] Añadir icono en las transacciones que, tras borrar una categoría, se hayan quedado sin.
+- [✓] Corregir el mostrado del menu con los 3 puntitos de opciones en categorias, transacciones e inversiones. Tanto para formatos desktop y tables (en móvil se muestra bien)
+- [✓] Añadir modales de confirmación de borrado en transacciones, transacciones recurrentes e inversiones (en estas 2 últimas se muestra el texto de borrado de categorias, pero la lógica es correcta y borra lo que tiene que borrar)
+- [✓] Mejora en los scripts de guardado.
 
 
 ===================================
@@ -79,6 +83,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [ ] Persistencia de última ejecución en transacciones recurrentes.
 - [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - [ ] Crear perfil de usuario y pestaña de settings. (configuraciones, borrados de cuenta, elegir temas e idiomas movidos ahí)
+- [ ] Añadir protección contra ataques de fuerza bruta a nivel de cuenta.
 
 ===================================
 Persistencia de última ejecución en transacciones recurrentes + Info
@@ -114,3 +119,81 @@ a estar activo.
 
 **Complejidad:** Media. Requiere cambios en modelo, entidad, mapper, servicio,
 migración Flyway y tests.
+
+====================================
+Bloqueo de Cuenta por Intentos Fallidos
+====================================
+
+**Contexto:** Actualmente el login solo verifica credenciales contra la BD.
+No hay protección contra fuerza bruta dirigida a una cuenta específica
+más allá del rate limiting por IP.
+
+**Problema:** Un atacante que rote IPs puede intentar contraseñas
+indefinidamente contra una cuenta sin ser bloqueado.
+
+**Solución propuesta:**
+- Añadir columnas a la tabla `users`:
+  - `failed_login_attempts INT DEFAULT 0`
+  - `account_non_locked BOOLEAN DEFAULT true`
+  - `lock_time TIMESTAMP NULL`
+- Crear migración Flyway: `V0_2_0__add_account_lock.sql`
+- Añadir campos a `User` (modelo de dominio):
+  - `int failedLoginAttempts`
+  - `boolean accountNonLocked`
+  - `LocalDateTime lockTime`
+- Añadir campos a `UserEntity` (JPA):
+  - `int failedLoginAttempts`
+  - `boolean accountNonLocked`
+  - `LocalDateTime lockTime`
+- Actualizar `UserEntityMapper` (MapStruct) - no requiere cambios si los nombres coinciden
+- Crear `AccountLockService` en `users.application.services`:
+  - Método `handleLoginFailure(String emailOrUsername)`: incrementa intentos, bloquea si >= 5
+  - Método `handleLoginSuccess(String emailOrUsername)`: resetea intentos a 0
+  - Método `checkAndUnlockIfExpired(User user)`: si bloqueado y pasaron 15 min, desbloquea
+- Modificar `UserService.login()` o el caso de uso `LoginUserUseCase`:
+  - Al inicio: cargar usuario, llamar a `checkAndUnlockIfExpired()`
+  - Si `accountNonLocked == false` tras desbloqueo: lanzar `AccountLockedException`
+  - Si credenciales inválidas: llamar a `handleLoginFailure()`
+  - Si credenciales válidas: llamar a `handleLoginSuccess()`
+- Crear `AccountLockedException` en `users.domain.exception`:
+  - Extiende `RuntimeException`
+  - Mensaje: "Cuenta bloqueada por seguridad. Inténtalo de nuevo en X minutos."
+- Añadir manejo en `AuthController` o `GlobalExceptionHandler`:
+  - Capturar `AccountLockedException` → 423 Locked
+- Actualizar `UserRepository` (puerto de dominio) si es necesario:
+  - `findByUsernameOrEmail(String username, String email)` ya existe
+- Actualizar tests de `UserService`/`LoginUserUseCase`
+
+**Archivos afectados:**
+- users/domain/model/User.java
+- users/infrastructure/out/persistence/postgresql/entity/UserEntity.java
+- users/infrastructure/out/persistence/postgresql/mappers/UserEntityMapper.java
+- users/application/services/AccountLockService.java (NUEVO)
+- users/application/services/UserService.java (o LoginUserUseCase)
+- users/domain/exception/AccountLockedException.java (NUEVO)
+- shared/infrastructure/in/controller/advice/GlobalExceptionHandler.java
+- src/main/resources/db/migration/V0_2_0__add_account_lock.sql (NUEVO)
+- Tests: UserServiceTest.java
+
+**Complejidad:** Media-Alta. Requiere migración Flyway, cambios en modelo, entidad,
+mapper, nuevo servicio, nueva excepción, modificación del flujo de login y tests.
+
+**Reglas de bloqueo:**
+- 5 intentos fallidos → bloqueo de 15 minutos
+- Bloqueo persiste en BD (sobrevive reinicios)
+- Desbloqueo automático al intentar login tras 15 minutos
+- Login exitoso resetea contador a 0
+- El rate limiting por IP actúa como primera capa de defensa (sin BD)
+
+**Códigos de error:**
+- 429 Too Many Requests → Rate limit por IP (capa 1)
+- 423 Locked → Cuenta bloqueada (capa 2)
+- 401 Unauthorized → Credenciales inválidas (existente)
+
+**Dependencia entre capas:**
+- El rate limiting (capa 1) funciona independientemente
+- El bloqueo de cuenta (capa 2) requiere la migración de BD
+- Ambas capas pueden coexistir sin conflicto
+- Si la migración no se ha ejecutado, el rate limiting sigue protegiendo
+
+====================================
