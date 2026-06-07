@@ -44,13 +44,15 @@ export const InvestmentsPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} hidePeriodSelector />
             
-            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <PeriodSelector 
                 period={period} 
                 onPeriodChange={handlePeriodChange}
-                className="flex-1 sm:flex-none"
+                className="w-full sm:flex-none"
               />
-              <NewInvestmentDialog />
+              <div className="w-full sm:w-auto flex flex-col">
+                <NewInvestmentDialog />
+              </div>
             </div>
           </div>
 
