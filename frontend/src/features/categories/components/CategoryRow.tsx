@@ -68,10 +68,10 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
               aria-label={t("categories.edit")}
             >
               <MoreHorizontal size={16} aria-hidden="true" />
@@ -100,9 +100,9 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
           <p className="text-sm font-semibold truncate flex-1 min-w-0">{category.name}</p>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-7 shrink-0 -mr-1"
                 aria-label={t("categories.edit")}
               >

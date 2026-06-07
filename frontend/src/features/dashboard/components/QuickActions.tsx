@@ -71,7 +71,7 @@ export function QuickActions({
 
   return (
     <div 
-      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"
+      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full"
       role="group"
       aria-label={t("dashboard.quickActions.groupLabel")}
     >
@@ -82,19 +82,20 @@ export function QuickActions({
           disabled={action.disabled}
           aria-label={t(action.ariaLabelKey)}
           className={`
-            h-24 sm:h-28 min-h-22 min-w-11
-            flex flex-col items-center justify-center gap-2 sm:gap-3
-            rounded-xl border border-border/50 bg-card
-            hover:border-primary/30 hover:shadow-sm
-            transition-all duration-200 group
+            h-auto min-h-25 sm:min-h-28 w-full
+            flex flex-col items-center justify-center gap-2 sm:gap-2.5
+            rounded-xl border border-border/50 bg-card px-2 py-4 sm:py-5
+            hover:border-primary/30 hover:shadow-sm text-wrap whitespace-normal
+            transition-all duration-200 group cursor-pointer
             disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
           `}
         >
-          <div className={`p-2.5 sm:p-3 rounded-xl transition-all duration-200 ${action.color}`}>
-            <action.icon className={`size-5 sm:size-6 ${action.isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
+          <div className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 shrink-0 ${action.color}`}>
+            <action.icon className={`size-5 sm:size-5.5 ${action.isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </div>
-          <span className="font-medium text-xs sm:text-sm text-foreground text-center leading-tight">
+          
+          <span className="font-medium text-[11px] sm:text-xs md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
             {t(action.labelKey)}
           </span>
         </Button>

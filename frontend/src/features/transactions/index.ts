@@ -1,15 +1,17 @@
 export type TransactionType = 'INCOME' | 'EXPENSE';
 
 export interface TransactionResponse {
-  id: string; // UUID
-  userId: string; // UUID
-  categoryId: string; // UUID
+  id: string;
+  userId: string;
+  categoryId: string;
+  categoryName?: string;
   amount: number;
   type: TransactionType;
   description: string;
-  date: string; // ISO 8601
-  createdAt: string; // ISO 8601
-  limitExceeded?: boolean; 
+  date: string;
+  createdAt: string;
+  limitExceeded?: boolean;
+  active?: boolean;
 }
 
 export interface RegisterTransactionRequest {

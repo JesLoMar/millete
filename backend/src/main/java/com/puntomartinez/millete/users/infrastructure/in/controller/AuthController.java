@@ -7,6 +7,7 @@ import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
 import com.puntomartinez.millete.users.infrastructure.in.controller.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,7 +59,12 @@ public class AuthController {
     }
 
     @GetMapping("/me/topnav")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TopNavUserResponseDTO> getTopNavUserInfo(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         String userIdString = authentication.getName();
         UUID userId = UUID.fromString(userIdString);
         User user = getUserDataUseCase.getUserById(userId);

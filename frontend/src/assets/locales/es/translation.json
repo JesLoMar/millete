@@ -73,8 +73,8 @@
     },
     "greeting": "Hola, <br />bienvenido.",
     "footer": {
-      "webVersion": "WEB v0.0.2",
-      "apiVersion": "API v0.0.2",
+      "webVersion": "WEB v0.0.3",
+      "apiVersion": "API v0.0.3",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -177,6 +177,11 @@
       "title": "Novedades recientes",
       "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
       "items": [
+        {
+          "tag": "v0.0.3",
+          "title": "Arreglos de fallos visuales y de lógica",
+          "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+        },
         {
           "tag": "v0.0.2",
           "title": "Wiki de usuario, seguridad reforzada y optimización del sistema",
@@ -349,6 +354,8 @@
     "newTitle": "Registrar Transacción",
     "moreOptions": "Más opciones",
     "recurring": {
+      "deleteTitle": "Eliminar transacción recurrente",
+      "deleteConfirmation": "¿Estás seguro de que deseas eliminar la transacción recurrente \"{{name}}\"? Las ejecuciones futuras no se realizarán.",
       "label": "Recurrentes",
       "shortLabel": "Recurrente",
       "newTitle": "Nueva Transacción Recurrente",
@@ -387,7 +394,9 @@
       "createRecurringSuccess": "Transacción recurrente programada correctamente",
       "updateRecurringSuccess": "Transacción recurrente actualizada correctamente",
       "deleteRecurringSuccess": "Transacción recurrente eliminada correctamente"
-    }
+    },
+    "deleteTitle": "Eliminar transacción",
+    "deleteConfirmation": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer."
   },
   "categories": {
     "add": "Añadir categoría",
@@ -462,6 +471,8 @@
     "deleteConfirm": "¿Estás seguro de eliminar esta inversión? Esta acción no se puede deshacer.",
     "createError": "Error al crear la inversión. Inténtalo de nuevo.",
     "assetOptions": "Opciones de {{name}}",
+    "deleteTitle": "Eliminar inversión",
+    "deleteConfirmation": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Se eliminará todo el historial asociado.",
     "types": {
       "stock": "Acciones",
       "crypto": "Criptomonedas",

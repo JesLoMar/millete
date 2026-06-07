@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { ThemeSelector } from '@/shared/components/ThemeSelector';
 
 export default function WikiLayout() {
   const { t } = useTranslation('wiki');
@@ -34,6 +35,7 @@ export default function WikiLayout() {
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSelector />
+            <ThemeSelector />
             <Button variant="outline" size="sm" asChild className="text-xs sm:text-sm h-8 sm:h-9">
               <Link to="/login">
                 {t('header.goToApp', 'Ir a la app')}

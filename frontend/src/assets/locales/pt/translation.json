@@ -30,9 +30,9 @@
     "changeLanguage": "Alterar idioma",
     "guest": "Convidado",
     "goToDashboard": "Ir para o dashboard",
-    "userMenu": "Menu do utilizador",
+    "userMenu": "Menu de utilizador",
     "profile": "Meu Perfil",
-    "logout": "Fechar Sessão",
+    "logout": "Terminar Sessão",
     "logoutSuccess": "Sessão terminada corretamente",
     "errors": {
       "languageChangeFailed": "Erro ao alterar o idioma"
@@ -73,15 +73,15 @@
     },
     "greeting": "Olá, <br />bem-vindo.",
     "footer": {
-      "webVersion": "WEB v0.0.2",
-      "apiVersion": "API v0.0.2",
+      "webVersion": "WEB v0.0.3",
+      "apiVersion": "API v0.0.3",
       "copyright": "© 2026 Millete"
     },
     "form": {
       "optional": "opcional",
       "andOr": "e/ou",
-      "registerHint": "Introduza o seu nome de utilizador ou e-mail para continuar.",
-      "passwordHint": "Mínimo de 8 caracteres",
+      "registerHint": "Introduza o seu nome de utilizador ou correio eletrónico para continuar.",
+      "passwordHint": "Mínimo 8 caracteres",
       "toggle": {
         "login": "Entrar",
         "register": "Registo"
@@ -125,7 +125,7 @@
       "sending": "Enviando...",
       "sendingDescription": "Estamos a processar o seu pedido",
       "success": "E-mail enviado!",
-      "successDescription": "Verifique a sua caixa de entrada. Enviamos-lhe um link para redefinir a sua palavra-passe.",
+      "successDescription": "Verifique a sua caixa de entrada. Enviamos um link para redefinir a sua palavra-passe.",
       "error": "Erro ao enviar",
       "errorDescription": "Não conseguimos processar o seu pedido. Tente novamente.",
       "tryAgain": "Tentar novamente",
@@ -134,11 +134,11 @@
     },
     "alerts": {
       "welcome_back": "Bem-vindo de volta!",
-      "register_success": "Conta criada com sucesso!",
+      "register_success": "Conta criada corretamente!",
       "login_error_title": "Erro ao iniciar sessão"
     },
     "errors": {
-      "no_identifier": "Deve fornecer un nome de utilizador ou e-mail",
+      "no_identifier": "Deve fornecer um nome de utilizador ou e-mail",
       "auto_login_failed": "Conta criada, mas não foi possível iniciar sessão automaticamente",
       "register_failed": "Erro ao criar a conta. Tente novamente."
     }
@@ -178,8 +178,13 @@
       "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
       "items": [
         {
+          "tag": "v0.0.3",
+          "title": "Correções de erros visuais e de lógica",
+          "description": "Adaptação dos estilos para ser compatível com navegadores como o Safari. As categorias e transações eliminadas deixam de ser consideradas no cálculo das métricas."
+        },
+        {
           "tag": "v0.0.2",
-          "title": "Wiki do utilizador, segurança reforçada e otimização do sistema",
+          "title": "Wiki de utilizador, segurança reforçada e otimização do sistema",
           "description": "Estreamos a wiki com suporte multi-idioma. Segurança blindada na gestão de categorias, otimizado o motor de transações recorrentes e melhorada a interface visual com novos ícones."
         },
         {
@@ -192,7 +197,7 @@
   },
   "dashboard": {
     "metrics": {
-      "balance": "Balanço Total",
+      "balance": "Saldo Total",
       "income": "Receitas do {{period}}",
       "expenses": "Gastos do {{period}}",
       "savings": "Poupança Total",
@@ -200,7 +205,7 @@
       "vsLastMonth": "vs. mês anterior",
       "vsLastYear": "vs. ano anterior",
       "errors": {
-        "noDataAvailable": "Não existem dados disponíveis"
+        "noDataAvailable": "Nenhum dado disponível"
       }
     },
     "header": {
@@ -266,7 +271,7 @@
       "empty": "Não há orçamentos configurados",
       "overLimit": "Limite superado!",
       "remaining": "Restam-lhe {{amount}} €",
-      "exceededBy": "Excedido em {{amount}} €"
+      "exceededBy": "Excedido por {{amount}} €"
     },
     "transactions": {
       "title": "Últimas Transações",
@@ -287,11 +292,11 @@
       "createCategory": "Criar categoria",
       "importData": "Importar dados",
       "importing": "Importando...",
-      "exportData": "Exportar data",
+      "exportData": "Exportar dados",
       "exporting": "Exportando...",
       "addExpenseAria": "Adicionar nova transação",
       "createCategoryAria": "Criar nova categoria",
-      "importDataAria": "Importar dados a partir de ficheiro",
+      "importDataAria": "Importar dados a partir de arquivo",
       "importingAria": "Importando dados, por favor aguarde",
       "exportDataAria": "Exportar cópia de segurança",
       "exportingAria": "Exportando dados, por favor aguarde",
@@ -299,21 +304,21 @@
     },
     "importModal": {
       "title": "Importar dados",
-      "description": "Arraste um ficheiro JSON com as suas transações",
-      "dropHere": "Solte o seu ficheiro aqui ou clique para selecionar",
-      "onlyJson": "Apenas ficheiros .json",
-      "jsonOnly": "Apenas são permitidos ficheiros JSON",
-      "invalidJson": "O ficheiro JSON não é válido",
+      "description": "Arraste um arquivo JSON com as suas transações",
+      "dropHere": "Solte o seu arquivo aqui ou clique para selecionar",
+      "onlyJson": "Apenas arquivos .json",
+      "jsonOnly": "Apenas são permitidos arquivos JSON",
+      "invalidJson": "O arquivo JSON não é válido",
       "importing": "Importando dados...",
       "success": "Dados importados corretamente",
-      "importError": "Erro ao importar o ficheiro",
+      "importError": "Erro ao importar o arquivo",
       "close": "Fechar"
     },
     "import": {
       "success": "Dados importados corretamente",
-      "errorGeneric": "Erro ao importar o ficheiro",
+      "errorGeneric": "Erro ao importar o arquivo",
       "errorProperty": "Não tem permissão para importar",
-      "errorFormat": "Formato de ficheiro inválido"
+      "errorFormat": "Formato de arquivo inválido"
     },
     "export": {
       "success": "Cópia de segurança exportada corretamente",
@@ -331,8 +336,8 @@
     "category": "Categoria",
     "selectCategory": "Selecionar categoria",
     "noCategory": "Sem categoria",
-    "search": "Buscar por descrição...",
-    "empty": "Não foram encontradas transações",
+    "search": "Procurar por descrição...",
+    "empty": "Nenhuma transação encontrada",
     "showingInterval": "{{from}}-{{to}} de {{total}}",
     "createError": "Erro ao processar a transação. Tente novamente.",
     "filterAll": "Todas",
@@ -349,6 +354,8 @@
     "newTitle": "Registar Transação",
     "moreOptions": "Mais opções",
     "recurring": {
+      "deleteTitle": "Eliminar transação recorrente",
+      "deleteConfirmation": "Tem a certeza de que deseja eliminar a transação recorrente \"{{name}}\"? As execuções futuras não serão realizadas.",
       "label": "Recorrentes",
       "shortLabel": "Recorrente",
       "newTitle": "Nova Transação Recorrente",
@@ -356,7 +363,7 @@
       "listTitle": "Transações Recorrentes",
       "emptyFilter": "Não há transações recorrentes com este filtro.",
       "frequency": "Frequência",
-      "selectFrequency": "Selecionar frequência",
+      "selectFrequency": "Frequência...",
       "interval": "Intervalo",
       "startDate": "Data de início",
       "endDate": "Data de fim",
@@ -387,7 +394,9 @@
       "createRecurringSuccess": "Transação recorrente programada corretamente",
       "updateRecurringSuccess": "Transação recorrente atualizada corretamente",
       "deleteRecurringSuccess": "Transação recorrente eliminada corretamente"
-    }
+    },
+    "deleteTitle": "Eliminar transação",
+    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Esta ação não pode ser desfeita."
   },
   "categories": {
     "add": "Adicionar categoria",
@@ -406,7 +415,7 @@
     "noFamilies": "Não há famílias disponíveis",
     "familyTitle": "Atribuir à família - {{name}}",
     "assign": "Atribuir",
-    "search": "Buscar por nome...",
+    "search": "Procurar por nome...",
     "showing": "Mostrando {{total}} categorias",
     "empty": "Não há categorias disponíveis. Crie uma primeiro.",
     "save": "Guardar categoria",
@@ -418,11 +427,11 @@
     "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? As transações associadas não serão apagadas, mas perderão a sua classificação.",
     "deleteError": "Erro ao eliminar a categoria",
     "noBudgetTooltip": "Atribua um orçamento mensal para ver o progresso",
-    "createSuccess": "Categoría criada corretamente",
+    "createSuccess": "Categoria criada corretamente",
     "updateSuccess": "Categoria atualizada corretamente",
     "deleteSuccess": "Categoria eliminada corretamente",
     "nameRequired": "O nome da categoria é obrigatório",
-    "invalidBudget": "Introduza um orçamento válido",
+    "invalidBudget": "Introduza un orçamento válido",
     "editDescription": "Modifique os dados da categoria",
     "nameLabel": "Nome da categoria",
     "budgetLabel": "Orçamento mensal",
@@ -431,7 +440,7 @@
   },
   "investments": {
     "title": "Investimentos",
-    "portfolioValue": "Valor da Carteira",
+    "portfolioValue": "Valor Carteira",
     "monthlyReturn": "Rentabilidade Mensal",
     "dividends": "Dividendos",
     "comingSoon": "Brevemente",
@@ -440,7 +449,7 @@
     "distribution": "Distribuição",
     "total": "Total",
     "myAssets": "Meus Ativos",
-    "searchAsset": "Buscar ativo...",
+    "searchAsset": "Procurar ativo...",
     "noAssets": "Não há ativos na sua carteira",
     "shares": "participações",
     "filterAll": "Todos",
@@ -462,6 +471,8 @@
     "deleteConfirm": "Tem a certeza de que deseja eliminar este investimento? Esta ação não pode ser desfeita.",
     "createError": "Erro ao criar o investimento. Tente novamente.",
     "assetOptions": "Opções de {{name}}",
+    "deleteTitle": "Eliminar investimento",
+    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Será eliminado todo o histórico associado.",
     "types": {
       "stock": "Ações",
       "crypto": "Criptomoedas",
@@ -494,7 +505,7 @@
     "createFirst": "Criar a minha primeira família",
     "createNew": "Criar nova unidade familiar",
     "create": "Criar",
-    "redirectingToLogin": "A redirecionar para o início de sessão...",
+    "redirectingToLogin": "Redirecionando para o início de sessão...",
     "createTitle": "Criar Nova Unidade Familiar",
     "createDesc": "Defina o nome e o objetivo mensal da família",
     "familyName": "Nome da Família",
@@ -510,7 +521,7 @@
     "inviteMember": "Convidar Membro",
     "inviteShort": "Convidar",
     "inviteTitle": "Convidar para a Família",
-    "inviteDesc": "Envie um convite por e-mail para um utilizador registado",
+    "inviteDesc": "Envie um convite por correio eletrónico a um utilizador registado",
     "email": "Correio Eletrónico",
     "emailPlaceholder": "exemplo@correio.com",
     "sendInvitation": "Enviar Convite",
@@ -518,33 +529,33 @@
     "changeGoal": "Alterar Objetivo",
     "goalShort": "Meta",
     "changeGoalTitle": "Alterar Objetivo Mensal",
-    "changeGoalDesc": "Defina un novo objetivo mensal para a família",
+    "changeGoalDesc": "Defina um novo objetivo mensal para a família",
     "goalProgress": "Progresso do Objetivo",
     "goalProgressDesc": "Acompanhamento mensal das contribuições familiares",
-    "collected": "Angariado",
+    "collected": "Arrecadado",
     "of": "de",
     "mode": "Modo",
     "distribution": "Distribuição",
     "distributionDesc": "Modo {{mode}}: as contribuições são calculadas de acordo com o método selecionado",
-    "distributionMode": "Modo de Partilha",
+    "distributionMode": "Modo de Repartição",
     "progressBar": {
       "label": "Progresso do objetivo mensal",
       "of": "de"
     },
     "modes": {
       "equitative": "Equitativo",
-      "equitativeDesc": "Todos os membros contribuem com o mesmo valor",
+      "equitativeDesc": "Todos os membros contribuem com a mesma quantidade",
       "proportional": "Proporcional",
       "proportionalDesc": "A contribuição é proporcional ao salário de cada membro",
       "custom": "Personalizado",
       "customDesc": "O administrador define a percentagem de cada membro manualmente"
     },
-    "memberDetails": "Detalhes dos Membros",
+    "memberDetails": "Detalhe dos Membros",
     "memberOptions": "Opções de {{name}}",
     "memberProgress": "Progresso de {{name}}",
     "contributions": "Contribuições",
     "contributionsHistory": "Histórico de Contribuições",
-    "noContributions": "Ainda não existem contribuições registadas",
+    "noContributions": "Ainda não há contribuições registadas",
     "addContribution": "Adicionar Contribuição",
     "addContributionShort": "Adicionar",
     "amount": "Quantidade",
@@ -560,15 +571,15 @@
     "role": "Função",
     "edit": "Editar",
     "editMember": "Editar Membro",
-    "delete": "Eliminar",
+    "delete": "Remover",
     "customPercentage": "Percentagem Personalizada",
     "customPercentageHint": "As percentagens somam {{total}}%. Devem somar 100%.",
     "customPercentageOk": "As percentagens somam corretamente 100%.",
     "invitationFrom": "Convite de {{sender}} para se juntar a {{family}}",
     "invalidToken": "Token de convite inválido",
-    "invitationAccepted": "Juntou-se à família com sucesso!",
+    "invitationAccepted": "Juntou-se à família corretamente!",
     "invitationError": "Erro ao processar o convite",
-    "processingInvitation": "A processar convite...",
+    "processingInvitation": "Processando convite...",
     "welcome": "Bem-vindo à família!",
     "goToFamily": "Ir para a minha família",
     "error": "Erro",
@@ -594,7 +605,7 @@
   "api": {
     "errors": {
       "default": "Erro inesperado no servidor.",
-      "status_401": "A sua sessão expirou. Por favor, inicie sessão novamente.",
+      "status_401": "A sua sessão expirou. Por favor, volte a iniciar sessão.",
       "status_403": "Não tem as permissões necessárias para esta secção.",
       "status_404": "O recurso solicitado não se encontra disponível.",
       "status_500": "Problema interno do servidor. Tente novamente mais tarde.",

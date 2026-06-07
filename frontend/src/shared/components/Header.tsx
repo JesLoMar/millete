@@ -58,44 +58,40 @@ export function Header({
 
   return (
     <div className={cn(
-      "flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4",
+      "flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full min-w-0",
       className
     )}>
-      <div className="space-y-1 min-w-0">
-        <h1 className="text-xl sm:text-2xl font-semibold text-foreground truncate">
+      <div className="space-y-1.5 min-w-0 flex-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground truncate w-full">
           {t(greetingKey)}, <span className="text-primary">{userName}</span>
         </h1>
         
-        <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
-          <Calendar className="size-3.5 sm:size-4 shrink-0" />
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
+          <Calendar className="size-3.5 sm:size-4 shrink-0 text-muted-foreground/80" />
           
-          <span className="capitalize whitespace-nowrap">
+          <span className="capitalize font-medium">
             {t(`dashboard.header.days.${date.dayOfWeek}`)}
           </span>
           
-          <span className="hidden xs:inline text-muted-foreground/50" aria-hidden="true">
-            {t("dashboard.header.separator")}
-          </span>
+          <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
           
-          <span className="capitalize whitespace-nowrap">
+          <span className="capitalize font-medium">
             {t("dashboard.header.dateFormat", { 
               month: t(`dashboard.header.months.${date.monthIndex}`), 
               year: date.year 
             })}
           </span>
           
-          <span className="text-muted-foreground/50" aria-hidden="true">
-            {t("dashboard.header.separator")}
-          </span>
+          <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
           
-          <span className="whitespace-nowrap">
+          <span className="font-medium">
             {t("dashboard.header.week", { week: date.week })}
           </span>
         </div>
       </div>
 
       {!hidePeriodSelector && onPeriodChange && (
-        <div className="sm:shrink-0">
+        <div className="w-full sm:w-auto sm:shrink-0 mt-1 sm:mt-0">
           <PeriodSelector 
             period={defaultPeriod} 
             onPeriodChange={handlePeriodChange} 

@@ -8,6 +8,7 @@ public record RecentTransactionResponseDTO(
         UUID id,
         String description,
         String category,
+        String categoryColor,
         UUID categoryId,
         BigDecimal amount,
         LocalDateTime date,

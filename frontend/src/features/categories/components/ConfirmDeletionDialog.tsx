@@ -16,6 +16,8 @@ interface ConfirmDeletionDialogProps {
   itemName: string
   onConfirm: () => void
   isDeleting?: boolean
+  title?: string
+  description?: string
 }
 
 export function ConfirmDeletionDialog({
@@ -24,6 +26,8 @@ export function ConfirmDeletionDialog({
   itemName,
   onConfirm,
   isDeleting = false,
+  title,
+  description,
 }: ConfirmDeletionDialogProps) {
   const { t } = useTranslation()
 
@@ -35,10 +39,10 @@ export function ConfirmDeletionDialog({
             <AlertTriangle className="size-8 text-destructive" />
           </div>
           <DialogTitle className="text-xl font-semibold text-center">
-            {t("categories.deleteTitle")}
+            {title || t("categories.deleteTitle")}
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
-            {t("categories.deleteConfirmation", { name: itemName })}
+            {description || t("categories.deleteConfirmation", { name: itemName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -57,7 +61,7 @@ export function ConfirmDeletionDialog({
             variant="destructive"
             className="gap-2"
           >
-            {isDeleting ? t("common.deleting") : t("categories.delete")}
+            {isDeleting ? t("common.deleting") : t("common.delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

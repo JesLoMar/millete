@@ -9,6 +9,8 @@ import java.util.UUID;
 public record TransactionResponseDTO(
         UUID id,
         UUID categoryId,
+        String categoryName,
+        String categoryColor,
         BigDecimal amount,
         LocalDateTime date,
         TransactionType type,

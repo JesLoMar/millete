@@ -117,6 +117,7 @@ services:
     volumes:
       - ./backups:/backups
       - ./scripts/backup.sh:/backup.sh:ro
+      - ./scripts/restore.sh:/restore.sh:ro
     command: sh /backup.sh
     depends_on:
       postgres:

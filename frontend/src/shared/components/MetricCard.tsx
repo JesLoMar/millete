@@ -42,23 +42,27 @@ export function MetricCard({
   }
 
   return (
-    <Card className={cn("overflow-hidden border-subtle transition-all duration-300 hover:border-primary/50", className)}>
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate mr-2">
+    <Card className={cn("overflow-hidden border-subtle transition-all duration-300 hover:border-primary/50 w-full min-w-0", className)}>
+      <CardContent className="p-4 sm:p-6 flex flex-col justify-between h-full w-full min-w-0">
+        
+        {/* PARTE SUPERIOR: Título e Icono */}
+        <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 w-full min-w-0">
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate flex-1 min-w-0">
             {title}
           </p>
-          <div className={cn("p-1.5 sm:p-2 rounded-lg shrink-0", color)}>
-            <Icon className="size-4 sm:size-5" />
+          <div className={cn("p-1.5 sm:p-2 rounded-lg shrink-0 flex items-center justify-center", color)}>
+            <Icon className="size-4 sm:size-5 shrink-0" />
           </div>
         </div>
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight tabular-nums text-foreground truncate">
+        {/* PARTE INFERIOR: Valor numérico y tendencia */}
+        <div className="flex flex-col gap-1 w-full min-w-0">
+          <h2 className="text-base min-[360px]:text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight tabular-nums text-foreground whitespace-normal text-wrap wrap-break-word leading-tight w-full">
             {value}
           </h2>
+          
           {children && (
-            <div className="mt-1 sm:mt-2 pt-0.5 sm:pt-1 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <div className="mt-1 sm:mt-2 pt-0.5 sm:pt-1 flex items-center gap-1.5 sm:gap-2 flex-wrap w-full min-w-0">
               {children}
             </div>
           )}
