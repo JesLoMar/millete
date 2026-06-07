@@ -2,26 +2,28 @@
 
 ## Estructura de archivos
 
-- **application/services/UserService.java** — Servicio central que implementa todos los casos de uso
-- **domain/model/User.java** — Entidad de dominio con lógica de negocio
-- **domain/ports/in/RegisterUserUseCase.java** — Interfaz de registro
-- **domain/ports/in/LoginUserUseCase.java** — Interfaz de login
-- **domain/ports/in/GetUserDataUseCase.java** — Interfaz de consulta por ID
-- **domain/ports/out/UserRepository.java** — Interfaz del repositorio
-- **domain/ports/out/PasswordHasherPort.java** — Interfaz de hashing de contraseñas
-- **domain/ports/out/TokenProvider.java** — Interfaz de generación de JWT
-- **infrastructure/in/controller/AuthController.java** — Controlador REST con endpoints
-- **infrastructure/in/controller/dto/LoginRequestDTO.java** — DTO de petición de login
-- **infrastructure/in/controller/dto/RegisterUserRequestDTO.java** — DTO de petición de registro
-- **infrastructure/in/controller/dto/TokenResponseDTO.java** — DTO de respuesta con JWT
-- **infrastructure/in/controller/dto/TopNavUserResponseDTO.java** — DTO para barra de navegación
-- **infrastructure/in/controller/dto/UserResponseDTO.java** — DTO de respuesta del usuario
-- **infrastructure/out/persistence/postgresql/adapters/UserPostgresAdapter.java** — Adaptador del repositorio
-- **infrastructure/out/persistence/postgresql/entity/UserEntity.java** — Entidad JPA
-- **infrastructure/out/persistence/postgresql/mappers/UserEntityMapper.java** — Mapper MapStruct
-- **infrastructure/out/persistence/postgresql/repository/JpaUserRepository.java** — Repositorio Spring Data
-- **infrastructure/out/security/BCryptPasswordHasherAdapter.java** — Hashing con BCrypt
-- **infrastructure/out/security/JwtTokenAdapter.java** — Generación y validación de JWT
+- application/services/UserService.java — Servicio central que implementa todos los casos de uso
+- application/services/AccountLockService.java — Servicio de bloqueo de cuenta por intentos fallidos (planificado v0.1.0)
+- domain/model/User.java — Entidad de dominio con lógica de negocio
+- domain/exception/AccountLockedException.java — Excepción de cuenta bloqueada (planificado v0.1.0)
+- domain/ports/in/RegisterUserUseCase.java — Interfaz de registro
+- domain/ports/in/LoginUserUseCase.java — Interfaz de login
+- domain/ports/in/GetUserDataUseCase.java — Interfaz de consulta por ID
+- domain/ports/out/UserRepository.java — Interfaz del repositorio
+- domain/ports/out/PasswordHasherPort.java — Interfaz de hashing de contraseñas
+- domain/ports/out/TokenProvider.java — Interfaz de generación de JWT
+- infrastructure/in/controller/AuthController.java — Controlador REST con endpoints
+- infrastructure/in/controller/dto/LoginRequestDTO.java — DTO de petición de login
+- infrastructure/in/controller/dto/RegisterUserRequestDTO.java — DTO de petición de registro
+- infrastructure/in/controller/dto/TokenResponseDTO.java — DTO de respuesta con JWT
+- infrastructure/in/controller/dto/TopNavUserResponseDTO.java — DTO para barra de navegación
+- infrastructure/in/controller/dto/UserResponseDTO.java — DTO de respuesta del usuario
+- infrastructure/out/persistence/postgresql/adapters/UserPostgresAdapter.java — Adaptador del repositorio
+- infrastructure/out/persistence/postgresql/entity/UserEntity.java — Entidad JPA
+- infrastructure/out/persistence/postgresql/mappers/UserEntityMapper.java — Mapper MapStruct
+- infrastructure/out/persistence/postgresql/repository/JpaUserRepository.java — Repositorio Spring Data
+- infrastructure/out/security/BCryptPasswordHasherAdapter.java — Hashing con BCrypt
+- infrastructure/out/security/JwtTokenAdapter.java — Generación y validación de JWT
 
 ---
 
@@ -29,10 +31,10 @@
 
 El módulo sigue el patrón de Puertos y Adaptadores:
 
-- **Puertos de entrada (in):** interfaces que definen qué puede hacer el sistema. RegisterUserUseCase, LoginUserUseCase y GetUserDataUseCase.
-- **Núcleo de dominio:** UserService implementa todos los casos de uso. User.java contiene la lógica de negocio.
-- **Puertos de salida (out):** interfaces que definen qué necesita el sistema del exterior. UserRepository, PasswordHasherPort y TokenProvider.
-- **Adaptadores:** implementan los puertos de salida. UserPostgresAdapter para persistencia, BCryptPasswordHasherAdapter para seguridad, JwtTokenAdapter para tokens.
+- Puertos de entrada (in): interfaces que definen qué puede hacer el sistema. RegisterUserUseCase, LoginUserUseCase y GetUserDataUseCase.
+- Núcleo de dominio: UserService implementa todos los casos de uso. User.java contiene la lógica de negocio.
+- Puertos de salida (out): interfaces que definen qué necesita el sistema del exterior. UserRepository, PasswordHasherPort y TokenProvider.
+- Adaptadores: implementan los puertos de salida. UserPostgresAdapter para persistencia, BCryptPasswordHasherAdapter para seguridad, JwtTokenAdapter para tokens.
 
 El controlador AuthController habla solo con puertos de entrada. No conoce detalles de base de datos ni de seguridad.
 
@@ -60,9 +62,14 @@ Controlador REST mapeado a /api/v1/auth.
 
 ### GET /me/topnav
 
-1. Extrae el userId del token JWT mediante authentication.getName().
-2. Busca el usuario con getUserDataUseCase.getUserById().
-3. Devuelve TopNavUserResponseDTO con username y email.
+Este endpoint está protegido con @PreAuthorize("isAuthenticated()") y validación defensiva adicional:
+
+1. Verifica que el objeto Authentication no sea nulo y que esté autenticado. Si no, responde 401 Unauthorized.
+2. Extrae el userId del token JWT mediante authentication.getName().
+3. Busca el usuario con getUserDataUseCase.getUserById().
+4. Devuelve TopNavUserResponseDTO con username y email.
+
+La doble protección (anotación + validación manual) garantiza que nunca se intente acceder a datos de usuario sin un contexto de seguridad válido, incluso si la configuración de rutas públicas cambiase.
 
 ---
 
@@ -184,17 +191,19 @@ Define: generateToken (crea JWT con claims del usuario), extractUserId (extrae e
 
 Entidad JPA mapeada a la tabla users. Columnas: id (UUID, PK), username (unique), email (unique), password, created_at, modified_at, active, anonymized. Usa Lombok para getters, setters y constructores.
 
+La entidad está preparada para la v0.1.0 con tres columnas adicionales planificadas: failed_login_attempts (INT, default 0), account_non_locked (BOOLEAN, default true) y lock_time (TIMESTAMP, nullable). Estas columnas se añadirán mediante migración Flyway cuando se implemente el bloqueo de cuenta.
+
 ### JpaUserRepository
 
 Interfaz que extiende JpaRepository. Spring Data genera la implementación automáticamente. Métodos personalizados: findByEmail, findByUsername, findByUsernameOrEmail.
 
 ### UserEntityMapper
 
-Interfaz MapStruct anotada con @Mapper(componentModel = "spring"). Spring la inyecta como bean. Métodos: toEntity (User → UserEntity), toDomain (UserEntity → User).
+Interfaz MapStruct anotada con @Mapper(componentModel = "spring"). Spring la inyecta como bean. Métodos: toEntity (User a UserEntity), toDomain (UserEntity a User). No requiere cambios cuando se añadan los campos de bloqueo de cuenta si los nombres coinciden entre dominio y entidad.
 
 ### UserPostgresAdapter
 
-Implementa UserRepository. Traduce entre dominio y entidad usando UserEntityMapper. Delega las operaciones de base de datos en JpaUserRepository. Flujo de save: dominio → toEntity → jpaUserRepository.save → toDomain → retorna dominio.
+Implementa UserRepository. Traduce entre dominio y entidad usando UserEntityMapper. Delega las operaciones de base de datos en JpaUserRepository. Flujo de save: dominio a toEntity a jpaUserRepository.save a toDomain a retorna dominio.
 
 ---
 
@@ -210,13 +219,47 @@ Implementa TokenProvider. Recibe jwt.secret y jwt.expiration desde application.y
 
 ---
 
+## AccountLockService (planificado para v0.1.0)
+
+Servicio que gestionará el bloqueo de cuentas por intentos fallidos de login. Se ubicará en users/application/services/.
+
+### Funcionalidad planificada
+
+- handleLoginFailure(User user): incrementa el contador de intentos fallidos. Si alcanza 5, bloquea la cuenta durante 15 minutos estableciendo accountNonLocked = false y lockTime = now.
+- handleLoginSuccess(User user): resetea el contador de intentos a 0 y desbloquea la cuenta.
+- checkAndUnlockIfExpired(User user): verifica si una cuenta bloqueada ya cumplió los 15 minutos de bloqueo. Si es así, la desbloquea automáticamente. Si no, lanza AccountLockedException con los minutos restantes.
+
+### Integración con el login
+
+El método login del UserService llamará a checkAndUnlockIfExpired antes de verificar la contraseña. Si la cuenta está bloqueada, se lanzará AccountLockedException y el GlobalExceptionHandler responderá 423 Locked. Si las credenciales son inválidas, se llamará a handleLoginFailure. Si son válidas, se llamará a handleLoginSuccess.
+
+### AccountLockedException
+
+Excepción que extiende RuntimeException. Se ubicará en users/domain/exception/. Contendrá un campo minutesRemaining con los minutos que faltan para el desbloqueo. El mensaje será: "Cuenta bloqueada por seguridad. Inténtalo de nuevo en X minutos."
+
+---
+
+## Protección contra fuerza bruta (doble capa)
+
+El sistema implementa dos capas de protección:
+
+**Capa 1 - Rate Limiting por IP (v0.0.3, implementado):**
+LoginRateLimitFilter limita a 5 intentos por minuto por IP. No requiere base de datos. Responde 429 Too Many Requests.
+
+**Capa 2 - Bloqueo de Cuenta (planificado para v0.1.0):**
+AccountLockService bloqueará la cuenta tras 5 intentos fallidos durante 15 minutos. Requiere migración de base de datos. Responderá 423 Locked.
+
+Ambas capas son independientes y pueden coexistir. La capa 1 ya está operativa en producción.
+
+---
+
 ## Conexión con el frontend
 
 El módulo auth del frontend se comunica con estos endpoints:
 
-- POST /api/v1/auth/register → RegisterUserRequest (username?, email?, password) → 201 Created
-- POST /api/v1/auth/login → LoginRequest (identifier, password) → 200 con TokenResponse (token)
-- GET /api/v1/auth/me/topnav → Authorization: Bearer token → 200 con TopNavUserResponse (username, email)
+- POST /api/v1/auth/register a RegisterUserRequest (username?, email?, password) a 201 Created
+- POST /api/v1/auth/login a LoginRequest (identifier, password) a 200 con TokenResponse (token)
+- GET /api/v1/auth/me/topnav a Authorization: Bearer token a 200 con TopNavUserResponse (username, email)
 
 ---
 
@@ -236,9 +279,10 @@ El módulo auth del frontend se comunica con estos endpoints:
 ## Flujo completo de login
 
 1. Frontend envía LoginRequestDTO con identifier y password.
-2. AuthController traduce a LoginUserCommand.
-3. UserService busca al usuario por identifier mediante UserPostgresAdapter.
-4. BCryptPasswordHasherAdapter compara la contraseña con el hash almacenado.
-5. Si es correcto, JwtTokenAdapter genera un JWT con los datos del usuario.
-6. AuthController envuelve el JWT en TokenResponseDTO y responde 200.
-7. Frontend guarda el token en AuthContext y localStorage.
+2. Si la IP ha superado el límite de 5 intentos por minuto, LoginRateLimitFilter responde 429 sin llegar al controlador.
+3. AuthController traduce a LoginUserCommand.
+4. UserService busca al usuario por identifier mediante UserPostgresAdapter.
+5. BCryptPasswordHasherAdapter compara la contraseña con el hash almacenado.
+6. Si es correcto, JwtTokenAdapter genera un JWT con los datos del usuario.
+7. AuthController envuelve el JWT en TokenResponseDTO y responde 200.
+8. Frontend guarda el token en AuthContext y localStorage.

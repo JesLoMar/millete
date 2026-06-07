@@ -2,21 +2,21 @@
 
 ## Estructura de archivos
 
-- **application/services/CategoryService.java** — Servicio central que implementa todos los casos de uso
-- **domain/model/Category.java** — Entidad de dominio con lógica de negocio y validaciones
-- **domain/ports/in/GetCategoryUseCase.java** — Interfaz de consulta de categorías
-- **domain/ports/in/RegisterCategoryUseCase.java** — Interfaz de creación de categoría
-- **domain/ports/in/RegisterCategoryCommand.java** — Comando inmutable (record) para crear categoría
-- **domain/ports/in/UpdateCategoryUseCase.java** — Interfaz de actualización de categoría
-- **domain/ports/in/UpdateCategoryCommand.java** — Comando inmutable (record) para actualizar categoría
-- **domain/ports/out/CategoryRepository.java** — Interfaz del repositorio (puerto de salida)
-- **infrastructure/in/controller/CategoryController.java** — Controlador REST
-- **infrastructure/in/controller/dto/CategoryResponseDTO.java** — DTO de respuesta (record)
-- **infrastructure/in/controller/dto/RegisterCategoryRequestDTO.java** — DTO de petición con Bean Validation
-- **infrastructure/out/persistence/postgresql/adapters/CategoryPostgresAdapter.java** — Adaptador de persistencia
-- **infrastructure/out/persistence/postgresql/entity/CategoryEntity.java** — Entidad JPA
-- **infrastructure/out/persistence/postgresql/mappers/CategoryMapper.java** — Mapper manual dominio ↔ entidad
-- **infrastructure/out/persistence/postgresql/repository/JpaCategoryRepository.java** — Repositorio Spring Data
+- application/services/CategoryService.java — Servicio central que implementa todos los casos de uso
+- domain/model/Category.java — Entidad de dominio con lógica de negocio y validaciones
+- domain/ports/in/GetCategoryUseCase.java — Interfaz de consulta de categorías
+- domain/ports/in/RegisterCategoryUseCase.java — Interfaz de creación de categoría
+- domain/ports/in/RegisterCategoryCommand.java — Comando inmutable (record) para crear categoría
+- domain/ports/in/UpdateCategoryUseCase.java — Interfaz de actualización de categoría
+- domain/ports/in/UpdateCategoryCommand.java — Comando inmutable (record) para actualizar categoría
+- domain/ports/out/CategoryRepository.java — Interfaz del repositorio (puerto de salida)
+- infrastructure/in/controller/CategoryController.java — Controlador REST
+- infrastructure/in/controller/dto/CategoryResponseDTO.java — DTO de respuesta (record)
+- infrastructure/in/controller/dto/RegisterCategoryRequestDTO.java — DTO de petición con Bean Validation
+- infrastructure/out/persistence/postgresql/adapters/CategoryPostgresAdapter.java — Adaptador de persistencia
+- infrastructure/out/persistence/postgresql/entity/CategoryEntity.java — Entidad JPA
+- infrastructure/out/persistence/postgresql/mappers/CategoryMapper.java — Mapper manual dominio a entidad
+- infrastructure/out/persistence/postgresql/repository/JpaCategoryRepository.java — Repositorio Spring Data
 
 ---
 
@@ -24,10 +24,10 @@
 
 El módulo sigue el patrón de Puertos y Adaptadores:
 
-- **Puertos de entrada (in):** RegisterCategoryUseCase, UpdateCategoryUseCase y GetCategoryUseCase. Cada uno recibe un Command inmutable (record) como parámetro en lugar de parámetros sueltos, lo que facilita la evolución de la interfaz sin romper el contrato.
-- **Núcleo de dominio:** CategoryService implementa todos los casos de uso. Category.java contiene la lógica de negocio y validaciones de invariantes.
-- **Puertos de salida (out):** CategoryRepository define las operaciones de persistencia que necesita el dominio.
-- **Adaptador de persistencia:** CategoryPostgresAdapter implementa el repositorio usando JPA, traduciendo entre entidades de dominio y entidades JPA mediante CategoryMapper.
+- Puertos de entrada (in): RegisterCategoryUseCase, UpdateCategoryUseCase y GetCategoryUseCase. Cada uno recibe un Command inmutable (record) como parámetro en lugar de parámetros sueltos, lo que facilita la evolución de la interfaz sin romper el contrato.
+- Núcleo de dominio: CategoryService implementa todos los casos de uso. Category.java contiene la lógica de negocio y validaciones de invariantes.
+- Puertos de salida (out): CategoryRepository define las operaciones de persistencia que necesita el dominio.
+- Adaptador de persistencia: CategoryPostgresAdapter implementa el repositorio usando JPA, traduciendo entre entidades de dominio y entidades JPA mediante CategoryMapper.
 
 El controlador inyecta los puertos de entrada para crear/actualizar/listar, y el servicio directamente para delete y findById.
 
@@ -47,7 +47,7 @@ El módulo aplica múltiples capas de validación:
 
 **Capa Servicio:** Validación de propiedad mediante el binomio (id, userId) en todas las operaciones de modificación. La consulta findByIdAndUserId busca en base de datos por ambos campos simultáneamente.
 
-**Capa Base de datos:** Constraints SQL como NOT NULL y CHECK que actúan como última barrera de integridad.
+**Capa Base de datos:** Constraints SQL como NOT NULL y CHECK que actúan como última barrera de integridad. El filtro @SQLRestriction("active = true") en la entidad garantiza que las consultas JPA nunca devuelvan categorías inactivas.
 
 ### Validación de propiedad (protección contra IDOR)
 
@@ -57,12 +57,12 @@ Todas las operaciones de modificación (update, delete) validan que el recurso p
 
 Category.java protege sus invariantes mediante validaciones en el constructor y métodos:
 
-- **Nombre:** Obligatorio, no puede estar vacío ni ser null. Se valida con isBlank().
-- **Color:** Obligatorio, debe ser un hexadecimal válido que coincida con el patrón #RRGGBB (ej: #FF5733). Se valida con la expresión regular ^#[0-9A-Fa-f]{6}$.
-- **Presupuesto (budgetLimit):** Opcional (null significa sin límite), pero si se especifica no puede ser negativo. Se valida con compareTo(BigDecimal.ZERO).
-- **Constructor de creación:** Genera UUID aleatorio, establece createdAt y modifiedAt con la fecha actual, y marca active = true.
-- **Método updateDetails():** Valida nombre, color (si se proporciona) y presupuesto (si se proporciona) antes de actualizar los campos. Actualiza modifiedAt.
-- **Método deactivate():** Marca active = false y actualiza modifiedAt. Es un borrado lógico, nunca físico.
+- Nombre: Obligatorio, no puede estar vacío ni ser null. Se valida con isBlank().
+- Color: Obligatorio, debe ser un hexadecimal válido que coincida con el patrón #RRGGBB (ej: #FF5733). Se valida con la expresión regular ^#[0-9A-Fa-f]{6}$.
+- Presupuesto (budgetLimit): Opcional (null significa sin límite), pero si se especifica no puede ser negativo. Se valida con compareTo(BigDecimal.ZERO).
+- Constructor de creación: Genera UUID aleatorio, establece createdAt y modifiedAt con la fecha actual, y marca active = true.
+- Método updateDetails(): Valida nombre, color (si se proporciona) y presupuesto (si se proporciona) antes de actualizar los campos. Actualiza modifiedAt.
+- Método deactivate(): Marca active = false y actualiza modifiedAt. Es un borrado lógico, nunca físico.
 
 ### Principio de mínimo privilegio
 
@@ -82,7 +82,7 @@ Crea una nueva categoría. Extrae el userId del token JWT mediante authenticatio
 
 ### GET /
 
-Lista las categorías activas del usuario autenticado. Extrae el userId del token. Llama a getCategoryUseCase.findByUserId(userId). El servicio ya filtra solo las activas. Mapea cada categoría a CategoryResponseDTO. Responde 200 OK.
+Lista las categorías activas del usuario autenticado. Extrae el userId del token. Llama a getCategoryUseCase.findByUserId(userId). El servicio ya filtra solo las activas. El filtrado principal ocurre a nivel de base de datos mediante @SQLRestriction("active = true") en CategoryEntity. Mapea cada categoría a CategoryResponseDTO. Responde 200 OK.
 
 ### PUT /{id}
 
@@ -116,7 +116,7 @@ Recibe RegisterCategoryCommand (record con userId, nombre, color, budgetLimit). 
 
 ### Listar categorías del usuario
 
-findByUserId(userId) obtiene las categorías del usuario mediante findByIdUsuario y filtra solo las activas con isActive().
+findByUserId(userId) obtiene las categorías del usuario mediante findByIdUsuario. El filtrado de activas se realiza a nivel de base de datos por @SQLRestriction en CategoryEntity, por lo que el servicio no necesita filtrar manualmente.
 
 ### Actualizar categoría
 
@@ -174,7 +174,7 @@ Define el método update que recibe UUID id, UUID userId y UpdateCategoryCommand
 
 ### GetCategoryUseCase
 
-Define el método findByUserId que recibe UUID userId y devuelve List<Category>. Solo expone datos del usuario autenticado. Se eliminó el método findAll() por seguridad.
+Define el método findByUserId que recibe UUID userId y devuelve List(Category). Solo expone datos del usuario autenticado. Se eliminó el método findAll() por seguridad.
 
 ---
 
@@ -194,6 +194,8 @@ El método findByIdAndUserId es la pieza clave de seguridad: recibe id y userId 
 
 Entidad JPA mapeada a la tabla categories. Usa @Data de Lombok que genera getters, setters, equals, hashCode y toString.
 
+Anotada con @SQLRestriction("active = true"), que filtra automáticamente todas las consultas JPA para excluir categorías inactivas. Este filtro se aplica a nivel de Hibernate, por lo que ninguna consulta generada por Spring Data JPA devolverá categorías con active = false.
+
 Columnas: id (UUID, clave primaria), user_id (UUID, no nulo), name (VARCHAR 50, no nulo), color (VARCHAR 7, no nulo), budget_limit (DECIMAL, permite nulos), created_at (TIMESTAMP, no nulo), modified_at (TIMESTAMP, no nulo), active (BOOLEAN, no nulo).
 
 ### JpaCategoryRepository
@@ -202,9 +204,9 @@ Interfaz que extiende JpaRepository con la entidad CategoryEntity y clave UUID. 
 
 Métodos personalizados:
 
-- findByUserId(UUID userId): Busca categorías por la columna user_id.
-- findByIdAndUserId(UUID id, UUID userId): Query JPQL personalizada que busca por id y userId simultáneamente.
-- findCategoriesWithBudgetByUserId(UUID userId): Query JPQL que busca categorías del usuario que tengan budgetLimit no nulo.
+- findByUserId(UUID userId): Busca categorías por la columna user_id. El filtro active = true lo aplica @SQLRestriction automáticamente.
+- findByIdAndUserId(UUID id, UUID userId): Query JPQL personalizada que busca por id y userId simultáneamente. Incluye AND c.active = true explícitamente como capa adicional de seguridad.
+- findCategoriesWithBudgetByUserId(UUID userId): Query JPQL que busca categorías del usuario que tengan budgetLimit no nulo. Incluye AND c.active = true.
 
 ### CategoryMapper
 
@@ -221,6 +223,32 @@ Implementa CategoryRepository. Anotado con @Repository. Traduce entre objetos de
 Flujo de save: recibe Category de dominio, lo convierte a CategoryEntity con mapper.toEntity(), lo guarda con jpaRepository.save(), convierte el resultado a dominio con mapper.toDomain() y lo devuelve.
 
 Flujo de findByIdAndUserId: recibe id y userId, llama a jpaRepository.findByIdAndUserId(id, userId), si existe lo convierte a dominio con mapper.toDomain().
+
+---
+
+## Borrado lógico (Soft Delete)
+
+Las categorías nunca se eliminan físicamente de la base de datos. El campo active controla su visibilidad:
+
+- Al crear: active = true.
+- Al eliminar: active = false mediante category.deactivate().
+- En consultas: @SQLRestriction("active = true") en CategoryEntity filtra automáticamente todas las queries JPA. Las consultas JPQL personalizadas incluyen AND c.active = true como redundancia de seguridad.
+
+Esto garantiza que las categorías eliminadas no aparezcan en listados ni selectores, pero se conservan para integridad referencial.
+
+---
+
+## Transacciones huérfanas
+
+Cuando se elimina una categoría, las transacciones asociadas no se eliminan. En su lugar:
+
+1. La categoría se marca como inactiva (active = false).
+2. Las transacciones del propietario se desvinculan de la categoría (categoryId = null).
+3. Las transacciones de otros usuarios no se modifican.
+4. El TransactionController resuelve las transacciones sin categoría mostrando "Sin categoría" y color null.
+5. El frontend muestra estas transacciones con un icono ámbar distintivo.
+
+Esto preserva el historial financiero completo sin perder datos.
 
 ---
 
@@ -264,36 +292,3 @@ El módulo categories del frontend se comunica con estos endpoints:
 11. Responde 204 No Content.
 
 Las transacciones históricas no se eliminan, solo pierden la referencia a la categoría desactivada. Así se preserva el historial financiero completo.
-
----
-
-## Tests
-
-El módulo tiene 21 tests unitarios que cubren todas las funcionalidades y casos de error:
-
-### CategoryTest (12 tests)
-
-- Creación con datos válidos: verifica que todos los campos se asignan correctamente.
-- Aceptar budgetLimit nulo: verifica que una categoría sin presupuesto es válida.
-- Rechazar nombre vacío: lanza IllegalArgumentException.
-- Rechazar nombre nulo: lanza IllegalArgumentException.
-- Rechazar color inválido (texto): lanza IllegalArgumentException al pasar "rojo".
-- Rechazar color con formato incorrecto: lanza IllegalArgumentException al pasar "#FFF" (3 caracteres en vez de 6).
-- Rechazar presupuesto negativo: lanza IllegalArgumentException.
-- Actualizar detalles correctamente: verifica que name, color y budgetLimit se actualizan y modifiedAt cambia.
-- Rechazar actualización con nombre vacío: lanza IllegalArgumentException.
-- Rechazar actualización con color inválido: lanza IllegalArgumentException.
-- Rechazar actualización con presupuesto negativo: lanza IllegalArgumentException.
-- Desactivar categoría: verifica que active pasa a false y modifiedAt se actualiza.
-
-### CategoryServiceTest (9 tests)
-
-- Crear categoría: verifica que se guarda correctamente con todos los campos.
-- Listar categorías por usuario: verifica que solo devuelve las activas, filtrando las inactivas.
-- Actualizar categoría como propietario: verifica que se actualiza usando findByIdAndUserId.
-- Rechazar actualización si no existe: lanza ResponseStatusException con NOT_FOUND.
-- Rechazar actualización de otro usuario: simula que otro userId intenta actualizar y verifica que lanza NOT_FOUND y nunca se llama a save.
-- Eliminar categoría como propietario: verifica que se desactiva y se desasignan las transacciones del propietario.
-- Eliminar solo modifica transacciones del propietario: crea transacciones de dos usuarios distintos y verifica que solo se modifican las del propietario.
-- Rechazar eliminación si no existe: lanza ResponseStatusException con NOT_FOUND.
-- Rechazar eliminación de otro usuario: simula que otro userId intenta eliminar y verifica que lanza NOT_FOUND y nunca se modifican transacciones.
