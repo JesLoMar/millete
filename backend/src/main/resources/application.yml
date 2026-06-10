@@ -29,21 +29,8 @@ spring:
     password: 654321
     driver-class-name: org.postgresql.Driver
 
-  mail:
-    host: smtp-relay.brevo.com
-    port: 587
-    username:
-    password:
-    from: contact@millete.online
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
 app:
-  version: 0.0.3
+  version: 0.1.0
   frontend:
     url: http://localhost:3000
 

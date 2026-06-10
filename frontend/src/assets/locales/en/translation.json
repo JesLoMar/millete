@@ -73,8 +73,8 @@
     },
     "greeting": "Hello, <br />welcome.",
     "footer": {
-      "webVersion": "WEB v0.0.3",
-      "apiVersion": "API v0.0.3",
+      "webVersion": "WEB v0.1.0",
+      "apiVersion": "API v0.1.0",
       "copyright": "© 2026 Millete"
     },
     "form": {
