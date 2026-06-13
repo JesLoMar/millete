@@ -23,6 +23,19 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username:
+    password:
+    from: contact@millete.online
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   datasource:
     url: jdbc:postgresql://localhost:5432/millete_db
     username: postgres

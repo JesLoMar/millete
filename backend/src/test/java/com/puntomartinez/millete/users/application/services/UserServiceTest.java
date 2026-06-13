@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.users.application.services;
 
+import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
@@ -13,11 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,9 +36,13 @@ class UserServiceTest {
     @Mock
     private TokenProvider tokenProvider;
 
+    @Mock
+    private AccountLockService accountLockService;
+
     @InjectMocks
     private UserService userService;
 
+    private final UUID defaultUserId = UUID.randomUUID();
     private final String rawPassword = "password123";
     private final String hashedPassword = "hashed_123";
     private final String email = "ana@mail.com";
@@ -116,9 +123,10 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Login con credenciales correctas devuelve token")
+    @DisplayName("Login con credenciales correctas resetea intentos y devuelve token")
     void shouldLoginSuccessfully() {
         User user = mock(User.class);
+        when(user.getId()).thenReturn(defaultUserId);
         when(user.getPassword()).thenReturn(hashedPassword);
         when(passwordHasher.matches(rawPassword, hashedPassword)).thenReturn(true);
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
@@ -129,13 +137,16 @@ class UserServiceTest {
         String result = userService.login(command);
 
         assertThat(result).isEqualTo(token);
+        verify(accountLockService).checkLockStatus(defaultUserId);
+        verify(accountLockService).handleSuccessfulLogin(defaultUserId);
         verify(tokenProvider).generateToken(user);
     }
 
     @Test
-    @DisplayName("Login con password incorrecta lanza error")
+    @DisplayName("Login con password incorrecta registra fallo y lanza error")
     void shouldThrowWhenWrongPassword() {
         User user = mock(User.class);
+        when(user.getId()).thenReturn(defaultUserId);
         when(user.getPassword()).thenReturn(hashedPassword);
         when(passwordHasher.matches("wrong", hashedPassword)).thenReturn(false);
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
@@ -145,10 +156,38 @@ class UserServiceTest {
         assertThatRuntimeException()
                 .isThrownBy(() -> userService.login(command))
                 .withMessage("Credenciales inválidas");
+
+        verify(accountLockService).checkLockStatus(defaultUserId);
+        verify(accountLockService).handleFailedLogin(defaultUserId);
+        verify(accountLockService, never()).handleSuccessfulLogin(any());
     }
 
     @Test
-    @DisplayName("Login con usuario inexistente lanza error")
+    @DisplayName("Login con password incorrecta cuando se alcanza el límite propaga AccountLockedException")
+    void shouldPropagateAccountLockedExceptionWhenBlockedOnFailedAttempt() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(defaultUserId);
+        when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
+
+        // Simulamos que handleFailedLogin lanza AccountLockedException (5º fallo)
+        doThrow(new AccountLockedException(LocalDateTime.now().plusMinutes(15), 15))
+                .when(accountLockService).handleFailedLogin(defaultUserId);
+
+        LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(email, "wrong");
+
+        assertThatThrownBy(() -> userService.login(command))
+                .isInstanceOf(AccountLockedException.class)
+                .hasMessageContaining("Inténtalo de nuevo en 15 minutos");
+
+        verify(accountLockService).checkLockStatus(defaultUserId);
+        verify(accountLockService).handleFailedLogin(defaultUserId);
+        verify(passwordHasher, never()).matches(anyString(), anyString());
+        verify(tokenProvider, never()).generateToken(any());
+        verify(accountLockService, never()).handleSuccessfulLogin(any());
+    }
+
+    @Test
+    @DisplayName("Login con usuario inexistente lanza error genérico sin comprobar bloqueos")
     void shouldThrowWhenUserNotFound() {
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.empty());
 
@@ -157,6 +196,29 @@ class UserServiceTest {
         assertThatRuntimeException()
                 .isThrownBy(() -> userService.login(command))
                 .withMessage("Credenciales inválidas");
+
+        verify(accountLockService, never()).checkLockStatus(any());
+        verify(accountLockService, never()).handleFailedLogin(any());
+    }
+
+    @Test
+    @DisplayName("Login con cuenta bloqueada lanza AccountLockedException sin validar password")
+    void shouldThrowWhenAccountIsLocked() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(defaultUserId);
+        when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
+
+        doThrow(new AccountLockedException(LocalDateTime.now().plusMinutes(15), 15))
+                .when(accountLockService).checkLockStatus(defaultUserId);
+
+        LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(email, rawPassword);
+
+        assertThatThrownBy(() -> userService.login(command))
+                .isInstanceOf(AccountLockedException.class);
+
+        verify(accountLockService).checkLockStatus(defaultUserId);
+        verify(passwordHasher, never()).matches(anyString(), anyString());
+        verify(accountLockService, never()).handleFailedLogin(any());
     }
 
     @Test

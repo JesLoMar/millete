@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.shared.infrastructure.in.controller.advice;
 
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.ErrorResponseDTO;
+import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +65,17 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccountLockedException(AccountLockedException ex, HttpServletRequest request) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                HttpStatus.LOCKED.value(),
+                HttpStatus.LOCKED.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(error, HttpStatus.LOCKED);
     }
 }
