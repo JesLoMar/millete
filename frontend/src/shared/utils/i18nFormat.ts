@@ -7,7 +7,6 @@ const LOCALE_MAP: Record<string, string> = {
   de: 'de-DE',
   it: 'it-IT',
   pt: 'pt-PT',
-  ja: 'ja-JP',
 };
 
 const DEFAULT_LOCALE = 'es-ES';
