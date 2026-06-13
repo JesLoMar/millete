@@ -1,4 +1,5 @@
 import "i18next";
+<<<<<<< HEAD
 import enCommon from "@/assets/locales/en/common.json";
 import enValidations from "@/assets/locales/en/validations.json";
 import enAuth from "@/assets/locales/en/auth.json";
@@ -13,6 +14,10 @@ import enSettings from "@/assets/locales/en/settings.json";
 import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
 import enInfo from "@/assets/locales/en/info.json";
+=======
+import enTranslation from "src/assets/locales/en/translation.json";
+import enWiki from "src/assets/locales/en/wiki.json";
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -34,6 +39,7 @@ declare module "i18next" {
       "info"
     ];
     resources: {
+<<<<<<< HEAD
       common: typeof enCommon;
       validations: typeof enValidations;
       auth: typeof enAuth;
@@ -48,10 +54,13 @@ declare module "i18next" {
       api: typeof enApi;
       wiki: typeof enWiki;
       info: typeof enInfo;
+=======
+      translation: typeof enTranslation;
+      wiki: typeof enWiki;
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
     };
-    returnNull: false;
-    returnEmptyString: false;
   }
+<<<<<<< HEAD
 
   interface TFunction {
     <T extends string = string>(key: T, options?: Record<string, unknown>): string;
@@ -139,4 +148,6 @@ declare module "@/assets/locales/ja/translation.json" {
 declare module "@/assets/locales/ja/wiki.json" {
   const value: WikiResources;
   export default value;
+=======
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 }

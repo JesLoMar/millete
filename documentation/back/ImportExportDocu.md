@@ -6,8 +6,13 @@
 - **application/services/DataExportService.java** — Servicio de exportación de datos (JSON, ZIP, CSV individual, PDF)
 =======
 - **application/services/DataExportService.java** — Servicio de exportación de datos
+<<<<<<< HEAD
 >>>>>>> d62a86c (V0.0.4 (#5))
 - **application/services/DataImportService.java** — Servicio de importación con validación y migración
+=======
+- **application/services/DataImportService.java** — Servicio de importación con validación
+- **domain/exception/OwnershipException.java** — Excepción de validación de propiedad
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
 - **domain/migration/Migration001to010.java** — Migración v0.0.1 → v0.1.0
@@ -89,7 +94,8 @@ Importa datos desde un archivo JSON previamente exportado con GET /export.
 3. Valida que tenga extensión .json.
 4. Llama a DataImportService.importUserData().
 5. Responde 200 con resumen de la importación si todo es correcto.
-6. Responde 400 Bad Request si hay errores de formato, versión o base de datos.
+6. Responde 403 Forbidden si el archivo no pertenece al usuario (OwnershipException).
+7. Responde 400 Bad Request si hay errores de formato o versión.
 
 ---
 
@@ -108,6 +114,7 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 
 ### exportAllUserData
 
+<<<<<<< HEAD
 1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
 <<<<<<< HEAD
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas, inversiones, savings goals, **userPreferences**, **goalUnits**, **goalMembers** y **goalContributions**.
@@ -152,6 +159,9 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 2. Delega la generación del PDF en el puerto FileExportPort (HtmlPdfFileExportAdapter).
 3. Devuelve el array de bytes del archivo PDF.
 =======
+=======
+1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación, userId y versión de la app.
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas e inversiones.
 3. Devuelve un UserDataSnapshot con metadata y datos.
 >>>>>>> d62a86c (V0.0.4 (#5))
@@ -160,6 +170,7 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 
 ## DataImportService.java
 
+<<<<<<< HEAD
 Servicio que importa datos con validación de compatibilidad de versión y migración automática.
 <<<<<<< HEAD
 
@@ -173,10 +184,14 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 - MigrationChain
 =======
 >>>>>>> d62a86c (V0.0.4 (#5))
+=======
+Servicio que importa datos con validación de propiedad, compatibilidad de versión y migración automática.
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 
 ### importUserData
 
 1. Deserializa el archivo JSON a UserDataSnapshot.
+<<<<<<< HEAD
 2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
 3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
 <<<<<<< HEAD
@@ -195,6 +210,18 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 4. Importa cada entidad asignando el userId del usuario autenticado.
 5. Devuelve un resumen con el número de registros importados y la versión.
 >>>>>>> d62a86c (V0.0.4 (#5))
+=======
+2. Valida la propiedad: el userId del archivo debe coincidir con el usuario autenticado.
+3. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
+4. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
+5. Importa cada entidad sobrescribiendo el userId por seguridad.
+6. Devuelve un resumen con el número de registros importados y la versión.
+
+### validateOwnership
+
+- Si el archivo no tiene userId: lanza OwnershipException con código ARCHIVO_SIN_PROPIETARIO.
+- Si el userId no coincide con el usuario autenticado: lanza OwnershipException con código PROPIETARIO_NO_COINCIDE.
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 
 ### validateAndMigrate
 
@@ -216,8 +243,22 @@ Sobrescribe el userId en todas las entidades del snapshot para evitar que datos 
 
 ---
 
+<<<<<<< HEAD
 =======
 >>>>>>> d62a86c (V0.0.4 (#5))
+=======
+## OwnershipException.java
+
+Excepción personalizada con código de error para identificar el tipo de problema de propiedad. Extiende RuntimeException.
+
+### Códigos de error
+
+- ARCHIVO_SIN_PROPIETARIO: el archivo no contiene userId.
+- PROPIETARIO_NO_COINCIDE: el userId del archivo no es el del usuario autenticado.
+
+---
+
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 ## ExportVersion.java
 
 Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
@@ -287,6 +328,7 @@ DTO específico para la exportación tabular (CSV y ZIP). Contiene listas de rec
 
 ### Estructura
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 - categories: lista de CategoryExportRow (name, budgetLimit).
 - transactions: lista de TransactionExportRow (categoryName, amount, date, type, description).
@@ -364,6 +406,9 @@ Implementación del puerto FileExportPort para generar archivos PDF. Utiliza Thy
 - Márgenes de 1.5cm, tamaño A4.
 =======
 - metadata: SnapshotMetadata con version, exportDate y appVersion.
+=======
+- metadata: SnapshotMetadata con version, exportDate, userId, appVersion.
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 - categories, transactions, plannedTransactions, investments: listas de datos.
 >>>>>>> d62a86c (V0.0.4 (#5))
 
@@ -500,9 +545,14 @@ Los valores válidos para period son: 1m (1 mes), 3m (3 meses), 6m (6 meses), 1y
 
 ## Seguridad
 
+<<<<<<< HEAD
 - Los archivos de exportación no contienen información del propietario, son portables entre cuentas.
 - Cualquier usuario autenticado puede importar cualquier archivo JSON compatible.
 - El userId se asigna automáticamente con el del usuario autenticado durante la importación.
+=======
+- Solo el propietario original de los datos puede importarlos.
+- El userId se sobrescribe con el del usuario autenticado durante la importación.
+>>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
 - La importación es transaccional: o se importa todo o nada.
 - Los archivos de versiones incompatibles se rechazan automáticamente.
 - Todos los endpoints de exportación requieren autenticación JWT válida.
