@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
 import com.puntomartinez.millete.dataexport.application.services.DataImportService;
+import com.puntomartinez.millete.dataexport.domain.exception.OwnershipException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +24,17 @@ public class DataImportController {
         this.dataImportService = dataImportService;
     }
 
+    /**
+     * Importa datos desde un archivo JSON previamente exportado.
+     * Validaciones:
+     * - El archivo no puede estar vacío
+     * - El archivo debe pertenecer al usuario autenticado
+     * - La versión del archivo debe ser compatible
+     *
+     * @param file           Archivo JSON con los datos a importar
+     * @param authentication Usuario autenticado
+     * @return Mensaje de éxito con resumen de la importación
+     */
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> importData(
             @RequestParam("file") MultipartFile file,
@@ -60,6 +72,16 @@ public class DataImportController {
                     "success", true,
                     "message", summary
             ));
+
+        } catch (OwnershipException e) {
+            // ─── Error de propiedad ────────────────────────
+            log.warn("Importación rechazada: {}", e.getErrorCode());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "success", false,
+                            "error", e.getErrorCode(),
+                            "message", e.getMessage()
+                    ));
 
         } catch (RuntimeException e) {
             // ─── Error de formato/versión/BD ───────────────

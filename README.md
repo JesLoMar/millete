@@ -18,7 +18,7 @@ Get a bird's-eye view of your financial health:
 - Add, edit, or delete income and expense records.
 - Categorize transactions (Food, Housing, Transport, Utilities, Leisure).
 - Search, filter by type (all, income, expense), and paginate through your history.
-- Smart budget guardian: alerts when expenses exceed 70% of monthly income. [Not Implemented]
+- Smart budget guardian: alerts when expenses exceed 70% of monthly income.
 
 ### Recurring Transactions
 - Set up daily, weekly, monthly, or yearly recurring transactions.
@@ -34,7 +34,7 @@ Get a bird's-eye view of your financial health:
 - Track stocks, crypto, funds, real estate, and other assets.
 - Record quantity, purchase price, purchase date, and ticker symbol.
 - Automatically calculate invested capital, current value, profit/loss, and ROI percentage.
-- Update market prices to see real portfolio performance.
+- Update market prices to see real-time portfolio performance.
 
 ### Family Collaboration
 - Create a family unit with a monthly contribution goal.
@@ -46,6 +46,7 @@ Get a bird's-eye view of your financial health:
 - Export all your data (categories, transactions, planned transactions, investments) as a JSON file.
 - Import previously exported data to restore or migrate your account.
 - Versioned format with automatic migration for future updates.
+- Ownership validation prevents importing another user's data.
 
 ---
 

@@ -1,4 +1,4 @@
-export type SupportedLanguageCode = "de" | "en" | "es" | "fr" | "it" | "pt" | "ja"
+export type SupportedLanguageCode = "de" | "en" | "es" | "fr" | "it" | "pt"
 
 export interface Language {
   code: string
@@ -14,7 +14,6 @@ const LANGUAGE_MAP: Record<SupportedLanguageCode, Omit<Language, "code">> = {
   de: { nativeName: "Deutsch", englishName: "German", flag: "🇩🇪" },
   it: { nativeName: "Italiano", englishName: "Italian", flag: "🇮🇹" },
   pt: { nativeName: "Português", englishName: "Portuguese", flag: "🇵🇹" },
-  ja: { nativeName: "日本語", englishName: "Japanese", flag: "🇯🇵" },
 }
 
 const displayNamesCache = new Map<string, Intl.DisplayNames>()
