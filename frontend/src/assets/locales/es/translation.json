@@ -73,8 +73,8 @@
     },
     "greeting": "Hola, <br />bienvenido.",
     "footer": {
-      "webVersion": "WEB v0.0.3",
-      "apiVersion": "API v0.0.3",
+      "webVersion": "WEB v0.0.4",
+      "apiVersion": "API v0.0.4",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -174,23 +174,18 @@
       }
     },
     "news": {
-      "title": "Novedades recientes",
-      "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
+      "title": "最近のアップデート",
+      "subtitle": "プラットフォームに追加された最新の改善点をご覧ください。",
       "items": [
         {
+          "tag": "v0.0.4",
+          "title": "新言語：日本語追加。アカウント間でのデータエクスポート／インポートが可能になりました。",
+          "description": "データをJSONファイルにエクスポートし、別のアカウントにインポートできるようになりました。これにより、情報移行の制限が緩和され、より柔軟なデータ管理が可能になります。また、日本語に対応しました。"
+        },
+        {
           "tag": "v0.0.3",
-          "title": "Arreglos de fallos visuales y de lógica",
-          "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
-        },
-        {
-          "tag": "v0.0.2",
-          "title": "Wiki de usuario, seguridad reforzada y optimización del sistema",
-          "description": "Estrenamos wiki con soporte multiidioma. Seguridad blindada en la gestión de categorías, optimizado el motor de transacciones recurrentes y mejorado la interfaz visual con nuevos iconos."
-        },
-        {
-          "tag": "v0.0.1",
-          "title": "Primer lanzamiento público",
-          "description": "¡Millete ya está disponible para todos! Regístrate y comienza a gestionar tus finanzas personales de forma sencilla y efectiva."
+          "title": "視覚的・論理的バグ修正",
+          "description": "Safariなどのブラウザに対応するスタイル調整。削除されたカテゴリと取引をメトリクス計算から除外。"
         }
       ]
     }
