@@ -1,5 +1,6 @@
 import "i18next";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import enCommon from "@/assets/locales/en/common.json";
 import enValidations from "@/assets/locales/en/validations.json";
 import enAuth from "@/assets/locales/en/auth.json";
@@ -18,6 +19,28 @@ import enInfo from "@/assets/locales/en/info.json";
 import enTranslation from "src/assets/locales/en/translation.json";
 import enWiki from "src/assets/locales/en/wiki.json";
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+
+import enTranslation from "@/assets/locales/en/translation.json";
+import enWiki from "@/assets/locales/en/wiki.json";
+
+export type TranslationResources = typeof enTranslation;
+export type WikiResources = typeof enWiki;
+
+export type NestedKeyOf<T> = T extends object
+  ? {
+      [K in keyof T]: K extends string
+        ? T[K] extends string | number | boolean
+          ? K
+          : T[K] extends object
+          ? `${K}.${NestedKeyOf<T[K]>}`
+          : never
+        : never;
+    }[keyof T]
+  : never;
+
+export type TranslationKey = NestedKeyOf<TranslationResources>;
+>>>>>>> 66c6332 (V0.0.4 (#6))
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -40,6 +63,7 @@ declare module "i18next" {
     ];
     resources: {
 <<<<<<< HEAD
+<<<<<<< HEAD
       common: typeof enCommon;
       validations: typeof enValidations;
       auth: typeof enAuth;
@@ -58,8 +82,15 @@ declare module "i18next" {
       translation: typeof enTranslation;
       wiki: typeof enWiki;
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+      translation: TranslationResources;
+      wiki: WikiResources;
+>>>>>>> 66c6332 (V0.0.4 (#6))
     };
+    returnNull: false;
+    returnEmptyString: false;
   }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
   interface TFunction {
@@ -78,6 +109,8 @@ declare module "react-i18next" {
       options?: Record<string, unknown>
     ) => string;
   }
+=======
+>>>>>>> 66c6332 (V0.0.4 (#6))
 }
 
 // Alemán
@@ -148,6 +181,9 @@ declare module "@/assets/locales/ja/translation.json" {
 declare module "@/assets/locales/ja/wiki.json" {
   const value: WikiResources;
   export default value;
+<<<<<<< HEAD
 =======
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+>>>>>>> 66c6332 (V0.0.4 (#6))
 }

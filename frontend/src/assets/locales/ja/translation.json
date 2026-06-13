@@ -1,0 +1,611 @@
+{
+  "app": {
+    "name": "Millete"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "loading": "読み込み中...",
+    "loadingSession": "セッションを読み込み中...",
+    "save": "保存",
+    "saving": "保存中...",
+    "edit": "編集",
+    "delete": "削除",
+    "error": "エラー",
+    "goToLogin": "ログインへ",
+    "accept": "承諾",
+    "reject": "拒否",
+    "close": "閉じる",
+    "deleting": "削除中...",
+    "languages": {
+      "es": "スペイン語",
+      "en": "英語",
+      "fr": "フランス語",
+      "de": "ドイツ語",
+      "it": "イタリア語",
+      "pt": "ポルトガル語",
+      "ja": "日本語"
+    }
+  },
+  "nav": {
+    "user": "ユーザー",
+    "changeLanguage": "言語変更",
+    "guest": "ゲスト",
+    "goToDashboard": "ダッシュボードへ",
+    "userMenu": "ユーザーメニュー",
+    "profile": "プロフィール",
+    "logout": "ログアウト",
+    "logoutSuccess": "ログアウトしました",
+    "errors": {
+      "languageChangeFailed": "言語の変更に失敗しました"
+    }
+  },
+  "theme": {
+    "selector": "テーマ選択",
+    "palette": "カラーパレット",
+    "errors": {
+      "themeChangeFailed": "テーマの変更に失敗しました"
+    }
+  },
+  "carousel": {
+    "previous": "前へ",
+    "next": "次へ"
+  },
+  "sidebar": {
+    "mainNav": "メインナビゲーション",
+    "bottomNav": "セカンダリナビゲーション",
+    "open": "メニューを開く",
+    "close": "メニューを閉じる",
+    "noItems": "利用可能なセクションはありません",
+    "comingSoon": "近日公開",
+    "dashboard": "ダッシュボード",
+    "transactions": "取引明細",
+    "categories": "カテゴリ",
+    "investments": "投資",
+    "family": "ファミリー",
+    "mobileTitle": "Millete",
+    "errors": {
+      "featureComingSoon": "{{feature}}は近日公開予定です"
+    }
+  },
+  "auth": {
+    "brand": {
+      "name": "Millete",
+      "tagline": "支出をコントロールし、目標を達成しましょう。"
+    },
+    "greeting": "こんにちは、<br />ようこそ。",
+    "footer": {
+      "webVersion": "WEB v0.0.4",
+      "apiVersion": "API v0.0.4",
+      "copyright": "© 2026 Millete"
+    },
+    "form": {
+      "optional": "任意",
+      "andOr": "または",
+      "registerHint": "続行するにはユーザー名またはメールアドレスを入力してください。",
+      "passwordHint": "最低8文字",
+      "toggle": {
+        "login": "ログイン",
+        "register": "新規登録"
+      },
+      "fields": {
+        "identifier": {
+          "login": "メールアドレスまたはユーザー名",
+          "register": "メールアドレス"
+        },
+        "placeholder": {
+          "login": "example@mail.com",
+          "register": "your@mail.com"
+        },
+        "password": {
+          "label": "パスワード",
+          "placeholder": "••••••••"
+        },
+        "username": {
+          "label": "ユーザー名",
+          "placeholder": "ユーザー名"
+        }
+      },
+      "forgotPassword": "パスワードをお忘れですか？",
+      "error": {
+        "invalidCredentials": "認証情報が正しくありません。もう一度お試しください。",
+        "registerFailed": "登録に失敗しました。もう一度お試しください。",
+        "required": "必須項目"
+      }
+    },
+    "submit": {
+      "default": "次へ",
+      "loading": "処理中...",
+      "register": "アカウント作成"
+    },
+    "forgotPassword": {
+      "title": "パスワード再設定",
+      "description": "メールアドレスを入力してください。パスワード再設定用のリンクをお送りします。",
+      "send": "リンクを送信",
+      "emailRequired": "メールアドレスは必須です",
+      "emailInvalid": "有効なメールアドレスを入力してください",
+      "sending": "送信中...",
+      "sendingDescription": "リクエストを処理しています",
+      "success": "メールを送信しました！",
+      "successDescription": "受信トレイを確認してください。パスワード再設定用のリンクをお送りしました。",
+      "error": "送信エラー",
+      "errorDescription": "リクエストを処理できませんでした。もう一度お試しください。",
+      "tryAgain": "再試行",
+      "cancel": "キャンセル",
+      "backToLogin": "ログインに戻る"
+    },
+    "alerts": {
+      "welcome_back": "おかえりなさい！",
+      "register_success": "アカウントが正常に作成されました！",
+      "login_error_title": "ログインエラー"
+    },
+    "errors": {
+      "no_identifier": "ユーザー名またはメールアドレスを入力してください",
+      "auto_login_failed": "アカウントは作成されましたが、自動ログインに失敗しました",
+      "register_failed": "アカウント作成エラー。もう一度お試しください。"
+    }
+  },
+  "info": {
+    "steps": {
+      "title": "はじめに",
+      "subtitle": "クイックガイドを利用して、5分未満で資産管理を始めましょう。",
+      "items": [
+        {
+          "number": "01",
+          "title": "アカウントの作成",
+          "description": "クレジットカードは不要です。ユーザー名、および/またはメールアドレスとパスワードのみで登録できます。"
+        },
+        {
+          "number": "02",
+          "title": "最初のカテゴリ作成",
+          "description": "支出を整理するために、パーソナライズされたカテゴリ（例：食費、交通費、娯楽など）を定義します。"
+        },
+        {
+          "number": "03",
+          "title": "支出の記録",
+          "description": "専用セクションから、またはダッシュボードから簡単に取引を追加できます。"
+        }
+      ]
+    },
+    "wiki": {
+      "link": "完全なWikiを参照する",
+      "header": {
+        "openMenu": "ナビゲーションメニューを開く",
+        "closeMenu": "メニューを閉じる",
+        "navigation": "ナビゲーション"
+      }
+    },
+    "news": {
+      "title": "最近の更新情報",
+      "subtitle": "プラットフォームに追加された最新の改善点をご覧ください。",
+      "items": [
+        {
+          "tag": "v0.0.4",
+          "title": "日本語を追加。ユーザー制限なしでアカウント間のデータ書き出し・読み込みが可能になりました。",
+          "description": "データをJSONファイルにエクスポートし、別のアカウントにインポートできるようになりました。これにより、情報の移行に関する制限がなくなり、より柔軟なデータ管理が可能になります。また、日本語のサポートが追加されました。"
+        },
+        {
+          "tag": "v0.0.3",
+          "title": "表示およびロジックの不具合修正",
+          "description": "Safariなどのブラウザとの互換性を確保するためのスタイル調整を行いました。指標の計算において、削除されたカテゴリや取引は考慮されなくなりました。"
+        }
+      ]
+    }
+  },
+  "dashboard": {
+    "metrics": {
+      "balance": "総残高",
+      "income": "{{period}}の収入",
+      "expenses": "{{period}}の支出",
+      "savings": "総貯蓄額",
+      "vsLastWeek": "前週比",
+      "vsLastMonth": "前月比",
+      "vsLastYear": "前年比",
+      "errors": {
+        "noDataAvailable": "データがありません"
+      }
+    },
+    "header": {
+      "greeting": {
+        "morning": "おはようございます",
+        "afternoon": "こんにちは",
+        "evening": "こんばんは"
+      },
+      "days": {
+        "0": "日曜日",
+        "1": "月曜日",
+        "2": "火曜日",
+        "3": "水曜日",
+        "4": "木曜日",
+        "5": "金曜日",
+        "6": "土曜日"
+      },
+      "months": {
+        "0": "1月",
+        "1": "2月",
+        "2": "3月",
+        "3": "4月",
+        "4": "5月",
+        "5": "6月",
+        "6": "7月",
+        "7": "8月",
+        "8": "9月",
+        "9": "10月",
+        "10": "11月",
+        "11": "12月"
+      },
+      "separator": "•",
+      "dateFormat": "{{year}}年{{month}}",
+      "week": "第{{week}}週",
+      "period": {
+        "ariaLabel": "期間を選択",
+        "week": "週",
+        "month": "月",
+        "year": "年"
+      }
+    },
+    "chart": {
+      "title": "支出履歴",
+      "empty": "この期間の支出はありません",
+      "showingLast": "直近の{{count}}件",
+      "periodLabel": {
+        "week": "過去7日間",
+        "month": "過去5週間",
+        "year": "過去12ヶ月間"
+      },
+      "tooltip": {
+        "amount": "支出額",
+        "percentage": "割合"
+      }
+    },
+    "donut": {
+      "title": "カテゴリ別支出",
+      "total": "合計",
+      "empty": "この期間の支出はありません"
+    },
+    "budget": {
+      "title": "予算状況",
+      "empty": "予算が設定されていません",
+      "overLimit": "予算超過！",
+      "remaining": "残り {{amount}} €",
+      "exceededBy": "{{amount}} € 超過"
+    },
+    "transactions": {
+      "title": "最近の取引",
+      "viewAll": "すべて表示",
+      "empty": "最近の取引履歴はありません",
+      "expense": "支出",
+      "income": "収入",
+      "moreOptions": "その他のオプション"
+    },
+    "goals": {
+      "title": "有効な貯蓄目標",
+      "empty": "貯蓄目標が設定されていません",
+      "completed": "達成！",
+      "remaining": "あと {{amount}} €"
+    },
+    "quickActions": {
+      "addExpense": "取引を追加",
+      "createCategory": "カテゴリを作成",
+      "importData": "データをインポート",
+      "importing": "インポート中...",
+      "exportData": "データをエクスポート",
+      "exporting": "エクスポート中...",
+      "addExpenseAria": "新しい取引を追加",
+      "createCategoryAria": "新しいカテゴリを作成",
+      "importDataAria": "ファイルからデータをインポート",
+      "importingAria": "データをインポートしています。お待ちください",
+      "exportDataAria": "バックアップをエクスポート",
+      "exportingAria": "データをエクスポートしています。お待ちください",
+      "groupLabel": "クイックアクション"
+    },
+    "importModal": {
+      "title": "データをインポート",
+      "description": "取引データが含まれるJSONファイルをドラッグしてください",
+      "dropHere": "ファイルをここにドロップするか、クリックして選択してください",
+      "onlyJson": "JSONファイル（.json）のみ",
+      "jsonOnly": "JSONファイルのみサポートされています",
+      "invalidJson": "無効なJSONファイルです",
+      "importing": "データをインポート中...",
+      "success": "データが正常にインポートされました",
+      "importError": "ファイルのインポート中にエラーが発生しました",
+      "close": "閉じる"
+    },
+    "import": {
+      "success": "データが正常にインポートされました",
+      "errorGeneric": "ファイルのインポート中にエラーが発生しました",
+      "errorProperty": "インポートの権限がありません",
+      "errorFormat": "無効なファイル形式です"
+    },
+    "export": {
+      "success": "バックアップが正常にエクスポートされました",
+      "error": "データのエクスポート中にエラーが発生しました"
+    }
+  },
+  "transactions": {
+    "title": "取引明細",
+    "description": "内容",
+    "descriptionPlaceholder": "例：Lidlでの今週の買い物",
+    "type": "種類",
+    "expense": "支出",
+    "income": "収入",
+    "amount": "金額（€）",
+    "category": "カテゴリ",
+    "selectCategory": "カテゴリを選択",
+    "noCategory": "カテゴリなし",
+    "search": "内容で検索...",
+    "empty": "取引履歴が見つかりません",
+    "showingInterval": "{{total}}件中 {{from}}〜{{to}}件目を表示",
+    "createError": "取引の処理中にエラーが発生しました。もう一度お試しください。",
+    "filterAll": "すべて",
+    "filterIncome": "収入",
+    "filterExpense": "支出",
+    "add": "追加",
+    "save": "保存",
+    "edit": "編集",
+    "editTitle": "取引を編集",
+    "delete": "削除",
+    "deleteConfirm": "この取引を削除してもよろしいですか？",
+    "new": "新しい取引",
+    "newShort": "取引",
+    "newTitle": "取引を記録",
+    "moreOptions": "その他のオプション",
+    "recurring": {
+      "deleteTitle": "繰り返し取引の削除",
+      "deleteConfirmation": "繰り返し取引「{{name}}」を削除してもよろしいですか？今後の自動作成は行われなくなります。",
+      "label": "繰り返し",
+      "shortLabel": "繰り返し",
+      "newTitle": "新しい繰り返し取引",
+      "editTitle": "繰り返し取引の編集",
+      "listTitle": "繰り返し取引一覧",
+      "emptyFilter": "このフィルターに該当する繰り返し取引はありません。",
+      "frequency": "頻度",
+      "selectFrequency": "頻度を選択...",
+      "interval": "間隔",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "days": "日",
+      "weeks": "週間",
+      "months": "ヶ月",
+      "years": "年",
+      "everyDay": "毎日",
+      "everyWeek": "毎週",
+      "everyMonth": "毎月",
+      "everyYear": "毎年",
+      "every": "{{interval}} {{unit}}ごと",
+      "indefinite": "終了日なし",
+      "nextExecution": "次回実行予定",
+      "summary": "概要",
+      "summaryText": "{{start}} から {{frequency}} {{type}} ごとに {{amount}} € の取引が作成されます {{end}}",
+      "units": {
+        "days": "日",
+        "weeks": "週間",
+        "months": "ヶ月",
+        "years": "年"
+      }
+    },
+    "alerts": {
+      "createSuccess": "取引が正常に作成されました",
+      "updateSuccess": "取引が正常に更新されました",
+      "deleteSuccess": "取引が正常に削除されました",
+      "createRecurringSuccess": "繰り返し取引が正常にスケジュールされました",
+      "updateRecurringSuccess": "繰り返し取引が正常に更新されました",
+      "deleteRecurringSuccess": "繰り返し取引が正常に削除されました"
+    },
+    "deleteTitle": "取引の削除",
+    "deleteConfirmation": "「{{name}}」を削除してもよろしいですか？この操作は取り消せません。"
+  },
+  "categories": {
+    "add": "カテゴリを追加",
+    "newTitle": "新しいカテゴリ",
+    "editTitle": "カテゴリ編集 - {{name}}",
+    "name": "カテゴリ名",
+    "namePlaceholder": "例：食費、旅行など...",
+    "color": "カラー",
+    "budget": "毎月の予算（€）",
+    "budgetHint": "任意。このカテゴリの毎月の支出制限額。",
+    "currentBudget": "現在の予算: 毎月 {{amount}} €",
+    "family": "ファミリー",
+    "selectFamilyPlaceholder": "ファミリーを選択",
+    "selectFamily": "ファミリーを選択",
+    "noFamily": "ファミリーなし",
+    "noFamilies": "利用可能なファミリーがありません",
+    "familyTitle": "ファミリーに割り当て - {{name}}",
+    "assign": "割り当て",
+    "search": "名前で検索...",
+    "showing": "{{total}} 個のカテゴリを表示中",
+    "empty": "カテゴリがありません。最初に作成してください。",
+    "save": "カテゴリを保存",
+    "edit": "編集",
+    "delete": "削除",
+    "createError": "カテゴリ作成中にエラーが発生しました。もう一度お試しください。",
+    "updateError": "カテゴリ更新中にエラーが発生しました。もう一度お試しください。",
+    "deleteTitle": "カテゴリの削除",
+    "deleteConfirmation": "「{{name}}」を削除してもよろしいですか？関連する取引は削除されませんが、カテゴリ未設定になります。",
+    "deleteError": "カテゴリ削除エラー",
+    "noBudgetTooltip": "進捗を確認するには毎月の予算を設定してください",
+    "createSuccess": "カテゴリが正常に作成されました",
+    "updateSuccess": "カテゴリが正常に更新されました",
+    "deleteSuccess": "カテゴリが正常に削除されました",
+    "nameRequired": "カテゴリ名は必須です",
+    "invalidBudget": "有効な予算を入力してください",
+    "editDescription": "カテゴリの詳細情報を変更します",
+    "nameLabel": "カテゴリ名",
+    "budgetLabel": "毎月の予算",
+    "budgetPlaceholder": "例：500",
+    "colorLabel": "カテゴリのカラー"
+  },
+  "investments": {
+    "title": "投資",
+    "portfolioValue": "資産価値",
+    "monthlyReturn": "月間利回り",
+    "dividends": "配当金",
+    "comingSoon": "近日公開",
+    "evolution": "純資産の推移",
+    "lastMonths": "過去 {{count}} ヶ月",
+    "distribution": "資産配分",
+    "total": "合計",
+    "myAssets": "保有資産一覧",
+    "searchAsset": "資産を検索...",
+    "noAssets": "ポートフォリオに資産がありません",
+    "shares": "保有数量",
+    "filterAll": "すべて",
+    "new": "新しい投資",
+    "newTitle": "新しい投資を記録",
+    "assetName": "資産名",
+    "assetNamePlaceholder": "例：Apple Inc.",
+    "ticker": "ティッカー",
+    "type": "資産の種類",
+    "quantity": "数量",
+    "purchasePrice": "購入価格",
+    "purchaseDate": "購入日",
+    "save": "投資を保存",
+    "updatePrice": "価格を更新",
+    "marketPrice": "市場価格",
+    "newPrice": "新しい価格",
+    "updateNow": "今すぐ更新",
+    "delete": "削除",
+    "deleteConfirm": "この投資を削除してもよろしいですか？この操作は取り消せません。",
+    "createError": "投資の記録中にエラーが発生しました。もう一度お試しください。",
+    "assetOptions": "{{name}} のオプション",
+    "deleteTitle": "投資の削除",
+    "deleteConfirmation": "「{{name}}」を削除してもよろしいですか？関連するすべての履歴が削除されます。",
+    "types": {
+      "stock": "株式",
+      "crypto": "暗号資産",
+      "fund": "投資信託",
+      "realEstate": "不動産",
+      "real_estate": "不動産",
+      "other": "その他"
+    },
+    "alerts": {
+      "createSuccess": "投資が正常に記録されました",
+      "updatePriceSuccess": "価格が正常に更新されました",
+      "deleteSuccess": "投資が正常に削除されました",
+      "warningTitle": "大幅な価格乖離を検出",
+      "warningDesc": "入力された価格は現在の価格と50%以上の乖離があります。確認するためにもう一度クリックしてください。"
+    },
+    "confirmUpdate": "重要な変更を確認",
+    "updatePriceError": "価格更新エラー",
+    "charts": {
+      "tooltip": {
+        "amount": "支出",
+        "percentage": "割合",
+        "wealth": "純資産"
+      }
+    }
+  },
+  "family": {
+    "title": "ファミリーユニット",
+    "selectOrCreate": "ファミリーユニットを選択するか、新しく作成してください",
+    "noFamilies": "所属しているファミリーユニットがありません",
+    "createFirst": "最初のファミリーを作成",
+    "createNew": "新しいファミリーユニットを作成",
+    "create": "作成",
+    "redirectingToLogin": "ログイン画面へリダイレクト中...",
+    "createTitle": "新しいファミリーユニットを作成",
+    "createDesc": "ファミリー名と毎月の目標を設定します",
+    "familyName": "ファミリー名",
+    "familyNamePlaceholder": "例：マルティネス家",
+    "monthlyGoal": "毎月の目標額",
+    "goal": "目標",
+    "admin": "管理者",
+    "invitationReceived": "ファミリーへの招待が届いています",
+    "invitationMessage": "ファミリーユニットへの招待を受信しました。参加しますか？",
+    "member": "メンバー",
+    "members": "名",
+    "people": "人",
+    "inviteMember": "メンバーを招待",
+    "inviteShort": "招待",
+    "inviteTitle": "ファミリーへの招待",
+    "inviteDesc": "登録済みユーザーにメールで招待を送信します",
+    "email": "メールアドレス",
+    "emailPlaceholder": "example@mail.com",
+    "sendInvitation": "招待を送信",
+    "invalidEmail": "メールアドレスの形式が正しくありません",
+    "changeGoal": "目標を変更",
+    "goalShort": "目標",
+    "changeGoalTitle": "毎月の目標を変更",
+    "changeGoalDesc": "ファミリーの新しい毎月の目標を設定します",
+    "goalProgress": "目標の進捗状況",
+    "goalProgressDesc": "ファミリー拠出金の月次追跡",
+    "collected": "集まった額",
+    "of": "／",
+    "mode": "モード",
+    "distribution": "配分方法",
+    "distributionDesc": "モード {{mode}}: 拠出金は選択された方法に基づいて計算されます",
+    "distributionMode": "配分モード",
+    "progressBar": {
+      "label": "毎月の目標の進捗状況",
+      "of": "／"
+    },
+    "modes": {
+      "equitative": "均等配分",
+      "equitativeDesc": "すべてのメンバーが同じ金額を拠出します",
+      "proportional": "比例配分",
+      "proportionalDesc": "各メンバーの給与に比例して拠出額が計算されます",
+      "custom": "カスタム",
+      "customDesc": "管理者が各メンバーの比率を手動で設定します"
+    },
+    "memberDetails": "メンバー詳細",
+    "memberOptions": "{{name}} のオプション",
+    "memberProgress": "{{name}} の進捗",
+    "contributions": "拠出履歴",
+    "contributionsHistory": "拠出金の履歴",
+    "noContributions": "拠出履歴がまだありません",
+    "addContribution": "拠出金を追加",
+    "addContributionShort": "追加",
+    "amount": "金額",
+    "save": "拠出を保存",
+    "salary": "給与",
+    "monthlySalary": "月給",
+    "toContribute": "拠出予定額",
+    "contributed": "拠出済み",
+    "contribution": "拠出",
+    "nextPayment": "次回支払い",
+    "inDays": "{{days}} 日後",
+    "name": "名前",
+    "role": "役割",
+    "edit": "編集",
+    "editMember": "メンバーを編集",
+    "delete": "削除",
+    "customPercentage": "カスタム割合",
+    "customPercentageHint": "割合の合計は{{total}}%です。100%である必要があります。",
+    "customPercentageOk": "割合の合計が正しく 100% です。",
+    "invitationFrom": "{{sender}} から {{family}} への招待",
+    "invalidToken": "無効な招待トークン",
+    "invitationAccepted": "ファミリーに参加しました！",
+    "invitationError": "招待処理中にエラーが発生しました",
+    "processingInvitation": "招待を処理中...",
+    "welcome": "ファミリーへようこそ！",
+    "goToFamily": "ファミリーへ",
+    "error": "エラー",
+    "back": "戻る",
+    "selectFamily": "ファミリー {{name}} を選択",
+    "alerts": {
+      "createSuccess": "ファミリーを作成しました",
+      "createError": "ファミリー作成中にエラーが発生しました",
+      "inviteSuccess": "招待を送信しました",
+      "inviteError": "招待送信中にエラーが発生しました",
+      "modeSuccess": "分配モードを更新しました",
+      "modeError": "モード変更中にエラーが発生しました",
+      "goalSuccess": "月次目標を更新しました",
+      "goalError": "目標更新中にエラーが発生しました",
+      "memberEditSuccess": "メンバーを更新しました",
+      "memberEditError": "メンバー編集エラー",
+      "memberDeleteSuccess": "ファミリーから削除されました",
+      "memberDeleteError": "メンバー削除エラー",
+      "contributionSuccess": "拠出を正常に記録しました",
+      "contributionError": "拠出記録エラー"
+    }
+  },
+  "api": {
+    "errors": {
+      "default": "予期しないサーバーエラーが発生しました。",
+      "status_401": "セッションの有効期限が切れました。もう一度ログインしてください。",
+      "status_403": "このセクションにアクセスする権限がありません。",
+      "status_404": "要求されたリソースが見つかりません。",
+      "status_500": "サーバー内部の問題が発生しました。後でもう一度お試しください。",
+      "timeout": "リクエストの応答時間が制限時間を超えました。"
+    }
+  }
+}

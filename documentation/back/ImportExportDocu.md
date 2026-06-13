@@ -7,12 +7,16 @@
 =======
 - **application/services/DataExportService.java** — Servicio de exportación de datos
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> d62a86c (V0.0.4 (#5))
 - **application/services/DataImportService.java** — Servicio de importación con validación y migración
 =======
 - **application/services/DataImportService.java** — Servicio de importación con validación
 - **domain/exception/OwnershipException.java** — Excepción de validación de propiedad
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+- **application/services/DataImportService.java** — Servicio de importación con validación y migración
+>>>>>>> 66c6332 (V0.0.4 (#6))
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
 - **domain/migration/Migration001to010.java** — Migración v0.0.1 → v0.1.0
@@ -94,8 +98,7 @@ Importa datos desde un archivo JSON previamente exportado con GET /export.
 3. Valida que tenga extensión .json.
 4. Llama a DataImportService.importUserData().
 5. Responde 200 con resumen de la importación si todo es correcto.
-6. Responde 403 Forbidden si el archivo no pertenece al usuario (OwnershipException).
-7. Responde 400 Bad Request si hay errores de formato o versión.
+6. Responde 400 Bad Request si hay errores de formato, versión o base de datos.
 
 ---
 
@@ -114,6 +117,7 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 
 ### exportAllUserData
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
 <<<<<<< HEAD
@@ -162,6 +166,9 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 =======
 1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación, userId y versión de la app.
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
+>>>>>>> 66c6332 (V0.0.4 (#6))
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas e inversiones.
 3. Devuelve un UserDataSnapshot con metadata y datos.
 >>>>>>> d62a86c (V0.0.4 (#5))
@@ -170,6 +177,7 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 
 ## DataImportService.java
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 Servicio que importa datos con validación de compatibilidad de versión y migración automática.
 <<<<<<< HEAD
@@ -187,10 +195,14 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 =======
 Servicio que importa datos con validación de propiedad, compatibilidad de versión y migración automática.
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+Servicio que importa datos con validación de compatibilidad de versión y migración automática.
+>>>>>>> 66c6332 (V0.0.4 (#6))
 
 ### importUserData
 
 1. Deserializa el archivo JSON a UserDataSnapshot.
+<<<<<<< HEAD
 <<<<<<< HEAD
 2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
 3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
@@ -222,6 +234,12 @@ Servicio que importa datos con validación de propiedad, compatibilidad de versi
 - Si el archivo no tiene userId: lanza OwnershipException con código ARCHIVO_SIN_PROPIETARIO.
 - Si el userId no coincide con el usuario autenticado: lanza OwnershipException con código PROPIETARIO_NO_COINCIDE.
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
+3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
+4. Importa cada entidad asignando el userId del usuario autenticado.
+5. Devuelve un resumen con el número de registros importados y la versión.
+>>>>>>> 66c6332 (V0.0.4 (#6))
 
 ### validateAndMigrate
 
@@ -244,6 +262,7 @@ Sobrescribe el userId en todas las entidades del snapshot para evitar que datos 
 ---
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> d62a86c (V0.0.4 (#5))
 =======
@@ -259,6 +278,8 @@ Excepción personalizada con código de error para identificar el tipo de proble
 ---
 
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+>>>>>>> 66c6332 (V0.0.4 (#6))
 ## ExportVersion.java
 
 Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
@@ -328,6 +349,7 @@ DTO específico para la exportación tabular (CSV y ZIP). Contiene listas de rec
 
 ### Estructura
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 - categories: lista de CategoryExportRow (name, budgetLimit).
@@ -409,6 +431,9 @@ Implementación del puerto FileExportPort para generar archivos PDF. Utiliza Thy
 =======
 - metadata: SnapshotMetadata con version, exportDate, userId, appVersion.
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+- metadata: SnapshotMetadata con version, exportDate y appVersion.
+>>>>>>> 66c6332 (V0.0.4 (#6))
 - categories, transactions, plannedTransactions, investments: listas de datos.
 >>>>>>> d62a86c (V0.0.4 (#5))
 
@@ -546,6 +571,7 @@ Los valores válidos para period son: 1m (1 mes), 3m (3 meses), 6m (6 meses), 1y
 ## Seguridad
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 - Los archivos de exportación no contienen información del propietario, son portables entre cuentas.
 - Cualquier usuario autenticado puede importar cualquier archivo JSON compatible.
 - El userId se asigna automáticamente con el del usuario autenticado durante la importación.
@@ -553,6 +579,11 @@ Los valores válidos para period son: 1m (1 mes), 3m (3 meses), 6m (6 meses), 1y
 - Solo el propietario original de los datos puede importarlos.
 - El userId se sobrescribe con el del usuario autenticado durante la importación.
 >>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
+=======
+- Los archivos de exportación no contienen información del propietario, son portables entre cuentas.
+- Cualquier usuario autenticado puede importar cualquier archivo compatible.
+- El userId se asigna automáticamente con el del usuario autenticado durante la importación.
+>>>>>>> 66c6332 (V0.0.4 (#6))
 - La importación es transaccional: o se importa todo o nada.
 - Los archivos de versiones incompatibles se rechazan automáticamente.
 - Todos los endpoints de exportación requieren autenticación JWT válida.

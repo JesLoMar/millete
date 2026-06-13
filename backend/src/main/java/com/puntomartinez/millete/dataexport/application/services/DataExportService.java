@@ -102,7 +102,6 @@ public class DataExportService {
                 new UserDataSnapshot.SnapshotMetadata(
                         ExportVersion.CURRENT.toString(),
                         LocalDateTime.now(),
-                        userId,
                         appVersion
                 ),
                 categoryRepository.findByIdUsuario(userId),
