@@ -2,7 +2,11 @@
 
 ## Estructura de archivos
 
+<<<<<<< HEAD
 - **application/services/DataExportService.java** — Servicio de exportación de datos (JSON, ZIP, CSV individual, PDF)
+=======
+- **application/services/DataExportService.java** — Servicio de exportación de datos
+>>>>>>> d62a86c (V0.0.4 (#5))
 - **application/services/DataImportService.java** — Servicio de importación con validación y migración
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
@@ -105,6 +109,7 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 ### exportAllUserData
 
 1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
+<<<<<<< HEAD
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas, inversiones, savings goals, **userPreferences**, **goalUnits**, **goalMembers** y **goalContributions**.
 3. Para las entidades de Group Goals, primero obtiene los GoalMember del usuario, luego recupera las GoalUnit, GoalMember y GoalContribution asociadas a esas metas.
 4. Devuelve un UserDataSnapshot con metadata y datos.
@@ -146,12 +151,17 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 1. Llama a buildPdfExportData con el periodo indicado.
 2. Delega la generación del PDF en el puerto FileExportPort (HtmlPdfFileExportAdapter).
 3. Devuelve el array de bytes del archivo PDF.
+=======
+2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas e inversiones.
+3. Devuelve un UserDataSnapshot con metadata y datos.
+>>>>>>> d62a86c (V0.0.4 (#5))
 
 ---
 
 ## DataImportService.java
 
 Servicio que importa datos con validación de compatibilidad de versión y migración automática.
+<<<<<<< HEAD
 
 ### Dependencias inyectadas
 
@@ -161,12 +171,15 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 - **GoalMemberRepository** — miembros de metas grupales
 - **GoalContributionRepository** — aportaciones a metas grupales
 - MigrationChain
+=======
+>>>>>>> d62a86c (V0.0.4 (#5))
 
 ### importUserData
 
 1. Deserializa el archivo JSON a UserDataSnapshot.
 2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
 3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
+<<<<<<< HEAD
 4. Sanitiza el snapshot: sobrescribe todos los userId con el del usuario autenticado.
 5. Importa cada entidad en orden:
    - Categorías (con deduplicación por nombre)
@@ -178,6 +191,10 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
    - **Group goals** (GoalUnit → GoalMember → GoalContribution, con regeneración de UUIDs y mapeo de goalId)
 6. Verifica post-importación que las transacciones tengan categorías resolubles.
 7. Devuelve un resumen con el número de registros importados y la versión.
+=======
+4. Importa cada entidad asignando el userId del usuario autenticado.
+5. Devuelve un resumen con el número de registros importados y la versión.
+>>>>>>> d62a86c (V0.0.4 (#5))
 
 ### validateAndMigrate
 
@@ -187,6 +204,7 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 
 ### Sanitización (sanitizeSnapshot)
 
+<<<<<<< HEAD
 Sobrescribe el userId en todas las entidades del snapshot para evitar que datos de otro usuario se importen con el ID original. Afecta a: categories, transactions, plannedTransactions, investments, savingsGoals, goalMembers, goalContributions y userPreferences.
 
 ### Importación de Group Goals (importGroupGoals)
@@ -198,6 +216,8 @@ Sobrescribe el userId en todas las entidades del snapshot para evitar que datos 
 
 ---
 
+=======
+>>>>>>> d62a86c (V0.0.4 (#5))
 ## ExportVersion.java
 
 Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
@@ -267,6 +287,7 @@ DTO específico para la exportación tabular (CSV y ZIP). Contiene listas de rec
 
 ### Estructura
 
+<<<<<<< HEAD
 - categories: lista de CategoryExportRow (name, budgetLimit).
 - transactions: lista de TransactionExportRow (categoryName, amount, date, type, description).
 - plannedTransactions: lista de PlannedTransactionExportRow (categoryName, amount, type, description, frequencyType, frequencyInterval, startDate, endDate, lastExecutedDate).
@@ -341,6 +362,10 @@ Implementación del puerto FileExportPort para generar archivos PDF. Utiliza Thy
 - Ingresos en verde (#22C55E), gastos en rojo (#EF4444).
 - Fuente Helvetica/Arial estándar.
 - Márgenes de 1.5cm, tamaño A4.
+=======
+- metadata: SnapshotMetadata con version, exportDate y appVersion.
+- categories, transactions, plannedTransactions, investments: listas de datos.
+>>>>>>> d62a86c (V0.0.4 (#5))
 
 ---
 

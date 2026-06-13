@@ -72,11 +72,44 @@ end
 
 ## Key Features
 
-* **Advanced Dashboard:** High-fidelity data visualization using **Recharts** displaying spending trends, localized budget metrics, and historical financial performance.
-* **Automated Recurring Transactions:** Integrated cron-like background routine driven by **Spring Scheduled Tasks**.
-* **Enterprise Investment Ledger:** Monitors assets (Stocks, Crypto, Real Estate) providing real-time calculations for invested capital, market valuations, and ROI percentage.
-* **Family Collaboration Units:** Isolated micro-ecosystem supporting invitation flows and customized contribution models.
-* **Data Portability:** Complete user data extraction into versioned JSON files with automated schema-migration layers, csv or PDF.
+### Dashboard
+Get a bird's-eye view of your financial health:
+- Total balance, income, expenses, and savings with trend indicators.
+- Interactive charts for spending history, category breakdown, and budget tracking.
+- Recent transactions and investment metrics.
+
+### Transaction Management
+- Add, edit, or delete income and expense records.
+- Categorize transactions (Food, Housing, Transport, Utilities, Leisure).
+- Search, filter by type (all, income, expense), and paginate through your history.
+- Smart budget guardian: alerts when expenses exceed 70% of monthly income. [Not Implemented]
+
+### Recurring Transactions
+- Set up daily, weekly, monthly, or yearly recurring transactions.
+- Define start date, optional end date, and interval.
+- Automatically create real transactions on schedule via daily background processing.
+
+### Categories
+- Create custom categories with names, colors, and optional budget limits.
+- Edit or soft-delete categories without losing historical transaction data.
+- Categories help organize spending and power the budget tracking feature.
+
+### Investments
+- Track stocks, crypto, funds, real estate, and other assets.
+- Record quantity, purchase price, purchase date, and ticker symbol.
+- Automatically calculate invested capital, current value, profit/loss, and ROI percentage.
+- Update market prices to see real portfolio performance.
+
+### Family Collaboration
+- Create a family unit with a monthly contribution goal.
+- Invite family members by email (48-hour expiration links).
+- Distribute contributions equally, proportionally by salary, or with custom percentages.
+- Track each member's contribution history.
+
+### Data Export & Import
+- Export all your data (categories, transactions, planned transactions, investments) as a JSON file.
+- Import previously exported data to restore or migrate your account.
+- Versioned format with automatic migration for future updates.
 
 ---
 
