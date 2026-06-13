@@ -1,11 +1,17 @@
 package com.puntomartinez.millete.categories.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
 @Getter
+@Setter
 public class Category {
     private UUID id;
     private UUID userId;

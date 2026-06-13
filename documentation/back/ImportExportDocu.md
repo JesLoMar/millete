@@ -3,8 +3,7 @@
 ## Estructura de archivos
 
 - **application/services/DataExportService.java** — Servicio de exportación de datos
-- **application/services/DataImportService.java** — Servicio de importación con validación
-- **domain/exception/OwnershipException.java** — Excepción de validación de propiedad
+- **application/services/DataImportService.java** — Servicio de importación con validación y migración
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
 - **domain/model/ExportVersion.java** — Versionado semántico del formato
@@ -42,8 +41,7 @@ Importa datos desde un archivo JSON previamente exportado.
 3. Valida que tenga extensión .json.
 4. Llama a DataImportService.importUserData().
 5. Responde 200 con resumen de la importación si todo es correcto.
-6. Responde 403 Forbidden si el archivo no pertenece al usuario (OwnershipException).
-7. Responde 400 Bad Request si hay errores de formato o versión.
+6. Responde 400 Bad Request si hay errores de formato, versión o base de datos.
 
 ---
 
@@ -53,7 +51,7 @@ Servicio que genera un snapshot completo de los datos del usuario.
 
 ### exportAllUserData
 
-1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación, userId y versión de la app.
+1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas e inversiones.
 3. Devuelve un UserDataSnapshot con metadata y datos.
 
@@ -61,38 +59,21 @@ Servicio que genera un snapshot completo de los datos del usuario.
 
 ## DataImportService.java
 
-Servicio que importa datos con validación de propiedad, compatibilidad de versión y migración automática.
+Servicio que importa datos con validación de compatibilidad de versión y migración automática.
 
 ### importUserData
 
 1. Deserializa el archivo JSON a UserDataSnapshot.
-2. Valida la propiedad: el userId del archivo debe coincidir con el usuario autenticado.
-3. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
-4. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
-5. Importa cada entidad sobrescribiendo el userId por seguridad.
-6. Devuelve un resumen con el número de registros importados y la versión.
-
-### validateOwnership
-
-- Si el archivo no tiene userId: lanza OwnershipException con código ARCHIVO_SIN_PROPIETARIO.
-- Si el userId no coincide con el usuario autenticado: lanza OwnershipException con código PROPIETARIO_NO_COINCIDE.
+2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
+3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
+4. Importa cada entidad asignando el userId del usuario autenticado.
+5. Devuelve un resumen con el número de registros importados y la versión.
 
 ### validateAndMigrate
 
 - Compara la versión del archivo con ExportVersion.CURRENT.
 - Si el MAJOR es distinto: error de incompatibilidad.
 - Si la versión es anterior: aplica MigrationChain.migrateToLatest().
-
----
-
-## OwnershipException.java
-
-Excepción personalizada con código de error para identificar el tipo de problema de propiedad. Extiende RuntimeException.
-
-### Códigos de error
-
-- ARCHIVO_SIN_PROPIETARIO: el archivo no contiene userId.
-- PROPIETARIO_NO_COINCIDE: el userId del archivo no es el del usuario autenticado.
 
 ---
 
@@ -124,7 +105,7 @@ Contenedor de todos los datos exportados. Anotado con @JsonIgnoreProperties(igno
 
 ### Estructura
 
-- metadata: SnapshotMetadata con version, exportDate, userId, appVersion.
+- metadata: SnapshotMetadata con version, exportDate y appVersion.
 - categories, transactions, plannedTransactions, investments: listas de datos.
 
 ---
@@ -168,7 +149,8 @@ Ninguna. La versión 0.0.1 es la primera, por lo que el registro de migraciones 
 
 ## Seguridad
 
-- Solo el propietario original de los datos puede importarlos.
-- El userId se sobrescribe con el del usuario autenticado durante la importación.
+- Los archivos de exportación no contienen información del propietario, son portables entre cuentas.
+- Cualquier usuario autenticado puede importar cualquier archivo compatible.
+- El userId se asigna automáticamente con el del usuario autenticado durante la importación.
 - La importación es transaccional: o se importa todo o nada.
 - Los archivos de versiones incompatibles se rechazan automáticamente.

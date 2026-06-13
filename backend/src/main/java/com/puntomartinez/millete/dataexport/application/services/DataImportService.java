@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
-import com.puntomartinez.millete.dataexport.domain.exception.OwnershipException;
 import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
@@ -55,9 +54,8 @@ public class DataImportService {
 
             log.debug("Leyendo archivo de importación...");
             UserDataSnapshot snapshot = objectMapper.readValue(inputStream, UserDataSnapshot.class);
-            log.info("Archivo leído. v{}, Propietario: {}", snapshot.metadata().version(), snapshot.metadata().userId());
+            log.info("Archivo leído. v{}", snapshot.metadata().version());
 
-            validateOwnership(snapshot, loggedInUserId);
             snapshot = validateAndMigrate(snapshot);
 
             int totalImported = importCategories(snapshot, loggedInUserId);
@@ -72,8 +70,6 @@ public class DataImportService {
             log.info(summary);
             return summary;
 
-        } catch (OwnershipException e) {
-            throw e;
         } catch (Exception e) {
             log.error("Error al importar: {}", e.getMessage(), e);
             throw new RuntimeException(
@@ -83,27 +79,7 @@ public class DataImportService {
         }
     }
 
-    // ─── Validaciones ───────────────────────────────────
-
-    private void validateOwnership(UserDataSnapshot snapshot, UUID loggedInUserId) {
-        UUID fileOwnerId = snapshot.metadata().userId();
-
-        if (fileOwnerId == null) {
-            throw new OwnershipException(
-                    "ARCHIVO_SIN_PROPIETARIO",
-                    "El archivo no contiene identificación del propietario."
-            );
-        }
-
-        if (!fileOwnerId.equals(loggedInUserId)) {
-            throw new OwnershipException(
-                    "PROPIETARIO_NO_COINCIDE",
-                    "Este archivo pertenece a otro usuario. Solo puedes importar tus propios datos."
-            );
-        }
-
-        log.debug("Validación de propiedad superada");
-    }
+    // ─── Validación de versión y migración ────────────────
 
     private UserDataSnapshot validateAndMigrate(UserDataSnapshot snapshot) {
         ExportVersion fileVersion = ExportVersion.fromString(snapshot.metadata().version());

@@ -9,9 +9,7 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
-// ignoreUnknown = true permite leer archivos de versiones anteriores sin romper
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserDataSnapshot(
         @JsonProperty("metadata")
@@ -41,9 +39,6 @@ public record UserDataSnapshot(
 
             @JsonProperty("exportDate")
             LocalDateTime exportDate,
-
-            @JsonProperty("userId")
-            UUID userId,
 
             @JsonProperty("appVersion")
             String appVersion
