@@ -10,7 +10,7 @@
     "saving": "Guardando...",
     "edit": "Editar",
     "delete": "Eliminar",
-    "error": "Errore",
+    "error": "Erro",
     "goToLogin": "Ir para o início de sessão",
     "accept": "Aceitar",
     "reject": "Rejeitar",
@@ -22,7 +22,8 @@
       "fr": "Francês",
       "de": "Alemão",
       "it": "Italiano",
-      "pt": "Português"
+      "pt": "Português",
+      "ja": "Japonês"
     }
   },
   "nav": {
@@ -69,12 +70,12 @@
   "auth": {
     "brand": {
       "name": "Millete",
-      "tagline": "Controle os seus gastos, alcance as suas metas."
+      "tagline": "Controle as suas despesas, alcance as suas metas."
     },
     "greeting": "Olá, <br />bem-vindo.",
     "footer": {
-      "webVersion": "WEB v0.0.3",
-      "apiVersion": "API v0.0.3",
+      "webVersion": "WEB v0.0.4",
+      "apiVersion": "API v0.0.4",
       "copyright": "© 2026 Millete"
     },
     "form": {
@@ -125,7 +126,7 @@
       "sending": "Enviando...",
       "sendingDescription": "Estamos a processar o seu pedido",
       "success": "E-mail enviado!",
-      "successDescription": "Verifique a sua caixa de entrada. Enviamos um link para redefinir a sua palavra-passe.",
+      "successDescription": "Verifique a sua caixa de entrada. Enviámos-lhe um link para redefinir a sua palavra-passe.",
       "error": "Erro ao enviar",
       "errorDescription": "Não conseguimos processar o seu pedido. Tente novamente.",
       "tryAgain": "Tentar novamente",
@@ -156,11 +157,11 @@
         {
           "number": "02",
           "title": "Crie a sua primeira categoria",
-          "description": "Defina categorias personalizadas para organizar os seus gastos (ex. Alimentação, Transporte, Lazer...)."
+          "description": "Defina categorias personalizadas para organizar as suas despesas (ex: Alimentação, Transportes, Lazer...)"
         },
         {
           "number": "03",
-          "title": "Registe os seus gastos",
+          "title": "Registe as suas despesas",
           "description": "Adicione transações a partir da sua secção ou facilmente através do dashboard."
         }
       ]
@@ -178,28 +179,23 @@
       "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
       "items": [
         {
+          "tag": "v0.0.4",
+          "title": "Japonês adicionado. Agora é possível exportar e importar dados entre contas sem limitações de utilizador.",
+          "description": "Agora é possível exportar os dados para um ficheiro JSON e importá-los noutra conta. Isto elimina as restrições na migração de informação, permitindo uma gestão de dados mais flexível. Além disso, foi adicionado suporte para o idioma japonês."
+        },
+        {
           "tag": "v0.0.3",
           "title": "Correções de erros visuais e de lógica",
-          "description": "Adaptação dos estilos para ser compatível com navegadores como o Safari. As categorias e transações eliminadas deixam de ser consideradas no cálculo das métricas."
-        },
-        {
-          "tag": "v0.0.2",
-          "title": "Wiki de utilizador, segurança reforçada e otimização do sistema",
-          "description": "Estreamos a wiki com suporte multi-idioma. Segurança blindada na gestão de categorias, otimizado o motor de transações recorrentes e melhorada a interface visual com novos ícones."
-        },
-        {
-          "tag": "v0.0.1",
-          "title": "Primeiro lançamento público",
-          "description": "O Millete já está disponível para todos! Registe-se e comece a gerir as suas finanças pessoais de forma simples e eficaz."
+          "description": "Adaptação dos estilos para garantir compatibilidade com navegadores como o Safari. As categorias e transações eliminadas deixam de ser contabilizadas para o cálculo das métricas."
         }
       ]
     }
   },
   "dashboard": {
     "metrics": {
-      "balance": "Saldo Total",
+      "balance": "Balanço Total",
       "income": "Receitas do {{period}}",
-      "expenses": "Gastos do {{period}}",
+      "expenses": "Despesas do {{period}}",
       "savings": "Poupança Total",
       "vsLastWeek": "vs. semana anterior",
       "vsLastMonth": "vs. mês anterior",
@@ -248,36 +244,36 @@
       }
     },
     "chart": {
-      "title": "Histórico de Gastos",
-      "empty": "Sem gastos neste período",
-      "showingLast": "Últimos {{count}}",
+      "title": "Histórico de Despesas",
+      "empty": "Sem despesas neste período",
+      "showingLast": "Últimas {{count}}",
       "periodLabel": {
         "week": "Últimos 7 dias",
         "month": "Últimas 5 semanas",
         "year": "Últimos 12 meses"
       },
       "tooltip": {
-        "amount": "Gasto",
+        "amount": "Despesa",
         "percentage": "Percentagem"
       }
     },
     "donut": {
-      "title": "Gasto por Categoria",
+      "title": "Despesa por Categoria",
       "total": "Total",
-      "empty": "Sem gastos neste período"
+      "empty": "Sem despesas neste período"
     },
     "budget": {
       "title": "Estado do Orçamento",
       "empty": "Não há orçamentos configurados",
-      "overLimit": "Limite superado!",
+      "overLimit": "Limite ultrapassado!",
       "remaining": "Restam-lhe {{amount}} €",
-      "exceededBy": "Excedido por {{amount}} €"
+      "exceededBy": "Excedido em {{amount}} €"
     },
     "transactions": {
       "title": "Últimas Transações",
       "viewAll": "Ver todas",
       "empty": "Não há transações recentes",
-      "expense": "Gasto",
+      "expense": "Despesa",
       "income": "Receita",
       "moreOptions": "Mais opções"
     },
@@ -296,7 +292,7 @@
       "exporting": "Exportando...",
       "addExpenseAria": "Adicionar nova transação",
       "createCategoryAria": "Criar nova categoria",
-      "importDataAria": "Importar dados a partir de arquivo",
+      "importDataAria": "Importar dados a partir de ficheiro",
       "importingAria": "Importando dados, por favor aguarde",
       "exportDataAria": "Exportar cópia de segurança",
       "exportingAria": "Exportando dados, por favor aguarde",
@@ -304,21 +300,21 @@
     },
     "importModal": {
       "title": "Importar dados",
-      "description": "Arraste um arquivo JSON com as suas transações",
-      "dropHere": "Solte o seu arquivo aqui ou clique para selecionar",
-      "onlyJson": "Apenas arquivos .json",
-      "jsonOnly": "Apenas são permitidos arquivos JSON",
-      "invalidJson": "O arquivo JSON não é válido",
+      "description": "Arraste um ficheiro JSON com as suas transações",
+      "dropHere": "Solte o seu ficheiro aqui ou clique para selecionar",
+      "onlyJson": "Apenas ficheiros .json",
+      "jsonOnly": "Apenas são admitidos ficheiros JSON",
+      "invalidJson": "O ficheiro JSON não é válido",
       "importing": "Importando dados...",
       "success": "Dados importados corretamente",
-      "importError": "Erro ao importar o arquivo",
+      "importError": "Erro ao importar o ficheiro",
       "close": "Fechar"
     },
     "import": {
       "success": "Dados importados corretamente",
-      "errorGeneric": "Erro ao importar o arquivo",
+      "errorGeneric": "Erro ao importar o ficheiro",
       "errorProperty": "Não tem permissão para importar",
-      "errorFormat": "Formato de arquivo inválido"
+      "errorFormat": "Formato de ficheiro inválido"
     },
     "export": {
       "success": "Cópia de segurança exportada corretamente",
@@ -330,36 +326,36 @@
     "description": "Descrição",
     "descriptionPlaceholder": "ex. Compra semanal no Lidl",
     "type": "Tipo",
-    "expense": "Gasto",
+    "expense": "Despesa",
     "income": "Receita",
     "amount": "Quantidade (€)",
     "category": "Categoria",
     "selectCategory": "Selecionar categoria",
     "noCategory": "Sem categoria",
-    "search": "Procurar por descrição...",
-    "empty": "Nenhuma transação encontrada",
+    "search": "Buscar por descrição...",
+    "empty": "Não foram encontradas transações",
     "showingInterval": "{{from}}-{{to}} de {{total}}",
     "createError": "Erro ao processar a transação. Tente novamente.",
     "filterAll": "Todas",
     "filterIncome": "Receitas",
-    "filterExpense": "Gastos",
+    "filterExpense": "Despesas",
     "add": "Adicionar",
     "save": "Guardar",
     "edit": "Editar",
     "editTitle": "Editar Transação",
     "delete": "Eliminar",
-    "deleteConfirm": "Tem a certeza de que deseja eliminar esta transação?",
+    "deleteConfirm": "Tem a certeza que deseja eliminar esta transação?",
     "new": "Nova Transação",
     "newShort": "Trans.",
     "newTitle": "Registar Transação",
     "moreOptions": "Mais opções",
     "recurring": {
       "deleteTitle": "Eliminar transação recorrente",
-      "deleteConfirmation": "Tem a certeza de que deseja eliminar a transação recorrente \"{{name}}\"? As execuções futuras não serão realizadas.",
+      "deleteConfirmation": "Tem a certeza que deseja eliminar a transação recorrente \"{{name}}\"? As execuções futuras não serão realizadas.",
       "label": "Recorrentes",
       "shortLabel": "Recorrente",
       "newTitle": "Nova Transação Recorrente",
-      "editTitle": "Editar Transação Recorrente",
+      "editTitle": "Editar Transação Recurrente",
       "listTitle": "Transações Recorrentes",
       "emptyFilter": "Não há transações recorrentes com este filtro.",
       "frequency": "Frequência",
@@ -379,7 +375,7 @@
       "indefinite": "Sem data de fim",
       "nextExecution": "Próxima execução",
       "summary": "Resumo",
-      "summaryText": "Será criada uma transação de {{amount}} € a cada {{frequency}} {{type}} a partir de {{start}} {{end}}",
+      "summaryText": "Será criada uma transação de {{amount}} € cada {{frequency}} {{type}} a partir de {{start}} {{end}}",
       "units": {
         "days": "dias",
         "weeks": "semanas",
@@ -391,12 +387,12 @@
       "createSuccess": "Transação criada corretamente",
       "updateSuccess": "Transação atualizada corretamente",
       "deleteSuccess": "Transação eliminada corretamente",
-      "createRecurringSuccess": "Transação recorrente programada corretamente",
+      "createRecurringSuccess": "Transação recorrente agendada corretamente",
       "updateRecurringSuccess": "Transação recorrente atualizada corretamente",
       "deleteRecurringSuccess": "Transação recorrente eliminada corretamente"
     },
     "deleteTitle": "Eliminar transação",
-    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Esta ação não pode ser desfeita."
+    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? Esta ação não pode ser desfeita."
   },
   "categories": {
     "add": "Adicionar categoria",
@@ -406,7 +402,7 @@
     "namePlaceholder": "Ex: Alimentação, Viagens...",
     "color": "Cor",
     "budget": "Orçamento mensal (€)",
-    "budgetHint": "Opcional. Limite de gasto mensal para esta categoria.",
+    "budgetHint": "Opcional. Limite de despesa mensal para esta categoria.",
     "currentBudget": "Orçamento atual: {{amount}} € / mês",
     "family": "Família",
     "selectFamilyPlaceholder": "Selecionar família",
@@ -415,7 +411,7 @@
     "noFamilies": "Não há famílias disponíveis",
     "familyTitle": "Atribuir à família - {{name}}",
     "assign": "Atribuir",
-    "search": "Procurar por nome...",
+    "search": "Buscar por nome...",
     "showing": "Mostrando {{total}} categorias",
     "empty": "Não há categorias disponíveis. Crie uma primeiro.",
     "save": "Guardar categoria",
@@ -424,14 +420,14 @@
     "createError": "Erro ao criar a categoria. Tente novamente.",
     "updateError": "Erro ao atualizar a categoria. Tente novamente.",
     "deleteTitle": "Eliminar categoria",
-    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? As transações associadas não serão apagadas, mas perderão a sua classificação.",
+    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? As transações associadas não serão apagadas, mas perderão a sua classificação.",
     "deleteError": "Erro ao eliminar a categoria",
     "noBudgetTooltip": "Atribua um orçamento mensal para ver o progresso",
     "createSuccess": "Categoria criada corretamente",
     "updateSuccess": "Categoria atualizada corretamente",
     "deleteSuccess": "Categoria eliminada corretamente",
     "nameRequired": "O nome da categoria é obrigatório",
-    "invalidBudget": "Introduza un orçamento válido",
+    "invalidBudget": "Introduza um orçamento válido",
     "editDescription": "Modifique os dados da categoria",
     "nameLabel": "Nome da categoria",
     "budgetLabel": "Orçamento mensal",
@@ -440,7 +436,7 @@
   },
   "investments": {
     "title": "Investimentos",
-    "portfolioValue": "Valor Carteira",
+    "portfolioValue": "Valor da Carteira",
     "monthlyReturn": "Rentabilidade Mensal",
     "dividends": "Dividendos",
     "comingSoon": "Brevemente",
@@ -448,51 +444,51 @@
     "lastMonths": "Últimos {{count}} meses",
     "distribution": "Distribuição",
     "total": "Total",
-    "myAssets": "Meus Ativos",
-    "searchAsset": "Procurar ativo...",
-    "noAssets": "Não há ativos na sua carteira",
+    "myAssets": "Meus Activos",
+    "searchAsset": "Buscar activo...",
+    "noAssets": "Não há activos na sua carteira",
     "shares": "participações",
     "filterAll": "Todos",
     "new": "Novo Investimento",
     "newTitle": "Registar Novo Investimento",
-    "assetName": "Nome do Ativo",
+    "assetName": "Nome do Activo",
     "assetNamePlaceholder": "Ex: Apple Inc.",
     "ticker": "Ticker",
-    "type": "Tipo de Ativo",
+    "type": "Tipo de Activo",
     "quantity": "Quantidade",
     "purchasePrice": "Preço de Compra",
     "purchaseDate": "Data de Compra",
     "save": "Guardar Investimento",
-    "updatePrice": "Atualizar Preço",
+    "updatePrice": "Actualizar Preço",
     "marketPrice": "Preço de Mercado",
     "newPrice": "Novo Preço",
-    "updateNow": "Atualizar Agora",
+    "updateNow": "Actualizar Agora",
     "delete": "Eliminar",
-    "deleteConfirm": "Tem a certeza de que deseja eliminar este investimento? Esta ação não pode ser desfeita.",
+    "deleteConfirm": "Tem a certeza que deseja eliminar este investimento? Esta acção não pode ser desfeita.",
     "createError": "Erro ao criar o investimento. Tente novamente.",
     "assetOptions": "Opções de {{name}}",
     "deleteTitle": "Eliminar investimento",
-    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Será eliminado todo o histórico associado.",
+    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? Será eliminado todo o histórico associado.",
     "types": {
       "stock": "Ações",
       "crypto": "Criptomoedas",
-      "fund": "Fondos",
+      "fund": "Fundos",
       "realEstate": "Imobiliário",
       "real_estate": "Imobiliário",
       "other": "Outros"
     },
     "alerts": {
       "createSuccess": "Investimento registado corretamente",
-      "updatePriceSuccess": "Preço atualizado corretamente",
+      "updatePriceSuccess": "Preço actualizado corretamente",
       "deleteSuccess": "Investimento eliminado corretamente",
-      "warningTitle": "Desvio crítico detetado",
-      "warningDesc": "O preço introduzido varia mais de 50% em relação ao preço atual. Clique novamente para confirmar."
+      "warningTitle": "Desvio crítico detectado",
+      "warningDesc": "O preço introduzido varia mais de 50% em relação ao preço actual. Clique de novo para confirmar."
     },
     "confirmUpdate": "Confirmar alteração crítica",
-    "updatePriceError": "Erro ao atualizar o preço",
+    "updatePriceError": "Erro ao actualizar o preço",
     "charts": {
       "tooltip": {
-        "amount": "Gasto",
+        "amount": "Despesa",
         "percentage": "Percentagem",
         "wealth": "Património"
       }
@@ -506,11 +502,11 @@
     "createNew": "Criar nova unidade familiar",
     "create": "Criar",
     "redirectingToLogin": "Redirecionando para o início de sessão...",
-    "createTitle": "Criar Nova Unidade Familiar",
+    "createTitle": "Criar Nova Unidad Familiar",
     "createDesc": "Defina o nome e o objetivo mensal da família",
     "familyName": "Nome da Família",
     "familyNamePlaceholder": "Ex: Família Martínez",
-    "monthlyGoal": "Objetivo Mensal",
+    "monthlyGoal": "Objetivo Mensual",
     "goal": "Objetivo",
     "admin": "Admin",
     "invitationReceived": "Foi convidado para uma família",
@@ -521,7 +517,7 @@
     "inviteMember": "Convidar Membro",
     "inviteShort": "Convidar",
     "inviteTitle": "Convidar para a Família",
-    "inviteDesc": "Envie um convite por correio eletrónico a um utilizador registado",
+    "inviteDesc": "Envie um convite por e-mail a um utilizador registado",
     "email": "Correio Eletrónico",
     "emailPlaceholder": "exemplo@correio.com",
     "sendInvitation": "Enviar Convite",
@@ -544,13 +540,13 @@
     },
     "modes": {
       "equitative": "Equitativo",
-      "equitativeDesc": "Todos os membros contribuem com a mesma quantidade",
+      "equitativeDesc": "Todos os membros contribuem com a mesma quantia",
       "proportional": "Proporcional",
       "proportionalDesc": "A contribuição é proporcional ao salário de cada membro",
       "custom": "Personalizado",
       "customDesc": "O administrador define a percentagem de cada membro manualmente"
     },
-    "memberDetails": "Detalhe dos Membros",
+    "memberDetails": "Detalhe de Membros",
     "memberOptions": "Opções de {{name}}",
     "memberProgress": "Progresso de {{name}}",
     "contributions": "Contribuições",
@@ -561,17 +557,17 @@
     "amount": "Quantidade",
     "save": "Guardar Contribuição",
     "salary": "Salário",
-    "monthlySalary": "Salário Mensal",
+    "monthlySalary": "Salário Mensual",
     "toContribute": "A contribuir",
     "contributed": "Contribuído",
     "contribution": "Contribuição",
     "nextPayment": "Próximo Pagamento",
     "inDays": "em {{days}} dias",
     "name": "Nome",
-    "role": "Função",
+    "role": "Cargo",
     "edit": "Editar",
     "editMember": "Editar Membro",
-    "delete": "Remover",
+    "delete": "Eliminar",
     "customPercentage": "Percentagem Personalizada",
     "customPercentageHint": "As percentagens somam {{total}}%. Devem somar 100%.",
     "customPercentageOk": "As percentagens somam corretamente 100%.",

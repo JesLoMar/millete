@@ -174,18 +174,18 @@
       }
     },
     "news": {
-      "title": "最近のアップデート",
-      "subtitle": "プラットフォームに追加された最新の改善点をご覧ください。",
+      "title": "Novedades recientes",
+      "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
       "items": [
         {
           "tag": "v0.0.4",
-          "title": "新言語：日本語追加。アカウント間でのデータエクスポート／インポートが可能になりました。",
-          "description": "データをJSONファイルにエクスポートし、別のアカウントにインポートできるようになりました。これにより、情報移行の制限が緩和され、より柔軟なデータ管理が可能になります。また、日本語に対応しました。"
+          "title": "Japonés añadido. Ahora es posible exportar e importar datos entre cuentas sin limitaciones de usuario.",
+          "description": "Ahora es posible exportar los datos a un archivo JSON e importarlos en otra cuenta. Esto elimina las restricciones en la migración de información, permitiendo una gestión de datos más flexible. Además, se ha añadido soporte para el idioma japonés."
         },
         {
           "tag": "v0.0.3",
-          "title": "視覚的・論理的バグ修正",
-          "description": "Safariなどのブラウザに対応するスタイル調整。削除されたカテゴリと取引をメトリクス計算から除外。"
+          "title": "Arreglos de fallos visuales y de lógica",
+          "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
         }
       ]
     }
