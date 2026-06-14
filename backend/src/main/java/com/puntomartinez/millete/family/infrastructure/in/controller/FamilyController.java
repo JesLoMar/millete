@@ -3,10 +3,7 @@ package com.puntomartinez.millete.family.infrastructure.in.controller;
 import com.puntomartinez.millete.family.application.services.FamilyService;
 import com.puntomartinez.millete.family.domain.model.FamilyInvitation;
 import com.puntomartinez.millete.family.domain.model.FamilyUnit;
-import com.puntomartinez.millete.family.domain.ports.in.AcceptInvitationUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.CalculateFamilyContributionsUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.CreateFamilyUnitUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.InviteFamilyMemberUseCase;
+import com.puntomartinez.millete.family.domain.ports.in.*;
 import com.puntomartinez.millete.family.infrastructure.in.controller.dto.*;
 
 import org.springframework.http.HttpStatus;
@@ -28,18 +25,21 @@ public class FamilyController {
     private final InviteFamilyMemberUseCase inviteFamilyMemberUseCase;
     private final FamilyService familyService;
     private final AcceptInvitationUseCase acceptInvitationUseCase;
+    private final DeleteFamilyUnitUseCase deleteFamilyUnitUseCase;
 
     public FamilyController(
             CreateFamilyUnitUseCase createFamilyUnitUseCase,
             CalculateFamilyContributionsUseCase calculateContributionsUseCase,
             InviteFamilyMemberUseCase inviteFamilyMemberUseCase,
             FamilyService familyService,
-            AcceptInvitationUseCase acceptInvitationUseCase) {
+            AcceptInvitationUseCase acceptInvitationUseCase,
+            DeleteFamilyUnitUseCase deleteFamilyUnitUseCase) {
         this.createFamilyUnitUseCase = createFamilyUnitUseCase;
         this.calculateContributionsUseCase = calculateContributionsUseCase;
         this.inviteFamilyMemberUseCase = inviteFamilyMemberUseCase;
         this.familyService = familyService;
         this.acceptInvitationUseCase = acceptInvitationUseCase;
+        this.deleteFamilyUnitUseCase = deleteFamilyUnitUseCase;
     }
 
     @GetMapping
@@ -90,6 +90,15 @@ public class FamilyController {
         UUID userId = UUID.fromString(authentication.getName());
         familyService.updateFamily(familyId, userId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{familyId}")
+    public ResponseEntity<Void> deleteFamily(
+            @PathVariable UUID familyId,
+            Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        deleteFamilyUnitUseCase.deleteFamily(familyId, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{familyId}/invitations")

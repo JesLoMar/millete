@@ -1,10 +1,7 @@
 package com.puntomartinez.millete.family.application.services;
 
 import com.puntomartinez.millete.family.domain.model.*;
-import com.puntomartinez.millete.family.domain.ports.in.AcceptInvitationUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.CalculateFamilyContributionsUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.CreateFamilyUnitUseCase;
-import com.puntomartinez.millete.family.domain.ports.in.InviteFamilyMemberUseCase;
+import com.puntomartinez.millete.family.domain.ports.in.*;
 import com.puntomartinez.millete.family.domain.ports.out.*;
 import com.puntomartinez.millete.family.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.users.domain.model.User;
@@ -27,7 +24,8 @@ public class FamilyService implements
         CreateFamilyUnitUseCase,
         CalculateFamilyContributionsUseCase,
         InviteFamilyMemberUseCase,
-        AcceptInvitationUseCase {
+        AcceptInvitationUseCase,
+        DeleteFamilyUnitUseCase {
 
     private final FamilyUnitRepository familyUnitRepository;
     private final FamilyMemberRepository familyMemberRepository;
@@ -377,5 +375,40 @@ public class FamilyService implements
         log.info("User {} accepted invitation to family {}", userId, invitation.getFamilyId());
 
         return invitation;
+    }
+
+    @Override
+    @Transactional
+    public void deleteFamily(UUID familyId, UUID userId) {
+        FamilyMember requester = familyMemberRepository.findByFamilyIdAndUserId(familyId, userId)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this family"));
+        if (!requester.isAdmin()) {
+            throw new RuntimeException("Only administrators can delete the family");
+        }
+
+        FamilyUnit family = familyUnitRepository.findById(familyId)
+                .orElseThrow(() -> new RuntimeException("Family not found"));
+
+        if (!family.isActive()) {
+            throw new RuntimeException("Family is already deleted");
+        }
+
+        // Soft delete de la unidad familiar
+        family.setActive(false);
+        family.setModifiedAt(LocalDateTime.now());
+        familyUnitRepository.save(family);
+
+        // Soft delete de todos los miembros activos
+        List<FamilyMember> activeMembers = familyMemberRepository.findByFamilyId(familyId).stream()
+                .filter(FamilyMember::isActive)
+                .toList();
+
+        for (FamilyMember member : activeMembers) {
+            member.setActive(false);
+            member.setModifiedAt(LocalDateTime.now());
+            familyMemberRepository.save(member);
+        }
+
+        log.info("Family {} deleted by admin {}. {} members deactivated.", familyId, userId, activeMembers.size());
     }
 }

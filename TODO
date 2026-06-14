@@ -34,7 +34,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
-- [ ] Añadir posibilidad de editar y borrar unidades familiares.
+- [x] Añadir posibilidad de editar y borrar unidades familiares.
 
 ===================================
 MEJORAS v0.0.4
