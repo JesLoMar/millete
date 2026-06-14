@@ -20,7 +20,7 @@ IDEAS A CHOLON
 v0.1.0 [CAMBIOS EN BD]
 ===================================
 
-- [ ] Añadir metas de ahorro. (Sistema de aportación como familias).
+- [x] Añadir metas de ahorro.
 - [x] Persistencia de última ejecución en transacciones recurrentes.
 - [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - [ ] Crear perfil de usuario y pestaña de settings.
@@ -34,13 +34,14 @@ v0.1.0 [CAMBIOS EN BD]
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
+- [ ] Añadir posibilidad de editar y borrar unidades familiares.
 
 ===================================
 MEJORAS v0.0.4
 ===================================
 
 - [x] Añadir idioma Japonés.
-- [x] Eliminar restricciones de cuenta al exportar cuenta.
+- [x] Eliminar restricciones de cuenta al exportar.
 
 ===================================
 MEJORAS v0.0.3
