@@ -20,7 +20,7 @@ IDEAS A CHOLON
 v0.1.0 [CAMBIOS EN BD]
 ===================================
 
-- [x] Añadir metas de ahorro.
+- [x] Añadir metas de ahorro. (Lógica en back por el momento)
 - [x] Persistencia de última ejecución en transacciones recurrentes.
 - [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - [ ] Crear perfil de usuario y pestaña de settings.
