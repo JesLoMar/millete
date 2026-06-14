@@ -2,8 +2,8 @@
 
 ## Estructura de archivos
 
-- **application/services/PlannedTransactionService.java** — Servicio central con CRUD, procesamiento automático y lógica de recurrencia completa
-- **domain/model/PlannedTransaction.java** — Entidad de dominio con validaciones
+- **application/services/PlannedTransactionService.java** — Servicio central con CRUD, procesamiento automático, lógica de recurrencia y sistema de recuperación ante fallos (Catch-up)
+- **domain/model/PlannedTransaction.java** — Entidad de dominio con validaciones y control de última ejecución
 - **domain/ports/in/RegisterPlannedTransactionUseCase.java** — Interfaz de registro
 - **domain/ports/in/UpdatePlannedTransactionUseCase.java** — Interfaz de actualización
 - **domain/ports/in/DeletePlannedTransactionUseCase.java** — Interfaz de eliminación
@@ -13,10 +13,10 @@
 - **infrastructure/in/controller/dto/PlannedTransactionResponseDTO.java** — DTO de respuesta
 - **infrastructure/in/controller/dto/RegisterPlannedTransactionRequestDTO.java** — DTO de creación
 - **infrastructure/in/controller/dto/UpdatePlannedTransactionRequestDTO.java** — DTO de actualización
-- **infrastructure/out/persistence/postgresql/adapters/PlannedTransactionPostgresAdapter.java** — Adaptador
-- **infrastructure/out/persistence/postgresql/entity/PlannedTransactionEntity.java** — Entidad JPA
-- **infrastructure/out/persistence/postgresql/mappers/PlannedTransactionEntityMapper.java** — Mapper MapStruct
-- **infrastructure/out/persistence/postgresql/repository/SpringDataPlannedTransactionRepository.java** — Repositorio
+- **infrastructure/out/persistence/postgresql/adapters/PlannedTransactionPostgresAdapter.java** — Adaptador de persistencia
+- **infrastructure/out/persistence/postgresql/entity/PlannedTransactionEntity.java** — Entidad JPA mapeada a PostgreSQL
+- **infrastructure/out/persistence/postgresql/mappers/PlannedTransactionEntityMapper.java** — Mapper MapStruct automático
+- **infrastructure/out/persistence/postgresql/repository/SpringDataPlannedTransactionRepository.java** — Repositorio Spring Data JPA
 
 ---
 
@@ -25,7 +25,7 @@
 Controlador REST mapeado a /api/v1/planned-transactions.
 
 ### POST /
-Crea una plantilla de transacción recurrente. Valida que la categoría exista si se especifica. Responde 201 con PlannedTransactionResponseDTO.
+Crea una plantilla de transacción recurrente. Valida que la categoría exista si se especifica. Responde 201 con PlannedTransactionResponseDTO. Inicializa el control de ejecuciones en nulo.
 
 ### GET /
 Lista las plantillas activas del usuario autenticado, ordenadas por fecha de inicio descendente.
@@ -44,49 +44,54 @@ Servicio central que implementa los 4 casos de uso. Utiliza @Slf4j de Lombok par
 
 ### Registrar plantilla (register)
 1. Si se especifica categoría, verifica que exista.
-2. Crea la plantilla con UUID aleatorio y fechas automáticas.
+2. Crea la plantilla con UUID aleatorio, fechas de auditoría automáticas y lastExecutedDate establecido en null.
 3. Guarda en base de datos.
 
-### Procesar tareas programadas (processScheduledTasks)
-1. Obtiene todas las plantillas activas.
-2. Para cada una, evalúa si debe ejecutarse hoy mediante shouldExecuteToday.
-3. Si corresponde, registra la ejecución mediante log.info con los datos relevantes (descripción, importe, usuario).
-4. Crea una transacción real llamando a RegisterTransactionUseCase.
-5. La transacción se crea con fecha de hoy a las 00:00 y descripción con sufijo "(Recurring)".
-6. Anotado con @Transactional para garantizar atomicidad.
+### Procesar tareas programadas (processScheduledTasks - Modo Catch-up)
+1. Obtiene todas las plantillas activas del sistema.
+2. Para cada una, calcula la primera ocurrencia pendiente usando getNextPendingExecutionDate pasándole la fecha actual como límite superior.
+3. Ejecuta un bucle iterativo (while) por plantilla: mientras exista una fecha de ejecución pendiente válida anterior o igual a hoy, se procesará. Esto garantiza que si el servidor se cae durante días, se ejecuten en orden cronológico todas las transacciones acumuladas perdidas.
+4. Registra mediante log.info los datos relevantes incluyendo la fecha planificada exacta a procesar.
+5. Emite la transacción real llamando a RegisterTransactionUseCase. RegisterTransactionCommand recibe la fecha exacta de la ocurrencia original (atStartOfDay) y la descripción concatenada con el sufijo " (Recurring)".
+6. Actualiza el atributo lastExecutedDate de la plantilla con la fecha que se acaba de generar con éxito.
+7. Persiste la plantilla actualizada llamando inmediatamente al repositorio.
+8. Vuelve a evaluar getNextPendingExecutionDate para determinar si restan más ejecuciones pendientes en el periodo de tiempo evaluado.
+9. Todo el proceso está cubierto por la anotación @Transactional para asegurar la atomicidad operativa de las inserciones y actualizaciones.
 
 ### Actualizar plantilla (update)
 1. Busca la plantilla por ID.
-2. Verifica que pertenezca al usuario (anti-IDOR).
-3. Valida la categoría si se especifica.
-4. Actualiza todos los campos y modifiedAt.
+2. Verifica la autoría del registro con el userId del comando (mecanismo anti-IDOR).
+3. Valida la categoría en caso de haberse proporcionado.
+4. Detecta si hubo modificaciones en el patrón de recurrencia evaluando cambios comparativos en startDate, frequencyType o frequencyInterval.
+5. Si el patrón ha cambiado, se restablece el valor de lastExecutedDate a null para evitar bloqueos matemáticos e inconsistencias de fechas, recalculando el calendario desde cero.
+6. Actualiza el resto de campos correspondientes y el sello modifiedAt.
+7. Guarda los cambios a través del puerto de salida.
 
 ### Eliminar plantilla (deleteByIdAndUserId)
 1. Busca la plantilla por ID.
-2. Verifica que pertenezca al usuario.
-3. Marca active = false (soft delete).
+2. Verifica los permisos de propiedad del usuario.
+3. Actualiza el flag active a false (soft delete) e introduce la estampa modifiedAt.
 
-### Lógica de recurrencia (shouldExecuteToday)
+### Lógica de recurrencia y tolerancia a fallos (getNextPendingExecutionDate)
 
-Implementación completa del cálculo de recurrencia que determina si una plantilla debe ejecutarse en una fecha concreta.
+Implementación matemática optimizada que localiza y calcula la fecha cronológica de la próxima ejecución pendiente basándose en la persistencia del estado histórico (lastExecutedDate), evitando bucles de simulación día por día de alto impacto en rendimiento.
 
-**Validaciones previas:**
-- Si la fecha actual es anterior a startDate, retorna false.
-- Si existe endDate y la fecha actual es posterior, retorna false.
+**Validaciones y cortocircuitos:**
+- Si la fecha de inicio (startDate) de la plantilla es posterior a la fecha actual (today), retorna null ya que el ciclo aún no ha comenzado.
+- Si la fecha calculada excede la fecha actual o supera el límite de endDate (si está configurado), retorna null.
 
-**Cálculo de ocurrencias:**
-1. Calcula cuántos períodos han pasado desde startDate hasta hoy usando el método calculatePeriodsPassed. Divide la diferencia temporal por el intervalo de frecuencia para obtener el número de períodos completos transcurridos.
-2. Calcula la fecha de la última ocurrencia con addPeriods, multiplicando los períodos por el intervalo y sumándolos a startDate.
-3. Si la fecha resultante coincide exactamente con hoy, retorna true.
+**Algoritmo matemático de cálculo:**
+1. Si lastExecutedDate es null, toma como primera fecha candidata el startDate de la plantilla.
+2. Si existe un registro de lastExecutedDate previo, calcula matemáticamente cuántos periodos transcurrieron desde el startDate original hasta dicha última ejecución mediante calculatePeriodsPassed.
+3. Obtiene la proyección de la fecha base sumando los periodos correspondientes (addPeriods).
+4. Si la proyección matemática calculada se solapa o es menor/igual al valor de lastExecutedDate, avanza incrementalmente los periodos necesarios en un ciclo controlado hasta situar el puntero en la primera fecha estrictamente posterior a la última ejecución registrada.
+5. Valida finalmente que dicha fecha no sea futura con respecto a hoy ni superior a endDate. Si cumple el criterio, la devuelve para su procesamiento.
 
-**Soporte para todos los tipos de frecuencia:**
-- DAYS: calcula días transcurridos y suma días.
-- WEEKS: calcula semanas transcurridas y suma semanas.
-- MONTHS: calcula meses transcurridos y suma meses.
-- YEARS: calcula años transcurridos y suma años.
-
-**Ejemplo de funcionamiento:**
-Una plantilla con startDate = 2026-01-15, frequencyType = MONTHS y frequencyInterval = 1 se ejecutará los días 15 de enero, 15 de febrero, 15 de marzo, etc. Con frequencyInterval = 3 se ejecutaría cada 3 meses: 15 de enero, 15 de abril, 15 de julio, etc.
+**Soporte para tipos de frecuencia (ChronoUnit e intervalos):**
+- DAYS: divide y añade unidades basándose en ChronoUnit.DAYS.
+- WEEKS: divide y añade unidades basándose en ChronoUnit.WEEKS.
+- MONTHS: divide y añade unidades basándose en ChronoUnit.MONTHS.
+- YEARS: divide y añade unidades basándose en ChronoUnit.YEARS.
 
 ---
 
@@ -96,10 +101,10 @@ Una plantilla con startDate = 2026-01-15, frequencyType = MONTHS y frequencyInte
 Enum con valores: DAYS, WEEKS, MONTHS, YEARS.
 
 ### Constructor
-Valida que el amount no sea cero. Valida que endDate no sea anterior a startDate si ambas están presentes.
+Valida que amount no sea nulo ni cero. Controla que la propiedad endDate no sea anterior de forma cronológica a startDate. Asigna todas las propiedades nativas de la plantilla de transacciones incluyendo el nuevo parámetro lastExecutedDate.
 
 ### Atributos
-id, userId, categoryId, amount, type (TransactionType), description, frequencyType, frequencyInterval, startDate, endDate, createdAt, modifiedAt, active.
+id, userId, categoryId, amount, type (TransactionType), description, frequencyType, frequencyInterval, startDate, endDate, createdAt, modifiedAt, active, lastExecutedDate.
 
 ---
 
@@ -115,29 +120,29 @@ id, userId, categoryId, amount, type (TransactionType), description, frequencyTy
 ## Puerto de salida
 
 ### PlannedTransactionRepository
-Define: save, findById, findAllByUserId, findAllActive.
+Define las firmas del contrato: save, findById, findAllByUserId, findAllActive.
 
 ---
 
 ## Adaptador de persistencia
 
 ### PlannedTransactionEntity
-Entidad JPA mapeada a planned_transactions. Columnas: id, user_id, category_id, amount, type, description, frequency_type, frequency_interval, start_date, end_date, created_at, modified_at, active.
+Entidad JPA decorada con anotaciones de Hibernate mapeada explícitamente a la tabla planned_transactions. Columnas reflejadas: id, user_id, category_id, amount, type, description, frequency_type, frequency_interval, start_date, end_date, created_at, modified_at, active, last_executed_date.
 
 ### PlannedTransactionEntityMapper
-Mapper MapStruct con métodos cualificados para convertir entre String y Enum tanto para TransactionType como para FrequencyType.
+Interfaz de mapeo basada en MapStruct con estrategias cualificadas personalizadas (Named) para realizar transformaciones bidireccionales seguras entre los Enums del dominio puro y las cadenas String guardadas dentro de la persistencia relacional PostgreSQL.
 
 ### SpringDataPlannedTransactionRepository
-Interfaz JpaRepository con métodos: findAllByUserIdOrderByStartDateDesc, findByActiveTrue.
+Extensión directa de JpaRepository encargado de proveer los métodos nativos: findAllByUserIdOrderByStartDateDesc y findByActiveTrue.
 
 ### PlannedTransactionPostgresAdapter
-Implementa PlannedTransactionRepository. findAllByUserId ordena por fecha de inicio descendente. findAllActive busca por active = true.
+Implementación física del puerto PlannedTransactionRepository. Delega los ciclos de persistencia en SpringDataPlannedTransactionRepository transformando las entidades mediante el mapper a objetos entendibles por las capas superiores del dominio.
 
 ---
 
 ## Conexión con el scheduler
 
-TransactionScheduler (en shared/infrastructure) ejecuta processScheduledTasks cada día a las 00:01 AM. Este método itera sobre todas las plantillas activas y crea transacciones reales para las que corresponda ejecutarse ese día según la lógica de recurrencia implementada.
+La clase TransactionScheduler (ubicada dentro de shared/infrastructure/config/scheduler) activa el método processScheduledTasks de forma automática diariamente a las 00:01 AM. El proceso recupera todas las plantillas activas sin importar fallos anteriores, asegurando que ninguna transacción recurrente quede en el olvido si ocurriese una indisponibilidad de infraestructura.
 
 ---
 
@@ -145,7 +150,7 @@ TransactionScheduler (en shared/infrastructure) ejecuta processScheduledTasks ca
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /api/v1/planned-transactions | Listar plantillas |
-| POST | /api/v1/planned-transactions | Crear plantilla |
-| PUT | /api/v1/planned-transactions/:id | Editar plantilla |
-| DELETE | /api/v1/planned-transactions/:id | Eliminar plantilla |
+| GET | /api/v1/planned-transactions | Listar todas las plantillas del usuario |
+| POST | /api/v1/planned-transactions | Registrar una nueva plantilla de recurrencia |
+| PUT | /api/v1/planned-transactions/:id | Modificar datos estructurales o el patrón de la plantilla |
+| DELETE | /api/v1/planned-transactions/:id | Desactivar lógicamente la plantilla (soft delete) |

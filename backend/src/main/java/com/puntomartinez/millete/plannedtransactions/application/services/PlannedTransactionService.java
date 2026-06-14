@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +42,7 @@ public class PlannedTransactionService implements
     // =======================================================
     // REGISTRAR PLANTILLA
     // =======================================================
+    
     @Override
     public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
         if (command.categoryId() != null) {
@@ -64,15 +66,17 @@ public class PlannedTransactionService implements
                 command.endDate(),
                 now,
                 now,
-                true
+                true,
+                null
         );
 
         return plannedTransactionRepository.save(newPlannedTransaction);
     }
 
     // =======================================================
-    // PROCESAR PLANTILLAS
+    // PROCESAR PLANTILLAS (Catch-up Mode)
     // =======================================================
+
     @Override
     @Transactional
     public void processScheduledTasks() {
@@ -81,21 +85,28 @@ public class PlannedTransactionService implements
         List<PlannedTransaction> templates = plannedTransactionRepository.findAllActive();
 
         for (PlannedTransaction template : templates) {
-            if (shouldExecuteToday(template, today)) {
-                log.info("Executing recurring transaction: {} ({}€) for user {}",
-                        template.getDescription(), template.getAmount(), template.getUserId());
+            LocalDate pendingDate = getNextPendingExecutionDate(template, today);
+
+            while (pendingDate != null) {
+                log.info("Executing recurring transaction: {} ({}€) for user {} scheduled for {}",
+                        template.getDescription(), template.getAmount(), template.getUserId(), pendingDate);
 
                 RegisterTransactionUseCase.RegisterTransactionCommand command =
                         new RegisterTransactionUseCase.RegisterTransactionCommand(
                                 template.getUserId(),
                                 template.getCategoryId(),
                                 template.getAmount(),
-                                today.atStartOfDay(),
+                                pendingDate.atStartOfDay(),
                                 template.getType(),
                                 template.getDescription() + " (Recurring)"
                         );
 
                 registerTransactionUseCase.register(command);
+
+                template.setLastExecutedDate(pendingDate);
+                plannedTransactionRepository.save(template);
+
+                pendingDate = getNextPendingExecutionDate(template, today);
             }
         }
     }
@@ -103,6 +114,8 @@ public class PlannedTransactionService implements
     // =======================================================
     // ACTUALIZAR PLANTILLA
     // =======================================================
+
+    @Override
     public PlannedTransaction update(UUID id, UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand command) {
         PlannedTransaction tx = plannedTransactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Planned transaction not found."));
@@ -116,6 +129,10 @@ public class PlannedTransactionService implements
                     .orElseThrow(() -> new RuntimeException("Category does not exist."));
         }
 
+        boolean recurrenceChanged = !tx.getStartDate().equals(command.startDate()) ||
+                                    tx.getFrequencyType() != command.frequencyType() ||
+                                    !tx.getFrequencyInterval().equals(command.frequencyInterval());
+
         tx.setAmount(command.amount());
         tx.setType(command.type());
         tx.setDescription(command.description());
@@ -126,12 +143,18 @@ public class PlannedTransactionService implements
         tx.setEndDate(command.endDate());
         tx.setModifiedAt(LocalDateTime.now());
 
+        if (recurrenceChanged) {
+            tx.setLastExecutedDate(null);
+        }
+
         return plannedTransactionRepository.save(tx);
     }
 
     // =======================================================
     // ELIMINAR PLANTILLA (SOFT DELETE)
     // =======================================================
+
+    @Override
     public void deleteByIdAndUserId(UUID id, UUID userId) {
         PlannedTransaction tx = plannedTransactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Planned transaction not found."));
@@ -154,45 +177,41 @@ public class PlannedTransactionService implements
     // =======================================================
     // LÓGICA DE RECURRENCIA
     // =======================================================
-    private boolean shouldExecuteToday(PlannedTransaction template, LocalDate today) {
+
+    private LocalDate getNextPendingExecutionDate(PlannedTransaction template, LocalDate today) {
         LocalDate start = template.getStartDate();
         LocalDate end = template.getEndDate();
-        FrequencyType frequencyType = template.getFrequencyType();
-        Integer frequencyInterval = template.getFrequencyInterval();
 
-        if (today.isBefore(start)) {
-            return false;
+        if (start.isAfter(today)) {
+            return null;
         }
 
-        if (end != null && today.isAfter(end)) {
-            return false;
+        LocalDate baseDate = template.getLastExecutedDate();
+        LocalDate nextExecution = start;
+
+        if (baseDate != null) {
+            long periodsToBase = calculatePeriodsPassed(start, baseDate, template.getFrequencyType(), template.getFrequencyInterval());
+            nextExecution = addPeriods(start, periodsToBase, template.getFrequencyType(), template.getFrequencyInterval());
+
+            while (!nextExecution.isAfter(baseDate)) {
+                periodsToBase++;
+                nextExecution = addPeriods(start, periodsToBase, template.getFrequencyType(), template.getFrequencyInterval());
+            }
         }
 
-        long periodsPassed = calculatePeriodsPassed(start, today, frequencyType, frequencyInterval);
+        if (!nextExecution.isAfter(today) && (end == null || !nextExecution.isAfter(end))) {
+            return nextExecution;
+        }
 
-        LocalDate lastOccurrence = addPeriods(start, periodsPassed, frequencyType, frequencyInterval);
-
-        return lastOccurrence.equals(today);
+        return null;
     }
 
-    private long calculatePeriodsPassed(LocalDate start, LocalDate today, FrequencyType type, int interval) {
+    private long calculatePeriodsPassed(LocalDate start, LocalDate target, FrequencyType type, int interval) {
         return switch (type) {
-            case DAYS -> {
-                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(start, today);
-                yield daysBetween / interval;
-            }
-            case WEEKS -> {
-                long weeksBetween = java.time.temporal.ChronoUnit.WEEKS.between(start, today);
-                yield weeksBetween / interval;
-            }
-            case MONTHS -> {
-                long monthsBetween = java.time.temporal.ChronoUnit.MONTHS.between(start, today);
-                yield monthsBetween / interval;
-            }
-            case YEARS -> {
-                long yearsBetween = java.time.temporal.ChronoUnit.YEARS.between(start, today);
-                yield yearsBetween / interval;
-            }
+            case DAYS -> ChronoUnit.DAYS.between(start, target) / interval;
+            case WEEKS -> ChronoUnit.WEEKS.between(start, target) / interval;
+            case MONTHS -> ChronoUnit.MONTHS.between(start, target) / interval;
+            case YEARS -> ChronoUnit.YEARS.between(start, target) / interval;
         };
     }
 

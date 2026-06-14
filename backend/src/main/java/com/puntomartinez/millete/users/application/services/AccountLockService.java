@@ -28,10 +28,7 @@ public class AccountLockService {
     public void checkLockStatus(UUID userId) {
         userSessionRepository.findByUserIdAndChannel(userId, CHANNEL_WEB).ifPresent(session -> {
             if (session.isBlocked()) {
-                long remainingMinutes = session.getBlockedUntil() != null
-                        ? Math.max(0, Duration.between(LocalDateTime.now(), session.getBlockedUntil()).toMinutes() + 1)
-                        : 0;
-                throw new AccountLockedException(session.getBlockedUntil(), remainingMinutes);
+                throw new AccountLockedException(session.getBlockedUntil(), calculateRemainingMinutes(session.getBlockedUntil()));
             }
             sessionPersistenceService.saveSession(session);
         });
@@ -41,12 +38,7 @@ public class AccountLockService {
         UserSession session = sessionPersistenceService.persistFailedAttempt(userId);
 
         if (session.isBlocked()) {
-            long remainingMinutes = LOCK_DURATION_MINUTES;
-            if (session.getBlockedUntil() != null) {
-                remainingMinutes = Math.max(0,
-                        Duration.between(LocalDateTime.now(), session.getBlockedUntil()).toMinutes() + 1);
-            }
-            throw new AccountLockedException(session.getBlockedUntil(), remainingMinutes);
+            throw new AccountLockedException(session.getBlockedUntil(), calculateRemainingMinutes(session.getBlockedUntil()));
         }
     }
 
@@ -58,5 +50,13 @@ public class AccountLockService {
                 userSessionRepository.save(session);
             }
         });
+    }
+
+    private long calculateRemainingMinutes(LocalDateTime blockedUntil) {
+        if (blockedUntil == null) {
+            return LOCK_DURATION_MINUTES;
+        }
+        long seconds = Duration.between(LocalDateTime.now(), blockedUntil).getSeconds();
+        return Math.max(0, (seconds + 59) / 60);
     }
 }

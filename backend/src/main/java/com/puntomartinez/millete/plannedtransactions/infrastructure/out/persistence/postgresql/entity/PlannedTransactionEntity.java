@@ -47,6 +47,9 @@ public class PlannedTransactionEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "last_executed_date")
+    private LocalDate lastExecutedDate;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

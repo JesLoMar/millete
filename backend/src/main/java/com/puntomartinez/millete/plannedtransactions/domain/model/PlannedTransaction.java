@@ -34,12 +34,14 @@ public class PlannedTransaction {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
+    private LocalDate lastExecutedDate;
 
     public PlannedTransaction(UUID id, UUID userId, UUID categoryId, BigDecimal amount,
                               TransactionType type, String description,
                               FrequencyType frequencyType, Integer frequencyInterval,
                               LocalDate startDate, LocalDate endDate,
-                              LocalDateTime createdAt, LocalDateTime modifiedAt, boolean active) {
+                              LocalDateTime createdAt, LocalDateTime modifiedAt, boolean active,
+                              LocalDate lastExecutedDate) {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
             throw new IllegalArgumentException("La cantidad no puede ser cero.");
@@ -61,5 +63,6 @@ public class PlannedTransaction {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.active = active;
+        this.lastExecutedDate = lastExecutedDate;
     }
 }

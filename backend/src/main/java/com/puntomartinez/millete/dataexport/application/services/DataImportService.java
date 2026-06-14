@@ -149,7 +149,7 @@ public class DataImportService {
                     ptx.getId(), loggedInUserId, ptx.getCategoryId(), ptx.getAmount(),
                     ptx.getType(), ptx.getDescription(), ptx.getFrequencyType(),
                     ptx.getFrequencyInterval(), ptx.getStartDate(), ptx.getEndDate(),
-                    ptx.getCreatedAt(), ptx.getModifiedAt(), ptx.isActive()
+                    ptx.getCreatedAt(), ptx.getModifiedAt(), ptx.isActive(), ptx.getLastExecutedDate()
             );
             plannedTransactionRepository.save(safePtx);
             count++;
