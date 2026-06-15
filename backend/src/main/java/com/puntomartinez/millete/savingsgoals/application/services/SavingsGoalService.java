@@ -3,11 +3,14 @@ package com.puntomartinez.millete.savingsgoals.application.services;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
 import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class SavingsGoalService implements
         CreateSavingsGoalUseCase,
         UpdateSavingsGoalUseCase,

@@ -23,14 +23,12 @@ import java.util.UUID;
 public class FamilyService implements
         CreateFamilyUnitUseCase,
         CalculateFamilyContributionsUseCase,
-        InviteFamilyMemberUseCase,
         AcceptInvitationUseCase,
         DeleteFamilyUnitUseCase {
 
     private final FamilyUnitRepository familyUnitRepository;
     private final FamilyMemberRepository familyMemberRepository;
     private final FamilyInvitationRepository familyInvitationRepository;
-    private final EmailSenderPort emailSenderPort;
     private final UserRepository userRepository;
     private final FamilyContributionRepository contributionRepository;
 
@@ -38,13 +36,11 @@ public class FamilyService implements
             FamilyUnitRepository familyUnitRepository,
             FamilyMemberRepository familyMemberRepository,
             FamilyInvitationRepository familyInvitationRepository,
-            EmailSenderPort emailSenderPort,
             UserRepository userRepository,
             FamilyContributionRepository contributionRepository) {
         this.familyUnitRepository = familyUnitRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.familyInvitationRepository = familyInvitationRepository;
-        this.emailSenderPort = emailSenderPort;
         this.userRepository = userRepository;
         this.contributionRepository = contributionRepository;
     }
@@ -87,54 +83,6 @@ public class FamilyService implements
         List<FamilyMember> members = familyMemberRepository.findByFamilyId(familyId);
         familyUnit.setMembers(members);
         return familyUnit.calculateContributions();
-    }
-
-    @Override
-    @Transactional
-    public FamilyInvitation inviteMember(UUID adminUserId, UUID familyId, String guestEmail) {
-        FamilyMember inviter = familyMemberRepository.findByFamilyIdAndUserId(familyId, adminUserId)
-                .orElseThrow(() -> new RuntimeException("User is not a member of this family"));
-
-        if (!inviter.isAdmin()) {
-            throw new RuntimeException("Only Admins can invite new members");
-        }
-
-        User invitedUser = userRepository.findByEmail(guestEmail)
-                .orElseThrow(() -> new RuntimeException("No user found with that email"));
-
-        List<FamilyMember> members = familyMemberRepository.findByFamilyId(familyId);
-        boolean alreadyMember = members.stream()
-                .anyMatch(m -> m.getUserId().equals(invitedUser.getId()) && m.isActive());
-        if (alreadyMember) {
-            throw new RuntimeException("User is already a member of this family");
-        }
-
-        familyInvitationRepository.findByFamilyIdAndEmailAndStatus(familyId, guestEmail, InvitationStatus.PENDING)
-                .ifPresent(i -> {
-                    throw new RuntimeException("A pending invitation already exists for this email");
-                });
-
-        FamilyInvitation invitation = new FamilyInvitation();
-        invitation.setId(UUID.randomUUID());
-        invitation.setFamilyId(familyId);
-        invitation.setEmail(guestEmail);
-        invitation.setToken(UUID.randomUUID().toString());
-        invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(48));
-        invitation.setCreatedAt(LocalDateTime.now());
-        invitation.setModifiedAt(LocalDateTime.now());
-        invitation.setActive(true);
-
-        invitation = familyInvitationRepository.save(invitation);
-
-        try {
-            emailSenderPort.sendInvitationEmail(guestEmail, invitation.getToken());
-            log.info("Invitation sent to {} for family {}", guestEmail, familyId);
-        } catch (Exception e) {
-            log.error("Failed to send invitation email to {}: {}", guestEmail, e.getMessage(), e);
-        }
-
-        return invitation;
     }
 
     public List<FamilyListItemResponseDTO> getFamiliesByUserId(UUID userId) {

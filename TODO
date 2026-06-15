@@ -23,13 +23,12 @@ v0.1.0 [CAMBIOS EN BD]
 
 - [x] Añadir metas de ahorro. (Lógica en back por el momento)
 - [x] Persistencia de última ejecución en transacciones recurrentes.
-- [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app.
+- [ ] Eliminar la necesidad de correo, invitaciones por notificación in-app. (Por ahora eliminado todo lo que se hacía por invitación de correo.)
 - [ ] Crear perfil de usuario y pestaña de settings.
 - [x] Añadir protección contra ataques de fuerza bruta a nivel de cuenta.
 - [ ] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
-- [x] Exportar tambien en csv para visualizar en hoja de calculo.
-- [x] Exportar en pdf.
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
 - [ ] Reemplazo de dependencias como shadcn y componentes rápidos con componentes propios.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.

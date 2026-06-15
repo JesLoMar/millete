@@ -22,7 +22,6 @@ public class FamilyController {
 
     private final CreateFamilyUnitUseCase createFamilyUnitUseCase;
     private final CalculateFamilyContributionsUseCase calculateContributionsUseCase;
-    private final InviteFamilyMemberUseCase inviteFamilyMemberUseCase;
     private final FamilyService familyService;
     private final AcceptInvitationUseCase acceptInvitationUseCase;
     private final DeleteFamilyUnitUseCase deleteFamilyUnitUseCase;
@@ -30,13 +29,11 @@ public class FamilyController {
     public FamilyController(
             CreateFamilyUnitUseCase createFamilyUnitUseCase,
             CalculateFamilyContributionsUseCase calculateContributionsUseCase,
-            InviteFamilyMemberUseCase inviteFamilyMemberUseCase,
             FamilyService familyService,
             AcceptInvitationUseCase acceptInvitationUseCase,
             DeleteFamilyUnitUseCase deleteFamilyUnitUseCase) {
         this.createFamilyUnitUseCase = createFamilyUnitUseCase;
         this.calculateContributionsUseCase = calculateContributionsUseCase;
-        this.inviteFamilyMemberUseCase = inviteFamilyMemberUseCase;
         this.familyService = familyService;
         this.acceptInvitationUseCase = acceptInvitationUseCase;
         this.deleteFamilyUnitUseCase = deleteFamilyUnitUseCase;
@@ -99,29 +96,6 @@ public class FamilyController {
         UUID userId = UUID.fromString(authentication.getName());
         deleteFamilyUnitUseCase.deleteFamily(familyId, userId);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{familyId}/invitations")
-    public ResponseEntity<InvitationResponseDTO> inviteMember(
-            @PathVariable UUID familyId,
-            @RequestBody InviteMemberRequestDTO request,
-            Authentication authentication) {
-
-        UUID adminId = UUID.fromString(authentication.getName());
-
-        FamilyInvitation invitation = inviteFamilyMemberUseCase.inviteMember(
-                adminId,
-                familyId,
-                request.getEmail()
-        );
-
-        InvitationResponseDTO response = new InvitationResponseDTO();
-        response.setId(invitation.getId());
-        response.setEmail(invitation.getEmail());
-        response.setStatus(invitation.getStatus().name());
-        response.setExpiresAt(invitation.getExpiresAt());
-
-        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{familyId}/members/{memberId}")

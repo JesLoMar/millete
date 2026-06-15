@@ -18,9 +18,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     private static final String LOGIN_PATH = "/api/v1/auth/login";
 
     private final ConcurrentHashMap<String, AttemptWindow> attemptsPerIp = new ConcurrentHashMap<>();
-
+    private final Thread cleanupThread;
     public LoginRateLimitFilter() {
-        Thread cleanupThread = new Thread(() -> {
+        cleanupThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Thread.sleep(TimeUnit.MINUTES.toMillis(1));
@@ -79,6 +79,14 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             return xForwardedFor.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    @Override
+    public void destroy() {
+        if (cleanupThread != null && cleanupThread.isAlive()) {
+            cleanupThread.interrupt();
+        }
+        super.destroy();
     }
 
     private static class AttemptWindow {
