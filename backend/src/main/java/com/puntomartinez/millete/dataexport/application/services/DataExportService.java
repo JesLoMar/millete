@@ -3,6 +3,7 @@ package com.puntomartinez.millete.dataexport.application.services;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.FileExportPort;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
@@ -21,6 +22,7 @@ public class DataExportService {
     private final TransactionRepository transactionRepository;
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final InvestmentRepository investmentRepository;
+    private final FileExportPort fileExportPort;
 
     @Value("${app.version:0.0.1}")
     private String appVersion;
@@ -29,11 +31,13 @@ public class DataExportService {
             CategoryRepository categoryRepository,
             TransactionRepository transactionRepository,
             PlannedTransactionRepository plannedTransactionRepository,
-            InvestmentRepository investmentRepository) {
+            InvestmentRepository investmentRepository,
+            FileExportPort fileExportPort) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.plannedTransactionRepository = plannedTransactionRepository;
         this.investmentRepository = investmentRepository;
+        this.fileExportPort = fileExportPort;
     }
 
     public UserDataSnapshot exportAllUserData(UUID userId) {
@@ -53,5 +57,21 @@ public class DataExportService {
 
         log.info("Exportación completada. v{}", ExportVersion.CURRENT);
         return snapshot;
+    }
+
+    public byte[] exportUserDataAsCsv(UUID userId) {
+        log.info("Exportando datos CSV para usuario: {}", userId);
+        UserDataSnapshot snapshot = exportAllUserData(userId);
+        byte[] csv = fileExportPort.generateCsv(snapshot);
+        log.info("Exportación CSV completada para usuario: {}", userId);
+        return csv;
+    }
+
+    public byte[] exportUserDataAsPdf(UUID userId) {
+        log.info("Exportando datos PDF para usuario: {}", userId);
+        UserDataSnapshot snapshot = exportAllUserData(userId);
+        byte[] pdf = fileExportPort.generatePdf(snapshot);
+        log.info("Exportación PDF completada para usuario: {}", userId);
+        return pdf;
     }
 }

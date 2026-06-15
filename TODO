@@ -15,6 +15,7 @@ IDEAS A CHOLON
 - Reducir el uso de dependencias en front.
 - Añadir más avisos y alertas.
 - Dejar actualizada la documentación.
+- Más tipos de monedas.
 
 ===================================
 v0.1.0 [CAMBIOS EN BD]
@@ -27,9 +28,8 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Añadir protección contra ataques de fuerza bruta a nivel de cuenta.
 - [ ] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
-- [ ] Más tipos de monedas.
-- [ ] Exportar tambien en csv para visualizar en hoja de calculo.
-- [ ] Exportar en pdf.
+- [x] Exportar tambien en csv para visualizar en hoja de calculo.
+- [x] Exportar en pdf.
 - [ ] Reemplazo de dependencias como shadcn y componentes rápidos con componentes propios.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.

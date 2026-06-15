@@ -4,6 +4,7 @@ import com.puntomartinez.millete.dataexport.application.services.DataExportServi
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,14 +25,6 @@ public class DataExportController {
         this.dataExportService = dataExportService;
     }
 
-    /**
-     * Exporta todos los datos del usuario autenticado.
-     * El archivo se descarga como "familybudget_export.json" con:
-     * - Metadatos de versión para compatibilidad futura
-     * - ID del propietario para validación en importación
-     *
-     * @return Archivo JSON con todos los datos del usuario
-     */
     @GetMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDataSnapshot> exportData(Authentication authentication) {
 
@@ -51,5 +44,39 @@ public class DataExportController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(snapshot);
+    }
+
+    @GetMapping("/export/csv")
+    public ResponseEntity<byte[]> exportDataAsCsv(Authentication authentication) {
+
+        UUID userId = UUID.fromString(authentication.getName());
+
+        log.info("Solicitud de exportación CSV para usuario: {}", userId);
+
+        byte[] csv = dataExportService.exportUserDataAsCsv(userId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=familybudget_export.csv");
+
+        return new ResponseEntity<>(csv, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportDataAsPdf(Authentication authentication) {
+
+        UUID userId = UUID.fromString(authentication.getName());
+
+        log.info("Solicitud de exportación PDF para usuario: {}", userId);
+
+        byte[] pdf = dataExportService.exportUserDataAsPdf(userId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=familybudget_export.pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 }
