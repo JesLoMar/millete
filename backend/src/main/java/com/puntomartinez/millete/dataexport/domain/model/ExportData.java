@@ -9,7 +9,8 @@ public record ExportData(
         List<CategoryExportRow> categories,
         List<TransactionExportRow> transactions,
         List<PlannedTransactionExportRow> plannedTransactions,
-        List<InvestmentExportRow> investments
+        List<InvestmentExportRow> investments,
+        List<SavingsGoalExportRow> savingsGoals
 ) {
 
     public record CategoryExportRow(
@@ -45,5 +46,16 @@ public record ExportData(
             BigDecimal currentPrice,
             String type,
             LocalDateTime purchaseDate
+    ) {}
+
+    public record SavingsGoalExportRow(
+            String name,
+            BigDecimal targetAmount,
+            BigDecimal currentAmount,
+            double progress,
+            LocalDate deadline,
+            String priority,
+            String status,
+            String link
     ) {}
 }

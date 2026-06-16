@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Millete - Financial Data</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+            background-color: #0A1020;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #0A1020;
+            color: #E4EAF4;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+
+        .header {
+            background-color: #1E293B;
+            border-left: 4px solid #3B82F6;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: block;
+        }
+        .header h1 {
+            font-size: 20pt;
+            margin-bottom: 4px;
+            color: #E4EAF4;
+            font-weight: bold;
+        }
+        .header .period {
+            font-size: 12pt;
+            color: #94A3B8;
+        }
+
+        .metrics-grid {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .metrics-grid td {
+            width: 25%;
+            vertical-align: top;
+        }
+        .metric-card {
+            background-color: #1E293B;
+            padding: 14px;
+            text-align: left;
+            height: 100%;
+            display: block;
+        }
+        .metric-card .label {
+            font-size: 9pt;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.5pt;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        .metric-card .value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #E4EAF4;
+        }
+
+        .positive { color: #22C55E !important; }
+        .negative { color: #EF4444 !important; }
+        .type-income { color: #22C55E !important; font-weight: bold; }
+        .type-expense { color: #EF4444 !important; font-weight: bold; }
+
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #E4EAF4;
+            border-bottom: 1pt solid #334155;
+            padding-bottom: 6px;
+            margin-bottom: 14px;
+            margin-top: 24px;
+            page-break-after: avoid;
+        }
+
+        .table-container {
+            background-color: #1E293B;
+            margin-bottom: 20px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+        }
+        .data-table th {
+            background-color: #3B82F6;
+            color: #FFFFFF;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9pt;
+            border-bottom: 1pt solid #1E293B;
+        }
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1pt solid #1E293B;
+            color: #E4EAF4;
+        }
+        .data-table tr:nth-child(even) td { background-color: #293548; }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .investments-section { page-break-inside: avoid; }
+
+        .empty-message {
+            color: #94A3B8;
+            font-style: italic;
+            font-size: 11pt;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Millete - Financial Data</h1>
+    <p class="period" th:text="'Period: ' + ${startDate} + ' — ' + ${endDate} + ' (' + ${periodDisplayName} + ')'"></p>
+</div>
+
+<table class="metrics-grid">
+    <tr>
+        <td style="padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Balance</div>
+                <div class="value" th:classappend="${summary.balance >= 0} ? 'positive' : 'negative'"
+                     th:text="${summary.balance >= 0} ? '+' + ${#numbers.formatDecimal(summary.balance, 0, 'COMMA', 2, 'POINT')} + '€' : ${#numbers.formatDecimal(summary.balance, 0, 'COMMA', 2, 'POINT')} + '€'"></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px; padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Income</div>
+                <div class="value positive" th:text="'+' + ${#numbers.formatDecimal(summary.totalIncome, 0, 'COMMA', 2, 'POINT')} + '€'"></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px; padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Expenses</div>
+                <div class="value negative" th:text="'-' + ${#numbers.formatDecimal(summary.totalExpenses, 0, 'COMMA', 2, 'POINT')} + '€'"></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px;">
+            <div class="metric-card">
+                <div class="label">Transactions</div>
+                <div class="value" th:text="${summary.transactionCount}"></div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<table class="metrics-grid">
+    <tr>
+        <td style="padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Investments Value</div>
+                <div class="value" style="font-size:16pt; color:#3B82F6;">
+                    <span th:if="${summary.investmentsTotalValue == 0}">0€</span>
+                    <span th:if="${summary.investmentsTotalValue != 0}" th:text="${#numbers.formatDecimal(summary.investmentsTotalValue, 0, 'COMMA', 2, 'POINT')} + '€'"></span>
+                </div>
+            </div>
+        </td>
+        <td style="padding-left: 6px; padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Active Investments</div>
+                <div class="value" th:text="${summary.activeInvestmentsCount}"></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px; padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Savings Goals</div>
+                <div class="value" th:text="${summary.activeSavingsGoalsCount}"></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px;">
+            <div class="metric-card">
+                <div class="label">Total Saved</div>
+                <div class="value positive" style="font-size:16pt;">
+                    <span th:if="${summary.totalSavedAmount == 0}">0€</span>
+                    <span th:if="${summary.totalSavedAmount != 0}" th:text="${#numbers.formatDecimal(summary.totalSavedAmount, 0, 'COMMA', 2, 'POINT')} + '€'"></span>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="investments-section">
+    <h2 class="section-title">Active Investments</h2>
+    <div class="table-container" th:if="${!investments.isEmpty()}">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Ticker</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Purchase Price</th>
+                <th>Current Price</th>
+                <th>Current Value</th>
+                <th>Return</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="inv : ${investments}">
+                <td th:text="${inv.assetName}"></td>
+                <td th:text="${inv.ticker}"></td>
+                <td th:text="${inv.type}"></td>
+                <td th:text="${#numbers.formatDecimal(inv.quantity, 0, 'COMMA', 4, 'POINT')}"></td>
+                <td th:text="${#numbers.formatDecimal(inv.purchasePrice, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+                <td th:text="${#numbers.formatDecimal(inv.currentPrice, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+                <td style="font-weight: bold;" th:text="${#numbers.formatDecimal(inv.currentValue, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+                <td th:classappend="${inv.returnPercentage >= 0} ? 'positive' : 'negative'"
+                    th:text="${inv.returnPercentage >= 0} ? '+' + ${#numbers.formatDecimal(inv.returnPercentage, 0, 'COMMA', 1, 'POINT')} + '%' : ${#numbers.formatDecimal(inv.returnPercentage, 0, 'COMMA', 1, 'POINT')} + '%'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="empty-message" th:if="${investments.isEmpty()}">No active investments at this time.</p>
+</div>
+
+<div class="savings-section" th:if="${savingsGoals != null}">
+    <h2 class="section-title">Savings Goals</h2>
+    <div class="table-container" th:if="${!savingsGoals.isEmpty()}">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Target</th>
+                <th>Current</th>
+                <th>Progress</th>
+                <th>Deadline</th>
+                <th>Priority</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="sg : ${savingsGoals}">
+                <td th:text="${sg.name}"></td>
+                <td th:text="${#numbers.formatDecimal(sg.targetAmount, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+                <td th:text="${#numbers.formatDecimal(sg.currentAmount, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+                <td th:text="${#numbers.formatDecimal(sg.progress, 0, 'COMMA', 1, 'POINT')} + '%'"></td>
+                <td th:text="${sg.deadline}"></td>
+                <td th:text="${sg.priority}"></td>
+                <td th:text="${sg.status}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="empty-message" th:if="${savingsGoals.isEmpty()}">No savings goals found.</p>
+</div>
+
+<div class="transactions-section">
+    <h2 class="section-title">Transactions in Period</h2>
+    <div class="table-container" th:if="${!transactions.isEmpty()}">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${transactions}">
+                <td style="color:#E4EAF4;" th:text="${#temporals.format(tx.date, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${tx.categoryName}"></td>
+                <td th:text="${tx.description}"></td>
+                <td th:classappend="${tx.type == 'Ingreso'} ? 'type-income' : 'type-expense'" th:text="${tx.type}"></td>
+                <td th:classappend="${tx.type == 'Ingreso'} ? 'type-income' : 'type-expense'"
+                    th:text="${#numbers.formatDecimal(tx.amount, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="empty-message" th:if="${transactions.isEmpty()}">No transactions in this period.</p>
+</div>
+
+</body>
+</html>

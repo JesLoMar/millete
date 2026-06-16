@@ -23,18 +23,21 @@ v0.1.0 [CAMBIOS EN BD]
 
 - [x] Añadir metas de ahorro. (Lógica en back por el momento)
 - [x] Persistencia de última ejecución en transacciones recurrentes.
+- [x] Añadir posibilidad de editar y borrar unidades familiares.
+- [x] Aligerar proyecto.
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
 - [...] Eliminar la necesidad de correo, invitaciones por notificación in-app. (Por ahora, eliminado todo lo que se hacía por invitación de correo.)
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)
-- [x] Añadir protección contra ataques de fuerza bruta a nivel de cuenta.
 - [ ] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
-- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo. (CSV completo. Funcional en backend)
 - [ ] Reemplazo de dependencias como shadcn y componentes rápidos con componentes propios.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
-- [x] Añadir posibilidad de editar y borrar unidades familiares.
-- [x] Aligerar proyecto.
+
+====
+HACER AL FINAL: Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0
+====
 
 ===================================
 MEJORAS v0.0.4

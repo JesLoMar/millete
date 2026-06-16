@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
 import com.puntomartinez.millete.dataexport.application.services.DataExportService;
+import com.puntomartinez.millete.dataexport.domain.model.PeriodType;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -8,10 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -78,5 +76,24 @@ public class DataExportController {
                 "attachment; filename=familybudget_" + entityType + ".csv");
 
         return new ResponseEntity<>(csv, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportDataAsPdf(
+            @RequestParam(defaultValue = "1m") String period,
+            Authentication authentication) {
+
+        UUID userId = UUID.fromString(authentication.getName());
+        PeriodType periodType = PeriodType.fromCode(period);
+        log.info("Solicitud de exportación PDF para usuario: {} (periodo: {})", userId, periodType.getCode());
+
+        byte[] pdf = dataExportService.exportUserDataAsPdf(userId, periodType);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=millete_financial_data_" + periodType.getCode() + ".pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 }

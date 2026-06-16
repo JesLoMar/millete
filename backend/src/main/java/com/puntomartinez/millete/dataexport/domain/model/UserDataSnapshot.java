@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 
 import java.time.LocalDateTime;
@@ -25,7 +26,10 @@ public record UserDataSnapshot(
         List<PlannedTransaction> plannedTransactions,
 
         @JsonProperty("investments")
-        List<Investment> investments
+        List<Investment> investments,
+
+        @JsonProperty("savingsGoals")
+        List<SavingsGoal> savingsGoals
 ) {
     public UserDataSnapshot {
         if (metadata == null) {
