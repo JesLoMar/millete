@@ -26,7 +26,8 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Añadir posibilidad de editar y borrar unidades familiares.
 - [x] Aligerar proyecto.
 - [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
-- [...] Eliminar la necesidad de correo, invitaciones por notificación in-app. (Por ahora, eliminado todo lo que se hacía por invitación de correo.)
+- [x] Eliminar la necesidad de correo, invitaciones por notificación in-app.
+- [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)
 - [ ] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
