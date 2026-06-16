@@ -85,7 +85,7 @@ export function FormattedMetricCard({
         </div>
       ) : (
         <span className="text-xs text-muted-foreground/60 italic block mt-2">
-          {t("metrics.errors.noDataAvailable")}
+          {t("dashboard.metrics.errors.noDataAvailable")}
         </span>
       )}
     </MetricCard>

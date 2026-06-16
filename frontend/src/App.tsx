@@ -12,6 +12,7 @@ import { JoinFamilyPage } from '@/features/family/pages/JoinFamilyPage';
 import { Toaster } from '@/shared/components/ui/sonner';
 import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
+import { SettingsPage } from './features/settings/pages/page';
 
 export default function App() {
   return (
@@ -24,7 +25,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
           </Route>
 
-          {/* === WIKI (pública, sin autenticación) === */}
+          {/* === WIKI === */}
           <Route path="/wiki" element={<WikiLayout />}>
             <Route index element={<WikiPage />} />
             <Route path=":section" element={<WikiPage />} />
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/investments" element={<InvestmentsPage />} />
             <Route path="/family" element={<FamilyPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
           {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}

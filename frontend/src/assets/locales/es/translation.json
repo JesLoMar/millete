@@ -62,6 +62,7 @@
     "investments": "Inversiones",
     "family": "Familia",
     "mobileTitle": "Millete",
+    "settings": "Ajustes",
     "errors": {
       "featureComingSoon": "{{feature}} estará disponible próximamente"
     }
@@ -605,6 +606,30 @@
       "status_404": "El recurso solicitado no se encuentra disponible.",
       "status_500": "Problema interno del servidor. Inténtalo de nuevo más tarde.",
       "timeout": "La petición ha tardado demasiado tiempo en responder."
+    }
+  },
+  "settings": {
+    "general": {
+      "title": "Ajustes Generales",
+      "description": "Personaliza tu experiencia"
+    },
+    "currency": {
+      "title": "Moneda",
+      "description": "Selecciona tu moneda preferida",
+      "placeholder": "Elegir moneda"
+    },
+    "telegram": {
+      "title": "Conexión de Telegram",
+      "description": "Gestiona tu integración con Telegram",
+      "connected": "Conectado como {{username}}",
+      "since": "Desde {{date}}",
+      "status": {
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "loading": "Comprobando...",
+        "error": "Error de conexión"
+      },
+      "refresh": "Actualizar"
     }
   }
 }

@@ -11,6 +11,8 @@ interface PeriodSelectorProps {
 
 export function PeriodSelector({ period, onPeriodChange, className }: PeriodSelectorProps) {
   const { t } = useTranslation()
+  
+  const tDynamic = t as unknown as (key: string) => string;
 
   const options = [
     { value: "week" as PeriodFilter, labelKey: "dashboard.header.period.week" },
@@ -46,7 +48,7 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
             aria-current={isActive ? "true" : undefined}
           >
             <span className="truncate w-full block text-center">
-              {t(option.labelKey)}
+              {tDynamic(option.labelKey)}
             </span>
           </button>
         )

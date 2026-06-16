@@ -4,7 +4,8 @@ import {
   ArrowLeftRight,
   PieChart,
   TrendingUp,
-  LayoutGrid
+  LayoutGrid,
+  Settings
 } from "lucide-react"
 
 // ─── Types ────────────────────────────────────────────────
@@ -40,7 +41,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     icon: LayoutGrid,
     labelKey: "sidebar.categories",
     path: "/categories",
-    enabled: true,      //✅ Implementado
+    enabled: true,
     section: "main",
     order: 2,
   },
@@ -67,9 +68,18 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     icon: PieChart,
     labelKey: "sidebar.family",
     path: "/family",
-    enabled: true,
+    enabled: false,
     section: "main",
     order: 5,
+  },
+  {
+    id:"settings",
+    icon: Settings,
+    labelKey: "sidebar.settings",
+    path: "/settings",
+    enabled: true,
+    section: "bottom",
+    order: 6,
   }
 ]
 

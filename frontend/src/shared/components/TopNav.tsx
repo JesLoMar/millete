@@ -1,8 +1,6 @@
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { LanguageSelector } from "@/shared/components/LanguageSelector"
-import { ThemeSelector } from "@/shared/components/ThemeSelector"
 import { User, LogOut, Menu } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import {
@@ -15,6 +13,8 @@ import {
 import { useAuth } from "@/features/auth/context/AuthContext"
 import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"
+import { LanguageSelector } from "./LanguageSelector"
+import { ThemeSelector } from "./ThemeSelector"
 
 interface TopNavProps {
   className?: string
@@ -22,13 +22,14 @@ interface TopNavProps {
 
 function getUserDisplay(
   user: { name?: string; email?: string } | null,
-  t: (key: string) => string
+  fallbackGuest: string,
+  fallbackUser: string
 ): {
   primary: string
   secondary: string | null
 } {
   if (!user) {
-    return { primary: t("nav.guest"), secondary: null }
+    return { primary: fallbackGuest, secondary: null }
   }
   const hasName = !!user.name
   const hasEmail = !!user.email
@@ -41,7 +42,7 @@ function getUserDisplay(
   if (hasEmail) {
     return { primary: user.email!.split("@")[0], secondary: user.email! }
   }
-  return { primary: t("nav.user"), secondary: null }
+  return { primary: fallbackUser, secondary: null }
 }
 
 export function TopNav({ className }: TopNavProps) {
@@ -49,7 +50,7 @@ export function TopNav({ className }: TopNavProps) {
   const { user, logout } = useAuth()
   const { t } = useTranslation()
 
-  const { primary, secondary } = getUserDisplay(user, t)
+const { primary, secondary } = getUserDisplay(user, t("nav.guest"), t("nav.user"))
   const hasOnlyOneField = !secondary
 
   const handleNavigate = useCallback((path: string) => {
@@ -105,9 +106,7 @@ export function TopNav({ className }: TopNavProps) {
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
-
         <div className="h-8 w-px bg-border/60 mx-1 sm:mx-2" />
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -118,7 +117,7 @@ export function TopNav({ className }: TopNavProps) {
               <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 sm:hidden">
                 <User size={16} aria-hidden="true" />
               </div>
-              
+
               <div className="hidden sm:block text-left min-w-0">
                 <p className={cn(
                   "font-medium leading-none text-sm text-foreground",

@@ -7,15 +7,28 @@ import { cn } from "@/lib/utils"
 import { getEnabledNavItems, getDisabledNavItems, type NavItem } from "@/shared/config/navigation"
 import { notify } from "@/shared/utils/notifications/notify"
 
+declare global {
+  interface Window {
+    __sidebarOpen?: () => void;
+  }
+}
+
 interface SidebarProps {
   className?: string
   showDisabled?: boolean
+}
+
+function notifyComingSoon(featureName: string, messageTemplate: string) {
+  const finalMessage = messageTemplate.replace("{{feature}}", featureName);
+  notify.info(finalMessage);
 }
 
 export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const tDynamic = t as unknown as (key: string) => string;
 
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -31,9 +44,9 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   }, [isMobileOpen])
 
   useEffect(() => {
-    ;(window as any).__sidebarOpen = () => setIsMobileOpen(true)
+    window.__sidebarOpen = () => setIsMobileOpen(true)
     return () => {
-      delete (window as any).__sidebarOpen
+      delete window.__sidebarOpen
     }
   }, [])
 
@@ -41,18 +54,17 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const bottomItems = getEnabledNavItems("bottom")
   const disabledItems = showDisabled ? getDisabledNavItems() : []
 
+  const featureComingSoonTemplate = t("sidebar.errors.featureComingSoon", { feature: "{{feature}}" })
+
   const handleNavigate = useCallback((path: string) => {
     navigate(path)
     setIsMobileOpen(false)
   }, [navigate])
 
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
-    notify.info(
-      t("sidebar.errors.featureComingSoon", { 
-        feature: t(itemLabelKey) 
-      })
-    )
-  }, [t])
+    const featureName = tDynamic(itemLabelKey); 
+    notifyComingSoon(featureName, featureComingSoonTemplate)
+  }, [tDynamic, featureComingSoonTemplate])
 
   const isActive = (item: NavItem): boolean => {
     if (item.path === "/dashboard") {
@@ -80,7 +92,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                   )}
                 >
                   <item.icon className={cn("size-5 transition-transform duration-200", active && "text-primary scale-105")} />
-                  <span>{t(item.labelKey)}</span>
+                  <span>{tDynamic(item.labelKey)}</span>
                 </Button>
               </li>
             )
@@ -101,7 +113,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground/40 hover:bg-accent/10 hover:text-muted-foreground/60 transition-colors"
                   >
                     <Construction className="size-5 shrink-0 text-muted-foreground/30" />
-                    <span className="truncate">{t(item.labelKey)}</span>
+                    <span className="truncate">{tDynamic(item.labelKey)}</span>
                   </Button>
                 </li>
               ))}
@@ -128,7 +140,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     )}
                   >
                     <item.icon className="size-5" />
-                    <span>{t(item.labelKey)}</span>
+                    <span>{tDynamic(item.labelKey)}</span>
                   </Button>
                 </li>
               )
@@ -141,7 +153,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
 
   return (
     <>
-      {/* ============ OVERLAY OSCURO EN MÓVIL ============ */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
@@ -150,19 +161,14 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
         />
       )}
 
-      {/* ============ SIDEBAR ============ */}
       <aside
         className={cn(
-          // Estilos base
           "border-r bg-card/50 backdrop-blur-md flex flex-col select-none",
-
           "fixed inset-y-0 left-0 z-50 w-64",
           "transition-transform duration-300 ease-in-out",
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
-
           "md:static md:translate-x-0 md:z-auto",
           "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
-
           className
         )}
       >
