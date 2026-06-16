@@ -30,16 +30,15 @@ This project abandons traditional monolithic coupling in favor of **Domain-Drive
 
 ```mermaid
 graph LR
-    Client((Browser / UI)) -->|HTTPS| Nginx[Nginx Reverse Proxy]
-    Nginx -->|Routing| Frontend[React 19 SPA]
-    Nginx -->|REST API + JWT| Backend[Spring Boot Core]
-    
-    subgraph Spring Boot Application (Hexagonal)
-        Backend --> Infrastructure[Adapters: Controllers / Security]
-        Infrastructure -->|Implements / Drives| Ports[Application Ports]
-        Ports --> Domain[Domain Core: Entities / Value Objects]
-        Infrastructure -->|Persistence Adapter| DB[(PostgreSQL)]
-    end
+Client((Browser / UI)) -->|HTTPS| Nginx[Nginx Reverse Proxy]
+Nginx -->|Routing| Frontend[React 19 SPA]
+Nginx -->|REST API + JWT| Backend[Spring Boot Core]
+subgraph SpringBootApp
+Backend --> Infrastructure[Adapters: Controllers / Security]
+Infrastructure -->|Implements / Drives| Ports[Application Ports]
+Ports --> Domain[Domain Core: Entities / Value Objects]
+Infrastructure -->|Persistence Adapter| DB[(PostgreSQL)]
+end
 ```
 
 * **Pure Domain Core:** The business logic has zero dependencies on frameworks, databases, or external libraries, guaranteeing maximum testability and long-term maintainability.
