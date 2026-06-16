@@ -10,11 +10,11 @@
 
 **Millete** is a production-ready, self-hosted personal finance platform engineered to track income/expenses, manage automated recurring bills, monitor complex investment portfolios, and enable secure family-unit collaboration—all powered by a decoupled, high-performance architecture.
 
-🔗 **Live Production Environment:** https://www.millete.online
+**Live Production Environment:** https://www.millete.online
 
 ---
 
-## 📸 Preview & Interface
+## Preview & Interface
 
 <p align="center">
   <img src="documentation/screenshots/dashboard-preview.png" alt="Millete Dashboard Preview" width="85%">
@@ -22,7 +22,7 @@
 
 ---
 
-## 🏗️ Architecture & Core Principles
+## Architecture & Core Principles
 
 This project abandons traditional monolithic coupling in favor of **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports & Adapters)**.
 
@@ -46,7 +46,7 @@ end
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 * **Advanced Dashboard:** High-fidelity data visualization using **Recharts** displaying spending trends, localized budget metrics, and historical financial performance.
 * **Automated Recurring Transactions:** Integrated cron-like background routine driven by **Spring Scheduled Tasks**.
@@ -56,7 +56,7 @@ end
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 ### Backend & Infrastructure
 * **Core:** Java 25 (LTS) & Spring Boot 4.x Framework.
