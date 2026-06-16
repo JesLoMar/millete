@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,37 +47,36 @@ public class DataExportController {
                 .body(snapshot);
     }
 
-    @GetMapping("/export/csv")
-    public ResponseEntity<byte[]> exportDataAsCsv(Authentication authentication) {
+    @GetMapping("/export/zip")
+    public ResponseEntity<byte[]> exportDataAsZip(Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        log.info("Solicitud de exportación ZIP para usuario: {}", userId);
+
+        byte[] zip = dataExportService.exportUserDataAsZip(userId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/zip"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=familybudget_export.zip");
+
+        return new ResponseEntity<>(zip, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/export/csv/{entityType}")
+    public ResponseEntity<byte[]> exportDataAsCsv(
+            @PathVariable String entityType,
+            Authentication authentication) {
 
         UUID userId = UUID.fromString(authentication.getName());
+        log.info("Solicitud de exportación CSV ({}) para usuario: {}", entityType, userId);
 
-        log.info("Solicitud de exportación CSV para usuario: {}", userId);
-
-        byte[] csv = dataExportService.exportUserDataAsCsv(userId);
+        byte[] csv = dataExportService.exportUserDataAsCsv(userId, entityType);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv"));
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=familybudget_export.csv");
+                "attachment; filename=familybudget_" + entityType + ".csv");
 
         return new ResponseEntity<>(csv, headers, HttpStatus.OK);
-    }
-
-    @GetMapping("/export/pdf")
-    public ResponseEntity<byte[]> exportDataAsPdf(Authentication authentication) {
-
-        UUID userId = UUID.fromString(authentication.getName());
-
-        log.info("Solicitud de exportación PDF para usuario: {}", userId);
-
-        byte[] pdf = dataExportService.exportUserDataAsPdf(userId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=familybudget_export.pdf");
-
-        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 }

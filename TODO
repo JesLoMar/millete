@@ -28,12 +28,13 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Añadir protección contra ataques de fuerza bruta a nivel de cuenta.
 - [ ] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
-- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo. (CSV completo. Funcional en backend)
 - [ ] Reemplazo de dependencias como shadcn y componentes rápidos con componentes propios.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
 - [x] Añadir posibilidad de editar y borrar unidades familiares.
+- [x] Aligerar proyecto.
 
 ===================================
 MEJORAS v0.0.4

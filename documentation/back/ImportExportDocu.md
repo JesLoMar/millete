@@ -2,17 +2,18 @@
 
 ## Estructura de archivos
 
-- **application/services/DataExportService.java** — Servicio de exportación de datos (JSON, CSV, PDF)
+- **application/services/DataExportService.java** — Servicio de exportación de datos (JSON, ZIP, CSV individual, PDF)
 - **application/services/DataImportService.java** — Servicio de importación con validación y migración
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
+- **domain/model/ExportData.java** — DTO para exportación tabular (CSV/ZIP)
 - **domain/model/ExportVersion.java** — Versionado semántico del formato
-- **domain/model/UserDataSnapshot.java** — Contenedor de datos exportados
+- **domain/model/UserDataSnapshot.java** — Contenedor de datos exportados (JSON)
 - **domain/ports/out/FileExportPort.java** — Puerto de salida para generación de archivos
 - **infrastructure/in/controller/DataExportController.java** — Endpoints de exportación
 - **infrastructure/in/controller/DataImportController.java** — Endpoint de importación
-- **infrastructure/out/persistence/postgresql/adapters/CsvFileExportAdapter.java** — Adaptador de exportación CSV
-- **infrastructure/out/persistence/postgresql/adapters/PdfFileExportAdapter.java** — Adaptador de exportación PDF
+- **infrastructure/out/fileexport/ZipFileExportAdapter.java** — Adaptador de exportación ZIP y CSV
+- **infrastructure/out/fileexport/PdfFileExportAdapter.java** — Adaptador de exportación PDF
 
 ---
 
@@ -22,22 +23,33 @@ Controlador REST mapeado a /api/v1/data.
 
 ### GET /export
 
-Exporta todos los datos del usuario autenticado en un archivo JSON.
+Exporta todos los datos del usuario autenticado en un archivo JSON (snapshot completo para backup o migración entre cuentas).
 
 1. Extrae el userId del token JWT.
 2. Llama a DataExportService.exportAllUserData().
 3. Devuelve el UserDataSnapshot como archivo descargable con cabeceras Content-Disposition.
 4. Incluye cabeceras X-Export-Version y X-Export-Date.
 
-### GET /export/csv
+### GET /export/zip
 
-Exporta todos los datos del usuario autenticado en un archivo CSV.
+Exporta todos los datos del usuario autenticado en un archivo ZIP con un CSV por entidad.
 
 1. Extrae el userId del token JWT.
-2. Llama a DataExportService.exportUserDataAsCsv().
-3. Devuelve el archivo CSV como descargable con Content-Type text/csv.
-4. El nombre del archivo es familybudget_export.csv.
-5. Incluye transacciones e inversiones en formato tabular con cabeceras: Tipo, ID, Descripcion, Monto, Fecha, Categoria.
+2. Llama a DataExportService.exportUserDataAsZip().
+3. Devuelve el archivo ZIP como descargable con Content-Type application/zip.
+4. El nombre del archivo es familybudget_export.zip.
+5. Contiene cuatro archivos CSV: categories.csv, transactions.csv, planned_transactions.csv, investments.csv.
+6. Los campos exportados están optimizados para análisis en Excel o Google Sheets, excluyendo IDs, timestamps internos y metadatos.
+
+### GET /export/csv/{entityType}
+
+Exporta una entidad concreta en formato CSV individual.
+
+1. Extrae el userId del token JWT.
+2. El parámetro entityType puede ser: categories, transactions, planned_transactions, investments.
+3. Llama a DataExportService.exportUserDataAsCsv(userId, entityType).
+4. Devuelve el archivo CSV como descargable con Content-Type text/csv.
+5. El nombre del archivo es familybudget_{entityType}.csv.
 
 ### GET /export/pdf
 
@@ -47,7 +59,7 @@ Exporta todos los datos del usuario autenticado en un archivo PDF.
 2. Llama a DataExportService.exportUserDataAsPdf().
 3. Devuelve el archivo PDF como descargable con Content-Type application/pdf.
 4. El nombre del archivo es familybudget_export.pdf.
-5. El documento incluye título con fecha de exportación, versión del formato, y secciones separadas para transacciones e inversiones.
+5. El documento incluye secciones separadas para transacciones e inversiones.
 6. Si el contenido excede una página, se genera una nueva automáticamente.
 
 ---
@@ -58,7 +70,7 @@ Controlador REST mapeado a /api/v1/data.
 
 ### POST /import
 
-Importa datos desde un archivo JSON previamente exportado.
+Importa datos desde un archivo JSON previamente exportado con GET /export.
 
 1. Recibe un archivo MultipartFile.
 2. Valida que el archivo no esté vacío.
@@ -71,7 +83,7 @@ Importa datos desde un archivo JSON previamente exportado.
 
 ## DataExportService.java
 
-Servicio que genera un snapshot completo de los datos del usuario en múltiples formatos.
+Servicio que genera exportaciones de datos en múltiples formatos.
 
 ### exportAllUserData
 
@@ -79,16 +91,31 @@ Servicio que genera un snapshot completo de los datos del usuario en múltiples 
 2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas e inversiones.
 3. Devuelve un UserDataSnapshot con metadata y datos.
 
+### buildExportData
+
+1. Llama a exportAllUserData para obtener el snapshot completo.
+2. Construye un mapa de categoryId -> categoryName para resolver nombres de categoría.
+3. Filtra solo registros activos de cada entidad.
+4. Convierte cada entidad del dominio a su correspondiente ExportRow, sustituyendo IDs de categoría por nombres.
+5. Devuelve un objeto ExportData con las cuatro listas de filas listas para serializar.
+
+### exportUserDataAsZip
+
+1. Llama a buildExportData.
+2. Delega la generación del ZIP en el puerto FileExportPort.
+3. Devuelve el array de bytes del archivo ZIP.
+
 ### exportUserDataAsCsv
 
-1. Llama a exportAllUserData para obtener el snapshot.
-2. Delega la generación del archivo CSV en el puerto FileExportPort.
-3. Devuelve el array de bytes del archivo CSV.
+1. Llama a buildExportData.
+2. Recibe un entityType para seleccionar qué entidad exportar.
+3. Delega la generación del CSV individual en el puerto FileExportPort.
+4. Devuelve el array de bytes del archivo CSV.
 
 ### exportUserDataAsPdf
 
-1. Llama a exportAllUserData para obtener el snapshot.
-2. Delega la generación del archivo PDF en el puerto FileExportPort.
+1. Llama a buildExportData.
+2. Delega la generación del PDF en el puerto FileExportPort.
 3. Devuelve el array de bytes del archivo PDF.
 
 ---
@@ -115,7 +142,7 @@ Servicio que importa datos con validación de compatibilidad de versión y migra
 
 ## ExportVersion.java
 
-Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación.
+Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
 
 ### CURRENT
 
@@ -137,7 +164,7 @@ Versión actual del formato: 0.0.1.
 
 ## UserDataSnapshot.java
 
-Contenedor de todos los datos exportados. Anotado con @JsonIgnoreProperties(ignoreUnknown = true) para permitir lectura de versiones anteriores.
+Contenedor de todos los datos exportados en formato JSON. Anotado con @JsonIgnoreProperties(ignoreUnknown = true) para permitir lectura de versiones anteriores.
 
 ### Estructura
 
@@ -146,27 +173,47 @@ Contenedor de todos los datos exportados. Anotado con @JsonIgnoreProperties(igno
 
 ---
 
-## FileExportPort.java
+## ExportData.java
 
-Interfaz que define el puerto de salida para la generación de archivos de exportación. Permite desacoplar la lógica de negocio de la implementación concreta del formato de archivo.
+DTO específico para la exportación tabular (CSV y PDF). Contiene listas de records con campos optimizados para análisis, sin IDs, timestamps internos ni metadatos de versión.
 
-### Métodos
+### Estructura
 
-- generateCsv: recibe un UserDataSnapshot y devuelve un array de bytes con el contenido CSV.
-- generatePdf: recibe un UserDataSnapshot y devuelve un array de bytes con el contenido PDF.
+- categories: lista de CategoryExportRow (name, budgetLimit).
+- transactions: lista de TransactionExportRow (categoryName, amount, date, type, description).
+- plannedTransactions: lista de PlannedTransactionExportRow (categoryName, amount, type, description, frequencyType, frequencyInterval, startDate, endDate, lastExecutedDate).
+- investments: lista de InvestmentExportRow (assetName, ticker, quantity, purchasePrice, currentPrice, type, purchaseDate).
 
 ---
 
-## CsvFileExportAdapter.java
+## FileExportPort.java
 
-Implementación del puerto FileExportPort para generar archivos CSV. Utiliza Apache Commons CSV.
+Interfaz que define el puerto de salida para la generación de archivos de exportación.
+
+### Métodos
+
+- generateZip: recibe un ExportData y devuelve un array de bytes con un archivo ZIP conteniendo un CSV por entidad.
+- generateCsv: recibe un ExportData y un entityType, devuelve un array de bytes con el CSV de la entidad solicitada.
+- generatePdf: recibe un ExportData y devuelve un array de bytes con el contenido PDF.
+
+---
+
+## ZipFileExportAdapter.java
+
+Implementación del puerto FileExportPort para generar archivos ZIP y CSV individuales. Utiliza Apache Commons CSV y java.util.zip.
+
+### generateZip
+
+1. Crea un ZipOutputStream.
+2. Para cada entidad (categories, transactions, planned_transactions, investments), añade una entrada ZIP con su CSV correspondiente.
+3. Cada CSV incluye cabeceras descriptivas y los campos acordados para análisis.
+4. Retorna el archivo ZIP como array de bytes.
 
 ### generateCsv
 
-1. Crea un CSVPrinter con cabeceras: Tipo, ID, Descripcion, Monto, Fecha, Categoria.
-2. Itera sobre las transacciones del snapshot y escribe cada una como fila con tipo "TRANSACCION".
-3. Itera sobre las inversiones del snapshot y escribe cada una como fila con tipo "INVERSION".
-4. Retorna el archivo CSV como array de bytes.
+1. Recibe un entityType que indica qué entidad exportar.
+2. Genera un CSV con cabeceras y filas específicas para esa entidad.
+3. Retorna el archivo CSV como array de bytes.
 
 ---
 
@@ -177,13 +224,10 @@ Implementación del puerto FileExportPort para generar archivos PDF. Utiliza Apa
 ### generatePdf
 
 1. Crea un documento PDF tamaño A4.
-2. Escribe el título "Exportacion de datos" con la fecha de exportación en negrita.
-3. Escribe la versión del formato.
-4. Dibuja una línea separadora.
-5. Añade sección "Transacciones" con los campos: descripción, tipo, monto y fecha.
-6. Añade sección "Inversiones" con los campos: nombre del activo, tipo, cantidad y fecha de compra.
-7. Si el contenido excede el espacio disponible en la página, crea una nueva página automáticamente.
-8. Retorna el archivo PDF como array de bytes.
+2. Añade sección "Transacciones" con los campos: descripción, tipo, monto y fecha.
+3. Añade sección "Inversiones" con los campos: nombre del activo, tipo, cantidad y fecha de compra.
+4. Si el contenido excede el espacio disponible en la página, crea una nueva página automáticamente.
+5. Retorna el archivo PDF como array de bytes.
 
 ---
 
@@ -215,14 +259,64 @@ Ninguna. La versión 0.0.1 es la primera, por lo que el registro de migraciones 
 
 ---
 
+## Campos exportados en CSV/ZIP
+
+### categories.csv
+
+| Campo | Descripción |
+|-------|-------------|
+| name | Nombre de la categoría |
+| budget_limit | Límite de presupuesto |
+
+### transactions.csv
+
+| Campo | Descripción |
+|-------|-------------|
+| category_name | Nombre de la categoría |
+| amount | Monto de la transacción |
+| date | Fecha y hora |
+| type | INCOME o EXPENSE |
+| description | Descripción |
+
+### planned_transactions.csv
+
+| Campo | Descripción |
+|-------|-------------|
+| category_name | Nombre de la categoría |
+| amount | Monto |
+| type | INCOME o EXPENSE |
+| description | Descripción |
+| frequency_type | DAYS, WEEKS, MONTHS, YEARS |
+| frequency_interval | Número de unidades de frecuencia |
+| start_date | Fecha de inicio |
+| end_date | Fecha de fin (vacía si no tiene) |
+| last_executed_date | Última fecha de ejecución |
+
+### investments.csv
+
+| Campo | Descripción |
+|-------|-------------|
+| asset_name | Nombre del activo |
+| ticker | Símbolo o ticker |
+| quantity | Cantidad poseída |
+| purchase_price | Precio de compra unitario |
+| current_price | Precio actual |
+| type | STOCK, CRYPTO, FUND, REAL_ESTATE, OTHER |
+| purchase_date | Fecha de compra |
+
+---
+
 ## Conexión con el frontend
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /api/v1/data/export | Exportar todos los datos (JSON) |
-| GET | /api/v1/data/export/csv | Exportar todos los datos (CSV) |
-| GET | /api/v1/data/export/pdf | Exportar todos los datos (PDF) |
+| GET | /api/v1/data/export | Exportar backup completo (JSON) |
+| GET | /api/v1/data/export/zip | Exportar todos los datos en ZIP con CSVs |
+| GET | /api/v1/data/export/csv/{entityType} | Exportar una entidad en CSV |
+| GET | /api/v1/data/export/pdf | Exportar datos en PDF |
 | POST | /api/v1/data/import | Importar datos desde archivo JSON |
+
+Los valores válidos para {entityType} son: categories, transactions, planned_transactions, investments.
 
 ---
 
@@ -238,8 +332,8 @@ Ninguna. La versión 0.0.1 es la primera, por lo que el registro de migraciones 
 ## Seguridad
 
 - Los archivos de exportación no contienen información del propietario, son portables entre cuentas.
-- Cualquier usuario autenticado puede importar cualquier archivo compatible.
+- Cualquier usuario autenticado puede importar cualquier archivo JSON compatible.
 - El userId se asigna automáticamente con el del usuario autenticado durante la importación.
 - La importación es transaccional: o se importa todo o nada.
 - Los archivos de versiones incompatibles se rechazan automáticamente.
-- Los endpoints de exportación requieren autenticación JWT válida.
+- Todos los endpoints de exportación requieren autenticación JWT válida.
