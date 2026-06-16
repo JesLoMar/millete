@@ -45,7 +45,6 @@ public class SavingsGoalService implements
 
     @Override
     public SavingsGoal update(UpdateSavingsGoalCommand command) {
-        // Solo busca por id Y userId — imposible modificar un goal ajeno
         SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(command.id(), command.userId())
                 .orElseThrow(() -> new RuntimeException("Objetivo de ahorro no encontrado."));
 
@@ -66,7 +65,6 @@ public class SavingsGoalService implements
 
     @Override
     public SavingsGoal addContribution(AddContributionToGoalCommand command) {
-        // Solo busca por id Y userId — imposible contribuir a un goal ajeno
         SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(command.goalId(), command.userId())
                 .orElseThrow(() -> new RuntimeException("Objetivo de ahorro no encontrado."));
 
@@ -84,7 +82,6 @@ public class SavingsGoalService implements
 
     @Override
     public List<SavingsGoal> findByUserId(UUID userId) {
-        // Solo devuelve goals del usuario autenticado
         return savingsGoalRepository.findAllByUserId(userId).stream()
                 .filter(SavingsGoal::isActive)
                 .toList();
@@ -92,7 +89,6 @@ public class SavingsGoalService implements
 
     @Override
     public List<SavingsGoal> findByUserIdAndStatus(UUID userId, String status) {
-        // Solo devuelve goals del usuario autenticado filtrados por status
         return savingsGoalRepository.findAllByUserIdAndStatus(userId, status).stream()
                 .filter(SavingsGoal::isActive)
                 .toList();
@@ -100,7 +96,6 @@ public class SavingsGoalService implements
 
     @Override
     public SavingsGoal getByIdAndUserId(UUID id, UUID userId) {
-        // Solo devuelve si el goal pertenece al usuario
         return savingsGoalRepository.findByIdAndUserId(id, userId)
                 .filter(SavingsGoal::isActive)
                 .orElseThrow(() -> new RuntimeException("Objetivo de ahorro no encontrado."));
@@ -108,7 +103,6 @@ public class SavingsGoalService implements
 
     @Override
     public void deleteByIdAndUserId(UUID id, UUID userId) {
-        // Solo elimina si el goal pertenece al usuario
         SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new RuntimeException("Objetivo de ahorro no encontrado."));
 

@@ -1,9 +1,9 @@
 {
   "name": "millete-front",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.1.0",
   "type": "module",
-  "packageManager": "pnpm@11.6.0",
+  "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": ">=20",
     "pnpm": ">=11",
