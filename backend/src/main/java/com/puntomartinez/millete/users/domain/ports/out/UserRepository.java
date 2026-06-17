@@ -9,4 +9,5 @@ public interface UserRepository {
     Optional<User> findByUsername(String username);
     Optional<User> findByIdentifier(String identifier);
     Optional<User> findById(UUID id);
+    Optional<User> findByTelegramChatId(Long chatId);
 }

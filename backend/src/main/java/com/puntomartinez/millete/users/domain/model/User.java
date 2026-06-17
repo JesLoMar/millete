@@ -1,16 +1,19 @@
 package com.puntomartinez.millete.users.domain.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class User {
     private final UUID id;
     private String username;
     private String email;
     private String password;
+    private Long telegramChatId;
     private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;

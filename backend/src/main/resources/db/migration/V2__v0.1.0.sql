@@ -76,7 +76,7 @@ CREATE TABLE savings_goals (
 CREATE INDEX idx_goals_user ON savings_goals(user_id);
 CREATE INDEX idx_goals_status ON savings_goals(user_id, status);
 
--- 14. PREMIUM FIELDS (ALTER USERS)
+-- 14. PREMIUM FIELDS (ALTER USERS) + Telegram chatId
 ALTER TABLE users
     ADD COLUMN is_premium BOOLEAN NOT NULL DEFAULT FALSE;
 
@@ -89,6 +89,9 @@ ALTER TABLE users
 ALTER TABLE users
     ADD CONSTRAINT chk_premium_tier
         CHECK (premium_tier IN ('FREE', 'BASIC', 'PRO', 'ENTERPRISE'));
+
+ALTER TABLE users ADD COLUMN telegram_chat_id BIGINT;
+CREATE UNIQUE INDEX idx_users_telegram_chat ON users(telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;
 
 CREATE INDEX idx_users_license ON users(license)
     WHERE license IS NOT NULL;

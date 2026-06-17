@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.users.infrastructure.in.controller;
 
+import com.puntomartinez.millete.users.application.services.UserService;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -21,11 +24,17 @@ public class AuthController {
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
     private final GetUserDataUseCase getUserDataUseCase;
+    private final UserService userService;
 
-    public AuthController(RegisterUserUseCase registerUserUseCase, LoginUserUseCase loginUserUseCase, GetUserDataUseCase getUserDataUseCase) {
+    public AuthController(
+            RegisterUserUseCase registerUserUseCase,
+            LoginUserUseCase loginUserUseCase,
+            GetUserDataUseCase getUserDataUseCase,
+            UserService userService) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.getUserDataUseCase = getUserDataUseCase;
+        this.userService = userService;
     }
 
     @PostMapping("/register")
@@ -72,6 +81,37 @@ public class AuthController {
                 user.getUsername(),
                 user.getEmail()
         );
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/telegram/link")
+    public ResponseEntity<Void> linkTelegram(
+            @RequestBody Map<String, Long> request,
+            Authentication authentication) {
+
+        UUID userId = UUID.fromString(authentication.getName());
+        Long chatId = request.get("chatId");
+
+        if (chatId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        userService.linkTelegram(userId, chatId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/telegram/status")
+    public ResponseEntity<Map<String, Object>> getTelegramStatus(
+            @RequestParam Long chatId) {
+
+        UUID userId = userService.getUserIdByTelegramChatId(chatId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("linked", userId != null);
+        if (userId != null) {
+            response.put("userId", userId.toString());
+        }
+
         return ResponseEntity.ok(response);
     }
 }

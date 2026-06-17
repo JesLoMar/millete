@@ -88,4 +88,26 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el ID proporcionado"));
     }
+
+    public void linkTelegram(UUID userId, Long chatId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que el chatId no esté ya vinculado a otro usuario
+        userRepository.findByTelegramChatId(chatId).ifPresent(existing -> {
+            if (!existing.getId().equals(userId)) {
+                throw new RuntimeException("Este Telegram ya está vinculado a otra cuenta");
+            }
+        });
+
+        user.setTelegramChatId(chatId);
+        user.setModifiedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    public UUID getUserIdByTelegramChatId(Long chatId) {
+        return userRepository.findByTelegramChatId(chatId)
+                .map(User::getId)
+                .orElse(null);
+    }
 }

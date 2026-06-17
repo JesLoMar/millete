@@ -57,4 +57,10 @@ public class UserPostgresAdapter implements UserRepository {
         return jpaUserRepository.findById(id)
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<User> findByTelegramChatId(Long chatId) {
+        return jpaUserRepository.findByTelegramChatId(chatId)
+                .map(mapper::toDomain);
+    }
 }
