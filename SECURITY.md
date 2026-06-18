@@ -13,6 +13,7 @@ We will respond within 48 hours.
 | Version | Supported |
 |---------|:---------:|
 | 0.0.x   | ✅        |
+| 0.1.x   | ✅        |
 
 ## Best practices
 

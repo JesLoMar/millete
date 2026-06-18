@@ -12,7 +12,8 @@ import { JoinFamilyPage } from '@/features/family/pages/JoinFamilyPage';
 import { Toaster } from '@/shared/components/core/sonner';
 import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
-import { SettingsPage } from './features/settings/pages/page';
+import { SettingsPage } from '@/features/settings/pages/page';
+import { SavingsGoalsPage } from '@/features/savingsgoals/pages/page';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/investments" element={<InvestmentsPage />} />
             <Route path="/family" element={<FamilyPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/savinggoals" element={<SavingsGoalsPage />} />
           </Route>
 
           {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}
