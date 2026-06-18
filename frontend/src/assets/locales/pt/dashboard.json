@@ -1,130 +1,130 @@
 {
   "metrics": {
-    "balance": "Balance Total",
-    "income": "Ingresos del {{period}}",
-    "expenses": "Gastos del {{period}}",
-    "savings": "Ahorro Total",
+    "balance": "Saldo Total",
+    "income": "Receitas do período {{period}}",
+    "expenses": "Despesas do período {{period}}",
+    "savings": "Poupança Total",
     "vsLastWeek": "vs. semana anterior",
-    "vsLastMonth": "vs. mes anterior",
-    "vsLastYear": "vs. año anterior",
+    "vsLastMonth": "vs. mês anterior",
+    "vsLastYear": "vs. ano anterior",
     "errors": {
-      "noDataAvailable": "No hay datos disponibles"
+      "noDataAvailable": "Nenhum dado disponível"
     }
   },
   "header": {
     "greeting": {
-      "morning": "Buenos días",
-      "afternoon": "Buenas tardes",
-      "evening": "Buenas noches"
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
     },
     "days": {
       "0": "domingo",
-      "1": "lunes",
-      "2": "martes",
-      "3": "miércoles",
-      "4": "jueves",
-      "5": "viernes",
+      "1": "segunda-feira",
+      "2": "terça-feira",
+      "3": "quarta-feira",
+      "4": "quinta-feira",
+      "5": "sexta-feira",
       "6": "sábado"
     },
     "months": {
-      "0": "enero",
-      "1": "febrero",
-      "2": "marzo",
+      "0": "janeiro",
+      "1": "fevereiro",
+      "2": "março",
       "3": "abril",
-      "4": "mayo",
-      "5": "junio",
-      "6": "julio",
+      "4": "maio",
+      "5": "junho",
+      "6": "julho",
       "7": "agosto",
-      "8": "septiembre",
-      "9": "octubre",
-      "10": "noviembre",
-      "11": "diciembre"
+      "8": "setembro",
+      "9": "outubro",
+      "10": "novembro",
+      "11": "dezembro"
     },
     "separator": "•",
     "dateFormat": "{{month}} {{year}}",
     "week": "Semana {{week}}",
     "period": {
-      "ariaLabel": "Seleccionar período de tiempo",
+      "ariaLabel": "Selecionar período de tempo",
       "week": "Sem",
-      "month": "Mes",
-      "year": "Año"
+      "month": "Mês",
+      "year": "Ano"
     }
   },
   "chart": {
     "title": "Histórico de Gastos",
-    "empty": "Sin gastos en este período",
+    "empty": "Sem gastos neste período",
     "showingLast": "Últimos {{count}}",
     "periodLabel": {
-      "week": "Últimos 7 días",
+      "week": "Últimos 7 dias",
       "month": "Últimas 5 semanas",
       "year": "Últimos 12 meses"
     },
     "tooltip": {
       "amount": "Gasto",
-      "percentage": "Porcentaje"
+      "percentage": "Porcentagem"
     }
   },
   "donut": {
-    "title": "Gasto por Categoría",
+    "title": "Gasto por Categoria",
     "total": "Total",
-    "empty": "Sin gastos en este período"
+    "empty": "Sem gastos neste período"
   },
   "budget": {
-    "title": "Estado del Presupuesto",
-    "empty": "No hay presupuestos configurados",
-    "overLimit": "¡Límite superado!",
-    "remaining": "Te quedan {{amount}} €",
-    "exceededBy": "Excedido por {{amount}} €"
+    "title": "Estado do Orçamento",
+    "empty": "Nenhum orçamento configurado",
+    "overLimit": "Limite ultrapassado!",
+    "remaining": "Restam {{amount}} €",
+    "exceededBy": "Excedido em {{amount}} €"
   },
   "transactions": {
-    "title": "Últimas Transacciones",
+    "title": "Últimas Transações",
     "viewAll": "Ver todas",
-    "empty": "No hay transacciones recientes",
-    "expense": "Gasto",
-    "income": "Ingreso",
-    "moreOptions": "Más opciones"
+    "empty": "Nenhuma transação recente",
+    "expense": "Despesa",
+    "income": "Receita",
+    "moreOptions": "Mais opções"
   },
   "goals": {
-    "title": "Metas de Ahorro Activas",
-    "empty": "No hay metas de ahorro configuradas",
-    "completed": "¡Completado!",
-    "remaining": "Faltan {{amount}} €"
+    "title": "Metas de Poupança Ativas",
+    "empty": "Nenhuma meta de poupança configurada",
+    "completed": "Concluído!",
+    "remaining": "Faltam {{amount}} €"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
-    "importData": "Importar datos",
+    "importData": "Importar dados",
     "importing": "Importando...",
-    "exportData": "Exportar datos",
+    "exportData": "Exportar dados",
     "exporting": "Exportando...",
-    "addExpenseAria": "Añadir nueva transacción",
-    "createCategoryAria": "Crear nueva categoría",
-    "importDataAria": "Importar datos desde archivo",
-    "importingAria": "Importando datos, espere",
-    "exportDataAria": "Exportar copia de seguridad",
-    "exportingAria": "Exportando datos, espere",
-    "groupLabel": "Acciones rápidas"
+    "addExpenseAria": "Adicionar nova transação",
+    "createCategoryAria": "Criar nova categoria",
+    "importDataAria": "Importar dados de um arquivo",
+    "importingAria": "Importando dados, aguarde",
+    "exportDataAria": "Exportar cópia de segurança",
+    "exportingAria": "Exportando dados, aguarde",
+    "groupLabel": "Ações rápidas"
   },
   "importModal": {
-    "title": "Importar datos",
-    "description": "Arrastra un archivo JSON con tus transacciones",
-    "dropHere": "Suelta tu archivo aquí o haz clic para seleccionar",
-    "onlyJson": "Solo archivos .json",
-    "jsonOnly": "Solo se admiten archivos JSON",
-    "invalidJson": "El archivo JSON no es válido",
-    "importing": "Importando datos...",
-    "success": "Datos importados correctamente",
-    "importError": "Error al importar el archivo",
+    "title": "Importar dados",
+    "description": "Arraste um arquivo JSON com suas transações",
+    "dropHere": "Solte seu arquivo aqui ou clique para selecionar",
+    "onlyJson": "Apenas arquivos .json",
+    "jsonOnly": "Apenas arquivos JSON são suportados",
+    "invalidJson": "O arquivo JSON não é válido",
+    "importing": "Importando dados...",
+    "success": "Dados importados com sucesso",
+    "importError": "Erro ao importar o arquivo",
     "close": "$t(common:actions.close)"
   },
   "import": {
-    "success": "Datos importados correctamente",
-    "errorGeneric": "Error al importar el archivo",
-    "errorProperty": "No tienes permiso para importar",
-    "errorFormat": "Formato de archivo inválido"
+    "success": "Dados importados com sucesso",
+    "errorGeneric": "Erro ao importar o arquivo",
+    "errorProperty": "Você não tem permissão para importar",
+    "errorFormat": "Formato de arquivo inválido"
   },
   "export": {
-    "success": "Copia de seguridad exportada correctamente",
-    "error": "Error al exportar los datos"
+    "success": "Cópia de segurança exportada com sucesso",
+    "error": "Erro ao exportar os dados"
   }
 }

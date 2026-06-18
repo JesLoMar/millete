@@ -1,130 +1,130 @@
 {
   "metrics": {
-    "balance": "Balance Total",
-    "income": "Ingresos del {{period}}",
-    "expenses": "Gastos del {{period}}",
-    "savings": "Ahorro Total",
-    "vsLastWeek": "vs. semana anterior",
-    "vsLastMonth": "vs. mes anterior",
-    "vsLastYear": "vs. año anterior",
+    "balance": "総残高",
+    "income": "{{period}}の収入",
+    "expenses": "{{period}}の支出",
+    "savings": "総貯金額",
+    "vsLastWeek": "前週比",
+    "vsLastMonth": "前月比",
+    "vsLastYear": "前年比",
     "errors": {
-      "noDataAvailable": "No hay datos disponibles"
+      "noDataAvailable": "データがありません"
     }
   },
   "header": {
     "greeting": {
-      "morning": "Buenos días",
-      "afternoon": "Buenas tardes",
-      "evening": "Buenas noches"
+      "morning": "おはようございます",
+      "afternoon": "こんにちは",
+      "evening": "こんばんは"
     },
     "days": {
-      "0": "domingo",
-      "1": "lunes",
-      "2": "martes",
-      "3": "miércoles",
-      "4": "jueves",
-      "5": "viernes",
-      "6": "sábado"
+      "0": "日曜日",
+      "1": "月曜日",
+      "2": "火曜日",
+      "3": "水曜日",
+      "4": "木曜日",
+      "5": "金曜日",
+      "6": "土曜日"
     },
     "months": {
-      "0": "enero",
-      "1": "febrero",
-      "2": "marzo",
-      "3": "abril",
-      "4": "mayo",
-      "5": "junio",
-      "6": "julio",
-      "7": "agosto",
-      "8": "septiembre",
-      "9": "octubre",
-      "10": "noviembre",
-      "11": "diciembre"
+      "0": "1月",
+      "1": "2月",
+      "2": "3月",
+      "3": "4月",
+      "4": "5月",
+      "5": "6月",
+      "6": "7月",
+      "7": "8月",
+      "8": "9月",
+      "9": "10月",
+      "10": "11月",
+      "11": "12月"
     },
     "separator": "•",
-    "dateFormat": "{{month}} {{year}}",
-    "week": "Semana {{week}}",
+    "dateFormat": "{{year}}年{{month}}",
+    "week": "第 {{week}} 週",
     "period": {
-      "ariaLabel": "Seleccionar período de tiempo",
-      "week": "Sem",
-      "month": "Mes",
-      "year": "Año"
+      "ariaLabel": "期間を選択",
+      "week": "週",
+      "month": "月",
+      "year": "年"
     }
   },
   "chart": {
-    "title": "Histórico de Gastos",
-    "empty": "Sin gastos en este período",
-    "showingLast": "Últimos {{count}}",
+    "title": "支出の履歴",
+    "empty": "この期間の支出はありません",
+    "showingLast": "直近の {{count}} 件",
     "periodLabel": {
-      "week": "Últimos 7 días",
-      "month": "Últimas 5 semanas",
-      "year": "Últimos 12 meses"
+      "week": "過去7日間",
+      "month": "過去5週間",
+      "year": "過去12ヶ月間"
     },
     "tooltip": {
-      "amount": "Gasto",
-      "percentage": "Porcentaje"
+      "amount": "支出額",
+      "percentage": "割合"
     }
   },
   "donut": {
-    "title": "Gasto por Categoría",
-    "total": "Total",
-    "empty": "Sin gastos en este período"
+    "title": "カテゴリ別の支出",
+    "total": "合計",
+    "empty": "この期間の支出はありません"
   },
   "budget": {
-    "title": "Estado del Presupuesto",
-    "empty": "No hay presupuestos configurados",
-    "overLimit": "¡Límite superado!",
-    "remaining": "Te quedan {{amount}} €",
-    "exceededBy": "Excedido por {{amount}} €"
+    "title": "予算の状況",
+    "empty": "予算が設定されていません",
+    "overLimit": "上限超過！",
+    "remaining": "残り {{amount}} €",
+    "exceededBy": "{{amount}} € 超過"
   },
   "transactions": {
-    "title": "Últimas Transacciones",
-    "viewAll": "Ver todas",
-    "empty": "No hay transacciones recientes",
-    "expense": "Gasto",
-    "income": "Ingreso",
-    "moreOptions": "Más opciones"
+    "title": "最近の取引",
+    "viewAll": "すべて見る",
+    "empty": "最近の取引はありません",
+    "expense": "支出",
+    "income": "収入",
+    "moreOptions": "その他のオプション"
   },
   "goals": {
-    "title": "Metas de Ahorro Activas",
-    "empty": "No hay metas de ahorro configuradas",
-    "completed": "¡Completado!",
-    "remaining": "Faltan {{amount}} €"
+    "title": "進行中の貯金目標",
+    "empty": "貯金目標が設定されていません",
+    "completed": "達成！",
+    "remaining": "あと {{amount}} €"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
-    "importData": "Importar datos",
-    "importing": "Importando...",
-    "exportData": "Exportar datos",
-    "exporting": "Exportando...",
-    "addExpenseAria": "Añadir nueva transacción",
-    "createCategoryAria": "Crear nueva categoría",
-    "importDataAria": "Importar datos desde archivo",
-    "importingAria": "Importando datos, espere",
-    "exportDataAria": "Exportar copia de seguridad",
-    "exportingAria": "Exportando datos, espere",
-    "groupLabel": "Acciones rápidas"
+    "importData": "データをインポート",
+    "importing": "インポート中...",
+    "exportData": "データをエクスポート",
+    "exporting": "エクスポート中...",
+    "addExpenseAria": "新しい取引を追加",
+    "createCategoryAria": "新しいカテゴリを作成",
+    "importDataAria": "ファイルからデータをインポート",
+    "importingAria": "データをインポートしています。お待ちください",
+    "exportDataAria": "バックアップをエクスポート",
+    "exportingAria": "データをエクスポートしています。お待ちください",
+    "groupLabel": "クイックアクション"
   },
   "importModal": {
-    "title": "Importar datos",
-    "description": "Arrastra un archivo JSON con tus transacciones",
-    "dropHere": "Suelta tu archivo aquí o haz clic para seleccionar",
-    "onlyJson": "Solo archivos .json",
-    "jsonOnly": "Solo se admiten archivos JSON",
-    "invalidJson": "El archivo JSON no es válido",
-    "importing": "Importando datos...",
-    "success": "Datos importados correctamente",
-    "importError": "Error al importar el archivo",
+    "title": "データをインポート",
+    "description": "取引履歴が含まれるJSONファイルをドラッグしてください",
+    "dropHere": "ここにファイルをドロップするか、クリックして選択",
+    "onlyJson": ".jsonファイルのみ",
+    "jsonOnly": "JSONファイルのみ対応しています",
+    "invalidJson": "無効なJSONファイルです",
+    "importing": "データをインポート中...",
+    "success": "データが正常にインポートされました",
+    "importError": "ファイルのインポート中にエラーが発生しました",
     "close": "$t(common:actions.close)"
   },
   "import": {
-    "success": "Datos importados correctamente",
-    "errorGeneric": "Error al importar el archivo",
-    "errorProperty": "No tienes permiso para importar",
-    "errorFormat": "Formato de archivo inválido"
+    "success": "データが正常にインポートされました",
+    "errorGeneric": "ファイルのインポート中にエラーが発生しました",
+    "errorProperty": "インポートする権限がありません",
+    "errorFormat": "無効なファイル形式です"
   },
   "export": {
-    "success": "Copia de seguridad exportada correctamente",
-    "error": "Error al exportar los datos"
+    "success": "バックアップが正常にエクスポートされました",
+    "error": "データのエクスポート中にエラーが発生しました"
   }
 }

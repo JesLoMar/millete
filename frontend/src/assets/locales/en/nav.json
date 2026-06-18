@@ -1,17 +1,17 @@
 {
-  "user": "Usuario",
-  "changeLanguage": "Cambiar idioma",
-  "guest": "Invitado",
-  "goToDashboard": "Ir al dashboard",
-  "userMenu": "Menú de usuario",
-  "profile": "Mi Perfil",
-  "logout": "Cerrar Sesión",
-  "logoutSuccess": "Sesión cerrada correctamente",
-  "mainNav": "Navegación principal",
-  "bottomNav": "Navegación secundaria",
-  "open": "Abrir Menú",
-  "close": "Cerrar Menú",
-  "noItems": "No hay secciones disponibles",
+  "user": "User",
+  "changeLanguage": "Change language",
+  "guest": "Guest",
+  "goToDashboard": "Go to dashboard",
+  "userMenu": "User menu",
+  "profile": "My Profile",
+  "logout": "Log Out",
+  "logoutSuccess": "Logged out successfully",
+  "mainNav": "Main navigation",
+  "bottomNav": "Secondary navigation",
+  "open": "Open Menu",
+  "close": "Close Menu",
+  "noItems": "No sections available",
   "mobileTitle": "Millete",
   "dashboard": "$t(common:entities.dashboard)",
   "transactions": "$t(common:entities.transactions)",
@@ -19,28 +19,28 @@
   "investments": "$t(common:entities.investments)",
   "groupgoals": "$t(common:entities.groupGoals)",
   "savingsgoals": "$t(common:entities.savingsGoals)",
-  "settings": "Ajustes",
+  "settings": "Settings",
   "errors": {
-    "featureComingSoon": "{{feature}} estará disponible próximamente",
-    "languageChangeFailed": "Error al cambiar el idioma"
+    "featureComingSoon": "{{feature}} will be available soon",
+    "languageChangeFailed": "Error changing language"
   },
   "languages": {
-    "es": "Español",
-    "en": "Inglés",
-    "fr": "Francés",
-    "de": "Alemán",
-    "it": "Italiano",
-    "pt": "Portugués"
+    "es": "Spanish",
+    "en": "English",
+    "fr": "French",
+    "de": "German",
+    "it": "Italian",
+    "pt": "Portuguese"
   },
   "theme": {
-    "selector": "Selector de tema",
-    "palette": "Paleta de colores",
+    "selector": "Theme selector",
+    "palette": "Color palette",
     "errors": {
-      "themeChangeFailed": "Error al cambiar el tema"
+      "themeChangeFailed": "Error changing theme"
     }
   },
   "carousel": {
-    "previous": "Anterior",
-    "next": "Siguiente"
+    "previous": "Previous",
+    "next": "Next"
   }
 }

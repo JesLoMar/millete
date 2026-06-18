@@ -1,69 +1,70 @@
 {
   "actions": {
-    "save": "Guardar",
-    "saving": "Guardando...",
-    "cancel": "Cancelar",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "deleting": "Eliminando...",
-    "add": "Añadir",
-    "accept": "Aceptar",
-    "reject": "Rechazar",
-    "close": "Cerrar",
-    "search": "Buscar por nombre...",
-    "searchDesc": "Buscar por descripción...",
-    "back": "Volver",
-    "continue": "Continuar",
-    "create": "Crear",
-    "update": "Actualizar",
-    "assign": "Asignar",
-    "invite": "Invitar",
-    "refresh": "Actualizar",
-    "export": "Exportar",
-    "import": "Importar"
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "deleting": "削除中...",
+    "add": "追加",
+    "accept": "承認",
+    "reject": "拒否",
+    "close": "閉じる",
+    "search": "名前で検索...",
+    "searchDesc": "説明で検索...",
+    "back": "戻る",
+    "continue": "続行",
+    "create": "作成",
+    "update": "更新",
+    "assign": "割り当て",
+    "invite": "招待",
+    "refresh": "更新",
+    "export": "エクスポート",
+    "import": "インポート"
   },
   "status": {
-    "loading": "Cargando...",
-    "loadingSession": "Cargando sesión...",
-    "error": "Error",
-    "empty": "No hay datos disponibles",
-    "processing": "Procesando..."
+    "loading": "読み込み中...",
+    "loadingSession": "セッション読み込み中...",
+    "error": "エラー",
+    "empty": "データがありません",
+    "processing": "処理中..."
   },
   "entities": {
-    "transaction": "Transacción",
-    "transactions": "Transacciones",
-    "category": "Categoría",
-    "categories": "Categorías",
-    "investment": "Inversión",
-    "investments": "Inversiones",
-    "groupGoal": "Group Goal",
-    "groupGoals": "Group Goals",
-    "savingsGoal": "Meta de Ahorro",
-    "savingsGoals": "Metas de Ahorro",
-    "user": "Usuario",
-    "family": "Familia"
+    "dashboard": "ダッシュボード",
+    "transaction": "取引",
+    "transactions": "取引履歴",
+    "category": "カテゴリ",
+    "categories": "カテゴリ一覧",
+    "investment": "投資",
+    "investments": "投資一覧",
+    "groupGoal": "グループ目標",
+    "groupGoals": "グループ目標一覧",
+    "savingsGoal": "貯金目標",
+    "savingsGoals": "貯金目標一覧",
+    "user": "ユーザー",
+    "family": "ファミリー"
   },
   "prompts": {
-    "deleteTitle": "Eliminar {{item}}",
-    "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
-    "noData": "No hay datos disponibles",
-    "comingSoon": "Próximamente",
-    "optional": "opcional"
+    "deleteTitle": "{{item}} の削除",
+    "deleteConfirm": "本当に「{{name}}」を削除しますか？この操作は取り消せません。",
+    "noData": "データがありません",
+    "comingSoon": "近日公開",
+    "optional": "任意"
   },
   "periods": {
-    "week": "Semana",
-    "month": "Mes",
-    "year": "Año",
-    "today": "Hoy",
-    "yesterday": "Ayer"
+    "week": "週",
+    "month": "月",
+    "year": "年",
+    "today": "今日",
+    "yesterday": "昨日"
   },
   "types": {
-    "income": "Ingreso",
-    "expense": "Gasto",
-    "all": "Todos"
+    "income": "収入",
+    "expense": "支出",
+    "all": "すべて"
   },
   "errors": {
-    "default": "Error inesperado. Inténtalo de nuevo.",
-    "noPermission": "No tienes permisos para realizar esta acción"
+    "default": "予期しないエラーが発生しました。もう一度お試しください。",
+    "noPermission": "この操作を実行する権限がありません"
   }
 }

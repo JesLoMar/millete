@@ -1,41 +1,41 @@
 {
   "steps": {
-    "title": "Primeros pasos",
-    "subtitle": "Comienza a gestionar tus finanzas en menos de 5 minutos con nuestra guía rápida.",
+    "title": "First steps",
+    "subtitle": "Start managing your finances in less than 5 minutes with our quick guide.",
     "items": [
       {
         "number": "01",
-        "title": "Crea tu cuenta",
-        "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
+        "title": "Create your account",
+        "description": "No credit card required. Only username and/or email and password."
       },
       {
         "number": "02",
-        "title": "Crea tu primera categoría",
-        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
+        "title": "Create your first category",
+        "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure...)."
       },
       {
         "number": "03",
-        "title": "Registra tus gastos",
-        "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
+        "title": "Record your expenses",
+        "description": "Add transactions from their section or easily from the dashboard."
       }
     ]
   },
   "wiki": {
-    "link": "Consultar la wiki completa"
+    "link": "Consult the full wiki"
   },
   "news": {
-    "title": "Novedades recientes",
-    "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
+    "title": "Recent news",
+    "subtitle": "Discover the latest improvements added to the platform.",
     "items": [
       {
         "tag": "v0.0.4",
-        "title": "Japonés añadido. Ahora es posible exportar e importar datos entre cuentas sin limitaciones de usuario.",
-        "description": "Ahora es posible exportar los datos a un archivo JSON e importarlos en otra cuenta. Esto elimina las restricciones en la migración de información, permitiendo una gestión de datos más flexible. Además, se ha añadido soporte para el idioma japonés."
+        "title": "Japanese language added. It is now possible to export and import data between accounts without user limitations.",
+        "description": "You can now export data to a JSON file and import it into another account. This removes restrictions on data migration, allowing more flexible data management. Additionally, Japanese language support has been added."
       },
       {
         "tag": "v0.0.3",
-        "title": "Arreglos de fallos visuales y de lógica",
-        "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+        "title": "Visual and logical bug fixes",
+        "description": "Adapted styles for compatibility with browsers like Safari. Deleted categories and transactions are no longer considered for metrics calculation."
       }
     ]
   }

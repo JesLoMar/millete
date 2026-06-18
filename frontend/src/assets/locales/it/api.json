@@ -1,10 +1,10 @@
 {
   "errors": {
-    "default": "Error inesperado en el servidor.",
-    "status_401": "Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.",
-    "status_403": "No tienes los permisos necesarios para esta sección.",
-    "status_404": "El recurso solicitado no se encuentra disponible.",
-    "status_500": "Problema interno del servidor. Inténtalo de nuevo más tarde.",
-    "timeout": "La petición ha tardado demasiado tiempo en responder."
+    "default": "Errore imprevisto del server.",
+    "status_401": "La sessione è scaduta. Per favore, effettua nuovamente l'accesso.",
+    "status_403": "Non disponi dei permessi necessari per questa sezione.",
+    "status_404": "La risorsa richiesta non è disponibile.",
+    "status_500": "Problema interno del server. Riprova più tardi.",
+    "timeout": "La richiesta ha impiegato troppo tempo a rispondere."
   }
 }

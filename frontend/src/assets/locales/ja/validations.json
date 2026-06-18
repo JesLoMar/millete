@@ -1,14 +1,14 @@
 {
-  "required": "Campo requerido",
-  "invalid_email": "El formato del correo no es válido",
-  "invalid_number": "Introduce un número válido",
-  "min_length": "Debe tener al menos {{min}} caracteres",
-  "max_length": "Debe tener como máximo {{max}} caracteres",
-  "min_value": "El valor mínimo es {{min}}",
-  "max_value": "El valor máximo es {{max}}",
-  "positive_number": "Debe ser un número positivo",
-  "invalid_url": "URL no válida",
+  "required": "必須項目です",
+  "invalid_email": "メールアドレスの形式が正しくありません",
+  "invalid_number": "有効な数値を入力してください",
+  "min_length": "{{min}} 文字以上で入力してください",
+  "max_length": "{{max}} 文字以下で入力してください",
+  "min_value": "最小値は {{min}} です",
+  "max_value": "最大値は {{max}} です",
+  "positive_number": "正の数を入力してください",
+  "invalid_url": "無効なURLです",
   "auth": {
-    "invalid_credentials": "Credenciales inválidas. Por favor, intenta de nuevo."
+    "invalid_credentials": "認証情報が正しくありません。もう一度お試しください。"
   }
 }

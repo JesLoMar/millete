@@ -1,130 +1,130 @@
 {
   "metrics": {
-    "balance": "Balance Total",
-    "income": "Ingresos del {{period}}",
-    "expenses": "Gastos del {{period}}",
-    "savings": "Ahorro Total",
-    "vsLastWeek": "vs. semana anterior",
-    "vsLastMonth": "vs. mes anterior",
-    "vsLastYear": "vs. año anterior",
+    "balance": "Saldo totale",
+    "income": "Entrate del periodo {{period}}",
+    "expenses": "Spese del periodo {{period}}",
+    "savings": "Risparmio totale",
+    "vsLastWeek": "rispetto alla settimana precedente",
+    "vsLastMonth": "rispetto al mese precedente",
+    "vsLastYear": "rispetto all'anno precedente",
     "errors": {
-      "noDataAvailable": "No hay datos disponibles"
+      "noDataAvailable": "Nessun dato disponibile"
     }
   },
   "header": {
     "greeting": {
-      "morning": "Buenos días",
-      "afternoon": "Buenas tardes",
-      "evening": "Buenas noches"
+      "morning": "Buongiorno",
+      "afternoon": "Buon pomeriggio",
+      "evening": "Buonasera"
     },
     "days": {
-      "0": "domingo",
-      "1": "lunes",
-      "2": "martes",
-      "3": "miércoles",
-      "4": "jueves",
-      "5": "viernes",
-      "6": "sábado"
+      "0": "domenica",
+      "1": "lunedì",
+      "2": "martedì",
+      "3": "mercoledì",
+      "4": "giovedì",
+      "5": "venerdì",
+      "6": "sabato"
     },
     "months": {
-      "0": "enero",
-      "1": "febrero",
+      "0": "gennaio",
+      "1": "febbraio",
       "2": "marzo",
-      "3": "abril",
-      "4": "mayo",
-      "5": "junio",
-      "6": "julio",
+      "3": "aprile",
+      "4": "maggio",
+      "5": "giugno",
+      "6": "luglio",
       "7": "agosto",
-      "8": "septiembre",
-      "9": "octubre",
-      "10": "noviembre",
-      "11": "diciembre"
+      "8": "settembre",
+      "9": "ottobre",
+      "10": "novembre",
+      "11": "dicembre"
     },
     "separator": "•",
     "dateFormat": "{{month}} {{year}}",
-    "week": "Semana {{week}}",
+    "week": "Settimana {{week}}",
     "period": {
-      "ariaLabel": "Seleccionar período de tiempo",
-      "week": "Sem",
-      "month": "Mes",
-      "year": "Año"
+      "ariaLabel": "Seleziona periodo di tempo",
+      "week": "Sett",
+      "month": "Mese",
+      "year": "Anno"
     }
   },
   "chart": {
-    "title": "Histórico de Gastos",
-    "empty": "Sin gastos en este período",
-    "showingLast": "Últimos {{count}}",
+    "title": "Storico delle spese",
+    "empty": "Nessuna spesa in questo periodo",
+    "showingLast": "Ultimi {{count}}",
     "periodLabel": {
-      "week": "Últimos 7 días",
-      "month": "Últimas 5 semanas",
-      "year": "Últimos 12 meses"
+      "week": "Ultimi 7 giorni",
+      "month": "Ultime 5 settimane",
+      "year": "Ultimi 12 mesi"
     },
     "tooltip": {
-      "amount": "Gasto",
-      "percentage": "Porcentaje"
+      "amount": "Spesa",
+      "percentage": "Percentuale"
     }
   },
   "donut": {
-    "title": "Gasto por Categoría",
-    "total": "Total",
-    "empty": "Sin gastos en este período"
+    "title": "Spese per categoria",
+    "total": "Totale",
+    "empty": "Nessuna spesa in questo periodo"
   },
   "budget": {
-    "title": "Estado del Presupuesto",
-    "empty": "No hay presupuestos configurados",
-    "overLimit": "¡Límite superado!",
-    "remaining": "Te quedan {{amount}} €",
-    "exceededBy": "Excedido por {{amount}} €"
+    "title": "Stato del budget",
+    "empty": "Nessun budget configurato",
+    "overLimit": "Limite superato!",
+    "remaining": "Ti rimangono {{amount}} €",
+    "exceededBy": "Superato di {{amount}} €"
   },
   "transactions": {
-    "title": "Últimas Transacciones",
-    "viewAll": "Ver todas",
-    "empty": "No hay transacciones recientes",
-    "expense": "Gasto",
-    "income": "Ingreso",
-    "moreOptions": "Más opciones"
+    "title": "Ultime transazioni",
+    "viewAll": "Visualizza tutte",
+    "empty": "Nessuna transazione recente",
+    "expense": "Spesa",
+    "income": "Entrata",
+    "moreOptions": "Più opzioni"
   },
   "goals": {
-    "title": "Metas de Ahorro Activas",
-    "empty": "No hay metas de ahorro configuradas",
-    "completed": "¡Completado!",
-    "remaining": "Faltan {{amount}} €"
+    "title": "Obiettivi di risparmio attivi",
+    "empty": "Nessun obiettivo di risparmio configurato",
+    "completed": "Completato!",
+    "remaining": "Mancano {{amount}} €"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
-    "importData": "Importar datos",
-    "importing": "Importando...",
-    "exportData": "Exportar datos",
-    "exporting": "Exportando...",
-    "addExpenseAria": "Añadir nueva transacción",
-    "createCategoryAria": "Crear nueva categoría",
-    "importDataAria": "Importar datos desde archivo",
-    "importingAria": "Importando datos, espere",
-    "exportDataAria": "Exportar copia de seguridad",
-    "exportingAria": "Exportando datos, espere",
-    "groupLabel": "Acciones rápidas"
+    "importData": "Importa dati",
+    "importing": "Importazione...",
+    "exportData": "Esporta dati",
+    "exporting": "Esportazione...",
+    "addExpenseAria": "Aggiungi nuova transazione",
+    "createCategoryAria": "Crea nuova categoria",
+    "importDataAria": "Importa dati da file",
+    "importingAria": "Importazione dati, attendere",
+    "exportDataAria": "Esporta copia di backup",
+    "exportingAria": "Esportazione dati, attendere",
+    "groupLabel": "Azioni rapide"
   },
   "importModal": {
-    "title": "Importar datos",
-    "description": "Arrastra un archivo JSON con tus transacciones",
-    "dropHere": "Suelta tu archivo aquí o haz clic para seleccionar",
-    "onlyJson": "Solo archivos .json",
-    "jsonOnly": "Solo se admiten archivos JSON",
-    "invalidJson": "El archivo JSON no es válido",
-    "importing": "Importando datos...",
-    "success": "Datos importados correctamente",
-    "importError": "Error al importar el archivo",
+    "title": "Importa dati",
+    "description": "Trascina un file JSON con le tue transazioni",
+    "dropHere": "Rilascia il tuo file qui o fai clic per selezionare",
+    "onlyJson": "Solo file .json",
+    "jsonOnly": "Sono supportati solo i file JSON",
+    "invalidJson": "Il file JSON non è valido",
+    "importing": "Importazione dati...",
+    "success": "Dati importati correttamente",
+    "importError": "Errore durante l'importazione del file",
     "close": "$t(common:actions.close)"
   },
   "import": {
-    "success": "Datos importados correctamente",
-    "errorGeneric": "Error al importar el archivo",
-    "errorProperty": "No tienes permiso para importar",
-    "errorFormat": "Formato de archivo inválido"
+    "success": "Dati importati correttamente",
+    "errorGeneric": "Errore durante l'importazione del file",
+    "errorProperty": "Non hai il permesso di importare",
+    "errorFormat": "Formato di file non valido"
   },
   "export": {
-    "success": "Copia de seguridad exportada correctamente",
-    "error": "Error al exportar los datos"
+    "success": "Copia di backup esportata correttamente",
+    "error": "Errore durante l'esportazione dei dati"
   }
 }

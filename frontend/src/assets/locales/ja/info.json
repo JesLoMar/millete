@@ -1,41 +1,41 @@
 {
   "steps": {
-    "title": "Primeros pasos",
-    "subtitle": "Comienza a gestionar tus finanzas en menos de 5 minutos con nuestra guía rápida.",
+    "title": "はじめてのステップ",
+    "subtitle": "クイックガイドを使って、5分以内に財務管理を始めましょう。",
     "items": [
       {
         "number": "01",
-        "title": "Crea tu cuenta",
-        "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
+        "title": "アカウント作成",
+        "description": "クレジットカード不要。ユーザー名またはメールアドレスとパスワードのみ。"
       },
       {
         "number": "02",
-        "title": "Crea tu primera categoría",
-        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
+        "title": "最初のカテゴリを作成",
+        "description": "支出を整理するためにカスタムカテゴリ（例: 食費、交通費、娯楽など）を設定します。"
       },
       {
         "number": "03",
-        "title": "Registra tus gastos",
-        "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
+        "title": "支出を記録する",
+        "description": "専用セクションやダッシュボードから簡単に取引を追加できます。"
       }
     ]
   },
   "wiki": {
-    "link": "Consultar la wiki completa"
+    "link": "完全なWikiを参照する"
   },
   "news": {
-    "title": "Novedades recientes",
-    "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
+    "title": "最近のニュース",
+    "subtitle": "プラットフォームに追加された最新の改善点をご覧ください。",
     "items": [
       {
         "tag": "v0.0.4",
-        "title": "Japonés añadido. Ahora es posible exportar e importar datos entre cuentas sin limitaciones de usuario.",
-        "description": "Ahora es posible exportar los datos a un archivo JSON e importarlos en otra cuenta. Esto elimina las restricciones en la migración de información, permitiendo una gestión de datos más flexible. Además, se ha añadido soporte para el idioma japonés."
+        "title": "日本語が追加されました。ユーザーの制限なしにアカウント間でデータのエクスポートとインポートが可能になりました。",
+        "description": "データをJSONファイルにエクスポートし、別のアカウントにインポートできるようになりました。これによりデータ移行の制限がなくなり、より柔軟なデータ管理が可能になります。さらに、日本語表示に対応しました。"
       },
       {
         "tag": "v0.0.3",
-        "title": "Arreglos de fallos visuales y de lógica",
-        "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+        "title": "ビジュアルおよびロジックのバグ修正",
+        "description": "Safariなどのブラウザとの互換性向上のためにスタイルを調整。メトリクスの計算において、削除されたカテゴリや取引を考慮しないように変更しました。"
       }
     ]
   }

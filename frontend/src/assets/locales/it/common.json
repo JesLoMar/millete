@@ -1,69 +1,70 @@
 {
   "actions": {
-    "save": "Guardar",
-    "saving": "Guardando...",
-    "cancel": "Cancelar",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "deleting": "Eliminando...",
-    "add": "Añadir",
-    "accept": "Aceptar",
-    "reject": "Rechazar",
-    "close": "Cerrar",
-    "search": "Buscar por nombre...",
-    "searchDesc": "Buscar por descripción...",
-    "back": "Volver",
-    "continue": "Continuar",
-    "create": "Crear",
-    "update": "Actualizar",
-    "assign": "Asignar",
-    "invite": "Invitar",
-    "refresh": "Actualizar",
-    "export": "Exportar",
-    "import": "Importar"
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "cancel": "Annulla",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "deleting": "Eliminazione...",
+    "add": "Aggiungi",
+    "accept": "Accetta",
+    "reject": "Rifiuta",
+    "close": "Chiudi",
+    "search": "Cerca per nome...",
+    "searchDesc": "Cerca per descrizione...",
+    "back": "Indietro",
+    "continue": "Continua",
+    "create": "Crea",
+    "update": "Aggiorna",
+    "assign": "Assegna",
+    "invite": "Invita",
+    "refresh": "Aggiorna",
+    "export": "Esporta",
+    "import": "Importa"
   },
   "status": {
-    "loading": "Cargando...",
-    "loadingSession": "Cargando sesión...",
-    "error": "Error",
-    "empty": "No hay datos disponibles",
-    "processing": "Procesando..."
+    "loading": "Caricamento...",
+    "loadingSession": "Caricamento sessione...",
+    "error": "Errore",
+    "empty": "Nessun dato disponibile",
+    "processing": "Elaborazione..."
   },
   "entities": {
-    "transaction": "Transacción",
-    "transactions": "Transacciones",
-    "category": "Categoría",
-    "categories": "Categorías",
-    "investment": "Inversión",
-    "investments": "Inversiones",
-    "groupGoal": "Group Goal",
-    "groupGoals": "Group Goals",
-    "savingsGoal": "Meta de Ahorro",
-    "savingsGoals": "Metas de Ahorro",
-    "user": "Usuario",
-    "family": "Familia"
+    "dashboard": "Dashboard",
+    "transaction": "Transazione",
+    "transactions": "Transazioni",
+    "category": "Categoria",
+    "categories": "Categorie",
+    "investment": "Investimento",
+    "investments": "Investimenti",
+    "groupGoal": "Obiettivo di gruppo",
+    "groupGoals": "Obiettivi di gruppo",
+    "savingsGoal": "Obiettivo di risparmio",
+    "savingsGoals": "Obiettivi di risparmio",
+    "user": "Utente",
+    "family": "Famiglia"
   },
   "prompts": {
-    "deleteTitle": "Eliminar {{item}}",
-    "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
-    "noData": "No hay datos disponibles",
-    "comingSoon": "Próximamente",
-    "optional": "opcional"
+    "deleteTitle": "Elimina {{item}}",
+    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "noData": "Nessun dato disponibile",
+    "comingSoon": "Prossimamente",
+    "optional": "opzionale"
   },
   "periods": {
-    "week": "Semana",
-    "month": "Mes",
-    "year": "Año",
-    "today": "Hoy",
-    "yesterday": "Ayer"
+    "week": "Settimana",
+    "month": "Mese",
+    "year": "Anno",
+    "today": "Oggi",
+    "yesterday": "Ieri"
   },
   "types": {
-    "income": "Ingreso",
-    "expense": "Gasto",
-    "all": "Todos"
+    "income": "Entrata",
+    "expense": "Spesa",
+    "all": "Tutti"
   },
   "errors": {
-    "default": "Error inesperado. Inténtalo de nuevo.",
-    "noPermission": "No tienes permisos para realizar esta acción"
+    "default": "Errore imprevisto. Riprova.",
+    "noPermission": "Non disponi dei permessi per eseguire questa azione"
   }
 }

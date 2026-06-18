@@ -1,14 +1,14 @@
 {
-  "required": "Campo requerido",
-  "invalid_email": "El formato del correo no es válido",
-  "invalid_number": "Introduce un número válido",
-  "min_length": "Debe tener al menos {{min}} caracteres",
-  "max_length": "Debe tener como máximo {{max}} caracteres",
-  "min_value": "El valor mínimo es {{min}}",
-  "max_value": "El valor máximo es {{max}}",
-  "positive_number": "Debe ser un número positivo",
-  "invalid_url": "URL no válida",
+  "required": "Campo obrigatório",
+  "invalid_email": "O formato do e-mail não é válido",
+  "invalid_number": "Insira un número válido",
+  "min_length": "Deve ter pelo menos {{min}} caracteres",
+  "max_length": "Deve ter no máximo {{max}} caracteres",
+  "min_value": "O valor mínimo é {{min}}",
+  "max_value": "O valor máximo é {{max}}",
+  "positive_number": "Deve ser um número positivo",
+  "invalid_url": "URL inválida",
   "auth": {
-    "invalid_credentials": "Credenciales inválidas. Por favor, intenta de nuevo."
+    "invalid_credentials": "Credenciais inválidas. Por favor, tente novamente."
   }
 }

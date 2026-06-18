@@ -1,17 +1,17 @@
 {
-  "user": "Usuario",
-  "changeLanguage": "Cambiar idioma",
-  "guest": "Invitado",
-  "goToDashboard": "Ir al dashboard",
-  "userMenu": "Menú de usuario",
-  "profile": "Mi Perfil",
-  "logout": "Cerrar Sesión",
-  "logoutSuccess": "Sesión cerrada correctamente",
-  "mainNav": "Navegación principal",
-  "bottomNav": "Navegación secundaria",
-  "open": "Abrir Menú",
-  "close": "Cerrar Menú",
-  "noItems": "No hay secciones disponibles",
+  "user": "ユーザー",
+  "changeLanguage": "言語を変更",
+  "guest": "ゲスト",
+  "goToDashboard": "ダッシュボードへ",
+  "userMenu": "ユーザーメニュー",
+  "profile": "マイプロフィール",
+  "logout": "ログアウト",
+  "logoutSuccess": "正常にログアウトしました",
+  "mainNav": "メインナビゲーション",
+  "bottomNav": "サブナビゲーション",
+  "open": "メニューを開く",
+  "close": "メニューを閉じる",
+  "noItems": "利用可能なセクションがありません",
   "mobileTitle": "Millete",
   "dashboard": "$t(common:entities.dashboard)",
   "transactions": "$t(common:entities.transactions)",
@@ -19,28 +19,28 @@
   "investments": "$t(common:entities.investments)",
   "groupgoals": "$t(common:entities.groupGoals)",
   "savingsgoals": "$t(common:entities.savingsGoals)",
-  "settings": "Ajustes",
+  "settings": "設定",
   "errors": {
-    "featureComingSoon": "{{feature}} estará disponible próximamente",
-    "languageChangeFailed": "Error al cambiar el idioma"
+    "featureComingSoon": "{{feature}} は近日公開予定です",
+    "languageChangeFailed": "言語の変更に失敗しました"
   },
   "languages": {
-    "es": "Español",
-    "en": "Inglés",
-    "fr": "Francés",
-    "de": "Alemán",
-    "it": "Italiano",
-    "pt": "Portugués"
+    "es": "スペイン語",
+    "en": "英語",
+    "fr": "フランス語",
+    "de": "ドイツ語",
+    "it": "イタリア語",
+    "pt": "ポルトガル語"
   },
   "theme": {
-    "selector": "Selector de tema",
-    "palette": "Paleta de colores",
+    "selector": "テーマ選択",
+    "palette": "カラーパレット",
     "errors": {
-      "themeChangeFailed": "Error al cambiar el tema"
+      "themeChangeFailed": "テーマの変更に失敗しました"
     }
   },
   "carousel": {
-    "previous": "Anterior",
-    "next": "Siguiente"
+    "previous": "前へ",
+    "next": "次へ"
   }
 }

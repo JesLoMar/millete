@@ -1,23 +1,23 @@
 {
   "general": {
-    "title": "Ajustes Generales",
-    "description": "Personaliza tu experiencia"
+    "title": "Allgemeine Einstellungen",
+    "description": "Personalisieren Sie Ihr Erlebnis"
   },
   "currency": {
-    "title": "Moneda",
-    "description": "Selecciona tu moneda preferida",
-    "placeholder": "Elegir moneda"
+    "title": "Währung",
+    "description": "Wählen Sie Ihre bevorzugte Währung",
+    "placeholder": "Währung auswählen"
   },
   "telegram": {
-    "title": "Conexión de Telegram",
-    "description": "Gestiona tu integración con Telegram",
-    "connected": "Conectado como {{username}}",
-    "since": "Desde {{date}}",
+    "title": "Telegram-Verbindung",
+    "description": "Verwalten Sie Ihre Telegram-Integration",
+    "connected": "Verbunden als {{username}}",
+    "since": "Seit {{date}}",
     "status": {
-      "connected": "Conectado",
-      "disconnected": "Desconectado",
-      "loading": "Comprobando...",
-      "error": "Error de conexión"
+      "connected": "Verbunden",
+      "disconnected": "Getrennt",
+      "loading": "Überprüfung...",
+      "error": "Verbindungsfehler"
     },
     "refresh": "$t(common:actions.refresh)"
   }
