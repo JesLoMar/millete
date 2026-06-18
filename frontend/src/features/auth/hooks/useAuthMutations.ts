@@ -42,7 +42,7 @@ export const useLoginMutation = () => {
     onSuccess: async (data) => {
       await login(data.token);
       queryClient.clear();
-      notify.success(t('common.accept'));
+      notify.success(t('common:actions.accept'));
 
       const fromState = location.state?.from?.pathname
         ? location.state.from.pathname + (location.state.from.search || '') + (location.state.from.hash || '')
@@ -54,8 +54,8 @@ export const useLoginMutation = () => {
       navigate(safeRedirect || '/dashboard', { replace: true });
     },
     onError: (error: ApiError) => {
-      const errorMessage = error?.response?.data?.message || t('auth.errors.login_failed');
-      console.error(t('auth.alerts.login_error_title'), errorMessage);
+      const errorMessage = error?.response?.data?.message || t('auth:errors.login_failed');
+      console.error(t('auth:alerts.login_error_title'), errorMessage);
       notify.error(errorMessage);
     },
   });

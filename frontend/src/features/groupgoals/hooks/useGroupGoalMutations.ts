@@ -34,11 +34,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.createSuccess"))
+      notify.success(t('groupGoals:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.createError")
+        err.response?.data?.message || t('groupGoals:alerts.createError')
       )
     },
   })
@@ -52,11 +52,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.inviteSuccess"))
+      notify.success(t('groupGoals:alerts.inviteSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.inviteError")
+        err.response?.data?.message || t('groupGoals:alerts.inviteError')
       )
     },
   })
@@ -82,11 +82,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.goalSuccess"))
+      notify.success(t('groupGoals:alerts.goalSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.goalError")
+        err.response?.data?.message || t('groupGoals:alerts.goalError')
       )
     },
   })
@@ -97,11 +97,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.deleteSuccess"))
+      notify.success(t('groupGoals:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.deleteError")
+        err.response?.data?.message || t('groupGoals:alerts.deleteError')
       )
     },
   })
@@ -129,11 +129,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.memberEditSuccess"))
+      notify.success(t('groupGoals:alerts.memberEditSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.memberEditError")
+        err.response?.data?.message || t('groupGoals:alerts.memberEditError')
       )
     },
   })
@@ -150,11 +150,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.memberDeleteSuccess"))
+      notify.success(t('groupGoals:alerts.memberDeleteSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.memberDeleteError")
+        err.response?.data?.message || t('groupGoals:alerts.memberDeleteError')
       )
     },
   })
@@ -171,11 +171,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     },
     onSuccess: () => {
       invalidateAll()
-      notify.success(t("groupGoals.alerts.contributionSuccess"))
+      notify.success(t('groupGoals:alerts.contributionSuccess'))
     },
     onError: (err: ApiError) => {
       notify.error(
-        err.response?.data?.message || t("groupGoals.alerts.contributionError")
+        err.response?.data?.message || t('groupGoals:alerts.contributionError')
       )
     },
   })

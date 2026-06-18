@@ -23,7 +23,7 @@ interface TransactionSummaryProps {
 
 // ─── Component ────────────────────────────────────────────
 export function TransactionSummary({ period }: TransactionSummaryProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'transactions', 'common'])
 
   const { data: metrics, isLoading } = useQuery<TransactionMetrics>({
     queryKey: ['transactionMetrics', period],
@@ -33,12 +33,13 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
     },
   })
 
-  const periodLabel = t(`dashboard.metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
+  const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
+  const periodName = t(`dashboard:header.period.${period}`)
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <FormattedMetricCard
-        title={t("dashboard.metrics.income", { period: t(`dashboard.header.period.${period}`) })}
+        title={t('dashboard:metrics.income', { period: periodName })}
         value={metrics?.income ?? 0}
         trend={metrics?.incomeTrend ?? 0}
         icon={ArrowUpRight}
@@ -47,7 +48,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         loading={isLoading}
       />
       <FormattedMetricCard
-        title={t("dashboard.metrics.expenses", { period: t(`dashboard.header.period.${period}`) })}
+        title={t('dashboard:metrics.expenses', { period: periodName })}
         value={metrics?.expenses ?? 0}
         trend={metrics?.expensesTrend ?? 0}
         icon={ArrowDownLeft}
@@ -57,7 +58,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         invertedTrend
       />
       <FormattedMetricCard
-        title={t("dashboard.metrics.balance")}
+        title={t('dashboard:metrics.balance')}
         value={metrics?.balance ?? 0}
         trend={metrics?.balanceTrend ?? 0}
         icon={Scale}
@@ -66,7 +67,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         loading={isLoading}
       />
       <FormattedMetricCard
-        title={t("transactions.title")}
+        title={t('transactions:title')}
         value={metrics?.count ?? 0}
         format="number"
         trend={metrics?.countTrend ?? 0}

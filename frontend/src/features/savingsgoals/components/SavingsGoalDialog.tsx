@@ -24,9 +24,9 @@ import { notify } from "@/shared/utils/notifications/notify"
 import type { ApiError } from "@/shared/types/api"
 
 const PRIORITIES = [
-  { value: "LOW", labelKey: "savingsGoals.priorities.LOW" },
-  { value: "MEDIUM", labelKey: "savingsGoals.priorities.MEDIUM" },
-  { value: "HIGH", labelKey: "savingsGoals.priorities.HIGH" },
+  { value: "LOW", labelKey: "savingsGoals:priorities.LOW" },
+  { value: "MEDIUM", labelKey: "savingsGoals:priorities.MEDIUM" },
+  { value: "HIGH", labelKey: "savingsGoals:priorities.HIGH" },
 ] as const
 
 export function SavingsGoalDialog() {
@@ -68,7 +68,7 @@ export function SavingsGoalDialog() {
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("savingsGoals.alerts.createError")
+      const message = apiError?.response?.data?.message || t('savingsGoals:alerts.createError')
       notify.error(message)
     }
   }
@@ -80,7 +80,7 @@ export function SavingsGoalDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4">
           <Plus size={16} />
-          {t("savingsGoals.newGoal")}
+          {t('savingsGoals:newGoal')}
         </Button>
       </DialogTrigger>
 
@@ -95,16 +95,16 @@ export function SavingsGoalDialog() {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
               <PiggyBank className="text-primary size-5" />
-              {t("savingsGoals.newGoalTitle")}
+              {t('savingsGoals:newGoalTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.name")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:name')}</Label>
               <Input
                 ref={inputRef}
-                placeholder={t("savingsGoals.namePlaceholder")}
+                placeholder={t('savingsGoals:namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isCreating}
@@ -114,7 +114,7 @@ export function SavingsGoalDialog() {
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("savingsGoals.targetAmount")}</Label>
+                <Label className="text-sm font-semibold">{t('savingsGoals:targetAmount')}</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -127,7 +127,7 @@ export function SavingsGoalDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("savingsGoals.priority")}</Label>
+                <Label className="text-sm font-semibold">{t('savingsGoals:priority')}</Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue />
@@ -144,7 +144,7 @@ export function SavingsGoalDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.deadline")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:deadline')}</Label>
               <Input
                 type="date"
                 value={deadline}
@@ -155,9 +155,9 @@ export function SavingsGoalDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.link")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:link')}</Label>
               <Input
-                placeholder={t("savingsGoals.linkPlaceholder")}
+                placeholder={t('savingsGoals:linkPlaceholder')}
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 disabled={isCreating}
@@ -173,14 +173,14 @@ export function SavingsGoalDialog() {
               disabled={isCreating}
               className="border-border"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
               disabled={isCreating || !isValid}
               className="bg-primary hover:bg-primary/90 px-6"
             >
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("savingsGoals.create")}
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('savingsGoals:create')}
             </Button>
           </DialogFooter>
         </div>

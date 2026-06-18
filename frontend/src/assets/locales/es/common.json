@@ -30,6 +30,7 @@
     "processing": "Procesando..."
   },
   "entities": {
+    "dashboard": "Dashboard",
     "transaction": "Transacción",
     "transactions": "Transacciones",
     "category": "Categoría",

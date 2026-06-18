@@ -9,9 +9,9 @@ import { ProgressBar } from "@/shared/components/core/progress-bar"
 const PriorityBadge = ({ priority }: { priority: string }) => {
   const { t } = useTranslation()
   switch (priority) {
-    case 'HIGH': return <Badge variant="destructive">{t("savingsGoals.priorities.HIGH")}</Badge>
-    case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">{t("savingsGoals.priorities.MEDIUM")}</Badge>
-    default: return <Badge variant="outline">{t("savingsGoals.priorities.LOW")}</Badge>
+    case 'HIGH': return <Badge variant="destructive">{t('savingsGoals:priorities.HIGH')}</Badge>
+    case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">{t('savingsGoals:priorities.MEDIUM')}</Badge>
+    default: return <Badge variant="outline">{t('savingsGoals:priorities.LOW')}</Badge>
   }
 }
 
@@ -49,7 +49,7 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
       <CardContent className="mt-auto pt-4 flex flex-col gap-4">
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">{t("savingsGoals.progress")}</span>
+            <span className="text-muted-foreground">{t('savingsGoals:progress')}</span>
             <span className="text-foreground font-medium">{progressPercentage.toFixed(0)}%</span>
           </div>
           <ProgressBar
@@ -62,16 +62,16 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
         <div className="flex justify-between items-end">
           <div>
             <div className="text-xl font-semibold text-foreground">{formatCurrency(goal.currentAmount)}</div>
-            <div className="text-xs text-muted-foreground">{t("savingsGoals.of")} {formatCurrency(goal.targetAmount)}</div>
+            <div className="text-xs text-muted-foreground">{t('savingsGoals:of')} {formatCurrency(goal.targetAmount)}</div>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(goal)} title={t("savingsGoals.editGoal")}>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(goal)} title={t('savingsGoals:editGoal')}>
               <Pencil className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(goal)} title={t("savingsGoals.deleteGoal")}>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(goal)} title={t('savingsGoals:deleteGoal')}>
               <Trash2 className="w-4 h-4" />
             </Button>
-            <Button variant="secondary" size="icon" onClick={() => onAddContribution(goal)} title={t("savingsGoals.addContribution")}>
+            <Button variant="secondary" size="icon" onClick={() => onAddContribution(goal)} title={t('savingsGoals:addContribution')}>
               <Plus className="w-4 h-4" />
             </Button>
           </div>

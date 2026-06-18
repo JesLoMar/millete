@@ -29,7 +29,7 @@ interface TransactionRowProps {
 }
 
 export function TransactionRow({ transaction: tx, onEdit, onDelete }: TransactionRowProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const isIncome = tx.type === "INCOME"
   const isOrphan = !tx.category || tx.category === "Sin categoría"
 
@@ -82,17 +82,17 @@ export function TransactionRow({ transaction: tx, onEdit, onDelete }: Transactio
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label={t("transactions.moreOptions")}
+            aria-label={t('transactions:moreOptions')}
           >
             <MoreHorizontal size={16} aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-card border-border">
           <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(tx)}>
-            {t("transactions.edit")}
+            {t('transactions:edit')}
           </DropdownMenuItem>
           <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(tx)}>
-            {t("transactions.delete")}
+            {t('transactions:delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

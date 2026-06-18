@@ -24,9 +24,9 @@ import type { SavingsGoal } from "../types"
 import type { ApiError } from "@/shared/types/api"
 
 const PRIORITIES = [
-  { value: "LOW", labelKey: "savingsGoals.priorities.LOW" },
-  { value: "MEDIUM", labelKey: "savingsGoals.priorities.MEDIUM" },
-  { value: "HIGH", labelKey: "savingsGoals.priorities.HIGH" },
+  { value: "LOW", labelKey: "savingsGoals:priorities.LOW" },
+  { value: "MEDIUM", labelKey: "savingsGoals:priorities.MEDIUM" },
+  { value: "HIGH", labelKey: "savingsGoals:priorities.HIGH" },
 ] as const
 
 interface Props {
@@ -73,7 +73,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
       onOpenChange(false)
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("savingsGoals.alerts.updateError")
+      const message = apiError?.response?.data?.message || t('savingsGoals:alerts.updateError')
       notify.error(message)
     }
   }
@@ -93,16 +93,16 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
               <PiggyBank className="text-primary size-5" />
-              {t("savingsGoals.editGoalTitle")}
+              {t('savingsGoals:editGoalTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.name")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:name')}</Label>
               <Input
                 ref={inputRef}
-                placeholder={t("savingsGoals.namePlaceholder")}
+                placeholder={t('savingsGoals:namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isUpdating}
@@ -112,7 +112,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("savingsGoals.targetAmount")}</Label>
+                <Label className="text-sm font-semibold">{t('savingsGoals:targetAmount')}</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -125,7 +125,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("savingsGoals.priority")}</Label>
+                <Label className="text-sm font-semibold">{t('savingsGoals:priority')}</Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue />
@@ -142,7 +142,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.deadline")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:deadline')}</Label>
               <Input
                 type="date"
                 value={deadline}
@@ -153,9 +153,9 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("savingsGoals.link")}</Label>
+              <Label className="text-sm font-semibold">{t('savingsGoals:link')}</Label>
               <Input
-                placeholder={t("savingsGoals.linkPlaceholder")}
+                placeholder={t('savingsGoals:linkPlaceholder')}
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 disabled={isUpdating}
@@ -171,14 +171,14 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
               disabled={isUpdating}
               className="border-border"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
               disabled={isUpdating || !isValid}
               className="bg-primary hover:bg-primary/90 px-6"
             >
-              {isUpdating ? <Loader2 size={16} className="animate-spin" /> : t("savingsGoals.saveChanges")}
+              {isUpdating ? <Loader2 size={16} className="animate-spin" /> : t('savingsGoals:saveChanges')}
             </Button>
           </DialogFooter>
         </div>

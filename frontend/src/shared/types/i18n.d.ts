@@ -12,6 +12,7 @@ import enSavingsGoals from "@/assets/locales/en/savingsGoals.json";
 import enSettings from "@/assets/locales/en/settings.json";
 import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
+import enInfo from "@/assets/locales/en/info.json";
 
 declare module "i18next" {
   interface CustomTypeOptions {
@@ -29,7 +30,8 @@ declare module "i18next" {
       "savingsGoals",
       "settings",
       "api",
-      "wiki"
+      "wiki",
+      "info"
     ];
     resources: {
       common: typeof enCommon;
@@ -45,11 +47,14 @@ declare module "i18next" {
       settings: typeof enSettings;
       api: typeof enApi;
       wiki: typeof enWiki;
+      info: typeof enInfo;
     };
     returnNull: false;
     returnEmptyString: false;
-    keySeparator: false;
-    nsSeparator: ":";
+  }
+
+  interface TFunction {
+    <T extends string = string>(key: T, options?: Record<string, unknown>): string;
   }
 }
 

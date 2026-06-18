@@ -56,7 +56,7 @@ export function GroupGoalDetail({
             size="icon"
             onClick={onBack}
             className="size-8 shrink-0"
-            aria-label={t("groupGoals.back")}
+            aria-label={t('groupGoals:back')}
           >
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
@@ -65,7 +65,7 @@ export function GroupGoalDetail({
               {goal.name}
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              {goal.members.length} {t("groupGoals.members")}
+              {goal.members.length} {t('groupGoals:members')}
             </p>
           </div>
         </div>
@@ -74,13 +74,13 @@ export function GroupGoalDetail({
           <div className="flex gap-2 sm:gap-3 sm:shrink-0">
             <Button onClick={onInviteClick} className="gap-1.5 sm:gap-2 flex-1 sm:flex-none" size="sm">
               <UserPlus className="size-3.5 sm:size-4" />
-              <span className="hidden xs:inline">{t("groupGoals.inviteMember")}</span>
-              <span className="xs:hidden">{t("groupGoals.inviteShort")}</span>
+              <span className="hidden xs:inline">{t('groupGoals:inviteMember')}</span>
+              <span className="xs:hidden">{t('groupGoals:inviteShort')}</span>
             </Button>
             <Button variant="outline" onClick={onGoalClick} className="gap-1.5 sm:gap-2 flex-1 sm:flex-none" size="sm">
               <Target className="size-3.5 sm:size-4" />
-              <span className="hidden xs:inline">{t("groupGoals.changeGoal")}</span>
-              <span className="xs:hidden">{t("groupGoals.goalShort")}</span>
+              <span className="hidden xs:inline">{t('groupGoals:changeGoal')}</span>
+              <span className="xs:hidden">{t('groupGoals:goalShort')}</span>
             </Button>
           </div>
         )}
@@ -89,12 +89,12 @@ export function GroupGoalDetail({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         <Card className="lg:col-span-9 border-subtle">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base sm:text-lg">{t("groupGoals.goalProgress")}</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t('groupGoals:goalProgress')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col xs:flex-row xs:items-end justify-between gap-2 mb-4">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">{t("groupGoals.collected")}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t('groupGoals:collected')}</p>
                 <p className="text-2xl sm:text-3xl font-headline truncate">
                   {totalContributed.toLocaleString()} €
                   <span className="text-sm text-muted-foreground"> / {(goal.monthlyTarget ?? 0).toLocaleString()} €</span>
@@ -115,13 +115,13 @@ export function GroupGoalDetail({
                   label: `${member.name}: ${member.contributed.toLocaleString()} €`,
                 }))}
                 size="lg"
-                ariaLabel={t("groupGoals.progressBar.label")}
+                ariaLabel={t('groupGoals:progressBar.label')}
                 ariaValueNow={Math.round(percentageCompleted)}
               />
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t("groupGoals.progressBar.of")}</span> {goal.monthlyTarget.toLocaleString()} €
+                  {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t('groupGoals:progressBar.of')}</span> {goal.monthlyTarget.toLocaleString()} €
                 </span>
                 <span className="font-medium tabular-nums">
                   {Math.round(percentageCompleted)}%
@@ -176,7 +176,7 @@ export function GroupGoalDetail({
       </div>
 
       <div>
-        <h2 className="text-lg sm:text-xl font-headline mb-3 sm:mb-4">{t("groupGoals.memberDetails")}</h2>
+        <h2 className="text-lg sm:text-xl font-headline mb-3 sm:mb-4">{t('groupGoals:memberDetails')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {contributions.map((member, index) => (
             <MemberCard

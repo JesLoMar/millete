@@ -26,9 +26,9 @@ export const useTransactionMutations = () => {
   const checkBudgetLimit = (response: TransactionResponse) => {
     if (response.limitExceeded) {
       notify.warning(
-        t('transactions.alerts.budgetWarning') || '¡Has superado el 70% de tu presupuesto mensual!',
+        t('transactions:alerts.budgetWarning') || '¡Has superado el 70% de tu presupuesto mensual!',
         {
-          description: t('transactions.alerts.budgetWarningDesc') || 'Revisa tus gastos para evitar superar el límite.',
+          description: t('transactions:alerts.budgetWarningDesc') || 'Revisa tus gastos para evitar superar el límite.',
           duration: 6000,
         }
       )
@@ -40,11 +40,11 @@ export const useTransactionMutations = () => {
       apiClient.post<TransactionResponse>('transactions', data),
     onSuccess: async (response) => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.createSuccess') || 'Transacción creada correctamente')
+      notify.success(t('transactions:alerts.createSuccess') || 'Transacción creada correctamente')
       checkBudgetLimit(response.data)
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.createError') || 'Error al crear la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.createError') || 'Error al crear la transacción')
     },
   })
 
@@ -53,11 +53,11 @@ export const useTransactionMutations = () => {
       apiClient.put<TransactionResponse>(`transactions/${id}`, data),
     onSuccess: async (response) => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.updateSuccess') || 'Transacción actualizada correctamente')
+      notify.success(t('transactions:alerts.updateSuccess') || 'Transacción actualizada correctamente')
       checkBudgetLimit(response.data)
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.updateError') || 'Error al actualizar la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.updateError') || 'Error al actualizar la transacción')
     },
   })
 
@@ -65,10 +65,10 @@ export const useTransactionMutations = () => {
     mutationFn: (id: string) => apiClient.delete(`transactions/${id}`),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.deleteSuccess') || 'Transacción eliminada correctamente')
+      notify.success(t('transactions:alerts.deleteSuccess') || 'Transacción eliminada correctamente')
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.deleteError') || 'Error al eliminar la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.deleteError') || 'Error al eliminar la transacción')
     },
   })
 
@@ -76,10 +76,10 @@ export const useTransactionMutations = () => {
     mutationFn: (data: Record<string, unknown>) => apiClient.post('planned-transactions', data),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.createRecurringSuccess') || 'Transacción recurrente programada correctamente')
+      notify.success(t('transactions:alerts.createRecurringSuccess') || 'Transacción recurrente programada correctamente')
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.createRecurringError') || 'Error al programar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.createRecurringError') || 'Error al programar la transacción recurrente')
     },
   })
 
@@ -88,10 +88,10 @@ export const useTransactionMutations = () => {
       apiClient.put(`planned-transactions/${id}`, data),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.updateRecurringSuccess') || 'Transacción recurrente actualizada correctamente')
+      notify.success(t('transactions:alerts.updateRecurringSuccess') || 'Transacción recurrente actualizada correctamente')
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.updateRecurringError') || 'Error al actualizar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.updateRecurringError') || 'Error al actualizar la transacción recurrente')
     },
   })
 
@@ -99,10 +99,10 @@ export const useTransactionMutations = () => {
     mutationFn: (id: string) => apiClient.delete(`planned-transactions/${id}`),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('transactions.alerts.deleteRecurringSuccess') || 'Transacción recurrente eliminada correctamente')
+      notify.success(t('transactions:alerts.deleteRecurringSuccess') || 'Transacción recurrente eliminada correctamente')
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions.alerts.deleteRecurringError') || 'Error al eliminar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.deleteRecurringError') || 'Error al eliminar la transacción recurrente')
     },
   })
 

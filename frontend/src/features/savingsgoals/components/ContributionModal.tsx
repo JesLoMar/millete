@@ -37,12 +37,12 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">{t("savingsGoals.amount")}</Label>
+            <Label htmlFor="amount">{t('savingsGoals:amount')}</Label>
             <Input id="amount" type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
-            <Button type="submit">{t("savingsGoals.add")}</Button>
+            <Button variant="outline" onClick={onClose}>{t('common:actions.cancel')}</Button>
+            <Button type="submit">{t('savingsGoals:add')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

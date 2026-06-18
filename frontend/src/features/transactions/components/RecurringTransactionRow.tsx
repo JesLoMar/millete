@@ -62,17 +62,17 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                             variant="ghost"
                             size="icon"
                             className="size-8"
-                            aria-label={t("transactions.moreOptions")}
+                            aria-label={t('transactions:moreOptions')}
                         >
                             <MoreHorizontal size={16} aria-hidden="true" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-card border-border">
                         <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(tx)}>
-                            {t("transactions.edit")}
+                            {t('transactions:edit')}
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(tx)}>
-                            {t("transactions.delete")}
+                            {t('transactions:delete')}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -100,17 +100,17 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                                 variant="ghost"
                                 size="icon"
                                 className="size-8"
-                                aria-label={t("transactions.moreOptions")}
+                                aria-label={t('transactions:moreOptions')}
                             >
                                 <MoreHorizontal size={16} aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-card border-border">
                             <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(tx)}>
-                                {t("transactions.edit")}
+                                {t('transactions:edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(tx)}>
-                                {t("transactions.delete")}
+                                {t('transactions:delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

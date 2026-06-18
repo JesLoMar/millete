@@ -32,7 +32,7 @@ export function DistributionCard({
     <Card className="border-subtle bg-primary/5 relative overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center justify-between gap-2">
-          <span className="truncate">{t("groupGoals.distributionMode")}</span>
+          <span className="truncate">{t('groupGoals:distributionMode')}</span>
           {isChangingMode && (
             <Loader2 size={14} className="animate-spin text-muted-foreground shrink-0" aria-hidden="true" />
           )}
@@ -45,18 +45,18 @@ export function DistributionCard({
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
-              <SelectItem value="EQUITATIVE">{t("groupGoals.modes.equitative")}</SelectItem>
-              <SelectItem value="PROPORTIONAL">{t("groupGoals.modes.proportional")}</SelectItem>
-              <SelectItem value="CUSTOM">{t("groupGoals.modes.custom")}</SelectItem>
+              <SelectItem value="EQUITATIVE">{t('groupGoals:modes.equitative')}</SelectItem>
+              <SelectItem value="PROPORTIONAL">{t('groupGoals:modes.proportional')}</SelectItem>
+              <SelectItem value="CUSTOM">{t('groupGoals:modes.custom')}</SelectItem>
             </SelectContent>
           </Select>
         ) : (
           <p className="text-sm font-medium truncate">
-            {t(`family.modes.${distributionMode.toLowerCase()}`)}
+            {t(`groupGoals:modes.${distributionMode.toLowerCase()}`)}
           </p>
         )}
         <p className="text-xs text-muted-foreground leading-relaxed">
-          {t(`family.modes.${distributionMode.toLowerCase()}Desc`)}
+          {t(`groupGoals:modes.${distributionMode.toLowerCase()}Desc`)}
         </p>
 
         {isCustomMode && (
@@ -70,7 +70,7 @@ export function DistributionCard({
             ) : (
               <CheckCircle2 className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
             )}
-            <span>{isPercentageInvalid ? t("groupGoals.customPercentageHint") : t("groupGoals.customPercentageOk")}</span>
+            <span>{isPercentageInvalid ? t('groupGoals:customPercentageHint') : t('groupGoals:customPercentageOk')}</span>
           </div>
         )}
       </CardContent>

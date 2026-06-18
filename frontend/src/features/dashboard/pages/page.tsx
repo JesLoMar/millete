@@ -19,7 +19,7 @@ import { apiClient } from '@/shared/api/axiosClient'
 import { notify } from '@/shared/utils/notifications/notify'
 
 export const DashboardPage = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const [period, setPeriod] = useState<PeriodFilter>("month")
   const [isImportOpen, setIsImportOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -47,15 +47,15 @@ export const DashboardPage = () => {
 
       await queryClient.invalidateQueries()
       setIsImportOpen(false)
-      notify.success(t('dashboard.import.success') || 'Datos importados correctamente')
+      notify.success(t('dashboard:import.success') || 'Datos importados correctamente')
     } catch (err) {
       const error = err as { response?: { status?: number; data?: { message?: string } } }
-      let errorMessage = t('dashboard.import.errorGeneric') || 'Error al importar el archivo'
+      let errorMessage = t('dashboard:import.errorGeneric') || 'Error al importar el archivo'
       
       if (error?.response?.status === 403) {
-        errorMessage = error.response.data?.message || t('dashboard.import.errorProperty') || 'No tienes permiso para importar'
+        errorMessage = error.response.data?.message || t('dashboard:import.errorProperty') || 'No tienes permiso para importar'
       } else if (error?.response?.status === 400) {
-        errorMessage = error.response.data?.message || t('dashboard.import.errorFormat') || 'Formato de archivo inválido'
+        errorMessage = error.response.data?.message || t('dashboard:import.errorFormat') || 'Formato de archivo inválido'
       }
 
       notify.error(errorMessage)
@@ -78,15 +78,16 @@ export const DashboardPage = () => {
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
       
-      notify.success(t('dashboard.export.success') || 'Copia de seguridad exportada correctamente')
+      notify.success(t('dashboard:export.success') || 'Copia de seguridad exportada correctamente')
     } catch {
-      notify.error(t('dashboard.export.error') || 'Error al exportar los datos')
+      notify.error(t('dashboard:export.error') || 'Error al exportar los datos')
     } finally {
       setIsExporting(false)
     }
   }, [t])
 
-  const periodLabel = t(`dashboard.metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
+  const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
+  const periodName = t(`dashboard:header.period.${period}`)
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -108,7 +109,7 @@ export const DashboardPage = () => {
           <div className="min-h-30">
             <div className="grid grid-cols-1 min-[390px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full min-w-0">
               <FormattedMetricCard
-                title={t("dashboard.metrics.balance")}
+                title={t('dashboard:metrics.balance')}
                 value={metrics.data?.balance ?? 0}
                 trend={metrics.data?.balanceTrend ?? 0}
                 icon={Wallet}
@@ -117,7 +118,7 @@ export const DashboardPage = () => {
                 loading={metrics.isLoading}
               />
               <FormattedMetricCard
-                title={t("dashboard.metrics.income", { period: t(`dashboard.header.period.${period}`) })}
+                title={t('dashboard:metrics.income', { period: periodName })}
                 value={metrics.data?.income ?? 0}
                 trend={metrics.data?.incomeTrend ?? 0}
                 icon={TrendingUp}
@@ -126,7 +127,7 @@ export const DashboardPage = () => {
                 loading={metrics.isLoading}
               />
               <FormattedMetricCard
-                title={t("dashboard.metrics.expenses", { period: t(`dashboard.header.period.${period}`) })}
+                title={t('dashboard:metrics.expenses', { period: periodName })}
                 value={metrics.data?.expenses ?? 0}
                 trend={metrics.data?.expensesTrend ?? 0}
                 icon={TrendingDown}
@@ -136,7 +137,7 @@ export const DashboardPage = () => {
                 invertedTrend
               />
               <FormattedMetricCard
-                title={t("dashboard.metrics.savings")}
+                title={t('dashboard:metrics.savings')}
                 value={metrics.data?.savings ?? 0}
                 trend={metrics.data?.savingsTrend ?? 0}
                 icon={PiggyBank}

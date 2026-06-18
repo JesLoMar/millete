@@ -22,7 +22,7 @@ interface EditCategoryDialogProps {
 }
 
 export function EditCategoryDialog({ category, open, onOpenChange }: EditCategoryDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
   const { updateCategory, isUpdating } = useCategoryMutations()
 
   const [name, setName] = useState("")
@@ -46,13 +46,13 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
 
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setError(t("categories.nameRequired"))
+      setError(t('categories:nameRequired'))
       return
     }
 
     const parsedBudget = budgetLimit.trim() === "" ? null : parseFloat(budgetLimit)
     if (parsedBudget !== null && (isNaN(parsedBudget) || parsedBudget < 0)) {
-      setError(t("categories.invalidBudget"))
+      setError(t('categories:invalidBudget'))
       return
     }
 
@@ -67,46 +67,42 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
       })
       onOpenChange(false)
     } catch (err: any) {
-      setError(err.message || t("categories.updateError"))
+      setError(err.message || t('categories:updateError'))
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-120 bg-card border-border rounded-2xl">
-        {/* ✅ Scroll para teclado en móvil */}
         <div className="max-h-[85dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            {/* ✅ Corregido: interpolación de {{name}} */}
             <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
-              {t("categories.editTitle", { name: category?.name ?? "" })}
+              {t('categories:editTitle', { name: category?.name ?? "" })}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              {t("categories.editDescription")}
+              {t('categories:editDescription')}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-            {/* Campo: Nombre */}
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-sm font-medium text-foreground/80">
-                {t("categories.nameLabel")}
+                {t('categories:nameLabel')}
               </Label>
               <Input
                 id="edit-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isUpdating}
-                placeholder={t("categories.namePlaceholder")}
+                placeholder={t('categories:namePlaceholder')}
                 className="bg-background border-border h-11 rounded-xl text-base"
                 maxLength={50}
               />
             </div>
 
-            {/* Campo: Límite de Presupuesto Mensual */}
             <div className="space-y-2">
               <Label htmlFor="edit-budget" className="text-sm font-medium text-foreground/80">
-                {t("categories.budgetLabel")}
+                {t('categories:budgetLabel')}
               </Label>
               <div className="relative">
                 <Input
@@ -117,7 +113,7 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
                   value={budgetLimit}
                   onChange={(e) => setBudgetLimit(e.target.value)}
                   disabled={isUpdating}
-                  placeholder={t("categories.budgetPlaceholder")}
+                  placeholder={t('categories:budgetPlaceholder')}
                   className="bg-background border-border h-11 rounded-xl pr-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground select-none">
@@ -126,10 +122,9 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
               </div>
             </div>
 
-            {/* Selector de Color */}
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground/80">
-                {t("categories.colorLabel")}
+                {t('categories:colorLabel')}
               </Label>
               <ColorPicker 
                 value={color} 
@@ -138,14 +133,12 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
               />
             </div>
 
-            {/* Error */}
             {error && (
               <p className="text-destructive text-xs font-medium bg-destructive/10 p-3 rounded-xl border border-destructive/20">
                 {error}
               </p>
             )}
 
-            {/* Botones */}
             <div className="flex justify-end gap-3 pt-3 border-t border-border/40">
               <Button
                 type="button"
@@ -154,7 +147,7 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
                 disabled={isUpdating}
                 className="border-border hover:bg-secondary text-foreground h-10 rounded-xl px-4"
               >
-                {t("common.cancel")}
+                {t('common:actions.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -164,12 +157,12 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
                 {isUpdating ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
-                    {t("common.saving")}
+                    {t('common:actions.saving')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="mr-2 size-4" aria-hidden="true" />
-                    {t("common.save")}
+                    {t('common:actions.save')}
                   </>
                 )}
               </Button>

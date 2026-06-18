@@ -15,40 +15,40 @@ interface DashboardHeaderProps {
 }
 
 type GreetingKey = 
-  | "dashboard.header.greeting.morning"
-  | "dashboard.header.greeting.afternoon"
-  | "dashboard.header.greeting.evening"
+  | "dashboard:header.greeting.morning"
+  | "dashboard:header.greeting.afternoon"
+  | "dashboard:header.greeting.evening"
 
 const DAYS_KEYS = [
-  "dashboard.header.days.0",
-  "dashboard.header.days.1",
-  "dashboard.header.days.2",
-  "dashboard.header.days.3",
-  "dashboard.header.days.4",
-  "dashboard.header.days.5",
-  "dashboard.header.days.6",
+  "dashboard:header.days.0",
+  "dashboard:header.days.1",
+  "dashboard:header.days.2",
+  "dashboard:header.days.3",
+  "dashboard:header.days.4",
+  "dashboard:header.days.5",
+  "dashboard:header.days.6",
 ] as const
 
 const MONTHS_KEYS = [
-  "dashboard.header.months.0",
-  "dashboard.header.months.1",
-  "dashboard.header.months.2",
-  "dashboard.header.months.3",
-  "dashboard.header.months.4",
-  "dashboard.header.months.5",
-  "dashboard.header.months.6",
-  "dashboard.header.months.7",
-  "dashboard.header.months.8",
-  "dashboard.header.months.9",
-  "dashboard.header.months.10",
-  "dashboard.header.months.11",
+  "dashboard:header.months.0",
+  "dashboard:header.months.1",
+  "dashboard:header.months.2",
+  "dashboard:header.months.3",
+  "dashboard:header.months.4",
+  "dashboard:header.months.5",
+  "dashboard:header.months.6",
+  "dashboard:header.months.7",
+  "dashboard:header.months.8",
+  "dashboard:header.months.9",
+  "dashboard:header.months.10",
+  "dashboard:header.months.11",
 ] as const
 
 function getGreetingKey(): GreetingKey {
   const hour = new Date().getHours()
-  if (hour < 12) return "dashboard.header.greeting.morning"
-  if (hour < 20) return "dashboard.header.greeting.afternoon"
-  return "dashboard.header.greeting.evening"
+  if (hour < 12) return "dashboard:header.greeting.morning"
+  if (hour < 20) return "dashboard:header.greeting.afternoon"
+  return "dashboard:header.greeting.evening"
 }
 
 function getCurrentWeek(): number {
@@ -74,13 +74,13 @@ export function Header({
   defaultPeriod = "month",
   hidePeriodSelector = false,
 }: DashboardHeaderProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'nav', 'common'])
   const { user } = useAuth()
 
   const date = useMemo(() => formatDate(), [])
   const greetingKey = useMemo(() => getGreetingKey(), [])
 
-  const userName = user?.name || user?.email?.split("@")[0] || t("nav.guest")
+  const userName = user?.name || user?.email?.split("@")[0] || t('nav:guest')
 
   const handlePeriodChange = (period: PeriodFilter) => {
     onPeriodChange?.(period)
@@ -106,7 +106,7 @@ export function Header({
           <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
 
           <span className="capitalize font-medium">
-            {t("dashboard.header.dateFormat", {
+            {t('dashboard:header.dateFormat', {
               month: t(MONTHS_KEYS[date.monthIndex]),
               year: date.year
             })}
@@ -115,7 +115,7 @@ export function Header({
           <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
 
           <span className="font-medium">
-            {t("dashboard.header.week", { week: date.week })}
+            {t('dashboard:header.week', { week: date.week })}
           </span>
         </div>
       </div>

@@ -1,0 +1,42 @@
+{
+  "steps": {
+    "title": "Primeros pasos",
+    "subtitle": "Comienza a gestionar tus finanzas en menos de 5 minutos con nuestra guía rápida.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Crea tu cuenta",
+        "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
+      },
+      {
+        "number": "02",
+        "title": "Crea tu primera categoría",
+        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
+      },
+      {
+        "number": "03",
+        "title": "Registra tus gastos",
+        "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
+      }
+    ]
+  },
+  "wiki": {
+    "link": "Consultar la wiki completa"
+  },
+  "news": {
+    "title": "Novedades recientes",
+    "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
+    "items": [
+      {
+        "tag": "v0.0.4",
+        "title": "Japonés añadido. Ahora es posible exportar e importar datos entre cuentas sin limitaciones de usuario.",
+        "description": "Ahora es posible exportar los datos a un archivo JSON e importarlos en otra cuenta. Esto elimina las restricciones en la migración de información, permitiendo una gestión de datos más flexible. Además, se ha añadido soporte para el idioma japonés."
+      },
+      {
+        "tag": "v0.0.3",
+        "title": "Arreglos de fallos visuales y de lógica",
+        "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+      }
+    ]
+  }
+}

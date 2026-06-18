@@ -171,7 +171,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
         <div className="relative w-full sm:w-[320px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder={t("transactions.search")}
+            placeholder={t('transactions:search')}
             className="pl-10 bg-card border-border h-9 sm:h-10 text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -183,7 +183,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {paginatedData.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 text-sm">
-            {t("transactions.empty")}
+            {t('transactions:empty')}
           </p>
         ) : (
           <>
@@ -258,7 +258,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                           variant="ghost"
                           size="icon"
                           className="size-8"
-                          aria-label={t("transactions.moreOptions")}
+                          aria-label={t('transactions:moreOptions')}
                         >
                           <MoreHorizontal size={16} aria-hidden="true" />
                         </Button>
@@ -268,13 +268,13 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                           className="cursor-pointer"
                           onClick={() => setEditingTransaction(tx)}
                         >
-                          {t("transactions.edit")}
+                          {t('transactions:edit')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive cursor-pointer"
                           onClick={() => setDeletingTransaction(tx)}
                         >
-                          {t("transactions.delete")}
+                          {t('transactions:delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -323,7 +323,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                             variant="ghost"
                             size="icon"
                             className="size-8"
-                            aria-label={t("transactions.moreOptions")}
+                            aria-label={t('transactions:moreOptions')}
                           >
                             <MoreHorizontal size={16} aria-hidden="true" />
                           </Button>
@@ -333,13 +333,13 @@ export function TransactionList({ period: _period }: TransactionListProps) {
                             className="cursor-pointer"
                             onClick={() => setEditingTransaction(tx)}
                           >
-                            {t("transactions.edit")}
+                            {t('transactions:edit')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive cursor-pointer"
                             onClick={() => setDeletingTransaction(tx)}
                           >
-                            {t("transactions.delete")}
+                            {t('transactions:delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -383,7 +383,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
         {totalPages > 1 && (
           <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
             <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
-              {t("transactions.showingInterval", {
+              {t("transactions:showingInterval", {
                 from: (currentPage - 1) * ITEMS_PER_PAGE + 1,
                 to: Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length),
                 total: filteredData.length
@@ -428,8 +428,8 @@ export function TransactionList({ period: _period }: TransactionListProps) {
         itemName={deletingTransaction?.description || ""}
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
-        title={t("transactions.deleteTitle")}
-        description={t("transactions.deleteConfirmation", { name: deletingTransaction?.description || "" })}
+        title={t('transactions:deleteTitle')}
+        description={t("transactions:deleteConfirmation", { name: deletingTransaction?.description || "" })}
       />
     </div>
   )

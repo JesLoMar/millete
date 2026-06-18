@@ -20,7 +20,7 @@ interface CategoryTableProps {
 }
 
 export function CategoryTable({ period }: CategoryTableProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common', 'dashboard', 'transactions'])
   const { data: categories = [], isLoading } = useCategories()
   const { deleteCategory, isDeleting } = useCategoryMutations()
 
@@ -97,7 +97,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
         <div className="relative w-full sm:w-[320px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder={t("categories.search")}
+            placeholder={t('categories:search')}
             className="pl-10 bg-card border-border h-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -105,10 +105,10 @@ export function CategoryTable({ period }: CategoryTableProps) {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-lg">
-            {t(`dashboard.header.period.${period}`)}
+            {t(`dashboard:header.period.${period}`)}
           </span>
           <p className="text-sm text-muted-foreground">
-            {t("categories.showing", { total: filteredData.length })}
+            {t('categories:showing', { total: filteredData.length })}
           </p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
         <div className="flex flex-col">
           {paginatedItems.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
-              {t("categories.empty")}
+              {t('categories:empty')}
             </p>
           ) : (
             paginatedItems.map((cat) => (
@@ -137,7 +137,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
         {totalPages > 1 && (
           <div className="px-6 py-4 flex items-center justify-between border-t border-border bg-background/20">
             <p className="text-xs text-muted-foreground font-medium">
-              {t("transactions.showingInterval", {
+              {t('transactions:showingInterval', {
                 from: (currentPage - 1) * 10 + 1,
                 to: Math.min(currentPage * 10, filteredData.length),
                 total: filteredData.length,

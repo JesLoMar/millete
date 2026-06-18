@@ -28,15 +28,15 @@ export function CurrencySelector() {
   return (
     <SettingsSection
       icon={Coins}
-      title={t('settings.currency.title')}
-      description={t('settings.currency.description')}
+      title={t('settings:currency.title')}
+      description={t('settings:currency.description')}
     >
       <Select
         value={selectedCurrency}
         onValueChange={(value) => setSelectedCurrency(value as CurrencyCode)}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder={t('settings.currency.placeholder')} />
+          <SelectValue placeholder={t('settings:currency.placeholder')} />
         </SelectTrigger>
         <SelectContent>
           {currencies.map((currency) => (

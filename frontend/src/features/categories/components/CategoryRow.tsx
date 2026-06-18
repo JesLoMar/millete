@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 import type { Category } from "../types"
 
 interface CategoryRowProps {
@@ -21,7 +22,7 @@ interface CategoryRowProps {
 }
 
 export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, onDelete }: CategoryRowProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
   const isOverBudget = percentage >= 100
   const hasBudget = budgetLimit !== null && budgetLimit > 0
 
@@ -57,15 +58,15 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
             </div>
           ) : (
             <p className="text-xs text-muted-foreground italic">
-              {t("categories.noBudgetTooltip")}
+              {t('categories:noBudgetTooltip')}
             </p>
           )}
         </div>
 
         <div className="w-40 text-right text-sm text-muted-foreground tabular-nums">
           {hasBudget
-            ? `${spent.toLocaleString("es-ES")} € / ${budgetLimit!.toLocaleString("es-ES")} €`
-            : `${spent.toLocaleString("es-ES")} € / —`}
+            ? `${formatCurrency(spent)} / ${formatCurrency(budgetLimit!)}`
+            : `${formatCurrency(spent)} / —`}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -73,7 +74,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={t("categories.edit")}
+              aria-label={t('categories:edit')}
             >
               <MoreHorizontal size={16} aria-hidden="true" />
             </Button>
@@ -81,11 +82,11 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
           <DropdownMenuContent align="end" className="bg-card border-border">
             <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(category)}>
               <Edit2 className="mr-2 size-4" aria-hidden="true" />
-              {t("categories.edit")}
+              {t('categories:edit')}
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(category)}>
               <Trash2 className="mr-2 size-4" aria-hidden="true" />
-              {t("categories.delete")}
+              {t('categories:delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -105,7 +106,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 -mr-1"
-                aria-label={t("categories.edit")}
+                aria-label={t('categories:edit')}
               >
                 <MoreHorizontal size={15} aria-hidden="true" />
               </Button>
@@ -113,11 +114,11 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
             <DropdownMenuContent align="end" className="bg-card border-border">
               <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(category)}>
                 <Edit2 className="mr-2 size-4" aria-hidden="true" />
-                {t("categories.edit")}
+                {t('categories:edit')}
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(category)}>
                 <Trash2 className="mr-2 size-4" aria-hidden="true" />
-                {t("categories.delete")}
+                {t('categories:delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -143,14 +144,14 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
               </div>
             ) : (
               <p className="text-xs text-muted-foreground italic">
-                {t("categories.noBudgetTooltip")}
+                {t('categories:noBudgetTooltip')}
               </p>
             )}
           </div>
           <span className="text-xs text-muted-foreground tabular-nums shrink-0 text-right">
             {hasBudget
-              ? `${spent.toLocaleString("es-ES")} € / ${budgetLimit!.toLocaleString("es-ES")} €`
-              : `${spent.toLocaleString("es-ES")} € / —`}
+              ? `${formatCurrency(spent)} / ${formatCurrency(budgetLimit!)}`
+              : `${formatCurrency(spent)} / —`}
           </span>
         </div>
       </div>

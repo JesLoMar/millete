@@ -101,7 +101,7 @@ const ToastContent = ({
         type="button"
         onClick={onClose}
         className={`p-1 rounded-full transition-colors shrink-0 ${styles.closeHover}`}
-        aria-label={t("common.close")}
+        aria-label={t('common:actions.close')}
       >
         <X className="size-3.5" />
       </button>

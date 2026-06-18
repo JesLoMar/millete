@@ -11,7 +11,7 @@ interface ImportModalProps {
 }
 
 export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const [dragOver, setDragOver] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +47,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
 
   const validateAndSetFile = (file: File) => {
     if (file.type !== "application/json" && !file.name.endsWith(".json")) {
-      setError(t("dashboard.importModal.jsonOnly"))
+      setError(t('dashboard:importModal.jsonOnly'))
       return
     }
     setFileName(file.name)
@@ -78,10 +78,10 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
       <DialogContent className="sm:max-w-120 bg-card border-border p-6 text-white rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">
-            {t("dashboard.importModal.title")}
+            {t('dashboard:importModal.title')}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            {t("dashboard.importModal.description")}
+            {t('dashboard:importModal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -103,8 +103,8 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                 <Upload className="size-6" />
               </div>
               <div className="text-center space-y-1">
-                <p className="text-sm font-medium">{t("dashboard.importModal.dropHere")}</p>
-                <p className="text-xs text-muted-foreground">{t("dashboard.importModal.onlyJson")}</p>
+                <p className="text-sm font-medium">{t('dashboard:importModal.dropHere')}</p>
+                <p className="text-xs text-muted-foreground">{t('dashboard:importModal.onlyJson')}</p>
               </div>
             </>
           ) : (
@@ -117,7 +117,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                 type="button" 
                 onClick={removeFile} 
                 className="p-1.5 hover:bg-secondary/60 rounded-full text-muted-foreground hover:text-white transition-colors" 
-                aria-label={t("common.delete")}
+                aria-label={t('common:actions.delete')}
               >
                 <X className="size-4" />
               </button>
@@ -133,11 +133,11 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
 
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="outline" onClick={onClose} className="border-border hover:bg-secondary text-white">
-            {t("common.cancel")}
+            {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!selectedFile} className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl px-5 transition-all">
             <CheckCircle className="mr-2 size-4" />
-            {t("common.accept")}
+            {t('common:actions.accept')}
           </Button>
         </div>
       </DialogContent>

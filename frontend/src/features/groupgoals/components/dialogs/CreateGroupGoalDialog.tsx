@@ -51,22 +51,22 @@ export function CreateGroupGoalDialog({ open, onOpenChange, onCreate }: CreateGr
         }}
       >
         <DialogHeader>
-          <DialogTitle>{t("groupGoals.createTitle")}</DialogTitle>
-          <DialogDescription>{t("groupGoals.createDesc")}</DialogDescription>
+          <DialogTitle>{t('groupGoals:createTitle')}</DialogTitle>
+          <DialogDescription>{t('groupGoals:createDesc')}</DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label>{t("groupGoals.familyName")}</Label>
+            <Label>{t('groupGoals:familyName')}</Label>
             <Input
               ref={inputRef}
-              placeholder={t("groupGoals.familyNamePlaceholder")}
+              placeholder={t('groupGoals:familyNamePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="bg-background border-border"
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("groupGoals.monthlyGoal")} (€)</Label>
+            <Label>{t('groupGoals:monthlyGoal')} (€)</Label>
             <Input
               type="number"
               placeholder="0"
@@ -76,25 +76,25 @@ export function CreateGroupGoalDialog({ open, onOpenChange, onCreate }: CreateGr
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("groupGoals.distributionMode")}</Label>
+            <Label>{t('groupGoals:distributionMode')}</Label>
             <Select value={distributionMode} onValueChange={setDistributionMode}>
               <SelectTrigger className="bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">
-                <SelectItem value="EQUITATIVE">{t("groupGoals.modes.equitative")}</SelectItem>
-                <SelectItem value="PROPORTIONAL">{t("groupGoals.modes.proportional")}</SelectItem>
-                <SelectItem value="CUSTOM">{t("groupGoals.modes.custom")}</SelectItem>
+                <SelectItem value="EQUITATIVE">{t('groupGoals:modes.equitative')}</SelectItem>
+                <SelectItem value="PROPORTIONAL">{t('groupGoals:modes.proportional')}</SelectItem>
+                <SelectItem value="CUSTOM">{t('groupGoals:modes.custom')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
-            {t("common.cancel")}
+            {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleCreate} disabled={!name.trim() || monthlyTarget <= 0}>
-            {t("groupGoals.create")}
+            {t('groupGoals:create')}
           </Button>
         </DialogFooter>
       </DialogContent>

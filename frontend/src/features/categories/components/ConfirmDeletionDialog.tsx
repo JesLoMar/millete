@@ -29,7 +29,7 @@ export function ConfirmDeletionDialog({
   title,
   description,
 }: ConfirmDeletionDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,10 +39,10 @@ export function ConfirmDeletionDialog({
             <AlertTriangle className="size-8 text-destructive" />
           </div>
           <DialogTitle className="text-xl font-semibold text-center">
-            {title || t("categories.deleteTitle")}
+            {title || t('categories:deleteTitle')}
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
-            {description || t("categories.deleteConfirmation", { name: itemName })}
+            {description || t('categories:deleteConfirmation', { name: itemName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -53,7 +53,7 @@ export function ConfirmDeletionDialog({
             disabled={isDeleting}
             className="border-border"
           >
-            {t("common.cancel")}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             onClick={onConfirm}
@@ -61,7 +61,7 @@ export function ConfirmDeletionDialog({
             variant="destructive"
             className="gap-2"
           >
-            {isDeleting ? t("common.deleting") : t("common.delete")}
+            {isDeleting ? t('common:actions.deleting') : t('common:actions.delete')}
           </Button>
         </DialogFooter>
       </DialogContent>

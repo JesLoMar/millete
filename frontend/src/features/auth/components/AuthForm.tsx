@@ -22,7 +22,7 @@ import type { RegisterUserRequest } from "../types"
 
 export function AuthForm() {
   const [mode, setMode] = useState<"login" | "register">("login")
-  const { t } = useTranslation()
+  const { t } = useTranslation(['auth', 'common'])
 
   const currentSchema = mode === "login" ? loginSchema : registerSchema
 
@@ -70,10 +70,10 @@ export function AuthForm() {
 
       <div className="space-y-3 sm:space-y-4">
         <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
-          <Trans i18nKey="auth.greeting" />
+          <Trans i18nKey="auth:greeting" />
         </h1>
         <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
-          {t("auth.brand.tagline")}
+          {t('auth:brand.tagline')}
         </p>
       </div>
 
@@ -98,12 +98,12 @@ export function AuthForm() {
 
           {isLoginError && mode === "login" && (
             <p className="text-red-400 text-sm font-medium">
-              {t("auth.form.error.invalidCredentials")}
+              {t('auth:errors.invalidCredentials')}
             </p>
           )}
           {isRegisterError && mode === "register" && (
             <p className="text-red-400 text-sm font-medium">
-              {t("auth.form.error.registerFailed")}
+              {t('auth:errors.registerFailed')}
             </p>
           )}
 
@@ -113,10 +113,10 @@ export function AuthForm() {
             className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg font-bold rounded-xl transition-all group mt-4 cursor-pointer"
           >
             {isPending
-              ? t("auth.submit.loading")
+              ? t('auth:submit.loading')
               : mode === "login"
-                ? t("auth.submit.default")
-                : t("auth.submit.register")}
+                ? t('auth:submit.default')
+                : t('auth:submit.register')}
             <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
           </Button>
         </form>

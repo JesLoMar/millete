@@ -19,10 +19,10 @@ export const useCreateSavingsGoal = () => {
     mutationFn: (dto: CreateSavingsGoalDTO) => savingsGoalsService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
-      toast.success(t("savingsGoals.alerts.createSuccess"));
+      toast.success(t('savingsGoals:alerts.createSuccess'));
     },
     onError: () => {
-      toast.error(t("savingsGoals.alerts.createError"));
+      toast.error(t('savingsGoals:alerts.createError'));
     },
   });
 };
@@ -36,10 +36,10 @@ export const useUpdateSavingsGoal = () => {
       savingsGoalsService.update(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
-      toast.success(t("savingsGoals.alerts.updateSuccess"));
+      toast.success(t('savingsGoals:alerts.updateSuccess'));
     },
     onError: () => {
-      toast.error(t("savingsGoals.alerts.updateError"));
+      toast.error(t('savingsGoals:alerts.updateError'));
     },
   });
 };
@@ -52,10 +52,10 @@ export const useDeleteSavingsGoal = () => {
     mutationFn: (id: string) => savingsGoalsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
-      toast.success(t("savingsGoals.alerts.deleteSuccess"));
+      toast.success(t('savingsGoals:alerts.deleteSuccess'));
     },
     onError: () => {
-      toast.error(t("savingsGoals.alerts.deleteError"));
+      toast.error(t('savingsGoals:alerts.deleteError'));
     },
   });
 };
@@ -69,10 +69,10 @@ export const useAddContribution = () => {
       savingsGoalsService.addContribution(id, amount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings-goals"] });
-      toast.success(t("savingsGoals.alerts.contributionSuccess"));
+      toast.success(t('savingsGoals:alerts.contributionSuccess'));
     },
     onError: () => {
-      toast.error(t("savingsGoals.alerts.contributionError"));
+      toast.error(t('savingsGoals:alerts.contributionError'));
     },
   });
 };

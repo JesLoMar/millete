@@ -54,7 +54,7 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
       setNeedsConfirmation(false)
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("investments.updatePriceError")
+      const message = apiError?.response?.data?.message || t('investments:updatePriceError')
       notify.error(message)
     }
   }
@@ -63,7 +63,7 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
     <Dialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) setNeedsConfirmation(false) }}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="h-8 text-primary font-semibold hover:bg-primary/10 px-3 rounded-lg">
-          {t("investments.updatePrice")}
+          {t('investments:updatePrice')}
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -74,13 +74,13 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">{t("investments.marketPrice")}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">{t('investments:marketPrice')}</DialogTitle>
           <p className="text-sm text-muted-foreground">{assetName}</p>
         </DialogHeader>
 
         <div className="py-4 space-y-3">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("investments.newPrice")}</Label>
+            <Label className="text-sm font-semibold">{t('investments:newPrice')}</Label>
             <Input
               ref={inputRef}
               type="number"
@@ -97,9 +97,9 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
             <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
               <AlertTriangle className="size-4 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold">{t("investments.alerts.warningTitle")}</p>
+                <p className="font-bold">{t('investments:alerts.warningTitle')}</p>
                 <p className="text-muted-foreground mt-0.5">
-                  {t("investments.alerts.warningDesc")}
+                  {t('investments:alerts.warningDesc')}
                 </p>
               </div>
             </div>
@@ -116,9 +116,9 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
             {isUpdating ? (
               <Loader2 size={16} className="animate-spin" />
             ) : needsConfirmation ? (
-              t("investments.confirmUpdate")
+              t('investments:confirmUpdate')
             ) : (
-              t("investments.updateNow")
+              t('investments:updateNow')
             )}
           </Button>
         </DialogFooter>

@@ -18,6 +18,7 @@ import savingsGoalsES from "@/assets/locales/es/savingsGoals.json";
 import settingsES from "@/assets/locales/es/settings.json";
 import apiES from "@/assets/locales/es/api.json";
 import wikiES from "@/assets/locales/es/wiki.json";
+import infoES from "@/assets/locales/es/info.json";
 
 // ============================================
 // IMPORTAR INGLÉS (completo)
@@ -35,6 +36,7 @@ import enSavingsGoals from "@/assets/locales/en/savingsGoals.json";
 import enSettings from "@/assets/locales/en/settings.json";
 import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
+import enInfo from "@/assets/locales/en/info.json";
 
 // ============================================
 // IMPORTAR ALEMÁN (pendiente de traducción)
@@ -52,6 +54,7 @@ import deSavingsGoals from "@/assets/locales/de/savingsGoals.json";
 import deSettings from "@/assets/locales/de/settings.json";
 import deApi from "@/assets/locales/de/api.json";
 import deWiki from "@/assets/locales/de/wiki.json";
+import deInfo from "@/assets/locales/de/info.json";
 
 // ============================================
 // IMPORTAR FRANCÉS (pendiente de traducción)
@@ -69,6 +72,7 @@ import frSavingsGoals from "@/assets/locales/fr/savingsGoals.json";
 import frSettings from "@/assets/locales/fr/settings.json";
 import frApi from "@/assets/locales/fr/api.json";
 import frWiki from "@/assets/locales/fr/wiki.json";
+import frInfo from "@/assets/locales/fr/info.json";
 
 // ============================================
 // IMPORTAR ITALIANO (pendiente de traducción)
@@ -86,6 +90,7 @@ import itSavingsGoals from "@/assets/locales/it/savingsGoals.json";
 import itSettings from "@/assets/locales/it/settings.json";
 import itApi from "@/assets/locales/it/api.json";
 import itWiki from "@/assets/locales/it/wiki.json";
+import itInfo from "@/assets/locales/it/info.json";
 
 // ============================================
 // IMPORTAR PORTUGUÉS (pendiente de traducción)
@@ -103,6 +108,7 @@ import ptSavingsGoals from "@/assets/locales/pt/savingsGoals.json";
 import ptSettings from "@/assets/locales/pt/settings.json";
 import ptApi from "@/assets/locales/pt/api.json";
 import ptWiki from "@/assets/locales/pt/wiki.json";
+import ptInfo from "@/assets/locales/pt/info.json";
 
 // ============================================
 // IMPORTAR JAPONÉS (pendiente de traducción)
@@ -120,6 +126,7 @@ import jaSavingsGoals from "@/assets/locales/ja/savingsGoals.json";
 import jaSettings from "@/assets/locales/ja/settings.json";
 import jaApi from "@/assets/locales/ja/api.json";
 import jaWiki from "@/assets/locales/ja/wiki.json";
+import jaInfo from "@/assets/locales/ja/info.json";
 
 // ============================================
 // CONFIGURACIÓN DE I18N
@@ -144,6 +151,7 @@ i18n
       "settings",
       "api",
       "wiki",
+      "info",
     ],
     defaultNS: "common",
     debug: import.meta.env.DEV,
@@ -168,6 +176,7 @@ i18n
         settings: settingsES,
         api: apiES,
         wiki: wikiES,
+        info: infoES,
       },
 
       // ==========================================
@@ -187,6 +196,7 @@ i18n
         settings: enSettings,
         api: enApi,
         wiki: enWiki,
+        info: enInfo,
       },
 
       // ==========================================
@@ -206,6 +216,7 @@ i18n
         settings: deSettings,
         api: deApi,
         wiki: deWiki,
+        info: deInfo,
       },
 
       // ==========================================
@@ -225,6 +236,7 @@ i18n
         settings: frSettings,
         api: frApi,
         wiki: frWiki,
+        info: frInfo,
       },
 
       // ==========================================
@@ -244,6 +256,7 @@ i18n
         settings: itSettings,
         api: itApi,
         wiki: itWiki,
+        info: itInfo,
       },
 
       // ==========================================
@@ -263,6 +276,7 @@ i18n
         settings: ptSettings,
         api: ptApi,
         wiki: ptWiki,
+        info: ptInfo,
       },
 
       // ==========================================
@@ -282,6 +296,7 @@ i18n
         settings: jaSettings,
         api: jaApi,
         wiki: jaWiki,
+        info: jaInfo,
       },
     },
   });

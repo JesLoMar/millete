@@ -35,10 +35,10 @@ export const JoinGroupGoalPage = () => {
             <div className="bg-destructive/10 p-4 rounded-full w-fit mx-auto">
               <XCircle className="size-12 text-destructive" />
             </div>
-            <h2 className="text-xl font-semibold">{t("groupGoals.error")}</h2>
-            <p className="text-muted-foreground">{t("groupGoals.invalidToken")}</p>
+            <h2 className="text-xl font-semibold">{t('groupGoals:error')}</h2>
+            <p className="text-muted-foreground">{t('groupGoals:invalidToken')}</p>
             <Button variant="outline" onClick={() => navigate("/dashboard")}>
-              {t("nav.goToDashboard")}
+              {t('nav:goToDashboard')}
             </Button>
           </CardContent>
         </Card>
@@ -51,13 +51,13 @@ export const JoinGroupGoalPage = () => {
     try {
       await apiClient.post(`/goals/invitations/${token}/accept`)
       setStatus("success")
-      const successMsg = t("groupGoals.invitationAccepted")
+      const successMsg = t('groupGoals:invitationAccepted')
       setMessage(successMsg)
       notify.success(successMsg)
     } catch (err) {
       const apiError = err as ApiError
       setStatus("error")
-      const errorMsg = apiError.response?.data?.message || t("groupGoals.invitationError")
+      const errorMsg = apiError.response?.data?.message || t('groupGoals:invitationError')
       setMessage(errorMsg)
       notify.error(errorMsg)
     }
@@ -88,16 +88,16 @@ export const JoinGroupGoalPage = () => {
               <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto">
                 <Users className="size-12 text-primary" />
               </div>
-              <h2 className="text-xl font-semibold">{t("groupGoals.invitationReceived")}</h2>
-              <p className="text-muted-foreground">{t("groupGoals.invitationMessage")}</p>
+              <h2 className="text-xl font-semibold">{t('groupGoals:invitationReceived')}</h2>
+              <p className="text-muted-foreground">{t('groupGoals:invitationMessage')}</p>
               <div className="flex gap-3 justify-center">
                 <Button onClick={handleAccept} className="gap-2">
                   <CheckCircle className="size-4" />
-                  {t("common.accept")}
+                  {t('common:actions.accept')}
                 </Button>
                 <Button variant="outline" onClick={handleReject}>
                   <XCircle className="size-4" />
-                  {t("common.reject")}
+                  {t('common:actions.reject')}
                 </Button>
               </div>
             </>
@@ -106,7 +106,7 @@ export const JoinGroupGoalPage = () => {
           {status === "accepting" && (
             <div className="space-y-4 py-6">
               <Loader2 className="size-12 text-primary animate-spin mx-auto" />
-              <p className="text-muted-foreground text-sm">{t("groupGoals.processingInvitation")}</p>
+              <p className="text-muted-foreground text-sm">{t('groupGoals:processingInvitation')}</p>
             </div>
           )}
 
@@ -115,11 +115,11 @@ export const JoinGroupGoalPage = () => {
               <div className="bg-emerald-500/10 p-4 rounded-full w-fit mx-auto">
                 <CheckCircle className="size-12 text-emerald-500" />
               </div>
-              <h2 className="text-xl font-semibold">{t("groupGoals.welcome")}</h2>
+              <h2 className="text-xl font-semibold">{t('groupGoals:welcome')}</h2>
               <p className="text-muted-foreground">{message}</p>
               <Button onClick={() => navigate("/group-goals")} className="gap-2">
                 <Users className="size-4" />
-                {t("groupGoals.goToFamily")}
+                {t('groupGoals:goToFamily')}
               </Button>
             </>
           )}
@@ -129,10 +129,10 @@ export const JoinGroupGoalPage = () => {
               <div className="bg-destructive/10 p-4 rounded-full w-fit mx-auto">
                 <XCircle className="size-12 text-destructive" />
               </div>
-              <h2 className="text-xl font-semibold">{t("groupGoals.error")}</h2>
+              <h2 className="text-xl font-semibold">{t('groupGoals:error')}</h2>
               <p className="text-muted-foreground">{message}</p>
               <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                {t("nav.goToDashboard")}
+                {t('nav:goToDashboard')}
               </Button>
             </>
           )}

@@ -10,14 +10,12 @@ interface PeriodSelectorProps {
 }
 
 export function PeriodSelector({ period, onPeriodChange, className }: PeriodSelectorProps) {
-  const { t } = useTranslation()
-  
-  const tDynamic = t as unknown as (key: string) => string;
+  const { t } = useTranslation(['dashboard'])
 
   const options = [
-    { value: "week" as PeriodFilter, labelKey: "dashboard.header.period.week" },
-    { value: "month" as PeriodFilter, labelKey: "dashboard.header.period.month" },
-    { value: "year" as PeriodFilter, labelKey: "dashboard.header.period.year" },
+    { value: "week" as PeriodFilter, labelKey: "header.period.week" as const },
+    { value: "month" as PeriodFilter, labelKey: "header.period.month" as const },
+    { value: "year" as PeriodFilter, labelKey: "header.period.year" as const },
   ]
 
   return (
@@ -27,7 +25,7 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
         className
       )}
       role="group"
-      aria-label={t("dashboard.header.period.ariaLabel")}
+      aria-label={t('header.period.ariaLabel')}
     >
       {options.map((option) => {
         const isActive = period === option.value
@@ -48,7 +46,7 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
             aria-current={isActive ? "true" : undefined}
           >
             <span className="truncate w-full block text-center">
-              {tDynamic(option.labelKey)}
+              {t(option.labelKey)}
             </span>
           </button>
         )

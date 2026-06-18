@@ -29,7 +29,7 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
 
   const handleInvite = () => {
     if (!isValidEmail) {
-      setError(t("groupGoals.invalidEmail"))
+      setError(t('groupGoals:invalidEmail'))
       return
     }
     onInvite(email.trim())
@@ -50,18 +50,18 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{t("groupGoals.inviteTitle")}</DialogTitle>
+          <DialogTitle>{t('groupGoals:inviteTitle')}</DialogTitle>
           <DialogDescription>
-            {t("groupGoals.inviteDesc")}
+            {t('groupGoals:inviteDesc')}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t("groupGoals.email")}</Label>
+            <Label htmlFor="email">{t('groupGoals:email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder={t("groupGoals.emailPlaceholder")}
+              placeholder={t('groupGoals:emailPlaceholder')}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value)
@@ -76,10 +76,10 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)} className="border-border">
-            {t("common.cancel")}
+            {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleInvite} disabled={!email.trim()}>
-            {t("groupGoals.sendInvitation")}
+            {t('groupGoals:sendInvitation')}
           </Button>
         </DialogFooter>
       </DialogContent>

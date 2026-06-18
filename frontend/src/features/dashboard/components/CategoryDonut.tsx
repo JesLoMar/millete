@@ -16,7 +16,7 @@ export function CategoryDonut({
   loading = false,
   title,
 }: CategoryDonutProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const chartData = externalData || []
   const [activeItem, setActiveItem] = useState<{ label: string; value: string; color: string } | null>(null)
 
@@ -47,12 +47,12 @@ export function CategoryDonut({
       <Card className="col-span-1 md:col-span-4 border-subtle">
         <CardHeader>
           <CardTitle className="text-lg font-headline font-bold">
-            {title || t("dashboard.donut.title")}
+            {title || t('dashboard:donut.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="h-75 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.donut.empty")}
+            {t('dashboard:donut.empty')}
           </p>
         </CardContent>
       </Card>
@@ -63,7 +63,7 @@ export function CategoryDonut({
     <Card className="col-span-1 md:col-span-4 border-subtle">
       <CardHeader>
         <CardTitle className="text-lg font-headline font-bold">
-          {title || t("dashboard.donut.title")}
+          {title || t('dashboard:donut.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center pt-0">

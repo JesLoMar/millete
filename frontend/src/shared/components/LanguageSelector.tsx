@@ -17,7 +17,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ className }: LanguageSelectorProps) {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['nav', 'common'])
   const availableLanguages = useAvailableLanguages()
 
   const currentLanguage = availableLanguages.find(
@@ -28,7 +28,7 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
     try {
       await i18n.changeLanguage(langCode)
     } catch (error) {
-      notify.error(t("nav.errors.languageChangeFailed"))
+      notify.error(t('nav:errors.languageChangeFailed'))
     }
   }, [i18n, t])
 
@@ -48,7 +48,7 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
             {currentLanguage?.code.toUpperCase() || "??"}
           </span>
           <ChevronDown className="size-4 opacity-50" />
-          <span className="sr-only">{t("nav.changeLanguage")}</span>
+          <span className="sr-only">{t('nav:changeLanguage')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">

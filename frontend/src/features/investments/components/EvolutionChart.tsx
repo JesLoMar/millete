@@ -35,12 +35,12 @@ export function EvolutionChart({ data: response, isLoading }: EvolutionChartProp
   return (
     <Card className="border-subtle h-95">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-headline font-bold">{t("investments.evolution")}</CardTitle>
+        <CardTitle className="text-lg font-headline font-bold">{t('investments:evolution')}</CardTitle>
         <span
           className="text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full"
           style={{ fontFamily: "var(--font-sans)" }}
         >
-          {t("investments.lastMonths", { count: barData.length })}
+          {t("investments:lastMonths", { count: barData.length })}
         </span>
       </CardHeader>
       <CardContent className="h-75 w-full pt-2">

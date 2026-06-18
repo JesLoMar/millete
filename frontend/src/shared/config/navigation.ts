@@ -31,7 +31,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "dashboard",
     icon: LayoutDashboard,
-    labelKey: "sidebar.dashboard",
+    labelKey: "dashboard",
     path: "/dashboard",
     enabled: true,
     section: "main",
@@ -40,7 +40,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "categories",
     icon: LayoutGrid,
-    labelKey: "sidebar.categories",
+    labelKey: "categories",
     path: "/categories",
     enabled: true,
     section: "main",
@@ -49,7 +49,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "transactions",
     icon: ArrowLeftRight,
-    labelKey: "sidebar.transactions",
+    labelKey: "transactions",
     path: "/transactions",
     enabled: true,
     section: "main",
@@ -58,7 +58,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "investments",
     icon: TrendingUp,
-    labelKey: "sidebar.investments",
+    labelKey: "investments",
     path: "/investments",
     enabled: true,
     section: "main",
@@ -67,7 +67,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "savingsgoals",
     icon: PiggyBank,
-    labelKey: "sidebar.savingsgoals",
+    labelKey: "savingsgoals",
     path: "/savings-goals",
     enabled: true,
     section: "main",
@@ -76,7 +76,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "groupgoals",
     icon: PieChart,
-    labelKey: "sidebar.groupgoals",
+    labelKey: "groupgoals",
     path: "/group-goals",
     enabled: true,
     section: "main",
@@ -85,7 +85,7 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "settings",
     icon: Settings,
-    labelKey: "sidebar.settings",
+    labelKey: "settings",
     path: "/settings",
     enabled: true,
     section: "bottom",

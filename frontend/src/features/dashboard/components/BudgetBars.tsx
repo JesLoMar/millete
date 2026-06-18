@@ -18,7 +18,7 @@ export function BudgetBars({
   data: externalData,
   loading = false,
 }: BudgetBarsProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const [currentPage, setCurrentPage] = useState(1)
   
   const budgets = externalData || []
@@ -57,12 +57,12 @@ export function BudgetBars({
       <Card className="col-span-1 md:col-span-5 border-subtle">
         <CardHeader>
           <CardTitle className="text-lg font-headline font-semibold">
-            {t("dashboard.budget.title")}
+            {t('dashboard:budget.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="min-h-85 flex items-center justify-center">
           <p className="text-center text-muted-foreground text-sm">
-            {t("dashboard.budget.empty")}
+            {t('dashboard:budget.empty')}
           </p>
         </CardContent>
       </Card>
@@ -73,7 +73,7 @@ export function BudgetBars({
     <Card className="col-span-1 md:col-span-5 border-subtle">
       <CardHeader>
         <CardTitle className="text-lg font-headline font-semibold">
-          {t("dashboard.budget.title")}
+          {t('dashboard:budget.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="min-h-85 flex flex-col">
@@ -114,10 +114,10 @@ export function BudgetBars({
                       : "text-muted-foreground"
                 }`}>
                   {isOverLimit
-                    ? t("dashboard.budget.exceededBy", {
+                    ? t('dashboard:budget.exceededBy', {
                         amount: formatNumber(exceededAmount, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                       })
-                    : t("dashboard.budget.remaining", {
+                    : t('dashboard:budget.remaining', {
                         amount: formatNumber(budget.limit - budget.spent, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                       })}
                 </p>

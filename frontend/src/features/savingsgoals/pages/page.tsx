@@ -92,7 +92,7 @@ export const SavingsGoalsPage = () => {
 
           <div className="relative">
             <Input
-              placeholder={t("savingsGoals.searchPlaceholder")}
+              placeholder={t('savingsGoals:searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full"
@@ -101,7 +101,7 @@ export const SavingsGoalsPage = () => {
               <button
                 onClick={() => setSearch("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={t("savingsGoals.clearSearch")}
+                aria-label={t('savingsGoals:clearSearch')}
               >
                 ✕
               </button>
@@ -116,7 +116,7 @@ export const SavingsGoalsPage = () => {
 
           {error && (
             <div className="text-center text-sm text-red-500 py-8">
-              {t("savingsGoals.loadingError")}
+              {t('savingsGoals:loadingError')}
             </div>
           )}
 
@@ -165,7 +165,7 @@ export const SavingsGoalsPage = () => {
         itemName={deletingGoal?.name || ""}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
-        title={t("savingsGoals.deleteGoalTitle")}
+        title={t('savingsGoals:deleteGoalTitle')}
         description={t("savingsGoals.deleteGoalConfirmation", { name: deletingGoal?.name })}
       />
     </div>

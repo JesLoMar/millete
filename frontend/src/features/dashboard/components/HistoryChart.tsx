@@ -20,7 +20,7 @@ export function HistoryChart({
   data: externalData,
   loading = false,
 }: HistoryChartProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const [tooltip, setTooltip] = useState<{ label: string; value: string; color: string } | null>(null)
 
   const chartData = externalData || []
@@ -51,15 +51,15 @@ export function HistoryChart({
       <Card className="col-span-1 md:col-span-8 border-subtle">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-lg font-headline font-bold">
-            {t("dashboard.chart.title")}
+            {t('dashboard:chart.title')}
           </CardTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full">
-            <span>{t(`dashboard.chart.periodLabel.${period}`)}</span>
+            <span>{t(`dashboard:chart.periodLabel.${period}`)}</span>
           </div>
         </CardHeader>
         <CardContent className="h-75 w-full flex items-center justify-center">
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.chart.empty")}
+            {t('dashboard:chart.empty')}
           </p>
         </CardContent>
       </Card>
@@ -70,13 +70,13 @@ export function HistoryChart({
     <Card className="col-span-1 md:col-span-8 border-subtle">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg font-headline font-bold">
-          {t("dashboard.chart.title")}
+          {t('dashboard:chart.title')}
         </CardTitle>
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full">
-          <span>{t(`dashboard.chart.periodLabel.${period}`)}</span>
+          <span>{t(`dashboard:chart.periodLabel.${period}`)}</span>
           {isTruncated && (
             <span className="text-amber-400">
-              {t("dashboard.chart.showingLast", { count: MAX_BARS })}
+              {t('dashboard:chart.showingLast', { count: MAX_BARS })}
             </span>
           )}
         </div>

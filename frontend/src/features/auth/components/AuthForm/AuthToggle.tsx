@@ -20,7 +20,7 @@ export function AuthToggle({ mode, onToggle }: AuthToggleProps) {
             : "text-muted-foreground hover:text-white"
         )}
       >
-        {t("auth.form.toggle.login")}
+        {t('auth:form.toggle.login')}
       </button>
       <button
         type="button"
@@ -32,7 +32,7 @@ export function AuthToggle({ mode, onToggle }: AuthToggleProps) {
             : "text-muted-foreground hover:text-white"
         )}
       >
-        {t("auth.form.toggle.register")}
+        {t('auth:form.toggle.register')}
       </button>
     </div>
   )

@@ -37,20 +37,20 @@ export function TelegramStatus() {
   return (
     <SettingsSection
       icon={BotMessageSquare}
-      title={t('settings.telegram.title')}
-      description={t('settings.telegram.description')}
+      title={t('settings:telegram.title')}
+      description={t('settings:telegram.description')}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <StatusIndicator status={status} />
           <span className="text-sm">
             {status === 'connected'
-              ? t('settings.telegram.connected', { username: username ?? 'N/A' })
-              : t(`settings.telegram.status.${status}`)}
+              ? t('settings:telegram.connected', { username: username ?? 'N/A' })
+              : t(`settings:telegram.status.${status}`)}
           </span>
           {connectedAt && status === 'connected' && (
             <span className="text-xs text-muted-foreground">
-              {t('settings.telegram.since', { date: new Date(connectedAt).toLocaleDateString() })}
+              {t('settings:telegram.since', { date: new Date(connectedAt).toLocaleDateString() })}
             </span>
           )}
         </div>
@@ -61,7 +61,7 @@ export function TelegramStatus() {
           disabled={isRefetching}
         >
           <RefreshCw className={cn('h-4 w-4 mr-2', isRefetching && 'animate-spin')} />
-          {t('settings.telegram.refresh')}
+          {t('settings:telegram.refresh')}
         </Button>
       </div>
     </SettingsSection>

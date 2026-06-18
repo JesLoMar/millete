@@ -61,7 +61,7 @@ export function NewInvestmentDialog() {
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("investments.createError") || "Error al registrar la inversión"
+      const message = apiError?.response?.data?.message || t('investments:createError') || "Error al registrar la inversión"
       notify.error(message)
     }
   }
@@ -73,7 +73,7 @@ export function NewInvestmentDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4 shrink-0">
           <Plus size={16} />
-          {t("investments.new")}
+          {t('investments:new')}
         </Button>
       </DialogTrigger>
 
@@ -88,17 +88,17 @@ export function NewInvestmentDialog() {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold flex items-center gap-2">
               <TrendingUp className="text-primary size-5" />
-              {t("investments.newTitle")}
+              {t('investments:newTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               <div className="col-span-2 space-y-2">
-                <Label className="text-sm font-semibold">{t("investments.assetName")}</Label>
+                <Label className="text-sm font-semibold">{t('investments:assetName')}</Label>
                 <Input
                   ref={inputRef}
-                  placeholder={t("investments.assetNamePlaceholder")}
+                  placeholder={t('investments:assetNamePlaceholder')}
                   value={assetName}
                   onChange={(e) => setAssetName(e.target.value)}
                   disabled={isCreating}
@@ -106,7 +106,7 @@ export function NewInvestmentDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("investments.ticker")}</Label>
+                <Label className="text-sm font-semibold">{t('investments:ticker')}</Label>
                 <Input
                   placeholder="AAPL"
                   value={ticker}
@@ -118,7 +118,7 @@ export function NewInvestmentDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.type")}</Label>
+              <Label className="text-sm font-semibold">{t('investments:type')}</Label>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue />
@@ -138,7 +138,7 @@ export function NewInvestmentDialog() {
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("investments.quantity")}</Label>
+                <Label className="text-sm font-semibold">{t('investments:quantity')}</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -151,7 +151,7 @@ export function NewInvestmentDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("investments.purchasePrice")}</Label>
+                <Label className="text-sm font-semibold">{t('investments:purchasePrice')}</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -166,7 +166,7 @@ export function NewInvestmentDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("investments.purchaseDate")}</Label>
+              <Label className="text-sm font-semibold">{t('investments:purchaseDate')}</Label>
               <Input
                 type="date"
                 value={purchaseDate}
@@ -179,10 +179,10 @@ export function NewInvestmentDialog() {
 
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("investments.save")}
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('investments:save')}
             </Button>
           </DialogFooter>
         </div>

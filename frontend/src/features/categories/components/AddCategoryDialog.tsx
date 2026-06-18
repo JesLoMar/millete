@@ -23,7 +23,7 @@ interface AddCategoryDialogProps {
 }
 
 export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: AddCategoryDialogProps = {}) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
   const { createCategory, isCreating } = useCategoryMutations()
   const [internalOpen, setInternalOpen] = useState(false)
   const [name, setName] = useState("")
@@ -62,7 +62,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("categories.createError")
+      const message = apiError?.response?.data?.message || t('categories:createError')
       setError(message)
     }
   }
@@ -73,7 +73,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
         <DialogTrigger asChild>
           <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4">
             <Plus size={16} />
-            {t("categories.add")}
+            {t('categories:add')}
           </Button>
         </DialogTrigger>
       )}
@@ -88,16 +88,16 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">
-              {t("categories.newTitle")}
+              {t('categories:newTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.name")}</Label>
+              <Label className="text-sm font-semibold">{t('categories:name')}</Label>
               <Input
                 ref={inputRef}
-                placeholder={t("categories.namePlaceholder")}
+                placeholder={t('categories:namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isCreating}
@@ -106,12 +106,12 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.color")}</Label>
+              <Label className="text-sm font-semibold">{t('categories:color')}</Label>
               <ColorPicker value={color} onChange={setColor} />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.budget")}</Label>
+              <Label className="text-sm font-semibold">{t('categories:budget')}</Label>
               <Input
                 type="number"
                 placeholder="0.00"
@@ -122,7 +122,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
                 min="0"
                 step="0.01"
               />
-              <p className="text-xs text-muted-foreground">{t("categories.budgetHint")}</p>
+              <p className="text-xs text-muted-foreground">{t('categories:budgetHint')}</p>
             </div>
 
             {error && (
@@ -132,14 +132,14 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
 
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
               disabled={isCreating || !name.trim()}
               className="bg-primary hover:bg-primary/90 px-6"
             >
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("categories.save")}
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('categories:save')}
             </Button>
           </DialogFooter>
         </div>

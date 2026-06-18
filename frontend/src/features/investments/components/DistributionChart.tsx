@@ -53,7 +53,7 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
     <Card className="border-subtle">
       <CardHeader>
         <CardTitle className="text-lg font-headline font-bold">
-          {t("investments.distribution")}
+          {t('investments:distribution')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-100">
@@ -73,7 +73,7 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
                   {formatCurrency(totalValue, i18n.language)} €
                 </div>
                 <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
-                  {t("investments.total")}
+                  {t('investments:total')}
                 </div>
               </div>
             }

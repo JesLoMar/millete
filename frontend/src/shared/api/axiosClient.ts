@@ -46,20 +46,20 @@ apiClient.interceptors.response.use(
     // ─── Notificación global de errores ────────────────────────
     if (!error.config?.skipGlobalErrorNotify) {
       const errorMessage =
-        message || error.response?.data?.error || error.message || i18n.t('api.errors.default');
+        message || error.response?.data?.error || error.message || i18n.t('api:errors.default');
 
       let description = '';
 
       if (status === 401) {
-        description = i18n.t('api.errors.status_401');
+        description = i18n.t('api:errors.status_401');
       } else if (status === 403) {
-        description = i18n.t('api.errors.status_403');
+        description = i18n.t('api:errors.status_403');
       } else if (status === 404) {
-        description = i18n.t('api.errors.status_404');
+        description = i18n.t('api:errors.status_404');
       } else if (status >= 500) {
-        description = i18n.t('api.errors.status_500');
+        description = i18n.t('api:errors.status_500');
       } else if (error.code === 'ECONNABORTED') {
-        description = i18n.t('api.errors.timeout');
+        description = i18n.t('api:errors.timeout');
       }
 
       notify.error(errorMessage, { description });

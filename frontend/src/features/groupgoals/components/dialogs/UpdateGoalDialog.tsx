@@ -64,17 +64,17 @@ export function UpdateGoalDialog({
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
-              {t("groupGoals.changeGoalTitle")}
+              {t('groupGoals:changeGoalTitle')}
             </DialogTitle>
             <DialogDescription id="update-goal-description" className="text-sm text-muted-foreground">
-              {t("groupGoals.changeGoalDesc")}
+              {t('groupGoals:changeGoalDesc')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-2 sm:py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="goal" className="text-sm font-semibold text-foreground/80">
-                {t("groupGoals.monthlyGoal")} (€)
+                {t('groupGoals:monthlyGoal')} (€)
               </Label>
               <div className="relative">
                 <Input
@@ -85,7 +85,7 @@ export function UpdateGoalDialog({
                   className="bg-background border-border text-base pr-12"
                   min="0.01"
                   step="0.01"
-                  aria-label={t("groupGoals.monthlyGoal")}
+                  aria-label={t('groupGoals:monthlyGoal')}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground select-none">
                   EUR
@@ -95,16 +95,16 @@ export function UpdateGoalDialog({
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-foreground/80">
-                {t("groupGoals.distributionMode")}
+                {t('groupGoals:distributionMode')}
               </Label>
               <Select value={distributionMode} onValueChange={setDistributionMode}>
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border">
-                  <SelectItem value="EQUITATIVE">{t("groupGoals.modes.equitative")}</SelectItem>
-                  <SelectItem value="PROPORTIONAL">{t("groupGoals.modes.proportional")}</SelectItem>
-                  <SelectItem value="CUSTOM">{t("groupGoals.modes.custom")}</SelectItem>
+                  <SelectItem value="EQUITATIVE">{t('groupGoals:modes.equitative')}</SelectItem>
+                  <SelectItem value="PROPORTIONAL">{t('groupGoals:modes.proportional')}</SelectItem>
+                  <SelectItem value="CUSTOM">{t('groupGoals:modes.custom')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -116,14 +116,14 @@ export function UpdateGoalDialog({
               onClick={() => onOpenChange(false)}
               className="border-border text-foreground min-h-11"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
               disabled={!isValid}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 min-h-11"
             >
-              {t("groupGoals.save")}
+              {t('groupGoals:save')}
             </Button>
           </DialogFooter>
         </div>

@@ -58,18 +58,18 @@ export function MemberCard({
                   variant="ghost" 
                   size="icon" 
                   className="size-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                  aria-label={t("groupGoals.memberOptions", { name: member.name })}
+                  aria-label={t("groupGoals:memberOptions", { name: member.name })}
                 >
                   <MoreHorizontal className="size-4" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40 bg-card border-border">
                 <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => onEdit(member)}>
-                  <Edit2 className="size-4" aria-hidden="true" /> {t("groupGoals.edit")}
+                  <Edit2 className="size-4" aria-hidden="true" /> {t('groupGoals:edit')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive gap-2 cursor-pointer" onClick={() => onDelete(member.id)}>
-                  <Trash2 className="size-4" aria-hidden="true" /> {t("groupGoals.delete")}
+                  <Trash2 className="size-4" aria-hidden="true" /> {t('groupGoals:delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -79,17 +79,17 @@ export function MemberCard({
         <div className="flex items-center gap-2 mb-2 pr-8">
           <h3 className="font-semibold text-sm sm:text-base truncate">{member.name}</h3>
           {member.role === "ADMIN" && (
-            <Crown className="size-3 text-amber-400 shrink-0" aria-label={t("groupGoals.admin")} />
+            <Crown className="size-3 text-amber-400 shrink-0" aria-label={t('groupGoals:admin')} />
           )}
         </div>
         <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
-          {member.role === "ADMIN" ? t("groupGoals.admin") : t("groupGoals.member")}
+          {member.role === "ADMIN" ? t('groupGoals:admin') : t('groupGoals:member')}
         </p>
 
         {isCustomMode && isAdmin && (
           <div className="mb-3 sm:mb-4">
             <label htmlFor={percentageInputId} className="text-xs text-muted-foreground">
-              {t("groupGoals.customPercentage")}
+              {t('groupGoals:customPercentage')}
             </label>
             <div className="flex items-center gap-2 mt-1">
               <Input
@@ -109,22 +109,22 @@ export function MemberCard({
         )}
         {isCustomMode && !isAdmin && (
           <div className="mb-3 sm:mb-4">
-            <span className="text-xs text-muted-foreground">{t("groupGoals.customPercentage")}</span>
+            <span className="text-xs text-muted-foreground">{t('groupGoals:customPercentage')}</span>
             <p className="text-sm font-medium mt-1">{customPercentage}%</p>
           </div>
         )}
 
         <div className="space-y-1.5 sm:space-y-2">
           <div className="flex justify-between text-xs sm:text-sm gap-2">
-            <span className="text-muted-foreground truncate">{t("groupGoals.salary")}</span>
+            <span className="text-muted-foreground truncate">{t('groupGoals:salary')}</span>
             <span className="whitespace-nowrap shrink-0 tabular-nums">{member.salary.toLocaleString()} €</span>
           </div>
           <div className="flex justify-between text-xs sm:text-sm gap-2">
-            <span className="text-muted-foreground truncate">{t("groupGoals.toContribute")}</span>
+            <span className="text-muted-foreground truncate">{t('groupGoals:toContribute')}</span>
             <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">{member.expectedContribution.toLocaleString()} €</span>
           </div>
           <div className="flex justify-between text-xs sm:text-sm gap-2">
-            <span className="text-muted-foreground truncate">{t("groupGoals.contributed")}</span>
+            <span className="text-muted-foreground truncate">{t('groupGoals:contributed')}</span>
             <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">{member.contributed.toLocaleString()} €</span>
           </div>
           <ProgressBar
@@ -133,7 +133,7 @@ export function MemberCard({
             size="sm"
             className="mt-2"
             barClassName={MEMBER_COLORS[index % MEMBER_COLORS.length]}
-            ariaLabel={t("groupGoals.memberProgress", { name: member.name })}
+            ariaLabel={t("groupGoals:memberProgress", { name: member.name })}
           />
         </div>
       </CardContent>

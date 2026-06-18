@@ -6,7 +6,7 @@ import type { ApiError } from '@/shared/types/api';
 import type { RegisterCategoryRequest, UpdateCategoryRequest } from '../types';
 
 export const useCategoryMutations = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['categories', 'common']);
   const queryClient = useQueryClient();
 
   const invalidateCategoryQueries = async () => {
@@ -22,7 +22,7 @@ export const useCategoryMutations = () => {
     ]);
   };
 
-  const getErrorMessage = (error: unknown, defaultKey: "categories.createError" | "categories.updateError" | "categories.deleteError"): string => {
+  const getErrorMessage = (error: unknown, defaultKey: "categories:createError" | "categories:updateError" | "categories:deleteError"): string => {
     const apiError = error as ApiError;
     const backendMessage = apiError?.response?.data?.message;
     if (backendMessage && typeof backendMessage === 'string') {
@@ -42,10 +42,10 @@ export const useCategoryMutations = () => {
     },
     onSuccess: async () => {
       await invalidateCategoryQueries();
-      notify.success(t('categories.createSuccess'));
+      notify.success(t('categories:createSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.createError');
+      const message = getErrorMessage(error, 'categories:createError');
       console.error('[createCategory] Error:', message);
       notify.error(message);
     },
@@ -62,10 +62,10 @@ export const useCategoryMutations = () => {
     },
     onSuccess: async () => {
       await invalidateCategoryQueries();
-      notify.success(t('categories.updateSuccess'));
+      notify.success(t('categories:updateSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.updateError');
+      const message = getErrorMessage(error, 'categories:updateError');
       console.error('[updateCategory] Error:', message);
       notify.error(message);
     },
@@ -78,10 +78,10 @@ export const useCategoryMutations = () => {
     },
     onSuccess: async () => {
       await invalidateCategoryQueries();
-      notify.success(t('categories.deleteSuccess'));
+      notify.success(t('categories:deleteSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.deleteError');
+      const message = getErrorMessage(error, 'categories:deleteError');
       console.error('[deleteCategory] Error:', message);
       notify.error(message);
     }

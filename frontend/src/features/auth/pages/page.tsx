@@ -12,7 +12,7 @@ export const LoginPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">{t("common.loading")}</div>
+        <div className="animate-pulse text-muted-foreground">{t('common:status.loading')}</div>
       </div>
     );
   }

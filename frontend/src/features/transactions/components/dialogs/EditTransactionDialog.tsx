@@ -33,7 +33,7 @@ interface EditTransactionDialogProps {
 }
 
 export function EditTransactionDialog({ transaction, open, onOpenChange }: EditTransactionDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const queryClient = useQueryClient()
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
@@ -79,7 +79,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
       onOpenChange(false)
     } catch (err) {
       const axiosError = err as { response?: { data?: { message?: string } } }
-      const message = axiosError?.response?.data?.message || t("transactions.createError")
+      const message = axiosError?.response?.data?.message || t('transactions:createError')
       setError(message)
     } finally {
       setIsSubmitting(false)
@@ -100,21 +100,21 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-foreground">
-              {t("transactions.editTitle")}
+              {t('transactions:editTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-description" className="text-sm font-semibold">
-                {t("transactions.description")}
+                {t('transactions:description')}
               </Label>
               <Input
                 id="edit-description"
                 ref={inputRef}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={t("transactions.descriptionPlaceholder")}
+                placeholder={t('transactions:descriptionPlaceholder')}
                 disabled={isSubmitting}
                 className="bg-background border-border text-base"
               />
@@ -122,12 +122,12 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("transactions.type")}</Label>
+                <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
                 <TypeToggle value={type} onChange={setType} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-amount" className="text-sm font-semibold">
-                  {t("transactions.amount")}
+                  {t('transactions:amount')}
                 </Label>
                 <Input
                   id="edit-amount"
@@ -156,7 +156,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
               disabled={isSubmitting}
               className="border-border"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button 
               onClick={handleSave} 
@@ -166,10 +166,10 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
-                  {t("common.saving")}
+                  {t('common:actions.saving')}
                 </>
               ) : (
-                t("transactions.save")
+                t('transactions:save')
               )}
             </Button>
           </DialogFooter>

@@ -35,7 +35,7 @@ export function FormattedMetricCard({
   invertedTrend = false,
   className,
 }: FormattedMetricCardProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
 
   const safeValue = isValidNumber(value) ? value : 0
   const formattedValue = format === "currency"
@@ -85,7 +85,7 @@ export function FormattedMetricCard({
         </div>
       ) : (
         <span className="text-xs text-muted-foreground/60 italic block mt-2">
-          {t("dashboard.metrics.errors.noDataAvailable")}
+          {t('dashboard:metrics.errors.noDataAvailable')}
         </span>
       )}
     </MetricCard>

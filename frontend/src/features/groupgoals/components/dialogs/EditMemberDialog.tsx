@@ -57,11 +57,11 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
     <Dialog open={open} onOpenChange={onOpenChange} key={member?.id ?? "new"}>
       <DialogContent className="bg-card border-border sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{t("groupGoals.editMember")}</DialogTitle>
+          <DialogTitle>{t('groupGoals:editMember')}</DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label>{t("groupGoals.name")}</Label>
+            <Label>{t('groupGoals:name')}</Label>
             <Input
               value={member?.name || ""}
               disabled
@@ -70,20 +70,20 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
           </div>
 
           <div className="space-y-2">
-            <Label>{t("groupGoals.role")}</Label>
+            <Label>{t('groupGoals:role')}</Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">
-                <SelectItem value="ADMIN">{t("groupGoals.admin")}</SelectItem>
-                <SelectItem value="MEMBER">{t("groupGoals.member")}</SelectItem>
+                <SelectItem value="ADMIN">{t('groupGoals:admin')}</SelectItem>
+                <SelectItem value="MEMBER">{t('groupGoals:member')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>{t("groupGoals.monthlySalary")}</Label>
+            <Label>{t('groupGoals:monthlySalary')}</Label>
             <Input
               type="number"
               value={salary}
@@ -95,7 +95,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
           </div>
 
           <div className="space-y-2">
-            <Label>{t("groupGoals.customPercentage")}</Label>
+            <Label>{t('groupGoals:customPercentage')}</Label>
             <Input
               type="number"
               value={customPercentage}
@@ -107,15 +107,15 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
               placeholder="0"
             />
             <p className="text-xs text-muted-foreground">
-              {t("groupGoals.customPercentageHint")}
+              {t('groupGoals:customPercentageHint')}
             </p>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
-            {t("common.cancel")}
+            {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleSave}>{t("groupGoals.save")}</Button>
+          <Button onClick={handleSave}>{t('groupGoals:save')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

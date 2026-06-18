@@ -32,7 +32,7 @@ interface EditRecurringTransactionDialogProps {
 }
 
 export function EditRecurringTransactionDialog({ transaction, open, onOpenChange }: EditRecurringTransactionDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['transactions', 'common', 'auth'])
   const { updateRecurring, isUpdating } = useTransactionMutations()
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
@@ -45,7 +45,6 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // ✅ Sincronizar estados cuando cambia la transacción o se abre el diálogo
   useEffect(() => {
     if (open && transaction) {
       setDescription(transaction.description || "")
@@ -81,7 +80,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
       onOpenChange(false)
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("transactions.createError")
+      const message = apiError?.response?.data?.message || t('transactions:createError')
       setError(message)
     }
   }
@@ -89,11 +88,17 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
   const isValid = description.trim() && category && amount && Number(amount) > 0 && frequencyType && startDate
   const today = new Date().toISOString().split('T')[0]
 
+  // ✅ Extraer las traducciones a variables separadas
+  const daysLabel = t('transactions:recurring.days')
+  const weeksLabel = t('transactions:recurring.weeks')
+  const monthsLabel = t('transactions:recurring.months')
+  const yearsLabel = t('transactions:recurring.years')
+
   const frequencyUnit = 
-    frequencyType === "DAYS" ? t("transactions.recurring.days") :
-    frequencyType === "WEEKS" ? t("transactions.recurring.weeks") :
-    frequencyType === "MONTHS" ? t("transactions.recurring.months") :
-    t("transactions.recurring.years")
+    frequencyType === "DAYS" ? daysLabel :
+    frequencyType === "WEEKS" ? weeksLabel :
+    frequencyType === "MONTHS" ? monthsLabel :
+    yearsLabel
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,14 +112,14 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
-              {t("transactions.recurring.editTitle")}
+              {t('transactions:recurring.editTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-recurring-description" className="text-sm font-semibold">
-                {t("transactions.description")}
+                {t('transactions:description')}
               </Label>
               <Input
                 id="edit-recurring-description"
@@ -122,19 +127,19 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isUpdating}
-                placeholder={t("transactions.descriptionPlaceholder")}
+                placeholder={t('transactions:descriptionPlaceholder')}
                 className="bg-background border-border text-base"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("transactions.type")}</Label>
+                <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
                 <TypeToggle value={type} onChange={setType} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-amount" className="text-sm font-semibold">
-                  {t("transactions.amount")}
+                  {t('transactions:amount')}
                 </Label>
                 <Input
                   id="edit-recurring-amount"
@@ -153,13 +158,13 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("transactions.recurring.frequency")}</Label>
+                <Label className="text-sm font-semibold">{t('transactions:recurring.frequency')}</Label>
                 <Select value={frequencyType} onValueChange={setFrequencyType}>
                   <SelectTrigger 
                     className="bg-background border-border text-base"
-                    aria-label={t("transactions.recurring.selectFrequency")}
+                    aria-label={t('transactions:recurring.selectFrequency')}
                   >
-                    <SelectValue placeholder={t("transactions.recurring.selectFrequency")} />
+                    <SelectValue placeholder={t('transactions:recurring.selectFrequency')} />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
                     {FREQUENCY_TYPES.map((freq) => (
@@ -170,7 +175,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-interval" className="text-sm font-semibold">
-                  {t("transactions.recurring.interval")}
+                  {t('transactions:recurring.interval')}
                 </Label>
                 <Input
                   id="edit-recurring-interval"
@@ -184,11 +189,10 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               </div>
             </div>
 
-            {/* Fechas */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-start" className="text-sm font-semibold">
-                  {t("transactions.recurring.startDate")}
+                  {t('transactions:recurring.startDate')}
                 </Label>
                 <Input
                   id="edit-recurring-start"
@@ -201,8 +205,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-end" className="text-sm font-semibold">
-                  {t("transactions.recurring.endDate")}
-                  <span className="text-xs text-muted-foreground ml-1">({t("auth.form.optional")})</span>
+                  {t('transactions:recurring.endDate')}
+                  <span className="text-xs text-muted-foreground ml-1">({t('auth:form.optional')})</span>
                 </Label>
                 <Input
                   id="edit-recurring-end"
@@ -219,16 +223,16 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
             {frequencyType && startDate && (
               <div className="bg-accent/20 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground mb-1.5">
-                  {t("transactions.recurring.summary")}
+                  {t('transactions:recurring.summary')}
                 </p>
                 <p className="leading-relaxed">
-                  {t("transactions.recurring.summaryText", {
+                  {t("transactions:recurring.summaryText", {
                     description: description || "...",
                     amount: amount || "0",
                     frequency: frequencyInterval,
                     type: frequencyUnit,
                     start: startDate || "...",
-                    end: endDate || t("transactions.recurring.indefinite"),
+                    end: endDate || t('transactions:recurring.indefinite'),
                   })}
                 </p>
               </div>
@@ -246,7 +250,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               disabled={isUpdating}
               className="border-border min-h-11"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
@@ -256,10 +260,10 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               {isUpdating ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
-                  {t("common.saving")}
+                  {t('common:actions.saving')}
                 </>
               ) : (
-                t("transactions.save")
+                t('transactions:save')
               )}
             </Button>
           </DialogFooter>

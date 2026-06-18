@@ -56,16 +56,16 @@ export function GroupGoalSelector({
         <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto">
           <Users className="size-10 text-primary" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold font-headline">{t("groupGoals.title")}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">{t("groupGoals.selectOrCreate")}</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold font-headline">{t('groupGoals:title')}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">{t('groupGoals:selectOrCreate')}</p>
       </div>
 
       {goals.length === 0 ? (
         <div className="text-center py-8 sm:py-12 space-y-4 sm:space-y-6">
-          <p className="text-muted-foreground">{t("groupGoals.noFamilies")}</p>
+          <p className="text-muted-foreground">{t('groupGoals:noFamilies')}</p>
           <Button onClick={onCreateClick} className="gap-2 min-h-11">
             <Plus className="size-4" aria-hidden="true" />
-            {t("groupGoals.createFirst")}
+            {t('groupGoals:createFirst')}
           </Button>
         </div>
       ) : (
@@ -83,7 +83,7 @@ export function GroupGoalSelector({
                   onSelect(goal.id)
                 }
               }}
-              aria-label={t("groupGoals.selectFamily", { name: goal.name })}
+              aria-label={t("groupGoals:selectFamily", { name: goal.name })}
             >
               <CardContent className="p-4 sm:p-6 flex items-center justify-between gap-3 sm:gap-4">
                 <div className="space-y-1.5 min-w-0 flex-1">
@@ -92,13 +92,13 @@ export function GroupGoalSelector({
                     {goal.isAdmin && (
                       <Badge variant="outline" className="border-amber-500/30 text-amber-400 gap-1 text-xs shrink-0">
                         <Crown className="size-3" aria-hidden="true" />
-                        {t("groupGoals.admin")}
+                        {t('groupGoals:admin')}
                       </Badge>
                     )}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     <Users className="size-3 sm:size-3.5 inline mr-1" aria-hidden="true" />
-                    {goal.memberCount} {t("groupGoals.members")} • {t("groupGoals.goal")}: {goal.monthlyTarget.toLocaleString()} €
+                    {goal.memberCount} {t('groupGoals:members')} • {t('groupGoals:goal')}: {goal.monthlyTarget.toLocaleString()} €
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -112,7 +112,7 @@ export function GroupGoalSelector({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEditClick(goal)}>
                           <Pencil className="w-4 h-4 mr-2" />
-                          {t("groupGoals.edit")}
+                          {t('groupGoals:edit')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -120,7 +120,7 @@ export function GroupGoalSelector({
                           className="text-destructive"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
-                          {t("groupGoals.delete")}
+                          {t('groupGoals:delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -137,7 +137,7 @@ export function GroupGoalSelector({
         <div className="flex justify-center pt-2 sm:pt-4">
           <Button onClick={onCreateClick} className="gap-2 min-h-11" variant="outline" size="lg">
             <Plus className="size-4" aria-hidden="true" />
-            {t("groupGoals.createNew")}
+            {t('groupGoals:createNew')}
           </Button>
         </div>
       )}

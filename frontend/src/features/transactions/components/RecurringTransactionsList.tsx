@@ -78,7 +78,7 @@ export function RecurringTransactionsList() {
         <div className="relative w-full sm:w-[320px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder={t("transactions.search")}
+            placeholder={t('transactions:search')}
             className="pl-10 bg-card border-border h-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -90,7 +90,7 @@ export function RecurringTransactionsList() {
         <div className="flex flex-col">
           {filteredTransactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
-              {t("transactions.recurring.emptyFilter")}
+              {t('transactions:recurring.emptyFilter')}
             </p>
           ) : (
             filteredTransactions.map((tx) => (
@@ -116,8 +116,8 @@ export function RecurringTransactionsList() {
         onOpenChange={(open) => { if (!open) setDeletingTransaction(null) }}
         itemName={deletingTransaction?.description || ""}
         onConfirm={handleDelete}
-        title={t("transactions.recurring.deleteTitle")}
-        description={t("transactions.recurring.deleteConfirmation", { name: deletingTransaction?.description || "" })}
+        title={t('transactions:recurring.deleteTitle')}
+        description={t('transactions:recurring.deleteConfirmation', { name: deletingTransaction?.description || "" })}
       />
     </div>
   )

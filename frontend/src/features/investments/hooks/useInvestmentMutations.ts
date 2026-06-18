@@ -31,10 +31,10 @@ export const useInvestmentMutations = () => {
     },
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('investments.alerts.createSuccess'))
+      notify.success(t('investments:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.createError') || "Error al crear la inversión")
+      notify.error(err.response?.data?.message || t('investments:alerts.createError') || "Error al crear la inversión")
     },
   })
 
@@ -43,10 +43,10 @@ export const useInvestmentMutations = () => {
       apiClient.patch(`investments/${id}/price`, { newPrice: price }),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('investments.alerts.updatePriceSuccess'))
+      notify.success(t('investments:alerts.updatePriceSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.updatePriceError') || "Error al actualizar el precio")
+      notify.error(err.response?.data?.message || t('investments:alerts.updatePriceError') || "Error al actualizar el precio")
     },
   })
 
@@ -54,10 +54,10 @@ export const useInvestmentMutations = () => {
     mutationFn: (id: string) => apiClient.delete(`investments/${id}`),
     onSuccess: async () => {
       await invalidateAll()
-      notify.success(t('investments.alerts.deleteSuccess'))
+      notify.success(t('investments:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.deleteError') || "Error al eliminar la inversión")
+      notify.error(err.response?.data?.message || t('investments:alerts.deleteError') || "Error al eliminar la inversión")
     },
   })
 
