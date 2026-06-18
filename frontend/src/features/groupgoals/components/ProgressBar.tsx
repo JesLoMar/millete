@@ -4,14 +4,14 @@ import { MEMBER_COLORS } from "../constants"
 
 interface ProgressBarProps {
   contributions: ContributionMember[]
-  monthlyGoal: number
+  monthlyTarget: number
 }
 
-export function ProgressBar({ contributions, monthlyGoal }: ProgressBarProps) {
+export function ProgressBar({ contributions, monthlyTarget }: ProgressBarProps) {
   const { t } = useTranslation()
   const totalContributed = contributions.reduce((sum, m) => sum + m.contributed, 0)
-  const totalPercentage = monthlyGoal > 0 
-    ? Math.min((totalContributed / monthlyGoal) * 100, 100) 
+  const totalPercentage = monthlyTarget > 0 
+    ? Math.min((totalContributed / monthlyTarget) * 100, 100) 
     : 0
 
   return (
@@ -22,11 +22,11 @@ export function ProgressBar({ contributions, monthlyGoal }: ProgressBarProps) {
         aria-valuenow={Math.round(totalPercentage)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={t("family.progressBar.label")}
+        aria-label={t("groupGoals.progressBar.label")}
       >
         {contributions.map((member, index) => {
-          const memberPct = monthlyGoal > 0 
-            ? Math.min((member.contributed / monthlyGoal) * 100, 100) 
+          const memberPct = monthlyTarget > 0 
+            ? Math.min((member.contributed / monthlyTarget) * 100, 100) 
             : 0
           return memberPct > 0 ? (
             <div
@@ -42,7 +42,7 @@ export function ProgressBar({ contributions, monthlyGoal }: ProgressBarProps) {
       
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t("family.progressBar.of")}</span> {monthlyGoal.toLocaleString()} €
+          {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t("groupGoals.progressBar.of")}</span> {monthlyTarget.toLocaleString()} €
         </span>
         <span className="font-medium tabular-nums">
           {Math.round(totalPercentage)}%

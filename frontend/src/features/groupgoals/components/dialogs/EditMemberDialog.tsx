@@ -17,34 +17,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/core/select"
-import type { FamilyMember } from "../../types"
+import type { GoalMember } from "../../types"
 
 interface EditMemberDialogProps {
-  member: FamilyMember | null
+  member: GoalMember | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (member: FamilyMember) => void
+  onSave: (memberId: string, role: string, salary: number, customPercentage?: number) => void
 }
 
 export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMemberDialogProps) {
   const { t } = useTranslation()
   const [role, setRole] = useState<string>(member?.role || "MEMBER")
   const [salary, setSalary] = useState(member?.salary?.toString() || "")
+  const [customPercentage, setCustomPercentage] = useState(
+    member?.customPercentage?.toString() || ""
+  )
 
   useEffect(() => {
     if (member) {
       setRole(member.role || "MEMBER")
       setSalary(member.salary?.toString() || "")
+      setCustomPercentage(member.customPercentage?.toString() || "")
     }
   }, [member])
 
   const handleSave = () => {
     if (member) {
-      onSave({
-        ...member,
-        role: role as FamilyMember["role"],
-        salary: Number(salary) || 0,
-      })
+      onSave(
+        member.id,
+        role,
+        Number(salary) || 0,
+        customPercentage ? Number(customPercentage) : undefined
+      )
     }
   }
 
@@ -52,11 +57,11 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
     <Dialog open={open} onOpenChange={onOpenChange} key={member?.id ?? "new"}>
       <DialogContent className="bg-card border-border sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{t("family.editMember")}</DialogTitle>
+          <DialogTitle>{t("groupGoals.editMember")}</DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label>{t("family.name")}</Label>
+            <Label>{t("groupGoals.name")}</Label>
             <Input
               value={member?.name || ""}
               disabled
@@ -65,34 +70,52 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
           </div>
 
           <div className="space-y-2">
-            <Label>{t("family.role")}</Label>
+            <Label>{t("groupGoals.role")}</Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-card border-border">
-                <SelectItem value="ADMIN">{t("family.admin")}</SelectItem>
-                <SelectItem value="MEMBER">{t("family.member")}</SelectItem>
+                <SelectItem value="ADMIN">{t("groupGoals.admin")}</SelectItem>
+                <SelectItem value="MEMBER">{t("groupGoals.member")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>{t("family.monthlySalary")}</Label>
+            <Label>{t("groupGoals.monthlySalary")}</Label>
             <Input
               type="number"
               value={salary}
               onChange={(e) => setSalary(e.target.value)}
               className="bg-background border-border"
               min="0"
+              step="0.01"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("groupGoals.customPercentage")}</Label>
+            <Input
+              type="number"
+              value={customPercentage}
+              onChange={(e) => setCustomPercentage(e.target.value)}
+              className="bg-background border-border"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="0"
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("groupGoals.customPercentageHint")}
+            </p>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
             {t("common.cancel")}
           </Button>
-          <Button onClick={handleSave}>{t("family.save")}</Button>
+          <Button onClick={handleSave}>{t("groupGoals.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -7,8 +7,8 @@ import { DashboardPage } from './features/dashboard/pages/page';
 import { TransactionsPage } from '@/features/transactions/pages/page';
 import { CategoriesPage } from '@/features/categories/pages/page';
 import { InvestmentsPage } from '@/features/investments/pages/page';
-import { FamilyPage } from '@/features/family/pages/page';
-import { JoinFamilyPage } from '@/features/family/pages/JoinFamilyPage';
+import { GroupGoalsPage } from '@/features/groupgoals/pages/page';
+import { JoinGroupGoalPage } from '@/features/groupgoals/pages/JoinGroupGoalPage';
 import { Toaster } from '@/shared/components/core/sonner';
 import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
@@ -34,12 +34,12 @@ export default function App() {
 
           {/* === RUTAS PRIVADAS === */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/join-family" element={<JoinFamilyPage />} />
+            <Route path="/join-group-goal" element={<JoinGroupGoalPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/investments" element={<InvestmentsPage />} />
-            <Route path="/family" element={<FamilyPage />} />
+            <Route path="/group-goals" element={<GroupGoalsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/savinggoals" element={<SavingsGoalsPage />} />
           </Route>

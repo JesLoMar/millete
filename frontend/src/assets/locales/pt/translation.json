@@ -11,7 +11,7 @@
     "edit": "Editar",
     "delete": "Eliminar",
     "error": "Erro",
-    "goToLogin": "Ir para o início de sessão",
+    "goToLogin": "Ir para o login",
     "accept": "Aceitar",
     "reject": "Rejeitar",
     "close": "Fechar",
@@ -22,8 +22,7 @@
       "fr": "Francês",
       "de": "Alemão",
       "it": "Italiano",
-      "pt": "Português",
-      "ja": "Japonês"
+      "pt": "Português"
     }
   },
   "nav": {
@@ -31,7 +30,7 @@
     "changeLanguage": "Alterar idioma",
     "guest": "Convidado",
     "goToDashboard": "Ir para o dashboard",
-    "userMenu": "Menu de utilizador",
+    "userMenu": "Menu do utilizador",
     "profile": "Meu Perfil",
     "logout": "Terminar Sessão",
     "logoutSuccess": "Sessão terminada corretamente",
@@ -61,8 +60,9 @@
     "transactions": "Transações",
     "categories": "Categorias",
     "investments": "Investimentos",
-    "family": "Família",
+    "groupgoals": "Metas Grupais",
     "mobileTitle": "Millete",
+    "settings": "Ajustes",
     "errors": {
       "featureComingSoon": "{{feature}} estará disponível brevemente"
     }
@@ -70,7 +70,7 @@
   "auth": {
     "brand": {
       "name": "Millete",
-      "tagline": "Controle as suas despesas, alcance as suas metas."
+      "tagline": "Controle os seus gastos, alcance as suas metas."
     },
     "greeting": "Olá, <br />bem-vindo.",
     "footer": {
@@ -81,7 +81,7 @@
     "form": {
       "optional": "opcional",
       "andOr": "e/ou",
-      "registerHint": "Introduza o seu nome de utilizador ou correio eletrónico para continuar.",
+      "registerHint": "Introduza o seu nome de utilizador ou e-mail para continuar.",
       "passwordHint": "Mínimo 8 caracteres",
       "toggle": {
         "login": "Entrar",
@@ -126,12 +126,12 @@
       "sending": "Enviando...",
       "sendingDescription": "Estamos a processar o seu pedido",
       "success": "E-mail enviado!",
-      "successDescription": "Verifique a sua caixa de entrada. Enviámos-lhe um link para redefinir a sua palavra-passe.",
+      "successDescription": "Verifique a sua caixa de entrada. Enviámos um link para redefinir a sua palavra-passe.",
       "error": "Erro ao enviar",
       "errorDescription": "Não conseguimos processar o seu pedido. Tente novamente.",
       "tryAgain": "Tentar novamente",
       "cancel": "Cancelar",
-      "backToLogin": "Voltar ao início de sessão"
+      "backToLogin": "Voltar ao login"
     },
     "alerts": {
       "welcome_back": "Bem-vindo de volta!",
@@ -139,7 +139,7 @@
       "login_error_title": "Erro ao iniciar sessão"
     },
     "errors": {
-      "no_identifier": "Deve fornecer um nome de utilizador ou e-mail",
+      "no_identifier": "Deve fornecer un nome de utilizador ou e-mail",
       "auto_login_failed": "Conta criada, mas não foi possível iniciar sessão automaticamente",
       "register_failed": "Erro ao criar a conta. Tente novamente."
     }
@@ -157,11 +157,11 @@
         {
           "number": "02",
           "title": "Crie a sua primeira categoria",
-          "description": "Defina categorias personalizadas para organizar as suas despesas (ex: Alimentação, Transportes, Lazer...)"
+          "description": "Defina categorias personalizadas para organizar os seus gastos (ex. Alimentação, Transportes, Lazer...)."
         },
         {
           "number": "03",
-          "title": "Registe as suas despesas",
+          "title": "Registe os seus gastos",
           "description": "Adicione transações a partir da sua secção ou facilmente através do dashboard."
         }
       ]
@@ -185,17 +185,17 @@
         },
         {
           "tag": "v0.0.3",
-          "title": "Correções de erros visuais e de lógica",
-          "description": "Adaptação dos estilos para garantir compatibilidade com navegadores como o Safari. As categorias e transações eliminadas deixam de ser contabilizadas para o cálculo das métricas."
+          "title": "Correções de falhas visuais e de lógica",
+          "description": "Adaptação dos estilos para ser compatível com navegadores como o Safari. Deixam de ser consideradas as categorias e transações eliminadas para o cálculo de métricas."
         }
       ]
     }
   },
   "dashboard": {
     "metrics": {
-      "balance": "Balanço Total",
+      "balance": "Saldo Total",
       "income": "Receitas do {{period}}",
-      "expenses": "Despesas do {{period}}",
+      "expenses": "Gastos do {{period}}",
       "savings": "Poupança Total",
       "vsLastWeek": "vs. semana anterior",
       "vsLastMonth": "vs. mês anterior",
@@ -206,9 +206,9 @@
     },
     "header": {
       "greeting": {
-        "morning": "Bom dia",
-        "afternoon": "Boa tarde",
-        "evening": "Boa noite"
+        "morning": "Bons dias",
+        "afternoon": "Boas tardes",
+        "evening": "Boas noites"
       },
       "days": {
         "0": "domingo",
@@ -244,36 +244,36 @@
       }
     },
     "chart": {
-      "title": "Histórico de Despesas",
-      "empty": "Sem despesas neste período",
-      "showingLast": "Últimas {{count}}",
+      "title": "Histórico de Gastos",
+      "empty": "Sem gastos neste período",
+      "showingLast": "Últimos {{count}}",
       "periodLabel": {
         "week": "Últimos 7 dias",
         "month": "Últimas 5 semanas",
         "year": "Últimos 12 meses"
       },
       "tooltip": {
-        "amount": "Despesa",
+        "amount": "Gasto",
         "percentage": "Percentagem"
       }
     },
     "donut": {
-      "title": "Despesa por Categoria",
+      "title": "Gasto por Categoria",
       "total": "Total",
-      "empty": "Sem despesas neste período"
+      "empty": "Sem gastos neste período"
     },
     "budget": {
       "title": "Estado do Orçamento",
       "empty": "Não há orçamentos configurados",
-      "overLimit": "Limite ultrapassado!",
+      "overLimit": "Limite superado!",
       "remaining": "Restam-lhe {{amount}} €",
-      "exceededBy": "Excedido em {{amount}} €"
+      "exceededBy": "Excedido por {{amount}} €"
     },
     "transactions": {
       "title": "Últimas Transações",
       "viewAll": "Ver todas",
       "empty": "Não há transações recentes",
-      "expense": "Despesa",
+      "expense": "Gasto",
       "income": "Receita",
       "moreOptions": "Mais opções"
     },
@@ -293,15 +293,15 @@
       "addExpenseAria": "Adicionar nova transação",
       "createCategoryAria": "Criar nova categoria",
       "importDataAria": "Importar dados a partir de ficheiro",
-      "importingAria": "Importando dados, por favor aguarde",
+      "importingAria": "Importando dados, aguarde",
       "exportDataAria": "Exportar cópia de segurança",
-      "exportingAria": "Exportando dados, por favor aguarde",
+      "exportingAria": "Exportando dados, aguarde",
       "groupLabel": "Ações rápidas"
     },
     "importModal": {
       "title": "Importar dados",
       "description": "Arraste um ficheiro JSON com as suas transações",
-      "dropHere": "Solte o seu ficheiro aqui ou clique para selecionar",
+      "dropHere": "Largue o seu ficheiro aqui ou clique para selecionar",
       "onlyJson": "Apenas ficheiros .json",
       "jsonOnly": "Apenas são admitidos ficheiros JSON",
       "invalidJson": "O ficheiro JSON não é válido",
@@ -318,7 +318,7 @@
     },
     "export": {
       "success": "Cópia de segurança exportada corretamente",
-      "error": "Erro ao exportar os dados"
+      "error": "Erro ao exportar los dados"
     }
   },
   "transactions": {
@@ -326,7 +326,7 @@
     "description": "Descrição",
     "descriptionPlaceholder": "ex. Compra semanal no Lidl",
     "type": "Tipo",
-    "expense": "Despesa",
+    "expense": "Gasto",
     "income": "Receita",
     "amount": "Quantidade (€)",
     "category": "Categoria",
@@ -338,24 +338,24 @@
     "createError": "Erro ao processar a transação. Tente novamente.",
     "filterAll": "Todas",
     "filterIncome": "Receitas",
-    "filterExpense": "Despesas",
+    "filterExpense": "Gastos",
     "add": "Adicionar",
     "save": "Guardar",
     "edit": "Editar",
     "editTitle": "Editar Transação",
     "delete": "Eliminar",
-    "deleteConfirm": "Tem a certeza que deseja eliminar esta transação?",
+    "deleteConfirm": "Tem a certeza de que deseja eliminar esta transação?",
     "new": "Nova Transação",
     "newShort": "Trans.",
     "newTitle": "Registar Transação",
     "moreOptions": "Mais opções",
     "recurring": {
       "deleteTitle": "Eliminar transação recorrente",
-      "deleteConfirmation": "Tem a certeza que deseja eliminar a transação recorrente \"{{name}}\"? As execuções futuras não serão realizadas.",
+      "deleteConfirmation": "Tem a certeza de que deseja eliminar a transação recorrente \"{{name}}\"? As execuções futuras não serão realizadas.",
       "label": "Recorrentes",
       "shortLabel": "Recorrente",
       "newTitle": "Nova Transação Recorrente",
-      "editTitle": "Editar Transação Recurrente",
+      "editTitle": "Editar Transação Recorrente",
       "listTitle": "Transações Recorrentes",
       "emptyFilter": "Não há transações recorrentes com este filtro.",
       "frequency": "Frequência",
@@ -387,12 +387,12 @@
       "createSuccess": "Transação criada corretamente",
       "updateSuccess": "Transação atualizada corretamente",
       "deleteSuccess": "Transação eliminada corretamente",
-      "createRecurringSuccess": "Transação recorrente agendada corretamente",
+      "createRecurringSuccess": "Transação recorrente programada corretamente",
       "updateRecurringSuccess": "Transação recorrente atualizada corretamente",
       "deleteRecurringSuccess": "Transação recorrente eliminada corretamente"
     },
     "deleteTitle": "Eliminar transação",
-    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? Esta ação não pode ser desfeita."
+    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Esta ação não pode ser desfeita."
   },
   "categories": {
     "add": "Adicionar categoria",
@@ -402,7 +402,7 @@
     "namePlaceholder": "Ex: Alimentação, Viagens...",
     "color": "Cor",
     "budget": "Orçamento mensal (€)",
-    "budgetHint": "Opcional. Limite de despesa mensal para esta categoria.",
+    "budgetHint": "Opcional. Limite de gasto mensal para esta categoria.",
     "currentBudget": "Orçamento atual: {{amount}} € / mês",
     "family": "Família",
     "selectFamilyPlaceholder": "Selecionar família",
@@ -420,12 +420,12 @@
     "createError": "Erro ao criar a categoria. Tente novamente.",
     "updateError": "Erro ao atualizar a categoria. Tente novamente.",
     "deleteTitle": "Eliminar categoria",
-    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? As transações associadas não serão apagadas, mas perderão a sua classificação.",
+    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? As transações associadas não serão apagadas, mas perderão a sua classificação.",
     "deleteError": "Erro ao eliminar a categoria",
     "noBudgetTooltip": "Atribua um orçamento mensal para ver o progresso",
     "createSuccess": "Categoria criada corretamente",
     "updateSuccess": "Categoria atualizada corretamente",
-    "deleteSuccess": "Categoria eliminada corretamente",
+    "deleteSuccess": "Categoria eliminada correctamente",
     "nameRequired": "O nome da categoria é obrigatório",
     "invalidBudget": "Introduza um orçamento válido",
     "editDescription": "Modifique os dados da categoria",
@@ -436,7 +436,7 @@
   },
   "investments": {
     "title": "Investimentos",
-    "portfolioValue": "Valor da Carteira",
+    "portfolioValue": "Valor Carteira",
     "monthlyReturn": "Rentabilidade Mensal",
     "dividends": "Dividendos",
     "comingSoon": "Brevemente",
@@ -444,103 +444,103 @@
     "lastMonths": "Últimos {{count}} meses",
     "distribution": "Distribuição",
     "total": "Total",
-    "myAssets": "Meus Activos",
-    "searchAsset": "Buscar activo...",
-    "noAssets": "Não há activos na sua carteira",
+    "myAssets": "Meus Ativos",
+    "searchAsset": "Buscar ativo...",
+    "noAssets": "Não há ativos na sua carteira",
     "shares": "participações",
     "filterAll": "Todos",
     "new": "Novo Investimento",
     "newTitle": "Registar Novo Investimento",
-    "assetName": "Nome do Activo",
+    "assetName": "Nome do Ativo",
     "assetNamePlaceholder": "Ex: Apple Inc.",
     "ticker": "Ticker",
-    "type": "Tipo de Activo",
+    "type": "Tipo de Ativo",
     "quantity": "Quantidade",
     "purchasePrice": "Preço de Compra",
     "purchaseDate": "Data de Compra",
     "save": "Guardar Investimento",
-    "updatePrice": "Actualizar Preço",
+    "updatePrice": "Atualizar Preço",
     "marketPrice": "Preço de Mercado",
     "newPrice": "Novo Preço",
-    "updateNow": "Actualizar Agora",
+    "updateNow": "Atualizar Agora",
     "delete": "Eliminar",
-    "deleteConfirm": "Tem a certeza que deseja eliminar este investimento? Esta acção não pode ser desfeita.",
+    "deleteConfirm": "Tem a certeza de que deseja eliminar este investimento? Esta ação não pode ser desfeita.",
     "createError": "Erro ao criar o investimento. Tente novamente.",
     "assetOptions": "Opções de {{name}}",
     "deleteTitle": "Eliminar investimento",
-    "deleteConfirmation": "Tem a certeza que deseja eliminar \"{{name}}\"? Será eliminado todo o histórico associado.",
+    "deleteConfirmation": "Tem a certeza de que deseja eliminar \"{{name}}\"? Será eliminado todo o histórico associado.",
     "types": {
       "stock": "Ações",
       "crypto": "Criptomoedas",
-      "fund": "Fundos",
+      "fund": "Fondos",
       "realEstate": "Imobiliário",
       "real_estate": "Imobiliário",
       "other": "Outros"
     },
     "alerts": {
       "createSuccess": "Investimento registado corretamente",
-      "updatePriceSuccess": "Preço actualizado corretamente",
+      "updatePriceSuccess": "Preço atualizado corretamente",
       "deleteSuccess": "Investimento eliminado corretamente",
-      "warningTitle": "Desvio crítico detectado",
-      "warningDesc": "O preço introduzido varia mais de 50% em relação ao preço actual. Clique de novo para confirmar."
+      "warningTitle": "Desvio crítico detetado",
+      "warningDesc": "O preço introduzido varia mais de 50% em relação ao preço atual. Clique novamente para confirmar."
     },
     "confirmUpdate": "Confirmar alteração crítica",
-    "updatePriceError": "Erro ao actualizar o preço",
+    "updatePriceError": "Erro ao atualizar o preço",
     "charts": {
       "tooltip": {
-        "amount": "Despesa",
+        "amount": "Gasto",
         "percentage": "Percentagem",
         "wealth": "Património"
       }
     }
   },
-  "family": {
-    "title": "Unidades Familiares",
-    "selectOrCreate": "Selecione uma unidade familiar ou crie uma nova",
-    "noFamilies": "Ainda não tem unidades familiares",
-    "createFirst": "Criar a minha primeira família",
-    "createNew": "Criar nova unidade familiar",
+  "groupGoals": {
+    "title": "Group Goals",
+    "selectOrCreate": "Selecione um Group Goal ou crie um novo",
+    "noFamilies": "Ainda não tem Group Goals",
+    "createFirst": "Criar o meu primeiro Group Goal",
+    "createNew": "Criar novo Group Goal",
     "create": "Criar",
-    "redirectingToLogin": "Redirecionando para o início de sessão...",
-    "createTitle": "Criar Nova Unidad Familiar",
-    "createDesc": "Defina o nome e o objetivo mensal da família",
-    "familyName": "Nome da Família",
-    "familyNamePlaceholder": "Ex: Família Martínez",
+    "redirectingToLogin": "Redirecionando para o login...",
+    "createTitle": "Criar Novo Group Goal",
+    "createDesc": "Defina o nome, o objetivo mensal e o modo de divisão",
+    "familyName": "Nome do Group Goal",
+    "familyNamePlaceholder": "Ex: Fundo Comum Familiar",
     "monthlyGoal": "Objetivo Mensual",
     "goal": "Objetivo",
     "admin": "Admin",
-    "invitationReceived": "Foi convidado para uma família",
-    "invitationMessage": "Recebeu um convite para se juntar a uma unidade familiar. Deseja aceitar?",
+    "invitationReceived": "Foi convidado para um Group Goal",
+    "invitationMessage": "Recebeu um convite para se juntar a um Group Goal. Deseja aceitar?",
     "member": "Membro",
     "members": "membros",
     "people": "pessoas",
     "inviteMember": "Convidar Membro",
     "inviteShort": "Convidar",
-    "inviteTitle": "Convidar para a Família",
-    "inviteDesc": "Envie um convite por e-mail a um utilizador registado",
-    "email": "Correio Eletrónico",
+    "inviteTitle": "Convidar para o Group Goal",
+    "inviteDesc": "Envie um convite por e-mail ou nome de utilizador",
+    "email": "E-mail ou Utilizador",
     "emailPlaceholder": "exemplo@correio.com",
     "sendInvitation": "Enviar Convite",
-    "invalidEmail": "O formato do e-mail não é válido",
+    "invalidEmail": "O identificador não é válido",
     "changeGoal": "Alterar Objetivo",
     "goalShort": "Meta",
     "changeGoalTitle": "Alterar Objetivo Mensal",
-    "changeGoalDesc": "Defina um novo objetivo mensal para a família",
+    "changeGoalDesc": "Defina um novo objetivo mensal e modo de divisão para o Group Goal",
     "goalProgress": "Progresso do Objetivo",
-    "goalProgressDesc": "Acompanhamento mensal das contribuições familiares",
+    "goalProgressDesc": "Acompanhamento mensal das contribuições do Group Goal",
     "collected": "Arrecadado",
     "of": "de",
     "mode": "Modo",
-    "distribution": "Distribuição",
+    "distribution": "Divisão",
     "distributionDesc": "Modo {{mode}}: as contribuições são calculadas de acordo com o método selecionado",
-    "distributionMode": "Modo de Repartição",
+    "distributionMode": "Modo de Divisão",
     "progressBar": {
       "label": "Progresso do objetivo mensal",
       "of": "de"
     },
     "modes": {
       "equitative": "Equitativo",
-      "equitativeDesc": "Todos os membros contribuem com a mesma quantia",
+      "equitativeDesc": "Todos os membros contribuem com a mesma quantidade",
       "proportional": "Proporcional",
       "proportionalDesc": "A contribuição é proporcional ao salário de cada membro",
       "custom": "Personalizado",
@@ -557,42 +557,47 @@
     "amount": "Quantidade",
     "save": "Guardar Contribuição",
     "salary": "Salário",
-    "monthlySalary": "Salário Mensual",
+    "monthlySalary": "Salário Mensal",
     "toContribute": "A contribuir",
     "contributed": "Contribuído",
     "contribution": "Contribuição",
+    "date": "Data",
     "nextPayment": "Próximo Pagamento",
     "inDays": "em {{days}} dias",
     "name": "Nome",
-    "role": "Cargo",
+    "role": "Função",
     "edit": "Editar",
     "editMember": "Editar Membro",
     "delete": "Eliminar",
+    "deleteGoal": "Eliminar Group Goal",
+    "deleteGoalConfirmation": "Tem a certeza de que deseja eliminar o Group Goal \"{{name}}\"? Esta ação não pode ser desfeita e todos os membros serão removidos.",
     "customPercentage": "Percentagem Personalizada",
     "customPercentageHint": "As percentagens somam {{total}}%. Devem somar 100%.",
     "customPercentageOk": "As percentagens somam corretamente 100%.",
-    "invitationFrom": "Convite de {{sender}} para se juntar a {{family}}",
-    "invalidToken": "Token de convite inválido",
-    "invitationAccepted": "Juntou-se à família corretamente!",
+    "invitationFrom": "Convite de {{sender}} para se juntar a {{goal}}",
+    "invalidToken": "Convite inválido",
+    "invitationAccepted": "Juntou-se ao Group Goal corretamente!",
     "invitationError": "Erro ao processar o convite",
     "processingInvitation": "Processando convite...",
-    "welcome": "Bem-vindo à família!",
-    "goToFamily": "Ir para a minha família",
+    "welcome": "Bem-vindo ao Group Goal!",
+    "goToFamily": "Ir para os meus Group Goals",
     "error": "Erro",
     "back": "Voltar",
-    "selectFamily": "Selecionar família {{name}}",
+    "selectFamily": "Selecionar Group Goal {{name}}",
     "alerts": {
-      "createSuccess": "Família criada corretamente",
-      "createError": "Erro ao criar a família",
+      "createSuccess": "Group Goal criado corretamente",
+      "createError": "Erro ao criar o Group Goal",
       "inviteSuccess": "Convite enviado corretamente",
       "inviteError": "Erro ao enviar o convite",
       "modeSuccess": "Modo de distribuição atualizado",
       "modeError": "Erro ao alterar o modo",
-      "goalSuccess": "Objetivo mensal atualizado",
-      "goalError": "Erro ao atualizar o objetivo",
+      "goalSuccess": "Group Goal atualizado corretamente",
+      "goalError": "Erro ao atualizar o Group Goal",
+      "deleteSuccess": "Group Goal eliminado corretamente",
+      "deleteError": "Erro ao eliminar o Group Goal",
       "memberEditSuccess": "Membro atualizado corretamente",
       "memberEditError": "Erro ao editar o membro",
-      "memberDeleteSuccess": "Membro removido da família",
+      "memberDeleteSuccess": "Membro removido do Group Goal",
       "memberDeleteError": "Erro ao remover o membro",
       "contributionSuccess": "Contribuição registada corretamente",
       "contributionError": "Erro ao registar contribuição"
@@ -606,6 +611,30 @@
       "status_404": "O recurso solicitado não se encontra disponível.",
       "status_500": "Problema interno do servidor. Tente novamente mais tarde.",
       "timeout": "O pedido demorou demasiado tempo a responder."
+    }
+  },
+  "settings": {
+    "general": {
+      "title": "Ajustes Gerais",
+      "description": "Personalize a sua experiência"
+    },
+    "currency": {
+      "title": "Moeda",
+      "description": "Selecione a sua moeda preferida",
+      "placeholder": "Escolher moeda"
+    },
+    "telegram": {
+      "title": "Conexão do Telegram",
+      "description": "Gerir a sua integração com o Telegram",
+      "connected": "Conectado como {{username}}",
+      "since": "Desde {{date}}",
+      "status": {
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "loading": "Verificando...",
+        "error": "Erro de conexão"
+      },
+      "refresh": "Atualizar"
     }
   }
 }

@@ -24,7 +24,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Añadir metas de ahorro.
 - [x] Reemplazo de dependencias shadcn, recharts y algo de radix con componentes propios.
 - [x] Persistencia de última ejecución en transacciones recurrentes.
-- [x] Añadir posibilidad de editar y borrar unidades familiares (Renombrado a Goal Contributions).
+- [x] Añadir posibilidad de editar y borrar Group Goals.
 - [x] Aligerar proyecto (eliminados .gitkeep).
 - [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
 - [x] Eliminar la necesidad de correo, invitaciones por notificación in-app.

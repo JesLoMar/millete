@@ -50,11 +50,11 @@ export function AddContributionDialog({
         }}
       >
         <DialogHeader>
-          <DialogTitle>{t("family.addContribution")}</DialogTitle>
+          <DialogTitle>{t("groupGoals.addContribution")}</DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t("family.amount")} (€)</Label>
+            <Label className="text-sm font-semibold">{t("groupGoals.amount")} (€)</Label>
             <Input
               ref={inputRef}
               type="number"
@@ -73,7 +73,7 @@ export function AddContributionDialog({
             {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={!amount || Number(amount) <= 0 || isSaving} className="min-w-24">
-            {isSaving ? <Loader2 size={16} className="animate-spin" /> : t("family.save")}
+            {isSaving ? <Loader2 size={16} className="animate-spin" /> : t("groupGoals.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,4 @@
-import type { FamilyUnitData, ContributionMember } from "./types"
+import type { GroupGoalDetail, ContributionMember } from "./types"
 
 export function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("es-ES", {
@@ -9,16 +9,16 @@ export function formatDate(dateStr: string): string {
 }
 
 export function calculateContributions(
-  selectedFamily: FamilyUnitData,
+  selectedGoal: GroupGoalDetail,
   customPercentages: Record<string, number>,
   totalCustomPercentage: number
 ): ContributionMember[] {
-  const { members, monthlyGoal, distributionMode } = selectedFamily
+  const { members, monthlyTarget, distributionMode } = selectedGoal
 
   const contributedMap: Record<string, number> = {}
-  if (selectedFamily.contributions) {
-    selectedFamily.contributions.forEach((c) => {
-      const key = c.memberId
+  if (selectedGoal.contributions) {
+    selectedGoal.contributions.forEach((c) => {
+      const key = c.userId
       if (key) {
         contributedMap[key] = (contributedMap[key] || 0) + c.amount
       }
@@ -29,23 +29,31 @@ export function calculateContributions(
 
   if (distributionMode === "CUSTOM") {
     members.forEach((m) => {
-      expectedMap[m.id] = totalCustomPercentage > 0 ? ((customPercentages[m.id] || 0) / 100) * monthlyGoal : 0
+      expectedMap[m.userId] =
+        totalCustomPercentage > 0
+          ? ((customPercentages[m.userId] || 0) / 100) * monthlyTarget
+          : 0
     })
   } else if (distributionMode === "EQUITATIVE" && members.length > 0) {
-    const amount = monthlyGoal / members.length
-    members.forEach((m) => { expectedMap[m.id] = amount })
+    const amount = monthlyTarget / members.length
+    members.forEach((m) => {
+      expectedMap[m.userId] = amount
+    })
   } else if (distributionMode === "PROPORTIONAL") {
     const totalSalary = members.reduce((sum, m) => sum + m.salary, 0)
     members.forEach((m) => {
-      expectedMap[m.id] = totalSalary > 0 ? (m.salary / totalSalary) * monthlyGoal : 0
+      expectedMap[m.userId] =
+        totalSalary > 0 ? (m.salary / totalSalary) * monthlyTarget : 0
     })
   } else {
-    members.forEach((m) => { expectedMap[m.id] = 0 })
+    members.forEach((m) => {
+      expectedMap[m.userId] = 0
+    })
   }
 
   return members.map((m) => {
-    const contributed = contributedMap[m.userId || m.id] || 0
-    const expected = expectedMap[m.id] || 0
+    const contributed = contributedMap[m.userId] || 0
+    const expected = expectedMap[m.userId] || 0
     return {
       ...m,
       expectedContribution: expected,
