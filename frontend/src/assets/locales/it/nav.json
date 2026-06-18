@@ -1,0 +1,46 @@
+{
+  "user": "Usuario",
+  "changeLanguage": "Cambiar idioma",
+  "guest": "Invitado",
+  "goToDashboard": "Ir al dashboard",
+  "userMenu": "Menú de usuario",
+  "profile": "Mi Perfil",
+  "logout": "Cerrar Sesión",
+  "logoutSuccess": "Sesión cerrada correctamente",
+  "mainNav": "Navegación principal",
+  "bottomNav": "Navegación secundaria",
+  "open": "Abrir Menú",
+  "close": "Cerrar Menú",
+  "noItems": "No hay secciones disponibles",
+  "mobileTitle": "Millete",
+  "dashboard": "$t(common:entities.dashboard)",
+  "transactions": "$t(common:entities.transactions)",
+  "categories": "$t(common:entities.categories)",
+  "investments": "$t(common:entities.investments)",
+  "groupgoals": "$t(common:entities.groupGoals)",
+  "savingsgoals": "$t(common:entities.savingsGoals)",
+  "settings": "Ajustes",
+  "errors": {
+    "featureComingSoon": "{{feature}} estará disponible próximamente",
+    "languageChangeFailed": "Error al cambiar el idioma"
+  },
+  "languages": {
+    "es": "Español",
+    "en": "Inglés",
+    "fr": "Francés",
+    "de": "Alemán",
+    "it": "Italiano",
+    "pt": "Portugués"
+  },
+  "theme": {
+    "selector": "Selector de tema",
+    "palette": "Paleta de colores",
+    "errors": {
+      "themeChangeFailed": "Error al cambiar el tema"
+    }
+  },
+  "carousel": {
+    "previous": "Anterior",
+    "next": "Siguiente"
+  }
+}

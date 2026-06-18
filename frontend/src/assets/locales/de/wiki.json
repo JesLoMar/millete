@@ -2,91 +2,91 @@
   "sections": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Das Hauptpanel, auf dem Sie den Status Ihrer Finanzen sehen und auf die wichtigsten Funktionen zugreifen können.",
+      "description": "El panel principal donde ves el estado de tus finanzas y accedes a las funciones clave.",
       "topics": [
         {
-          "title": "Schnellzugriff",
-          "content": "Vom Dashboard aus haben Sie schnellen Zugriff auf: \n\n- Transaktion hinzufügen: Ermöglicht das Hinzufügen von Einnahmen oder Ausgaben zum Kontostand. Sie müssen kategorisiert werden.\n\n- Kategorie erstellen: Ermöglicht das Erstellen neuer Kategorien zur Organisation Ihrer Transaktionen. Ihnen kann ein Budget zugewiesen werden.\n\n- Daten importieren: Ermöglicht den Import von Benutzerdaten aus einer früheren Version.\n\n- Daten exportieren: Ermöglicht den Export von Daten für einen späteren Import."
+          "title": "Accesos rápidos",
+          "content": "Desde el Dashboard tienes acceso a los accesos rápidos a: \n\n- Añadir transacción: Permite añadir ingresos o gastos al saldo de la cuenta. Deben ser categorizadas.\n\n- Crear categoría: Permite crear nuevas categorías para organizar tus transacciones. Se les puede asignar un presupuesto.\n\n- Importar datos: Permite importar datos del usuario desde una versión anterior a la actual.\n\n- Exportar datos: Permite exportar los datos para su posterior importación."
         },
         {
-          "title": "Wichtigste Kennzahlen",
-          "content": "Direkt unter dem vorherigen Abschnitt finden Sie vier Karten mit Ihrem aktuellen Kontostand, Einnahmen, Ausgaben und dem frei verfügbaren Guthaben. Jede zeigt den Trend im Vergleich zum vorherigen Zeitraum mit einem Prozentsatz in Grün oder Rot.\n\nVerwenden Sie die Zeitraumauswahl (Woche, Monat, Jahr), um den Zeitrahmen zu ändern."
+          "title": "Métricas principales",
+          "content": "En la parte inmediatamente inferior a la sección anterior encontrarás cuatro tarjetas con tu balance actual, ingresos, gastos y balance libre. Cada una muestra la tendencia respecto al período anterior con un porcentaje en verde o rojo.\n\nUsa el selector de período (semana, mes, año) para cambiar el rango de tiempo."
         },
         {
-          "title": "Informationspanels",
-          "content": "Unter den Hauptkennzahlen finden Sie Panels mit Diagrammen und zusammenfassenden Informationen zu Ihren Ausgaben und Budgets.\n\n- Ausgabenverlauf: Zeigt ein Balkendiagramm mit der Entwicklung Ihrer Ausgaben im Laufe der Zeit.\n\n- Ausgaben nach Kategorie: Zeigt ein Ringdiagramm mit den Gesamtausgaben für jede Kategorie im ausgewählten Zeitraum.\n\n- Budgets: Wenn Sie Kategorien mit einem Budget haben, sehen Sie einen Balken, der anzeigt, wie viel Sie im Verhältnis zum Budget ausgegeben haben."
+          "title": "Paneles de información",
+          "content": "Bajo las métricas principales, encontrarás paneles con gráficos e información resumida de tus gastos y presupuestos.\n\n- Historial de gastos: Muestra un gráfico de barras con la evolución de tus gastos a lo largo del tiempo.\n\n- Gráfico de gastos por categoría: Muestra un gráfico tipo donut con el total gastado en cada categoría durante el período seleccionado.\n\n- Presupuestos: Si tienes categorías con presupuesto, verás una barra que indica cuánto has gastado respecto al presupuesto."
         }
       ]
     },
     "transactions": {
-      "title": "Transaktionen",
-      "description": "Das Modul, in dem Sie alle Ihre finanziellen Bewegungen, ob einmalige oder automatisierte Vorgänge, erfassen und verwalten.",
+      "title": "Transacciones",
+      "description": "El módulo donde registras y administras todos tus movimientos financieros, ya sean operaciones puntuales o automatizadas.",
       "topics": [
         {
-          "title": "Transaktion erfassen",
-          "content": "Um eine einzelne Bewegung hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Transaktion'. Es öffnet sich ein Formular, in dem Sie Folgendes angeben müssen:\n\n- Beschreibung: Ein identifizierender Name oder Begriff (z. B. Wocheneinkauf bei Lidl).\n- Typ: Ermöglicht die Klassifizierung des Vorgangs als 'Ausgabe' oder 'Einnahme'.\n- Betrag (€): Der genaue Betrag des Vorgangs.\n- Kategorie: Ermöglicht die Zuweisung der Bewegung zu einer bestehenden Kategorie über ein Dropdown-Menü."
+          "title": "Registrar Transacción",
+          "content": "Para añadir un movimiento único, haz clic en el botón '+ Nueva Transacción'. Se abrirá un formulario donde debes indicar:\n\n- Descripción: Un nombre o concepto identificativo (ej. Compra semanal en Lidl).\n- Tipo: Permite clasificar la operación como 'Gasto' o 'Ingreso'.\n- Cantidad (€): El importe exacto de la operación.\n- Categoría: Permite asignar el movimiento a una categoría existente a través de un menú desplegable."
         },
         {
-          "title": "Neue wiederkehrende Transaktion",
-          "content": "Wenn Sie feste Zahlungen oder Einnahmen haben, können Sie diese über die Schaltfläche 'Wiederkehrend' automatisieren. Dieses Formular enthält die grundlegenden Felder einer normalen Transaktion und fügt Planungsoptionen hinzu:\n\n- Häufigkeit und Intervall: Ermöglicht die Konfiguration, wie oft der Vorgang wiederholt wird.\n- Startdatum: Legt den genauen Tag fest, an dem das System beginnt, die Bewegung automatisch zu erfassen.\n- Enddatum (optional): Legt ein Zeitlimit fest, ab dem die Transaktion nicht mehr wiederholt wird."
+          "title": "Nueva Transacción Recurrente",
+          "content": "Si tienes pagos o cobros fijos, puedes automatizarlos mediante el botón 'Recurrentes'. Este formulario incluye los campos básicos de una transacción normal, añadiendo opciones de programación:\n\n- Frecuencia e Intervalo: Permite configurar cada cuánto tiempo se repetirá la operación.\n- Fecha de inicio: Define el día exacto en el que el sistema empezará a registrar el movimiento automáticamente.\n- Fecha de fin (opcional): Establece un límite temporal para que la transacción deje de repetirse."
         },
         {
-          "title": "Filtern und Suchen",
-          "content": "Das System enthält Tools, um Ihre Einträge schnell zu finden:\n\n- Schnelle Registerkarten: Schaltflächen zum Filtern der Liste, die 'Alle', nur 'Einnahmen' oder nur 'Ausgaben' anzeigen. Enthält einen Zähler mit der Gesamtzahl der gefundenen Vorgänge.\n- Suchmaschine: Eine Textleiste ('Suche nach Beschreibung...'), mit der Sie eine bestimmte Bewegung finden können, indem Sie die Schlüsselwörter des Begriffs eingeben."
+          "title": "Filtrado y Búsqueda",
+          "content": "El sistema incluye herramientas para localizar rápidamente tus registros:\n\n- Pestañas rápidas: Botones para filtrar la lista mostrando 'Todas', solo 'Ingresos' o solo 'Gastos'. Incluye un contador con el total de operaciones encontradas.\n- Buscador: Una barra de texto ('Buscar por descripción...') que te permite encontrar un movimiento específico tecleando las palabras clave de su concepto."
         }
       ]
     },
     "categories": {
-      "title": "Kategorien",
-      "description": "Das Modul zur Klassifizierung Ihrer finanziellen Bewegungen und zur Festlegung monatlicher Ausgabenlimits, um Ihre Budgets unter Kontrolle zu halten.",
+      "title": "Categorías",
+      "description": "El módulo diseñado para clasificar tus movimientos financieros y establecer límites de gasto mensuales para mantener tus presupuestos bajo control.",
       "topics": [
         {
-          "title": "Neue Kategorie erstellen",
-          "content": "Um eine neue Klassifizierung zu registrieren, klicken Sie auf die Schaltfläche '+ Neue Kategorie'. Es wird ein schwebendes Formular mit den folgenden Pflichtfeldern angezeigt:\n\n- Name: Der identifizierende Begriff der Kategorie (z. B. Lebensmittel, Transport, Freizeit).\n- Farbe: Eine visuelle Auswahl oder ein Textfeld zur Zuweisung einer benutzerdefinierten Farbe im Hexadezimalformat (z. B. #FF5733), was die visuelle Identifizierung in den Diagrammen erleichtert.\n- Monatliches Budget (€): Das maximale Limit an Geld, das Sie in diesem Monat in dieser Kategorie ausgeben möchten."
+          "title": "Crear Nueva Categoría",
+          "content": "Para dar de alta una nueva clasificación, haz clic en el botón '+ Nueva Categoría'. Se desplegará un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre: El término identificativo de la categoría (ej. Alimentación, Transporte, Ocio).\n- Color: Un selector visual o campo de texto para asignar un color personalizado en formato hexadecimal (ej. #FF5733), lo que facilitará su identificación visual en los gráficos.\n- Presupuesto mensual (€): El límite máximo de dinero que planeas gastar en esta categoría a lo largo del mes."
         },
         {
-          "title": "Verwaltungs- und Visualisierungspanel",
-          "content": "Auf dem Hauptbildschirm des Moduls sehen Sie ein Raster mit all Ihren aktiven Kategorien. Jede Karte zeigt Ihnen übersichtlich:\n\n- Den Namen der Kategorie und die dazugehörige markante Farbe.\n- Das zugewiesene monatliche Budget (oder der entsprechende Hinweis, wenn es ohne Budgetlimit konfiguriert wurde).\n- Schnellaktionsschaltflächen, um das Element in Echtzeit zu verwalten."
+          "title": "Panel de Gestión y Visualización",
+          "content": "En la pantalla principal del módulo verás una cuadrícula con todas tus categorías activas. Cada tarjeta te muestra de forma clara:\n\n- El nombre de la categoría y su color distintivo asociado.\n- El presupuesto mensual asignado (o la indicación correspondientes si se configuró sin límite de presupuesto).\n- Los botones de acción rápida para gestionar el elemento en tiempo real."
         },
         {
-          "title": "Ändern und Löschen",
-          "content": "Jede Kategoriekarte verfügt über zwei direkte Aktionssymbole in der oberen rechten Ecke:\n\n- Bearbeiten-Symbol (Stift): Öffnet das Formular erneut, um den Namen zu ändern, die Farbpalette anzupassen oder das monatliche Budgetlimit zu ändern.\n- Löschen-Symbol (Mülleimer): Ermöglicht das sichere Entfernen der Kategorie aus dem System."
+          "title": "Modificar y Eliminar",
+          "content": "Cada tarjeta de categoría cuenta con dos iconos de acción directa en la esquina superior derecha:\n\n- Icono de Edición (Lápiz): Abre de nuevo el formulario para modificar el nombre, cambiar la paleta de color o ajustar el límite del presupuesto mensual.\n- Icono de Eliminación (Papelera): Permite dar de baja la categoría del sistema de forma segura."
         }
       ]
     },
     "investments": {
-      "title": "Investitionen",
-      "description": "Das Modul zur Verfolgung Ihrer variablen Finanzanlagen, mit dem Sie die Entwicklung des Wertes Ihres Portfolios und seiner Rentabilität in Echtzeit kontrollieren können.",
+      "title": "Inversiones",
+      "description": "El módulo diseñado para el seguimiento de tus activos financieros variables, permitiéndote controlar la evolución del valor de tu cartera y su rentabilidad en tiempo real.",
       "topics": [
         {
-          "title": "Portfolio-Kennzahlen und Diagramme",
-          "content": "Im oberen Teil des Panels werden drei Analysekarten angezeigt, die den Gesamtstatus Ihres Portfolios konsolidieren:\n\n- Investiertes Kapital: Die Gesamtsumme des Geldes, das Sie für den Kauf Ihrer Anlagen bereitgestellt haben.\n- Aktueller Wert: Der aktuelle Marktwert aller Ihrer kombinierten Bestände.\n- Rendite / Gewinn: Der kumulierte Nettogewinn oder -verlust (mit einem Prozentsatz und einem Trendindikator in Grün oder Rot).\n\nDirekt darunter finden Sie erweiterte visuelle Panels, darunter ein Liniendiagramm, das die zeitliche Entwicklung Ihres Vermögenswertes darstellt, und ein Diagramm, das die Verteilung Ihrer Mittel nach Anlageklasse aufschlüsselt."
+          "title": "Métricas y Gráficos del Portafolio",
+          "content": "En la parte superior del panel se muestran tres tarjetas analíticas que consolidan el estado global de tu cartera:\n\n- Capital Invertido: La suma total del dinero que has destinado a la compra de tus activos.\n- Valor Actual: El valor de mercado actual de todas tus posesiones combinadas.\n- Rendimiento / Ganancia: El beneficio o pérdida neta acumulada (con un porcentaje e indicador de tendencia en color verde o rojo).\n\nJusto debajo dispones de paneles visuales avanzados, incluyendo un gráfico de líneas que dibuja la evolución temporal del valor de tu patrimonio y un gráfico que detalla la distribución de tus fondos según el tipo de activo."
         },
         {
-          "title": "Neue Investition erfassen",
-          "content": "Um eine neue Anlage zu Ihrem Portfolio hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Investition'. Es öffnet sich ein schwebendes Formular mit den folgenden Pflichtfeldern:\n\n- Name und Ticker: Der Name des Vermögenswerts (z. B. Apple) und sein abgekürzter Börsencode (z. B. AAPL).\n- Menge: Die Gesamtzahl der erworbenen Einheiten oder Aktien.\n- Kaufpreis (€): Die Stückkosten, die Sie beim Erwerb der Anlage bezahlt haben.\n- Aktueller Preis (€): Der aktuelle Marktwert der Einheit.\n- Anlageart: Dropdown-Menü zur Klassifizierung der Art des Vermögenswerts."
+          "title": "Registrar Nueva Inversión",
+          "content": "Para añadir un nuevo activo a tu cartera, haz clic en el botón '+ Nueva Inversión'. Se abrirá un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre y Ticker: El nombre del activo (ej. Apple) y su código abreviado de cotización (ej. AAPL).\n- Cantidad: El número total de unidades o acciones adquiridas.\n- Precio de compra (€): El coste unitario que pagaste al adquirir el activo.\n- Precio actual (€): El valor unitario de cotización actual en el mercado.\n- Tipo de inversión: Desplegable para clasificar la naturaleza del activo."
         },
         {
-          "title": "Preisaktualisierung und Operationen",
-          "content": "Im unteren Raster oder der Liste werden alle aktiven Investitionen angezeigt. Jedes Element verfügt über Schnellaktionsschaltflächen, um Ihre Daten auf dem neuesten Stand zu halten:\n\n- Aktuellen Preis aktualisieren: Eine exklusive Verknüpfung, mit der Sie den Marktpreis der Anlage isoliert schnell ändern können, um den Gewinn sofort neu zu berechnen, ohne den gesamten Datensatz bearbeiten zu müssen.\n- Investition bearbeiten: Ermöglicht die Korrektur der ursprünglichen Parameter des Datensatzes.\n- Abmelden (Mülleimer): Führt eine logische Löschung durch, um den Vermögenswert sicher aus Ihrer aktiven Portfolioansicht zu entfernen."
+          "title": "Actualización de Precios y Operaciones",
+          "content": "En la cuadrícula o listado inferior se muestran todas las inversiones activas. Cada elemento cuenta con botones de acción rápida para mantener tus datos al día:\n\n- Actualizar Precio Actual: Un acceso directo exclusivo que te permite modificar rápidamente la cotización de mercado del activo de forma aislada para recalcular de inmediato las ganancias sin necesidad de editar toda la ficha.\n- Editar Inversión: Permite corregir cualquiera de los parámetros originales del registro.\n- Dar de Baja (Papelera): Realiza un borrado lógico para retirar de forma segura el activo de tu visualización del portafolio activo."
         }
       ]
     },
     "family": {
-      "title": "Familie",
-      "description": "Das kooperative Modul, mit dem Sie ein gemeinsames Budget verwalten, andere Benutzer einladen und die Beiträge jedes Mitglieds zu einem gemeinsamen Ziel überwachen können.",
+      "title": "Familia",
+      "description": "El módulo cooperativo que te permite gestionar un presupuesto compartido, invitar a otros usuarios y monitorizar las aportaciones de cada integrante hacia una meta común.",
       "topics": [
         {
-          "title": "Fortschritt und Familieneinstellungen",
-          "content": "Oben sehen Sie Ihr 'Monatsziel' und einen Fortschrittsbalken ('Fortschritt diesen Monat'), der den Prozentsatz und die gesammelte Gesamtsumme grafisch widerspiegelt. Sie können die Gruppenregeln über das Zahnradsymbol (Familieneinstellungen) ändern, wo Sie Folgendes definieren:\n\n- Name der Familie: Identifikator der Gruppe.\n- Monatsziel (€): Der wirtschaftliche Gesamtbetrag, den die Gruppe im Monat sammeln möchte.\n- Verteilungsmodus: Ermöglicht die Auswahl, wie die Zahlung des Ziels unter den Benutzern aufgeteilt wird, mit drei Optionen: 'Gleiche Teile', 'Proportional zum Gehalt' oder 'Benutzerdefinierte Prozentsätze'."
+          "title": "Progreso y Ajustes de la Familia",
+          "content": "En la parte superior visualizarás tu 'Meta Mensual' y una barra de 'Progreso de este mes' que refleja gráficamente el porcentaje y la cantidad total reunida. Puedes modificar las reglas del grupo desde el icono de engranaje (Ajustes de la familia), donde definirás:\n\n- Nombre de la Familia: Identificador del grupo.\n- Objetivo Mensual (€): La cantidad económica total que el grupo aspira a reunir en el mes.\n- Modo de Distribución: Permite elegir cómo se divide el pago del objetivo entre los usuarios mediante tres opciones: 'Partes iguales', 'Proporcional al sueldo' o 'Porcentajes personalizados'."
         },
         {
-          "title": "Mitgliederverwaltung und Einladungen",
-          "content": "Das zentrale Panel 'Familienmitglieder' schlüsselt die Mitglieder, ihre Rolle (ADMIN oder MEMBER), ihre Verteilungskonfiguration (Gehalt/Prozentsatz), ihre zugewiesene 'Quote' (was sie zahlen müssen) und das, was sie bereits 'Beigetragen' haben, auf.\n\n- + Mitglied einladen: Öffnet ein Dialogfeld, um eine neue Person hinzuzufügen, indem die 'E-Mail des einzuladenden Benutzers' eingegeben wird.\n- Individuelle Aktionen: Am Ende jeder Mitgliederzeile befindet sich ein Optionsmenü (drei Punkte), das es ermöglicht, 'Mitglied bearbeiten' (um die finanziellen Parameter anzupassen) oder 'Mitglied entfernen', um es aus der Gruppe zu nehmen."
+          "title": "Gestión de Miembros e Invitaciones",
+          "content": "El panel central 'Miembros de la Familia' desglosa a los integrantes, su rol (ADMIN o MEMBER), su configuración de reparto (sueldo/porcentaje), su 'Cuota' asignada (lo que deben pagar) y lo que ya han 'Aportado'.\n\n- + Invitar Miembro: Abre un cuadro de diálogo para añadir a alguien nuevo introduciendo el 'Email del usuario a invitar'.\n- Acciones individuales: Al final de la fila de cada miembro hay un menú de opciones (tres puntos) que permite 'Editar miembro' (para ajustar sus parámetros financieros) o 'Eliminar miembro' para sacarlo del grupo."
         },
         {
-          "title": "Registrierung und Kontrolle von Beiträgen",
-          "content": "In der unteren Tabelle 'Letzte Beiträge' wird das historische Protokoll der Kapitalzufuhren in den gemeinsamen Fonds geführt:\n\n- Schaltfläche + Hinzufügen: Öffnet das Formular 'Beitrag erfassen', in dem Sie den 'Einzuzahlenden Betrag (€)' angeben müssen. Dadurch wird der allgemeine Fortschrittsbalken automatisch aktualisiert.\n- Verlauf: Zeigt den Namen des Mitglieds, den beigetragenen Betrag und das Datum der Transaktion an. Es verfügt über ein Mülleimer-Symbol unter der Spalte 'Aktionen', um versehentlich erfasste Beiträge zu löschen."
+          "title": "Registro y Control de Aportaciones",
+          "content": "En la tabla inferior 'Aportaciones Recientes' se lleva el registro histórico de las inyecciones de capital al fondo común:\n\n- Botón + Añadir: Abre el formulario 'Registrar Aportación' donde debes indicar la 'Cantidad a aportar (€)'. Esto actualizará automáticamente la barra de progreso general.\n- Historial: Muestra el nombre del miembro, la cantidad aportada y la fecha de la operación. Cuenta con un icono de papelera bajo la columna 'Acciones' para eliminar aportaciones registradas por error."
         }
       ]
     }
