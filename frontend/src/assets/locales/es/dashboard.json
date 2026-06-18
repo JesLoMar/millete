@@ -124,7 +124,26 @@
     "errorFormat": "Formato de archivo inválido"
   },
   "export": {
-    "success": "Copia de seguridad exportada correctamente",
+    "title": "Exportar datos",
+    "configTitle": "Configurar exportación",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Exporta todos tus datos de usuario",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "Todos los CSV en un solo archivo",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "Un archivo por sección",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Informe financiero estilado",
+    "entity": "Tipo de datos",
+    "selectEntity": "Seleccionar tipo...",
+    "period": "Período",
+    "period1m": "Último mes",
+    "period3m": "Últimos 3 meses",
+    "period6m": "Últimos 6 meses",
+    "period1y": "Último año",
+    "periodAll": "Todo",
+    "action": "Exportar",
+    "success": "Datos exportados correctamente",
     "error": "Error al exportar los datos"
   }
 }

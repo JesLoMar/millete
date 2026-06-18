@@ -13,6 +13,7 @@ import { HistoryChart } from '../components/HistoryChart'
 import { QuickActions } from '../components/QuickActions'
 import { RecentTransactions } from '../components/RecentTransactions'
 import { ImportModal } from '../components/ImportModal'
+import { ExportModal } from '../components/ExportModal'
 import { useDashboardQueries } from '../hooks/useDashboardQueries'
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { apiClient } from '@/shared/api/axiosClient'
@@ -22,7 +23,7 @@ export const DashboardPage = () => {
   const { t } = useTranslation(['dashboard', 'common'])
   const [period, setPeriod] = useState<PeriodFilter>("month")
   const [isImportOpen, setIsImportOpen] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
@@ -64,27 +65,9 @@ export const DashboardPage = () => {
     }
   }, [queryClient, t])
 
-  const handleExport = useCallback(async () => {
-    setIsExporting(true)
-    try {
-      const response = await apiClient.get('/data/export', { responseType: 'blob' })
-      const blob = new Blob([response.data], { type: 'application/json' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'familybudget_export.json'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      
-      notify.success(t('dashboard:export.success') || 'Copia de seguridad exportada correctamente')
-    } catch {
-      notify.error(t('dashboard:export.error') || 'Error al exportar los datos')
-    } finally {
-      setIsExporting(false)
-    }
-  }, [t])
+  const handleExportClick = useCallback(() => {
+    setIsExportOpen(true)
+  }, [])
 
   const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
   const periodName = t(`dashboard:header.period.${period}`)
@@ -99,10 +82,10 @@ export const DashboardPage = () => {
           
           <QuickActions
             onImportClick={() => setIsImportOpen(true)}
-            onExportClick={handleExport}
+            onExportClick={handleExportClick}
             onAddClick={() => setIsAddOpen(true)}
             onAddCategoryClick={() => setIsAddCategoryOpen(true)}
-            isExporting={isExporting}
+            isExporting={false}
             isImporting={isImporting}
           />
 
@@ -170,6 +153,10 @@ export const DashboardPage = () => {
         isOpen={isImportOpen} 
         onClose={() => setIsImportOpen(false)} 
         onImport={handleImport}
+      />
+      <ExportModal
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
       />
       <NewTransactionDialog open={isAddOpen} onOpenChange={setIsAddOpen} />
       <AddCategoryDialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen} />

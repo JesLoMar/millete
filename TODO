@@ -30,8 +30,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
 - [x] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
 - [x] Reducir las claves de traducción optimizando los textos.
-
-- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo. [Falta front]
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
 
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)
 - [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
