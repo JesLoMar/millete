@@ -22,7 +22,7 @@ v0.1.0 [CAMBIOS EN BD]
 ===================================
 
 - [x] Añadir metas de ahorro. (Lógica en back por el momento)
-- [x] Reemplazo de dependencias (shadcn y radix) con componentes propios. (Reducción de un 40% de archivos en components/core, -30kb en código fuente y 5 dependencias)
+- [x] Reemplazo de dependencias shadcn, recharts y algo de radix con componentes propios.
 - [x] Persistencia de última ejecución en transacciones recurrentes.
 - [x] Añadir posibilidad de editar y borrar unidades familiares (Renombrado a Goal Contributions).
 - [x] Aligerar proyecto (eliminados .gitkeep).
@@ -31,7 +31,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)
 - [x] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
-- [x] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
+- [ ] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
@@ -39,6 +39,31 @@ v0.1.0 [CAMBIOS EN BD]
 ====
 HACER AL FINAL: Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0
 ====
+
+Mejoras estadísticas en el Front:
+
+Acción	                            Ahorro
+recharts eliminado	                -130 KB
+@radix-ui/react-tooltip	            -3.5 KB
+@radix-ui/react-progress	        -2.8 KB
+@radix-ui/react-label	            -2.1 KB
+@radix-ui/react-slot	            -1.2 KB
+embla-carousel-react	            -14 KB
+6 archivos shadcn no usados	        -6 KB
+chart.tsx wrapper antiguo	        -4 KB
+-----------------------
+Ahorro total	                    ~163 KB
+
+=======================
+
+Métrica	                            Dato
+Archivos shadcn eliminados	        6 de 15 (40%)
+Componentes en core/	            12 ligeros y propios
+Dependencias externas eliminadas	6 paquetes
+Gráficos migrados a SVG puro	    4 de 4
+-----------------------
+Bundle más ligero	                ~16% del proyecto
+
 
 ===================================
 MEJORAS v0.0.4

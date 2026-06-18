@@ -1,7 +1,7 @@
-// src/shared/components/core/donut-chart.tsx
+import type { ReactNode } from "react"
 import { cn } from "./utils"
 
-interface DonutData {
+export interface DonutData {
   name: string
   value: number
   color: string
@@ -13,15 +13,24 @@ interface DonutChartProps {
   size?: number
   thickness?: number
   className?: string
-  centerContent?: React.ReactNode
+  centerContent?: ReactNode
+  onSegmentHover?: (item: DonutData) => void
+  onSegmentLeave?: () => void
 }
 
-export function DonutChart({ data, size = 160, thickness = 20, className, centerContent }: DonutChartProps) {
+export function DonutChart({
+  data,
+  size = 160,
+  thickness = 20,
+  className,
+  centerContent,
+  onSegmentHover,
+  onSegmentLeave,
+}: DonutChartProps) {
   const radius = (size - thickness) / 2
   const circumference = 2 * Math.PI * radius
   const center = size / 2
 
-  // Calcula segmentos
   let accumulated = 0
   const segments = data.map((item) => {
     const percentage = item.percentage ?? item.value
@@ -34,6 +43,18 @@ export function DonutChart({ data, size = 160, thickness = 20, className, center
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+        {/* Anillo de fondo (hueco vacío) */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={thickness}
+          className="opacity-30"
+        />
+
+        {/* Segmentos */}
         {segments.map((segment) => (
           <circle
             key={segment.name}
@@ -46,11 +67,13 @@ export function DonutChart({ data, size = 160, thickness = 20, className, center
             strokeDasharray={`${segment.length} ${circumference - segment.length}`}
             strokeDashoffset={-segment.offset}
             className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+            onMouseEnter={() => onSegmentHover?.(segment)}
+            onMouseLeave={() => onSegmentLeave?.()}
           />
         ))}
       </svg>
       {centerContent && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ fontFamily: "var(--font-sans)" }}>
           {centerContent}
         </div>
       )}

@@ -1,7 +1,8 @@
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/shared/components/core/chart"
-import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
+import { DonutChart } from "@/shared/components/core/donut-chart"
+import { ChartTooltip } from "@/shared/components/core/chart-tooltip"
 import type { DistributionResponse } from "../types"
 
 interface DistributionChartProps {
@@ -9,22 +10,15 @@ interface DistributionChartProps {
   isLoading: boolean
 }
 
-const chartConfig = {
-  percentage: { label: "Porcentaje" },
-} satisfies ChartConfig
-
 function formatCurrency(value: number, lng: string): string {
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M`
-  }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}k`
-  }
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`
   return value.toLocaleString(lng)
 }
 
 export function DistributionChart({ data, isLoading }: DistributionChartProps) {
   const { t, i18n } = useTranslation()
+  const [tooltip, setTooltip] = useState<{ label: string; value: string; color: string } | null>(null)
 
   const chartData = data?.distribution || []
   const totalValue = data?.totalValue || 0
@@ -63,57 +57,65 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-100">
-        <div className="relative w-full max-w-75 aspect-square shrink-0">
-          <ChartContainer config={chartConfig} className="w-full h-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie 
-                  data={chartData} 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius="55%" 
-                  outerRadius="75%" 
-                  paddingAngle={5} 
-                  dataKey="percentage"
-                  nameKey="name" 
-                  stroke="none"
-                >
-                  {chartData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip 
-                  content={
-                    <ChartTooltipContent 
-                      formatter={(value) => [`${Number(value).toLocaleString(i18n.language)}%`]} 
-                    />
-                  } 
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-            <span className="text-lg sm:text-2xl font-bold text-foreground tabular-nums">
-              {formatCurrency(totalValue, i18n.language)} €
-            </span>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-              {t("investments.total")}
-            </span>
-          </div>
-        </div>
+        <ChartTooltip data={tooltip}>
+          <DonutChart
+            data={chartData.map((item) => ({
+              name: item.name,
+              value: item.percentage,
+              color: item.color,
+              percentage: item.percentage,
+            }))}
+            size={180}
+            thickness={28}
+            centerContent={
+              <div className="text-center pointer-events-none" style={{ fontFamily: "var(--font-sans)" }}>
+                <div className="text-lg font-bold tabular-nums">
+                  {formatCurrency(totalValue, i18n.language)} €
+                </div>
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
+                  {t("investments.total")}
+                </div>
+              </div>
+            }
+            onSegmentHover={(item) =>
+              setTooltip({
+                label: item.name,
+                value: `${item.percentage ?? item.value}%`,
+                color: item.color,
+              })
+            }
+            onSegmentLeave={() => setTooltip(null)}
+          />
+        </ChartTooltip>
 
         <div className="w-full space-y-1.5 sm:space-y-2 max-h-50 overflow-y-auto pr-1">
           {chartData.map((item) => (
-            <div key={item.name} className="flex items-center justify-between text-xs sm:text-sm gap-2">
+            <div
+              key={item.name}
+              className="flex items-center justify-between text-xs sm:text-sm gap-2 cursor-pointer"
+              onMouseEnter={() =>
+                setTooltip({
+                  label: item.name,
+                  value: `${item.percentage}%`,
+                  color: item.color,
+                })
+              }
+              onMouseLeave={() => setTooltip(null)}
+            >
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <span className="size-2 sm:size-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-muted-foreground truncate">{item.name}</span>
+                <span className="text-muted-foreground truncate" style={{ fontFamily: "var(--font-sans)" }}>
+                  {item.name}
+                </span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0">
-                <span className="text-muted-foreground text-[10px] sm:text-xs tabular-nums hidden xs:inline">
+                <span
+                  className="text-muted-foreground text-[10px] sm:text-xs tabular-nums hidden xs:inline"
+                  style={{ fontFamily: "var(--font-sans)" }}
+                >
                   ({item.value.toLocaleString(i18n.language)} €)
                 </span>
-                <span className="text-foreground tabular-nums text-xs sm:text-sm">
+                <span className="text-foreground tabular-nums text-xs sm:text-sm" style={{ fontFamily: "var(--font-sans)" }}>
                   {item.percentage.toLocaleString(i18n.language)}%
                 </span>
               </div>

@@ -1,113 +1,144 @@
 // src/shared/components/core/simple-bar-chart.tsx
-import { useState, useRef, useCallback } from "react"
 import { cn } from "./utils"
-import { ChartTooltip } from "./chart-tooltip"
 
 interface BarData {
-  label: string
-  value: number
-  color?: string
+    label: string
+    value: number
+    color?: string
 }
 
 interface SimpleBarChartProps {
-  data: BarData[]
-  height?: number
-  barColor?: string
-  showGrid?: boolean
-  showLabels?: boolean
-  formatValue?: (value: number) => string
-  className?: string
+    data: BarData[]
+    height?: number
+    barColor?: string
+    showGrid?: boolean
+    showLabels?: boolean
+    labelAngle?: number
+    formatValue?: (value: number) => string
+    className?: string
+    onBarHover?: (item: BarData | null) => void
 }
 
 export function SimpleBarChart({
-  data,
-  height = 200,
-  barColor = "hsl(var(--chart-1))",
-  showGrid = true,
-  showLabels = true,
-  formatValue = (v) => v.toString(),
-  className,
+    data,
+    height = 260,
+    barColor = "hsl(var(--chart-1))",
+    showGrid = true,
+    showLabels = true,
+    labelAngle = 0,
+    formatValue = (v) => v.toString(),
+    className,
+    onBarHover,
 }: SimpleBarChartProps) {
-  const [tooltip, setTooltip] = useState<{ label: string; value: string; color: string } | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+    const maxValue = Math.max(...data.map((d) => d.value), 1)
+    const barCount = data.length
+    const paddingBottom = 30
+    const chartAreaHeight = height - paddingBottom
+    const minBarHeightForInnerLabel = 36 // altura mínima para mostrar valor dentro
 
-  const maxValue = Math.max(...data.map((d) => d.value), 1)
-  const barWidth = 100 / data.length
-  const padding = 10
+    const barGapRatio = 0.4
+    const gapWidth = (100 * barGapRatio) / (barCount + 1)
+    const barWidth = (100 * (1 - barGapRatio)) / barCount
 
-  const handleBarHover = useCallback(
-    (item: BarData, e: React.MouseEvent) => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-      setTooltip({
-        label: item.label,
-        value: formatValue(item.value),
-        color: item.color ?? barColor,
-      })
-    },
-    [barColor, formatValue]
-  )
+    return (
+        <div className={cn("w-full relative", className)} style={{ height }}>
+            <svg width="100%" height={height} className="w-full">
+                {/* Grid horizontal */}
+                {showGrid &&
+                    [0, 0.25, 0.5, 0.75, 1].map((line) => {
+                        const y = chartAreaHeight * (1 - line)
+                        return (
+                            <line
+                                key={line}
+                                x1="0%"
+                                y1={y}
+                                x2="100%"
+                                y2={y}
+                                stroke="hsla(var(--border), 0.5)"
+                                strokeWidth={1}
+                                strokeDasharray="3 3"
+                            />
+                        )
+                    })}
 
-  return (
-    <div ref={containerRef} className={cn("relative w-full", className)} style={{ height }}>
-      <ChartTooltip data={tooltip}>
-        <svg
-          width="100%"
-          height={height}
-          viewBox={`0 0 ${data.length * (barWidth + padding)} ${height}`}
-          preserveAspectRatio="none"
-          className="w-full h-full"
-        >
-          {/* Grid horizontal */}
-          {showGrid &&
-            [0, 0.25, 0.5, 0.75, 1].map((line) => (
-              <line
-                key={line}
-                x1={0}
-                y1={height - line * height}
-                x2={data.length * (barWidth + padding)}
-                y2={height - line * height}
-                stroke="hsl(var(--border))"
-                strokeWidth={0.5}
-                strokeDasharray="3 3"
-              />
-            ))}
+                {/* Barras */}
+                {data.map((item, i) => {
+                    const barHeight = (item.value / maxValue) * chartAreaHeight
+                    const xPercent = gapWidth + i * (barWidth + gapWidth)
+                    const y = chartAreaHeight - barHeight
+                    const formattedValue = formatValue(item.value)
+                    const showInnerLabel = barHeight >= minBarHeightForInnerLabel
 
-          {/* Barras */}
-          {data.map((item, i) => {
-            const barHeight = (item.value / maxValue) * (height - 30)
-            const x = i * (barWidth + padding) + padding / 2
-            const y = height - barHeight - 20
+                    return (
+                        <g key={item.label}>
+                            <rect
+                                x={`${xPercent}%`}
+                                y={y}
+                                width={`${barWidth}%`}
+                                height={barHeight}
+                                fill={item.color ?? barColor}
+                                rx={4}
+                                className="hover:opacity-80 transition-opacity cursor-pointer"
+                                onMouseEnter={() =>
+                                    onBarHover?.({
+                                        label: item.label,
+                                        value: item.value,
+                                        color: item.color ?? barColor,
+                                    })
+                                }
+                                onMouseLeave={() => onBarHover?.(null)}
+                            />
 
-            return (
-              <g key={item.label}>
-                <rect
-                  x={x}
-                  y={y}
-                  width={barWidth - padding}
-                  height={barHeight}
-                  fill={item.color ?? barColor}
-                  rx={4}
-                  className="hover:opacity-80 transition-opacity cursor-pointer"
-                  onMouseEnter={(e) => handleBarHover(item, e)}
-                  onMouseLeave={() => setTooltip(null)}
-                />
-                {showLabels && (
-                  <text
-                    x={x + (barWidth - padding) / 2}
-                    y={height - 5}
-                    textAnchor="middle"
-                    fill="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                  >
-                    {item.label}
-                  </text>
-                )}
-              </g>
-            )
-          })}
-        </svg>
-      </ChartTooltip>
-    </div>
-  )
+                            {/* Valor dentro de la barra */}
+                            {showInnerLabel && (
+                                <text
+                                    x={`${xPercent + barWidth / 2}%`}
+                                    y={y + barHeight / 2 + 5}
+                                    textAnchor="middle"
+                                    fill="white"
+                                    fontSize={14}
+                                    fontWeight={700}
+                                    fontFamily="var(--font-sans)"
+                                    className="pointer-events-none"
+                                >
+                                    {formattedValue}
+                                </text>
+                            )}
+
+                            {/* Valor encima de la barra */}
+                            {!showInnerLabel && barHeight > 0 && (
+                                <text
+                                    x={`${xPercent + barWidth / 2}%`}
+                                    y={y - 6}
+                                    textAnchor="middle"
+                                    fill="hsl(var(--foreground))"
+                                    fontSize={12}
+                                    fontWeight={600}
+                                    fontFamily="var(--font-sans)"
+                                    className="pointer-events-none"
+                                >
+                                    {formattedValue}
+                                </text>
+                            )}
+
+                            {/* Etiqueta debajo */}
+                            {showLabels && (
+                                <text
+                                    x={`${xPercent + barWidth / 2}%`}
+                                    y={height - 6}
+                                    textAnchor="middle"
+                                    fill="hsl(var(--muted-foreground))"
+                                    fontSize={13}
+                                    fontWeight={500}
+                                    fontFamily="var(--font-sans)"
+                                >
+                                    {item.label}
+                                </text>
+                            )}
+                        </g>
+                    )
+                })}
+            </svg>
+        </div>
+    )
 }
