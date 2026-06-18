@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
 import { Button } from "@/shared/components/core/button"
+import { ProgressBar } from "@/shared/components/core/progress-bar"
 import { ArrowLeft, UserPlus, Target } from "lucide-react"
-import { ProgressBar } from "./ProgressBar"
 import { MemberCard } from "./MemberCard"
 import { DistributionCard } from "./DistributionCard"
 import { ContributionHistory } from "./ContributionHistory"
@@ -51,10 +51,10 @@ export function GroupGoalDetail({
     <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onBack} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
             className="size-8 shrink-0"
             aria-label={t("groupGoals.back")}
           >
@@ -69,7 +69,7 @@ export function GroupGoalDetail({
             </p>
           </div>
         </div>
-        
+
         {isAdmin && (
           <div className="flex gap-2 sm:gap-3 sm:shrink-0">
             <Button onClick={onInviteClick} className="gap-1.5 sm:gap-2 flex-1 sm:flex-none" size="sm">
@@ -105,7 +105,29 @@ export function GroupGoalDetail({
               </p>
             </div>
 
-            <ProgressBar contributions={contributions} monthlyTarget={goal.monthlyTarget} />
+            <div className="space-y-1.5">
+              <ProgressBar
+                segments={contributions.map((member, index) => ({
+                  value: goal.monthlyTarget > 0
+                    ? Math.min((member.contributed / goal.monthlyTarget) * 100, 100)
+                    : 0,
+                  className: MEMBER_COLORS[index % MEMBER_COLORS.length],
+                  label: `${member.name}: ${member.contributed.toLocaleString()} €`,
+                }))}
+                size="lg"
+                ariaLabel={t("groupGoals.progressBar.label")}
+                ariaValueNow={Math.round(percentageCompleted)}
+              />
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t("groupGoals.progressBar.of")}</span> {goal.monthlyTarget.toLocaleString()} €
+                </span>
+                <span className="font-medium tabular-nums">
+                  {Math.round(percentageCompleted)}%
+                </span>
+              </div>
+            </div>
 
             <div className="mt-4">
               <div className="hidden sm:block space-y-2">

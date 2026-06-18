@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/shared/components/core/card"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
+import { ProgressBar } from "@/shared/components/core/progress-bar"
 import { Crown, MoreHorizontal, Edit2, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
@@ -126,19 +127,14 @@ export function MemberCard({
             <span className="text-muted-foreground truncate">{t("groupGoals.contributed")}</span>
             <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">{member.contributed.toLocaleString()} €</span>
           </div>
-          <div 
-            className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mt-2"
-            role="progressbar"
-            aria-valuenow={Math.min(member.percentage, 100)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={t("groupGoals.memberProgress", { name: member.name })}
-          >
-            <div
-              className={`h-full transition-all duration-700 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`}
-              style={{ width: `${Math.min(member.percentage, 100)}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={Math.min(member.percentage, 100)}
+            max={100}
+            size="sm"
+            className="mt-2"
+            barClassName={MEMBER_COLORS[index % MEMBER_COLORS.length]}
+            ariaLabel={t("groupGoals.memberProgress", { name: member.name })}
+          />
         </div>
       </CardContent>
     </Card>

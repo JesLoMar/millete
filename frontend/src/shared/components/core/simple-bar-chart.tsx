@@ -1,4 +1,3 @@
-// src/shared/components/core/simple-bar-chart.tsx
 import { cn } from "./utils"
 
 interface BarData {
@@ -34,7 +33,7 @@ export function SimpleBarChart({
     const barCount = data.length
     const paddingBottom = 30
     const chartAreaHeight = height - paddingBottom
-    const minBarHeightForInnerLabel = 36 // altura mínima para mostrar valor dentro
+    const minBarHeightForInnerLabel = 36
 
     const barGapRatio = 0.4
     const gapWidth = (100 * barGapRatio) / (barCount + 1)

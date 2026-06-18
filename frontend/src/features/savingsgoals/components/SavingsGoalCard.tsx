@@ -4,10 +4,10 @@ import type { SavingsGoal } from "../types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
 import { Badge } from "@/shared/components/core/badge"
 import { Button } from "@/shared/components/core/button"
+import { ProgressBar } from "@/shared/components/core/progress-bar"
 
 const PriorityBadge = ({ priority }: { priority: string }) => {
   const { t } = useTranslation()
-
   switch (priority) {
     case 'HIGH': return <Badge variant="destructive">{t("savingsGoals.priorities.HIGH")}</Badge>
     case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">{t("savingsGoals.priorities.MEDIUM")}</Badge>
@@ -52,9 +52,12 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
             <span className="text-muted-foreground">{t("savingsGoals.progress")}</span>
             <span className="text-foreground font-medium">{progressPercentage.toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-            <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }} />
-          </div>
+          <ProgressBar
+            value={goal.currentAmount}
+            max={goal.targetAmount}
+            size="sm"
+            ariaLabel={`${goal.name}: ${progressPercentage.toFixed(0)}%`}
+          />
         </div>
         <div className="flex justify-between items-end">
           <div>
