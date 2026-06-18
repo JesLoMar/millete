@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import WikiSidebar from './WikiSidebar';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/shared/components/core/button';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';

@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next"
 import { Palette, Check } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { useTheme } from "@/shared/hooks/useTheme"
 import { notify } from "@/shared/utils/notifications/notify"
 import type { Theme } from "@/shared/themes/palettes"

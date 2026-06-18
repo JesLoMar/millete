@@ -9,7 +9,7 @@ import { CategoriesPage } from '@/features/categories/pages/page';
 import { InvestmentsPage } from '@/features/investments/pages/page';
 import { FamilyPage } from '@/features/family/pages/page';
 import { JoinFamilyPage } from '@/features/family/pages/JoinFamilyPage';
-import { Toaster } from '@/shared/components/ui/sonner';
+import { Toaster } from '@/shared/components/core/sonner';
 import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
 import { SettingsPage } from './features/settings/pages/page';

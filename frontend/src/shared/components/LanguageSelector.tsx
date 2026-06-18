@@ -1,13 +1,13 @@
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Languages, ChevronDown } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { useAvailableLanguages } from "@/shared/hooks/useLanguages"
 import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"

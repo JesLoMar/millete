@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Plus } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import { formatDate } from "../utils"
 import type { FamilyContribution } from "../types"
 

@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/ui/chart"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/core/chart"
 import { Bar, BarChart, XAxis, ResponsiveContainer } from "recharts"
 import type { EvolutionResponse } from "../types"
 

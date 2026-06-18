@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Upload, X, FileJson, CheckCircle } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/components/ui/dialog"
-import { Button } from "@/shared/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/components/core/dialog"
+import { Button } from "@/shared/components/core/button"
 
 interface ImportModalProps {
   isOpen: boolean

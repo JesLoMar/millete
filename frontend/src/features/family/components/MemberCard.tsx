@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
-import { Card, CardContent } from "@/shared/components/ui/card"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
+import { Card, CardContent } from "@/shared/components/core/card"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
 import { Crown, MoreHorizontal, Edit2, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { MEMBER_COLORS } from "../constants"
 import type { ContributionMember } from "../types"
 

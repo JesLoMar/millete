@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { Button } from "@/shared/components/core/button"
 import { ArrowLeft, UserPlus, Target } from "lucide-react"
 import { ProgressBar } from "./ProgressBar"
 import { MemberCard } from "./MemberCard"

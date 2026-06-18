@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { Badge } from "@/shared/components/ui/badge"
+import { Badge } from "@/shared/components/core/badge"
 
 export function AuthFooter() {
   const { t } = useTranslation()

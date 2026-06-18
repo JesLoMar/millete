@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { Button } from "@/shared/components/core/button"
 import type { BudgetItem } from "../types"
 import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat'
 

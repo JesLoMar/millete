@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, AlertTriangle } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 import { useInvestmentMutations } from "../hooks/useInvestmentMutations"
 import { notify } from "@/shared/utils/notifications/notify"
 import type { ApiError } from "@/shared/types/api"

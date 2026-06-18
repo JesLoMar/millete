@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import { PlusCircle, FolderPlus, FileUp, FileDown, Loader2 } from "lucide-react"
 
 interface QuickActionsProps {

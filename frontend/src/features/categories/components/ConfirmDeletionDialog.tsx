@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { AlertTriangle } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 
 interface ConfirmDeletionDialogProps {
   open: boolean

@@ -22,16 +22,16 @@ v0.1.0 [CAMBIOS EN BD]
 ===================================
 
 - [x] Añadir metas de ahorro. (Lógica en back por el momento)
+- [x] Reemplazo de dependencias (shadcn y radix) con componentes propios. (Reducción de un 40% de archivos en components/core, -30kb en código fuente y 5 dependencias)
 - [x] Persistencia de última ejecución en transacciones recurrentes.
-- [x] Añadir posibilidad de editar y borrar unidades familiares.
+- [x] Añadir posibilidad de editar y borrar unidades familiares (Renombrado a Goal Contributions).
 - [x] Aligerar proyecto (eliminados .gitkeep).
 - [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
 - [x] Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)
-- [...] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
-- [...] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
-- [ ] Reemplazo de dependencias como shadcn y componentes rápidos con componentes propios.
+- [x] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
+- [x] Integración con bot de telegram. Resúmenes mensuales y avisos de pagos.
 - [ ] Reducir las claves de traducción optimizando los textos.
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.

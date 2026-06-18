@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/core/select"
 import type { FamilyMember } from "../../types"
 
 interface EditMemberDialogProps {

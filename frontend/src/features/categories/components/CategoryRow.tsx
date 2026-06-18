@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
 import type { Category } from "../types"
 

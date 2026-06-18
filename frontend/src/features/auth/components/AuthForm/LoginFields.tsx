@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
 import type { UseFormRegister, FieldErrors } from "react-hook-form"
 import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 
 interface LoginFieldsProps {
   register: UseFormRegister<CombinedAuthFormData>

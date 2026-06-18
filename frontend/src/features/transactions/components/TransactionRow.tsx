@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, ArrowUpRight, ArrowDownLeft, HelpCircle } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
+import { Button } from "@/shared/components/core/button"
+import { Badge } from "@/shared/components/core/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { formatDate } from "../utils"
 

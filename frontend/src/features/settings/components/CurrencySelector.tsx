@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
+} from '@/shared/components/core/select';
 import { SettingsSection } from './SettingsSection';
 import type { CurrencyOption, CurrencyCode } from '../types';
 

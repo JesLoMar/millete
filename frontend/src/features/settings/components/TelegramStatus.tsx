@@ -7,7 +7,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/shared/components/core/button';
 import { cn } from '@/lib/utils';
 import { SettingsSection } from './SettingsSection';
 import { useTelegramStatus } from '../hooks/useTelegramStatus';

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/ui/button"
-import { Card, CardContent } from "@/shared/components/ui/card"
-import { Badge } from "@/shared/components/ui/badge"
+import { Button } from "@/shared/components/core/button"
+import { Card, CardContent } from "@/shared/components/core/card"
+import { Badge } from "@/shared/components/core/badge"
 import { Users, Plus, ArrowRight, Crown } from "lucide-react"
 import type { FamilyListItem } from "../types"
 

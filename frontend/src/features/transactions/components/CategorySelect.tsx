@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
-import { Label } from "@/shared/components/ui/label"
+import { Label } from "@/shared/components/core/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/core/select"
 import { useCategories } from "@/shared/hooks/useCategories"
 
 interface CategorySelectProps {

@@ -2,14 +2,14 @@ import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { User, LogOut, Menu } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { useAuth } from "@/features/auth/context/AuthContext"
 import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"

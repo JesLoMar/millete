@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, ArrowUpRight, ArrowDownLeft, Calendar, Repeat } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
 import type { PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
 import { formatDate, formatFrequency, calculateNextExecution } from "../utils"

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/shared/components/ui/chart"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/shared/components/core/chart"
 import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
 import type { DistributionResponse } from "../types"
 

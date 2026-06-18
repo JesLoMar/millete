@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next"
 import type { UseFormRegister } from "react-hook-form"
 import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
 import { Eye, EyeOff } from "lucide-react"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
-import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
+import { Button } from "@/shared/components/core/button"
 
 interface PasswordFieldProps {
   register: UseFormRegister<CombinedAuthFormData>

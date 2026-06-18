@@ -1,23 +1,23 @@
 import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/core/select"
 import { CategorySelect } from "../CategorySelect"
 import { TypeToggle } from "../TypeToggle"
 import { FREQUENCY_TYPES } from "../../constants"

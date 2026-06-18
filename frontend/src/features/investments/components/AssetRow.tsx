@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import { TrendingUp, TrendingDown, MoreHorizontal, Trash2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { UpdatePriceDialog } from "./UpdatePriceDialog"
 import { cn } from "@/lib/utils"
 import { TYPE_COLORS } from "../constants"

@@ -10,15 +10,15 @@ import {
   ChevronRight,
   HelpCircle
 } from "lucide-react"
-import { Input } from "@/shared/components/ui/input"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
+import { Input } from "@/shared/components/core/input"
+import { Button } from "@/shared/components/core/button"
+import { Badge } from "@/shared/components/core/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { apiClient } from "@/shared/api/axiosClient"
 import { EditTransactionDialog } from './dialogs/EditTransactionDialog'

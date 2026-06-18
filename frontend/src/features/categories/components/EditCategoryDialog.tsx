@@ -7,10 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/shared/components/ui/dialog"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+} from "@/shared/components/core/dialog"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import { ColorPicker } from "./ColorPicker"
 import { useCategoryMutations } from "../hooks/useCategoryMutation"
 import type { Category } from "@/shared/hooks/useCategories"
