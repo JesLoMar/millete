@@ -26,7 +26,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       monthlyTarget: number
       distributionMode: string
     }) => {
-      return apiClient.post("/group-goals", {
+      return apiClient.post("/goals", {
         name,
         monthlyTarget,
         distributionMode,
@@ -46,7 +46,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
   const inviteMember = useMutation({
     mutationFn: async (identifier: string) => {
       if (!selectedGoalId) throw new Error("No goal selected")
-      return apiClient.post(`/group-goals/${selectedGoalId}/invite`, {
+      return apiClient.post(`/goals/${selectedGoalId}/invite`, {
         identifier,
       })
     },
@@ -78,7 +78,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       if (distributionMode !== undefined) payload.distributionMode = distributionMode
       if (name !== undefined) payload.name = name
 
-      return apiClient.put(`/group-goals/${goalId}`, payload)
+      return apiClient.put(`/goals/${goalId}`, payload)
     },
     onSuccess: () => {
       invalidateAll()
@@ -93,7 +93,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
 
   const deleteGoal = useMutation({
     mutationFn: async (goalId: string) => {
-      return apiClient.delete(`/group-goals/${goalId}`)
+      return apiClient.delete(`/goals/${goalId}`)
     },
     onSuccess: () => {
       invalidateAll()
@@ -125,7 +125,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       if (salary !== undefined) payload.salary = salary
       if (customPercentage !== undefined) payload.customPercentage = customPercentage
 
-      return apiClient.put(`/group-goals/${goalId}/members/${memberId}`, payload)
+      return apiClient.put(`/goals/${goalId}/members/${memberId}`, payload)
     },
     onSuccess: () => {
       invalidateAll()
@@ -146,7 +146,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       goalId: string
       memberId: string
     }) => {
-      return apiClient.delete(`/group-goals/${goalId}/members/${memberId}`)
+      return apiClient.delete(`/goals/${goalId}/members/${memberId}`)
     },
     onSuccess: () => {
       invalidateAll()
@@ -167,7 +167,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       goalId: string
       amount: number
     }) => {
-      return apiClient.post(`/group-goals/${goalId}/contributions`, { amount })
+      return apiClient.post(`/goals/${goalId}/contributions`, { amount })
     },
     onSuccess: () => {
       invalidateAll()

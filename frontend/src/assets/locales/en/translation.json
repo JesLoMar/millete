@@ -61,6 +61,7 @@
     "categories": "Categories",
     "investments": "Investments",
     "groupgoals": "Group Goals",
+    "savingsgoals": "Saving Goals",
     "mobileTitle": "Millete",
     "settings": "Settings",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "Connection error"
       },
       "refresh": "Refresh"
+    }
+  },
+  "savingsGoals": {
+    "title": "Saving Goals",
+    "newGoal": "New goal",
+    "newGoalTitle": "New saving goal",
+    "editGoalTitle": "Edit saving goal",
+    "deleteGoalTitle": "Delete saving goal",
+    "deleteGoalConfirmation": "Are you sure you want to delete the goal \"{{name}}\"? This action cannot be undone.",
+    "searchPlaceholder": "Search goal by name...",
+    "clearSearch": "Clear search",
+    "loadingError": "Error loading goals. Please try again.",
+    "loadingDetails": "Loading details...",
+    "emptyState": "No active saving goals.",
+    "name": "Name",
+    "namePlaceholder": "e.g., Emergency fund",
+    "targetAmount": "Target amount (€)",
+    "priority": "Priority",
+    "deadline": "Deadline (optional)",
+    "link": "Link (optional)",
+    "linkPlaceholder": "https://...",
+    "progress": "Progress",
+    "of": "of",
+    "addFunds": "Add funds to {{name}}",
+    "amount": "Amount (€)",
+    "add": "Add",
+    "create": "Create goal",
+    "saveChanges": "Save changes",
+    "editGoal": "Edit goal",
+    "deleteGoal": "Delete goal",
+    "addContribution": "Add contribution",
+    "priorities": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
+    },
+    "alerts": {
+      "createSuccess": "Saving goal created successfully",
+      "createError": "Error creating saving goal",
+      "updateSuccess": "Saving goal updated successfully",
+      "updateError": "Error updating saving goal",
+      "deleteSuccess": "Saving goal deleted successfully",
+      "deleteError": "Error deleting saving goal",
+      "contributionSuccess": "Contribution added successfully!",
+      "contributionError": "There was an error processing the contribution."
     }
   }
 }

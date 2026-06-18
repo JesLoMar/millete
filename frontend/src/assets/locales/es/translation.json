@@ -61,6 +61,7 @@
     "categories": "Categorías",
     "investments": "Inversiones",
     "groupgoals": "Metas Grupales",
+    "savingsgoals": "Metas de Ahorro",
     "mobileTitle": "Millete",
     "settings": "Ajustes",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "Error de conexión"
       },
       "refresh": "Actualizar"
+    }
+  },
+  "savingsGoals": {
+    "title": "Metas de Ahorro",
+    "newGoal": "Nueva meta",
+    "newGoalTitle": "Nueva meta de ahorro",
+    "editGoalTitle": "Editar meta de ahorro",
+    "deleteGoalTitle": "Eliminar meta de ahorro",
+    "deleteGoalConfirmation": "¿Estás seguro de que deseas eliminar la meta \"{{name}}\"? Esta acción no se puede deshacer.",
+    "searchPlaceholder": "Buscar meta por nombre...",
+    "clearSearch": "Limpiar búsqueda",
+    "loadingError": "Error al cargar las metas. Intente de nuevo.",
+    "loadingDetails": "Cargando detalles...",
+    "emptyState": "No hay metas de ahorro activas.",
+    "name": "Nombre",
+    "namePlaceholder": "Ej: Fondo de emergencia",
+    "targetAmount": "Cantidad objetivo (€)",
+    "priority": "Prioridad",
+    "deadline": "Fecha límite (opcional)",
+    "link": "Enlace (opcional)",
+    "linkPlaceholder": "https://...",
+    "progress": "Progreso",
+    "of": "de",
+    "addFunds": "Añadir fondos a {{name}}",
+    "amount": "Cantidad (€)",
+    "add": "Añadir",
+    "create": "Crear meta",
+    "saveChanges": "Guardar cambios",
+    "editGoal": "Editar meta",
+    "deleteGoal": "Eliminar meta",
+    "addContribution": "Añadir aportación",
+    "priorities": {
+      "HIGH": "Alta",
+      "MEDIUM": "Media",
+      "LOW": "Baja"
+    },
+    "alerts": {
+      "createSuccess": "Meta de ahorro creada correctamente",
+      "createError": "Error al crear la meta de ahorro",
+      "updateSuccess": "Meta de ahorro actualizada correctamente",
+      "updateError": "Error al actualizar la meta de ahorro",
+      "deleteSuccess": "Meta de ahorro eliminada correctamente",
+      "deleteError": "Error al eliminar la meta de ahorro",
+      "contributionSuccess": "¡Aportación añadida correctamente!",
+      "contributionError": "Hubo un error al procesar la aportación."
     }
   }
 }

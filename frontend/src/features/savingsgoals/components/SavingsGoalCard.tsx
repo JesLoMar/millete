@@ -1,30 +1,34 @@
-import { Calendar, Plus, Pencil, Trash2 } from "lucide-react";
-import type { SavingsGoal } from "../types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card";
-import { Badge } from "@/shared/components/core/badge";
-import { Button } from "@/shared/components/core/button";
+import { useTranslation } from "react-i18next"
+import { Calendar, Plus, Pencil, Trash2 } from "lucide-react"
+import type { SavingsGoal } from "../types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { Badge } from "@/shared/components/core/badge"
+import { Button } from "@/shared/components/core/button"
 
 const PriorityBadge = ({ priority }: { priority: string }) => {
+  const { t } = useTranslation()
+
   switch (priority) {
-    case 'HIGH': return <Badge variant="destructive">Alta</Badge>;
-    case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">Media</Badge>;
-    default: return <Badge variant="outline">Baja</Badge>;
+    case 'HIGH': return <Badge variant="destructive">{t("savingsGoals.priorities.HIGH")}</Badge>
+    case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">{t("savingsGoals.priorities.MEDIUM")}</Badge>
+    default: return <Badge variant="outline">{t("savingsGoals.priorities.LOW")}</Badge>
   }
-};
+}
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
-};
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount)
+}
 
 interface Props {
-  goal: SavingsGoal;
-  onAddContribution: (goal: SavingsGoal) => void;
-  onEdit: (goal: SavingsGoal) => void;
-  onDelete: (goal: SavingsGoal) => void;
+  goal: SavingsGoal
+  onAddContribution: (goal: SavingsGoal) => void
+  onEdit: (goal: SavingsGoal) => void
+  onDelete: (goal: SavingsGoal) => void
 }
 
 export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: Props) => {
-  const progressPercentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
+  const { t } = useTranslation()
+  const progressPercentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
 
   return (
     <Card className="flex flex-col hover:border-ring transition-colors">
@@ -45,7 +49,7 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
       <CardContent className="mt-auto pt-4 flex flex-col gap-4">
         <div>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Progreso</span>
+            <span className="text-muted-foreground">{t("savingsGoals.progress")}</span>
             <span className="text-foreground font-medium">{progressPercentage.toFixed(0)}%</span>
           </div>
           <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
@@ -55,21 +59,21 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
         <div className="flex justify-between items-end">
           <div>
             <div className="text-xl font-semibold text-foreground">{formatCurrency(goal.currentAmount)}</div>
-            <div className="text-xs text-muted-foreground">de {formatCurrency(goal.targetAmount)}</div>
+            <div className="text-xs text-muted-foreground">{t("savingsGoals.of")} {formatCurrency(goal.targetAmount)}</div>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(goal)} title="Editar meta">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(goal)} title={t("savingsGoals.editGoal")}>
               <Pencil className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(goal)} title="Eliminar meta">
+            <Button variant="ghost" size="icon" onClick={() => onDelete(goal)} title={t("savingsGoals.deleteGoal")}>
               <Trash2 className="w-4 h-4" />
             </Button>
-            <Button variant="secondary" size="icon" onClick={() => onAddContribution(goal)} title="Añadir aportación">
+            <Button variant="secondary" size="icon" onClick={() => onAddContribution(goal)} title={t("savingsGoals.addContribution")}>
               <Plus className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

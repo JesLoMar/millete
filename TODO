@@ -26,7 +26,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Persistencia de última ejecución en transacciones recurrentes.
 - [x] Añadir posibilidad de editar y borrar Group Goals.
 - [x] Aligerar proyecto (eliminados .gitkeep).
-- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo. [Falta front]
 - [x] Eliminar la necesidad de correo, invitaciones por notificación in-app.
 - [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
 - [...] Crear perfil de usuario y pestaña de settings. (Por ahora, creado un boceto del apartado settings. Muy verde.)

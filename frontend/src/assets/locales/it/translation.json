@@ -61,6 +61,7 @@
     "categories": "Categorie",
     "investments": "Investimenti",
     "groupgoals": "Obiettivi di Gruppo",
+    "savingsgoals": "Obiettivi di Risparmio",
     "mobileTitle": "Millete",
     "settings": "Impostazioni",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "Errore di connessione"
       },
       "refresh": "Aggiorna"
+    }
+  },
+  "savingsGoals": {
+    "title": "Obiettivi di Risparmio",
+    "newGoal": "Nuovo obiettivo",
+    "newGoalTitle": "Nuovo obiettivo di risparmio",
+    "editGoalTitle": "Modifica obiettivo di risparmio",
+    "deleteGoalTitle": "Elimina obiettivo di risparmio",
+    "deleteGoalConfirmation": "Sei sicuro di voler eliminare l'obiettivo \"{{name}}\"? Questa azione non può essere annullata.",
+    "searchPlaceholder": "Cerca obiettivo per nome...",
+    "clearSearch": "Cancella ricerca",
+    "loadingError": "Errore durante il caricamento degli obiettivi. Riprova.",
+    "loadingDetails": "Caricamento dettagli...",
+    "emptyState": "Nessun obiettivo di risparmio attivo.",
+    "name": "Nome",
+    "namePlaceholder": "Es: Fondo di emergenza",
+    "targetAmount": "Importo obiettivo (€)",
+    "priority": "Priorità",
+    "deadline": "Scadenza (opzionale)",
+    "link": "Link (opzionale)",
+    "linkPlaceholder": "https://...",
+    "progress": "Progresso",
+    "of": "di",
+    "addFunds": "Aggiungi fondi a {{name}}",
+    "amount": "Importo (€)",
+    "add": "Aggiungi",
+    "create": "Crea obiettivo",
+    "saveChanges": "Salva modifiche",
+    "editGoal": "Modifica obiettivo",
+    "deleteGoal": "Elimina obiettivo",
+    "addContribution": "Aggiungi contributo",
+    "priorities": {
+      "HIGH": "Alta",
+      "MEDIUM": "Media",
+      "LOW": "Bassa"
+    },
+    "alerts": {
+      "createSuccess": "Obiettivo di risparmio creato correttamente",
+      "createError": "Errore durante la creazione dell'obiettivo di risparmio",
+      "updateSuccess": "Obiettivo di risparmio aggiornato correttamente",
+      "updateError": "Errore durante l'aggiornamento dell'obiettivo di risparmio",
+      "deleteSuccess": "Obiettivo di risparmio eliminato correttamente",
+      "deleteError": "Errore durante l'eliminazione dell'obiettivo di risparmio",
+      "contributionSuccess": "Contributo aggiunto correttamente!",
+      "contributionError": "Si è verificato un errore durante l'elaborazione del contributo."
     }
   }
 }

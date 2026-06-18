@@ -1,68 +1,70 @@
-import { useState, useCallback, useMemo } from "react";
-import { TopNav } from "@/shared/components/TopNav";
-import { Sidebar } from "@/shared/components/Sidebar";
-import { Header, type PeriodFilter } from "@/shared/components/Header";
-import { PeriodSelector } from "@/shared/components/PeriodSelector";
-import { Input } from "@/shared/components/core/input";
-import { Loader2 } from "lucide-react";
-import { EmptyState } from "../components/EmptyState";
-import { SavingsGoalCard } from "../components/SavingsGoalCard";
-import { ContributionModal } from "../components/ContributionModal";
-import { SavingsGoalDialog } from "../components/SavingsGoalDialog";
-import { SavingsGoalEditDialog } from "../components/SavingsGoalEditDialog";
-import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog";
-import { useSavingsGoals, useAddContribution, useDeleteSavingsGoal } from "../hooks/useSavingsGoals";
-import type { SavingsGoal } from "../types";
+import { useState, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { TopNav } from "@/shared/components/TopNav"
+import { Sidebar } from "@/shared/components/Sidebar"
+import { Header, type PeriodFilter } from "@/shared/components/Header"
+import { PeriodSelector } from "@/shared/components/PeriodSelector"
+import { Input } from "@/shared/components/core/input"
+import { Loader2 } from "lucide-react"
+import { EmptyState } from "../components/EmptyState"
+import { SavingsGoalCard } from "../components/SavingsGoalCard"
+import { ContributionModal } from "../components/ContributionModal"
+import { SavingsGoalDialog } from "../components/SavingsGoalDialog"
+import { SavingsGoalEditDialog } from "../components/SavingsGoalEditDialog"
+import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
+import { useSavingsGoals, useAddContribution, useDeleteSavingsGoal } from "../hooks/useSavingsGoals"
+import type { SavingsGoal } from "../types"
 
 export const SavingsGoalsPage = () => {
-  const [period, setPeriod] = useState<PeriodFilter>("month");
-  const [search, setSearch] = useState("");
-  const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
-  const [isContributionOpen, setIsContributionOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [deletingGoal, setDeletingGoal] = useState<SavingsGoal | null>(null);
+  const { t } = useTranslation()
+  const [period, setPeriod] = useState<PeriodFilter>("month")
+  const [search, setSearch] = useState("")
+  const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null)
+  const [isContributionOpen, setIsContributionOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [deletingGoal, setDeletingGoal] = useState<SavingsGoal | null>(null)
 
-  const { data: goals, isLoading, error } = useSavingsGoals();
-  const { mutateAsync: addContribution } = useAddContribution();
-  const { mutateAsync: deleteGoal, isPending: isDeleting } = useDeleteSavingsGoal();
+  const { data: goals, isLoading, error } = useSavingsGoals()
+  const { mutateAsync: addContribution } = useAddContribution()
+  const { mutateAsync: deleteGoal, isPending: isDeleting } = useDeleteSavingsGoal()
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
-    setPeriod(newPeriod);
-  }, []);
+    setPeriod(newPeriod)
+  }, [])
 
   const filteredGoals = useMemo(() => {
-    if (!goals) return [];
-    if (!search.trim()) return goals;
-    const lower = search.toLowerCase();
-    return goals.filter((g) => g.name.toLowerCase().includes(lower));
-  }, [goals, search]);
+    if (!goals) return []
+    if (!search.trim()) return goals
+    const lower = search.toLowerCase()
+    return goals.filter((g) => g.name.toLowerCase().includes(lower))
+  }, [goals, search])
 
   const handleAddContribution = async (amount: number) => {
-    if (!selectedGoal) return;
-    await addContribution({ id: selectedGoal.id, amount });
-    setIsContributionOpen(false);
-    setSelectedGoal(null);
-  };
+    if (!selectedGoal) return
+    await addContribution({ id: selectedGoal.id, amount })
+    setIsContributionOpen(false)
+    setSelectedGoal(null)
+  }
 
   const handleDelete = async () => {
-    if (!deletingGoal) return;
-    await deleteGoal(deletingGoal.id);
-    setDeletingGoal(null);
-  };
+    if (!deletingGoal) return
+    await deleteGoal(deletingGoal.id)
+    setDeletingGoal(null)
+  }
 
   const openContribution = (goal: SavingsGoal) => {
-    setSelectedGoal(goal);
-    setIsContributionOpen(true);
-  };
+    setSelectedGoal(goal)
+    setIsContributionOpen(true)
+  }
 
   const openEdit = (goal: SavingsGoal) => {
-    setSelectedGoal(goal);
-    setIsEditOpen(true);
-  };
+    setSelectedGoal(goal)
+    setIsEditOpen(true)
+  }
 
   const openDelete = (goal: SavingsGoal) => {
-    setDeletingGoal(goal);
-  };
+    setDeletingGoal(goal)
+  }
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -90,7 +92,7 @@ export const SavingsGoalsPage = () => {
 
           <div className="relative">
             <Input
-              placeholder="Buscar meta por nombre..."
+              placeholder={t("savingsGoals.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full"
@@ -99,7 +101,7 @@ export const SavingsGoalsPage = () => {
               <button
                 onClick={() => setSearch("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Limpiar búsqueda"
+                aria-label={t("savingsGoals.clearSearch")}
               >
                 ✕
               </button>
@@ -114,7 +116,7 @@ export const SavingsGoalsPage = () => {
 
           {error && (
             <div className="text-center text-sm text-red-500 py-8">
-              Error al cargar las metas. Intente de nuevo.
+              {t("savingsGoals.loadingError")}
             </div>
           )}
 
@@ -139,8 +141,8 @@ export const SavingsGoalsPage = () => {
       <ContributionModal
         isOpen={isContributionOpen}
         onClose={() => {
-          setIsContributionOpen(false);
-          setSelectedGoal(null);
+          setIsContributionOpen(false)
+          setSelectedGoal(null)
         }}
         onSubmit={handleAddContribution}
         goal={selectedGoal}
@@ -149,8 +151,8 @@ export const SavingsGoalsPage = () => {
       <SavingsGoalEditDialog
         open={isEditOpen}
         onOpenChange={(open) => {
-          setIsEditOpen(open);
-          if (!open) setSelectedGoal(null);
+          setIsEditOpen(open)
+          if (!open) setSelectedGoal(null)
         }}
         goal={selectedGoal}
       />
@@ -158,14 +160,14 @@ export const SavingsGoalsPage = () => {
       <ConfirmDeletionDialog
         open={!!deletingGoal}
         onOpenChange={(open) => {
-          if (!open) setDeletingGoal(null);
+          if (!open) setDeletingGoal(null)
         }}
         itemName={deletingGoal?.name || ""}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
-        title="Eliminar meta de ahorro"
-        description={`¿Estás seguro de que deseas eliminar la meta "${deletingGoal?.name}"? Esta acción no se puede deshacer.`}
+        title={t("savingsGoals.deleteGoalTitle")}
+        description={t("savingsGoals.deleteGoalConfirmation", { name: deletingGoal?.name })}
       />
     </div>
-  );
-};
+  )
+}

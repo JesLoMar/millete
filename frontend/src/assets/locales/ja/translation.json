@@ -61,6 +61,7 @@
     "categories": "カテゴリー",
     "investments": "投資管理",
     "groupgoals": "グループ目標",
+    "savingsgoals": "貯蓄目標",
     "mobileTitle": "Millete",
     "settings": "設定",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "接続エラー"
       },
       "refresh": "更新"
+    }
+  },
+  "savingsGoals": {
+    "title": "貯蓄目標",
+    "newGoal": "新しい目標",
+    "newGoalTitle": "新規貯蓄目標",
+    "editGoalTitle": "貯蓄目標の編集",
+    "deleteGoalTitle": "貯蓄目標の削除",
+    "deleteGoalConfirmation": "目標「{{name}}」を削除してもよろしいですか？この操作は取り消せません。",
+    "searchPlaceholder": "目標を名前で検索...",
+    "clearSearch": "検索をクリア",
+    "loadingError": "目標の読み込みに失敗しました。もう一度お試しください。",
+    "loadingDetails": "詳細を読み込み中...",
+    "emptyState": "有効な貯蓄目標はありません。",
+    "name": "目標名",
+    "namePlaceholder": "例：緊急資金",
+    "targetAmount": "目標金額 (€)",
+    "priority": "優先度",
+    "deadline": "期限（任意）",
+    "link": "リンク（任意）",
+    "linkPlaceholder": "https://...",
+    "progress": "進捗",
+    "of": "/",
+    "addFunds": "{{name}} に資金を追加",
+    "amount": "金額 (€)",
+    "add": "追加",
+    "create": "目標を作成",
+    "saveChanges": "変更を保存",
+    "editGoal": "目標を編集",
+    "deleteGoal": "目標を削除",
+    "addContribution": "拠出を追加",
+    "priorities": {
+      "HIGH": "高",
+      "MEDIUM": "中",
+      "LOW": "低"
+    },
+    "alerts": {
+      "createSuccess": "貯蓄目標を正常に作成しました",
+      "createError": "貯蓄目標の作成に失敗しました",
+      "updateSuccess": "貯蓄目標を正常に更新しました",
+      "updateError": "貯蓄目標の更新に失敗しました",
+      "deleteSuccess": "貯蓄目標を正常に削除しました",
+      "deleteError": "貯蓄目標の削除に失敗しました",
+      "contributionSuccess": "拠出が正常に追加されました！",
+      "contributionError": "拠出の処理中にエラーが発生しました。"
     }
   }
 }

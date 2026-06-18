@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/axiosClient"
-import type { GoalListItem, GroupGoalDetail, GoalMember, GoalContribution } from "../types"
+import type { GoalListItem, GroupGoalDetail } from "../types"
 
 interface RawGoalDetailResponse {
   id: string
@@ -16,7 +16,7 @@ interface RawGoalDetailResponse {
 interface RawGoalMember {
   id: string
   userId: string
-  name?: string
+  memberName?: string
   role: string
   salary?: number
   customPercentage?: number
@@ -25,22 +25,20 @@ interface RawGoalMember {
 interface RawGoalContribution {
   id: string
   userId: string
-  name: string
+  memberName: string
   amount: number
   date: string
 }
 
 export function useGroupGoalQueries(selectedGoalId: string | null) {
-  // Lista de goals del usuario
   const { data: goals = [], isLoading } = useQuery<GoalListItem[]>({
     queryKey: ["group-goals"],
     queryFn: async () => {
-      const response = await apiClient.get("/group-goals")
+      const response = await apiClient.get("/goals")
       return response.data
     },
   })
 
-  // Ordenar: primero los que eres admin, luego alfabéticamente
   const sortedGoals = useMemo(() => {
     return [...goals].sort((a, b) => {
       if (a.isAdmin && !b.isAdmin) return -1
@@ -49,17 +47,15 @@ export function useGroupGoalQueries(selectedGoalId: string | null) {
     })
   }, [goals])
 
-  // Detalle del goal seleccionado
   const { data: rawGoal } = useQuery<RawGoalDetailResponse>({
     queryKey: ["group-goals", selectedGoalId],
     queryFn: async () => {
-      const response = await apiClient.get(`/group-goals/${selectedGoalId}`)
+      const response = await apiClient.get(`/goals/${selectedGoalId}`)
       return response.data
     },
     enabled: !!selectedGoalId,
   })
 
-  // Mapear la respuesta raw a GroupGoalDetail
   const selectedGoal: GroupGoalDetail | undefined = useMemo(() => {
     if (!rawGoal) return undefined
     return {
@@ -68,18 +64,18 @@ export function useGroupGoalQueries(selectedGoalId: string | null) {
       monthlyTarget: rawGoal.monthlyTarget ?? 0,
       distributionMode: rawGoal.distributionMode,
       isAdmin: rawGoal.isAdmin,
-      members: rawGoal.members.map((m: RawGoalMember): GoalMember => ({
+      members: rawGoal.members.map((m) => ({
         id: m.id,
         userId: m.userId,
-        name: m.name || "Member",
+        name: m.memberName || "Member",
         role: m.role === "ADMIN" ? "ADMIN" : "MEMBER",
         salary: m.salary || 0,
         customPercentage: m.customPercentage,
       })),
-      contributions: (rawGoal.contributions || []).map((c: RawGoalContribution): GoalContribution => ({
+      contributions: (rawGoal.contributions || []).map((c) => ({
         id: c.id,
         userId: c.userId,
-        name: c.name || "Member",
+        name: c.memberName || "Member",
         amount: c.amount,
         date: c.date || "",
       })),

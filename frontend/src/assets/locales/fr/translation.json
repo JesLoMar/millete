@@ -61,6 +61,7 @@
     "categories": "Catégories",
     "investments": "Investissements",
     "groupgoals": "Objectifs de Groupe",
+    "savingsgoals": "Objectifs d'Épargne",
     "mobileTitle": "Millete",
     "settings": "Paramètres",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "Erreur de connexion"
       },
       "refresh": "Actualiser"
+    }
+  },
+  "savingsGoals": {
+    "title": "Objectifs d'Épargne",
+    "newGoal": "Nouvel objectif",
+    "newGoalTitle": "Nouvel objectif d'épargne",
+    "editGoalTitle": "Modifier l'objectif d'épargne",
+    "deleteGoalTitle": "Supprimer l'objectif d'épargne",
+    "deleteGoalConfirmation": "Êtes-vous sûr de vouloir supprimer l'objectif \"{{name}}\" ? Cette action ne peut pas être annulée.",
+    "searchPlaceholder": "Rechercher un objectif par nom...",
+    "clearSearch": "Effacer la recherche",
+    "loadingError": "Erreur lors du chargement des objectifs. Veuillez réessayer.",
+    "loadingDetails": "Chargement des détails...",
+    "emptyState": "Aucun objectif d'épargne actif.",
+    "name": "Nom",
+    "namePlaceholder": "Ex: Fonds d'urgence",
+    "targetAmount": "Montant cible (€)",
+    "priority": "Priorité",
+    "deadline": "Date limite (optionnel)",
+    "link": "Lien (optionnel)",
+    "linkPlaceholder": "https://...",
+    "progress": "Progression",
+    "of": "sur",
+    "addFunds": "Ajouter des fonds à {{name}}",
+    "amount": "Montant (€)",
+    "add": "Ajouter",
+    "create": "Créer un objectif",
+    "saveChanges": "Enregistrer les modifications",
+    "editGoal": "Modifier l'objectif",
+    "deleteGoal": "Supprimer l'objectif",
+    "addContribution": "Ajouter une contribution",
+    "priorities": {
+      "HIGH": "Haute",
+      "MEDIUM": "Moyenne",
+      "LOW": "Basse"
+    },
+    "alerts": {
+      "createSuccess": "Objectif d'épargne créé avec succès",
+      "createError": "Erreur lors de la création de l'objectif d'épargne",
+      "updateSuccess": "Objectif d'épargne mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour de l'objectif d'épargne",
+      "deleteSuccess": "Objectif d'épargne supprimé avec succès",
+      "deleteError": "Erreur lors de la suppression de l'objectif d'épargne",
+      "contributionSuccess": "Contribution ajoutée avec succès !",
+      "contributionError": "Une erreur est survenue lors du traitement de la contribution."
     }
   }
 }

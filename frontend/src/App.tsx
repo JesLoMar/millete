@@ -41,7 +41,7 @@ export default function App() {
             <Route path="/investments" element={<InvestmentsPage />} />
             <Route path="/group-goals" element={<GroupGoalsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/savinggoals" element={<SavingsGoalsPage />} />
+            <Route path="/savings-goals" element={<SavingsGoalsPage />} />
           </Route>
 
           {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}

@@ -37,10 +37,16 @@ export const GroupGoalsPage = () => {
   const { goals, isLoading: isLoadingList, selectedGoal } = useGroupGoalQueries(selectedGoalId)
   const mutations = useGroupGoalMutations(selectedGoalId)
 
+  // 1º - Calcular totalCustomPercentage PRIMERO
+  const totalCustomPercentage = useMemo(() => {
+    return Object.values(customPercentages).reduce((sum, p) => sum + p, 0)
+  }, [customPercentages])
+
+  // 2º - Luego contributionMembers que usa totalCustomPercentage
   const contributionMembers: ContributionMember[] = useMemo(() => {
     if (!selectedGoal) return []
     return calculateContributions(selectedGoal, customPercentages, totalCustomPercentage)
-  }, [selectedGoal, customPercentages])
+  }, [selectedGoal, customPercentages, totalCustomPercentage])
 
   const totalContributed = contributionMembers.reduce((sum, m) => sum + m.contributed, 0)
   const percentageCompleted = selectedGoal
@@ -48,10 +54,6 @@ export const GroupGoalsPage = () => {
       ? (totalContributed / selectedGoal.monthlyTarget) * 100
       : 0
     : 0
-
-  const totalCustomPercentage = useMemo(() => {
-    return Object.values(customPercentages).reduce((sum, p) => sum + p, 0)
-  }, [customPercentages])
 
   const handleCreateGoal = async (name: string, monthlyTarget: number, distributionMode: string) => {
     await mutations.createGoal.mutateAsync({ name, monthlyTarget, distributionMode })
@@ -61,7 +63,7 @@ export const GroupGoalsPage = () => {
   const handleEditGoalName = async (newName: string) => {
     if (!editingGoal) return
     try {
-      await apiClient.put(`/group-goals/${editingGoal.id}`, { name: newName })
+      await apiClient.put(`/goals/${editingGoal.id}`, { name: newName })
       queryClient.invalidateQueries({ queryKey: ["group-goals"] })
       notify.success("Nombre actualizado correctamente")
     } catch (err) {
@@ -118,10 +120,10 @@ export const GroupGoalsPage = () => {
   }
 
   const openDeleteMember = (memberId: string) => {
-  const member = contributionMembers.find(m => m.id === memberId)
-  setDeleteMemberId(memberId)
-  setDeletingMemberName(member?.name || "")
-}
+    const member = contributionMembers.find(m => m.id === memberId)
+    setDeleteMemberId(memberId)
+    setDeletingMemberName(member?.name || "")
+  }
 
   const handleAddContribution = async (amount: number) => {
     if (!selectedGoalId) return

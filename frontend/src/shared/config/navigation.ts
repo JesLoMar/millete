@@ -5,7 +5,8 @@ import {
   PieChart,
   TrendingUp,
   LayoutGrid,
-  Settings
+  Settings,
+  PiggyBank
 } from "lucide-react"
 
 // ─── Types ────────────────────────────────────────────────
@@ -64,22 +65,31 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     order: 4,
   },
   {
+    id: "savingsgoals",
+    icon: PiggyBank,
+    labelKey: "sidebar.savingsgoals",
+    path: "/savings-goals",
+    enabled: true,
+    section: "main",
+    order: 5,
+  },
+  {
     id: "groupgoals",
     icon: PieChart,
     labelKey: "sidebar.groupgoals",
     path: "/group-goals",
     enabled: true,
     section: "main",
-    order: 5,
+    order: 6,
   },
   {
-    id:"settings",
+    id: "settings",
     icon: Settings,
     labelKey: "sidebar.settings",
     path: "/settings",
     enabled: true,
     section: "bottom",
-    order: 6,
+    order: 7,
   }
 ]
 

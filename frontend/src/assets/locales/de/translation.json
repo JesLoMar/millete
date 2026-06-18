@@ -61,6 +61,7 @@
     "categories": "Kategorien",
     "investments": "Investitionen",
     "groupgoals": "Gruppenziele",
+    "savingsgoals": "Sparziele",
     "mobileTitle": "Millete",
     "settings": "Einstellungen",
     "errors": {
@@ -635,6 +636,51 @@
         "error": "Verbindungsfehler"
       },
       "refresh": "Aktualisieren"
+    }
+  },
+  "savingsGoals": {
+    "title": "Sparziele",
+    "newGoal": "Neues Ziel",
+    "newGoalTitle": "Neues Sparziel",
+    "editGoalTitle": "Sparziel bearbeiten",
+    "deleteGoalTitle": "Sparziel löschen",
+    "deleteGoalConfirmation": "Sind Sie sicher, dass Sie das Ziel \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "searchPlaceholder": "Ziel nach Name suchen...",
+    "clearSearch": "Suche löschen",
+    "loadingError": "Fehler beim Laden der Ziele. Bitte versuchen Sie es erneut.",
+    "loadingDetails": "Details werden geladen...",
+    "emptyState": "Keine aktiven Sparziele.",
+    "name": "Name",
+    "namePlaceholder": "z. B. Notgroschen",
+    "targetAmount": "Zielbetrag (€)",
+    "priority": "Priorität",
+    "deadline": "Frist (optional)",
+    "link": "Link (optional)",
+    "linkPlaceholder": "https://...",
+    "progress": "Fortschritt",
+    "of": "von",
+    "addFunds": "Geld zu {{name}} hinzufügen",
+    "amount": "Betrag (€)",
+    "add": "Hinzufügen",
+    "create": "Ziel erstellen",
+    "saveChanges": "Änderungen speichern",
+    "editGoal": "Ziel bearbeiten",
+    "deleteGoal": "Ziel löschen",
+    "addContribution": "Beitrag hinzufügen",
+    "priorities": {
+      "HIGH": "Hoch",
+      "MEDIUM": "Mittel",
+      "LOW": "Niedrig"
+    },
+    "alerts": {
+      "createSuccess": "Sparziel erfolgreich erstellt",
+      "createError": "Fehler beim Erstellen des Sparziels",
+      "updateSuccess": "Sparziel erfolgreich aktualisiert",
+      "updateError": "Fehler beim Aktualisieren des Sparziels",
+      "deleteSuccess": "Sparziel erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen des Sparziels",
+      "contributionSuccess": "Beitrag erfolgreich hinzugefügt!",
+      "contributionError": "Beim Verarbeiten des Beitrags ist ein Fehler aufgetreten."
     }
   }
 }
