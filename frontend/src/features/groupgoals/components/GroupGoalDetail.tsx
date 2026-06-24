@@ -167,9 +167,19 @@ export function GroupGoalDetail({
         <div className="lg:col-span-3">
           <DistributionCard
             distributionMode={goal.distributionMode}
-            isAdmin={isAdmin}
-            isCustomMode={isCustomMode}
-            isPercentageInvalid={isPercentageInvalid}
+            variant={
+              isAdmin
+                ? isCustomMode
+                  ? isPercentageInvalid
+                    ? "admin-custom-invalid"
+                    : "admin-custom-valid"
+                  : "admin-equitative"
+                : isCustomMode
+                  ? isPercentageInvalid
+                    ? "member-custom-invalid"
+                    : "member-custom-valid"
+                  : "member-equitative"
+            }
             onModeChange={onModeChange}
           />
         </div>

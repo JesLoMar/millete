@@ -22,27 +22,44 @@ interface NewTransactionDialogProps {
   onOpenChange?: (open: boolean) => void
 }
 
+interface FormState {
+  description: string
+  category: string
+  amount: string
+  type: "INCOME" | "EXPENSE"
+  error: string | null
+}
+
 export function NewTransactionDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: NewTransactionDialogProps = {}) {
   const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const { createTransaction, isCreating } = useTransactionMutations()
   const [internalOpen, setInternalOpen] = useState(false)
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE")
-  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const [form, setForm] = useState<FormState>({
+    description: "",
+    category: "",
+    amount: "",
+    type: "EXPENSE",
+    error: null,
+  })
 
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : internalOpen
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen
 
+  const updateForm = (updates: Partial<FormState>) => {
+    setForm(prev => ({ ...prev, ...updates }))
+  }
+
   const resetForm = () => {
-    setDescription("")
-    setCategory("")
-    setAmount("")
-    setType("EXPENSE")
-    setError(null)
+    setForm({
+      description: "",
+      category: "",
+      amount: "",
+      type: "EXPENSE",
+      error: null,
+    })
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -51,15 +68,15 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
   }
 
   const handleSave = async () => {
-    if (!description || !category || !amount) return
-    setError(null)
+    if (!form.description || !form.category || !form.amount) return
+    updateForm({ error: null })
 
     try {
       await createTransaction.mutateAsync({
-        description: description.trim(),
-        categoryId: category,
-        amount: type === "EXPENSE" ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
-        type,
+        description: form.description.trim(),
+        categoryId: form.category,
+        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        type: form.type,
         date: new Date().toISOString().split('.')[0],
       })
       setOpen(false)
@@ -69,11 +86,11 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
       const message = apiError?.response?.data?.message
         || apiError?.response?.data?.error
         || t('transactions:createError')
-      setError(message)
+      updateForm({ error: message })
     }
   }
 
-  const isValid = description.trim() && category && amount && Number(amount) > 0
+  const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -107,8 +124,8 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
               <Input
                 ref={inputRef}
                 placeholder={t('transactions:descriptionPlaceholder')}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={form.description}
+                onChange={(e) => updateForm({ description: e.target.value })}
                 disabled={isCreating}
                 className="bg-background border-border"
               />
@@ -117,15 +134,15 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
-                <TypeToggle value={type} onChange={setType} />
+                <TypeToggle value={form.type} onChange={(type) => updateForm({ type })} />
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:amount')}</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={form.amount}
+                  onChange={(e) => updateForm({ amount: e.target.value })}
                   disabled={isCreating}
                   className="bg-background border-border"
                   min="0.01"
@@ -134,9 +151,9 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
               </div>
             </div>
 
-            <CategorySelect value={category} onValueChange={setCategory} />
+            <CategorySelect value={form.category} onValueChange={(category) => updateForm({ category })} />
 
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+            {form.error && <p className="text-red-400 text-sm text-center">{form.error}</p>}
           </div>
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">

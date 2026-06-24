@@ -33,19 +33,23 @@ export function SavingsGoalDialog() {
   const { t } = useTranslation()
   const { mutateAsync: createGoal, isPending: isCreating } = useCreateSavingsGoal()
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [targetAmount, setTargetAmount] = useState("")
-  const [priority, setPriority] = useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM")
-  const [deadline, setDeadline] = useState("")
-  const [link, setLink] = useState("")
+  const [form, setForm] = useState({
+    name: "",
+    targetAmount: "",
+    priority: "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
+    deadline: "",
+    link: "",
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   const resetForm = () => {
-    setName("")
-    setTargetAmount("")
-    setPriority("MEDIUM")
-    setDeadline("")
-    setLink("")
+    setForm({
+      name: "",
+      targetAmount: "",
+      priority: "MEDIUM",
+      deadline: "",
+      link: "",
+    })
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -54,15 +58,15 @@ export function SavingsGoalDialog() {
   }
 
   const handleSave = async () => {
-    if (!name.trim() || !targetAmount) return
+    if (!form.name.trim() || !form.targetAmount) return
 
     try {
       await createGoal({
-        name: name.trim(),
-        targetAmount: Number(targetAmount),
-        priority,
-        deadline: deadline || undefined,
-        link: link.trim() || undefined,
+        name: form.name.trim(),
+        targetAmount: Number(form.targetAmount),
+        priority: form.priority,
+        deadline: form.deadline || undefined,
+        link: form.link.trim() || undefined,
       })
       setOpen(false)
       resetForm()
@@ -73,7 +77,7 @@ export function SavingsGoalDialog() {
     }
   }
 
-  const isValid = name.trim() && targetAmount && Number(targetAmount) > 0
+  const isValid = form.name.trim() && form.targetAmount && Number(form.targetAmount) > 0
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -105,8 +109,8 @@ export function SavingsGoalDialog() {
               <Input
                 ref={inputRef}
                 placeholder={t('savingsGoals:namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />
@@ -118,8 +122,8 @@ export function SavingsGoalDialog() {
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={targetAmount}
-                  onChange={(e) => setTargetAmount(e.target.value)}
+                  value={form.targetAmount}
+                  onChange={(e) => setForm((prev) => ({ ...prev, targetAmount: e.target.value }))}
                   disabled={isCreating}
                   className="bg-background border-border"
                   min="0.01"
@@ -128,7 +132,7 @@ export function SavingsGoalDialog() {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('savingsGoals:priority')}</Label>
-                <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
+                <Select value={form.priority} onValueChange={(v) => setForm((prev) => ({ ...prev, priority: v as typeof prev.priority }))}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue />
                   </SelectTrigger>
@@ -147,8 +151,8 @@ export function SavingsGoalDialog() {
               <Label className="text-sm font-semibold">{t('savingsGoals:deadline')}</Label>
               <Input
                 type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
+                value={form.deadline}
+                onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />
@@ -158,8 +162,8 @@ export function SavingsGoalDialog() {
               <Label className="text-sm font-semibold">{t('savingsGoals:link')}</Label>
               <Input
                 placeholder={t('savingsGoals:linkPlaceholder')}
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
+                value={form.link}
+                onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />

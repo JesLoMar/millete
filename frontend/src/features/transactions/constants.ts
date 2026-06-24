@@ -19,7 +19,7 @@ export const FREQUENCY_SINGULAR: Record<string, string> = {
   YEARS: "transactions:recurring.everyYear",
 }
 
-export const CATEGORY_COLORS: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   Alimentación: "text-emerald-500 bg-emerald-500/10",
   Hogar: "text-amber-500 bg-amber-500/10",
   Transporte: "text-blue-500 bg-blue-500/10",

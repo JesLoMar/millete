@@ -23,15 +23,19 @@ export const GroupGoalsPage = () => {
   const queryClient = useQueryClient()
 
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isInviteOpen, setIsInviteOpen] = useState(false)
-  const [isGoalEditOpen, setIsGoalEditOpen] = useState(false)
-  const [isAddContributionOpen, setIsAddContributionOpen] = useState(false)
-  const [editingGoal, setEditingGoal] = useState<GoalListItem | null>(null)
-  const [deletingGoal, setDeletingGoal] = useState<GoalListItem | null>(null)
-  const [editMember, setEditMember] = useState<ContributionMember | null>(null)
-  const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null)
-  const [deletingMemberName, setDeletingMemberName] = useState("")
+  const [dialogs, setDialogs] = useState({
+    isCreateOpen: false,
+    isInviteOpen: false,
+    isGoalEditOpen: false,
+    isAddContributionOpen: false,
+  })
+  const [actions, setActions] = useState({
+    editingGoal: null as GoalListItem | null,
+    deletingGoal: null as GoalListItem | null,
+    editMember: null as ContributionMember | null,
+    deleteMemberId: null as string | null,
+    deletingMemberName: "",
+  })
   const [customPercentages, setCustomPercentages] = useState<Record<string, number>>({})
 
   const { goals, isLoading: isLoadingList, selectedGoal } = useGroupGoalQueries(selectedGoalId)
@@ -57,13 +61,13 @@ export const GroupGoalsPage = () => {
 
   const handleCreateGoal = async (name: string, monthlyTarget: number, distributionMode: string) => {
     await mutations.createGoal.mutateAsync({ name, monthlyTarget, distributionMode })
-    setIsCreateOpen(false)
+    setDialogs((prev) => ({ ...prev, isCreateOpen: false }))
   }
 
   const handleEditGoalName = async (newName: string) => {
-    if (!editingGoal) return
+    if (!actions.editingGoal) return
     try {
-      await apiClient.put(`/goals/${editingGoal.id}`, { name: newName })
+      await apiClient.put(`/goals/${actions.editingGoal.id}`, { name: newName })
       queryClient.invalidateQueries({ queryKey: ["group-goals"] })
       notify.success("Nombre actualizado correctamente")
     } catch (err) {
@@ -73,12 +77,12 @@ export const GroupGoalsPage = () => {
   }
 
   const handleDeleteGoal = async () => {
-    if (!deletingGoal) return
-    await mutations.deleteGoal.mutateAsync(deletingGoal.id)
-    if (selectedGoalId === deletingGoal.id) {
+    if (!actions.deletingGoal) return
+    await mutations.deleteGoal.mutateAsync(actions.deletingGoal.id)
+    if (selectedGoalId === actions.deletingGoal.id) {
       setSelectedGoalId(null)
     }
-    setDeletingGoal(null)
+    setActions((prev) => ({ ...prev, deletingGoal: null }))
   }
 
   const handleUpdateGoal = async (monthlyTarget: number, distributionMode: string) => {
@@ -88,13 +92,13 @@ export const GroupGoalsPage = () => {
       monthlyTarget,
       distributionMode,
     })
-    setIsGoalEditOpen(false)
+    setDialogs((prev) => ({ ...prev, isGoalEditOpen: false }))
   }
 
   const handleInviteMember = async (identifier: string) => {
     if (!selectedGoalId) return
     await mutations.inviteMember.mutateAsync(identifier)
-    setIsInviteOpen(false)
+    setDialogs((prev) => ({ ...prev, isInviteOpen: false }))
   }
 
   const handleEditMember = async (memberId: string, role: string, salary: number, customPercentage?: number) => {
@@ -106,29 +110,27 @@ export const GroupGoalsPage = () => {
       salary,
       customPercentage,
     })
-    setEditMember(null)
+    setActions((prev) => ({ ...prev, editMember: null }))
   }
 
   const handleDeleteMember = async () => {
-    if (!selectedGoalId || !deleteMemberId) return
+    if (!selectedGoalId || !actions.deleteMemberId) return
     await mutations.deleteMember.mutateAsync({
       goalId: selectedGoalId,
-      memberId: deleteMemberId,
+      memberId: actions.deleteMemberId,
     })
-    setDeleteMemberId(null)
-    setDeletingMemberName("")
+    setActions((prev) => ({ ...prev, deleteMemberId: null, deletingMemberName: "" }))
   }
 
   const openDeleteMember = (memberId: string) => {
     const member = contributionMembers.find(m => m.id === memberId)
-    setDeleteMemberId(memberId)
-    setDeletingMemberName(member?.name || "")
+    setActions((prev) => ({ ...prev, deleteMemberId: memberId, deletingMemberName: member?.name || "" }))
   }
 
   const handleAddContribution = async (amount: number) => {
     if (!selectedGoalId) return
     await mutations.addContribution.mutateAsync({ goalId: selectedGoalId, amount })
-    setIsAddContributionOpen(false)
+    setDialogs((prev) => ({ ...prev, isAddContributionOpen: false }))
   }
 
   const handleCustomPercentageChange = useCallback(
@@ -154,9 +156,9 @@ export const GroupGoalsPage = () => {
               goals={goals || []}
               isLoading={isLoadingList}
               onSelect={setSelectedGoalId}
-              onCreateClick={() => setIsCreateOpen(true)}
-              onEditClick={setEditingGoal}
-              onDeleteClick={setDeletingGoal}
+              onCreateClick={() => setDialogs((prev) => ({ ...prev, isCreateOpen: true }))}
+              onEditClick={(goal) => setActions((prev) => ({ ...prev, editingGoal: goal }))}
+              onDeleteClick={(goal) => setActions((prev) => ({ ...prev, deletingGoal: goal }))}
             />
           ) : selectedGoal ? (
             <GroupGoalDetail
@@ -168,12 +170,12 @@ export const GroupGoalsPage = () => {
               onCustomPercentageChange={handleCustomPercentageChange}
               totalCustomPercentage={totalCustomPercentage}
               onBack={() => setSelectedGoalId(null)}
-              onInviteClick={() => setIsInviteOpen(true)}
-              onGoalClick={() => setIsGoalEditOpen(true)}
-              onEditMember={setEditMember}
+              onInviteClick={() => setDialogs((prev) => ({ ...prev, isInviteOpen: true }))}
+              onGoalClick={() => setDialogs((prev) => ({ ...prev, isGoalEditOpen: true }))}
+              onEditMember={(member) => setActions((prev) => ({ ...prev, editMember: member }))}
               onDeleteMember={openDeleteMember}
               onModeChange={handleModeChange}
-              onAddContribution={() => setIsAddContributionOpen(true)}
+              onAddContribution={() => setDialogs((prev) => ({ ...prev, isAddContributionOpen: true }))}
             />
           ) : (
             <div className="flex items-center justify-center py-12">
@@ -184,62 +186,64 @@ export const GroupGoalsPage = () => {
       </div>
 
       <CreateGroupGoalDialog
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        open={dialogs.isCreateOpen}
+        onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isCreateOpen: open }))}
         onCreate={handleCreateGoal}
       />
 
       <EditGoalNameDialog
-        open={!!editingGoal}
-        onOpenChange={(open) => !open && setEditingGoal(null)}
-        currentName={editingGoal?.name || ""}
+        key={actions.editingGoal?.id}
+        open={!!actions.editingGoal}
+        onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, editingGoal: null }))}
+        currentName={actions.editingGoal?.name || ""}
         onSave={handleEditGoalName}
       />
 
       <ConfirmDeletionDialog
-        open={!!deletingGoal}
-        onOpenChange={(open) => !open && setDeletingGoal(null)}
-        itemName={deletingGoal?.name || ""}
+        open={!!actions.deletingGoal}
+        onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, deletingGoal: null }))}
+        itemName={actions.deletingGoal?.name || ""}
         onConfirm={handleDeleteGoal}
         isDeleting={mutations.deleteGoal.isPending}
         title="Eliminar Group Goal"
-        description={`¿Estás seguro de que deseas eliminar el Group Goal "${deletingGoal?.name}"? Esta acción no se puede deshacer y todos los miembros serán eliminados.`}
+        description={`¿Estás seguro de que deseas eliminar el Group Goal "${actions.deletingGoal?.name}"? Esta acción no se puede deshacer y todos los miembros serán eliminados.`}
       />
 
       <UpdateGoalDialog
-        open={isGoalEditOpen}
-        onOpenChange={setIsGoalEditOpen}
+        key={selectedGoalId}
+        open={dialogs.isGoalEditOpen}
+        onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isGoalEditOpen: open }))}
         currentMonthlyTarget={selectedGoal?.monthlyTarget || 0}
         currentDistributionMode={selectedGoal?.distributionMode || "EQUITATIVE"}
         onSave={handleUpdateGoal}
       />
 
       <InviteMemberDialog
-        open={isInviteOpen}
-        onOpenChange={setIsInviteOpen}
+        open={dialogs.isInviteOpen}
+        onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isInviteOpen: open }))}
         onInvite={handleInviteMember}
       />
 
       <EditMemberDialog
-        member={editMember}
-        open={!!editMember}
-        onOpenChange={(open) => !open && setEditMember(null)}
+        member={actions.editMember}
+        open={!!actions.editMember}
+        onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, editMember: null }))}
         onSave={handleEditMember}
       />
 
       <ConfirmDeletionDialog
-        open={!!deleteMemberId}
-        onOpenChange={(open) => !open && setDeleteMemberId(null)}
-        itemName={deletingMemberName}
+        open={!!actions.deleteMemberId}
+        onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, deleteMemberId: null }))}
+        itemName={actions.deletingMemberName}
         onConfirm={handleDeleteMember}
         isDeleting={mutations.deleteMember.isPending}
         title="Eliminar miembro"
-        description={`¿Estás seguro de que deseas eliminar a "${deletingMemberName}" del Group Goal? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro de que deseas eliminar a "${actions.deletingMemberName}" del Group Goal? Esta acción no se puede deshacer.`}
       />
 
       <AddContributionDialog
-        open={isAddContributionOpen}
-        onOpenChange={setIsAddContributionOpen}
+        open={dialogs.isAddContributionOpen}
+        onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isAddContributionOpen: open }))}
         onSave={handleAddContribution}
         isSaving={mutations.addContribution.isPending}
       />

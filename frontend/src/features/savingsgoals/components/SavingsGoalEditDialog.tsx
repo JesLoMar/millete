@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, PiggyBank } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -38,36 +38,28 @@ interface Props {
 export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
   const { t } = useTranslation()
   const { mutateAsync: updateGoal, isPending: isUpdating } = useUpdateSavingsGoal()
-  const [name, setName] = useState("")
-  const [targetAmount, setTargetAmount] = useState("")
-  const [priority, setPriority] = useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM")
-  const [deadline, setDeadline] = useState("")
-  const [link, setLink] = useState("")
+  const [form, setForm] = useState({
+    name: "",
+    targetAmount: "",
+    priority: "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
+    deadline: "",
+    link: "",
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (open && goal) {
-      setName(goal.name)
-      setTargetAmount(goal.targetAmount.toString())
-      setPriority(goal.priority)
-      setDeadline(goal.deadline || "")
-      setLink(goal.link || "")
-    }
-  }, [open, goal])
-
   const handleSave = async () => {
-    if (!goal || !name.trim() || !targetAmount) return
+    if (!goal || !form.name.trim() || !form.targetAmount) return
 
     try {
       await updateGoal({
         id: goal.id,
         dto: {
-          name: name.trim(),
-          targetAmount: Number(targetAmount),
-          priority,
+          name: form.name.trim(),
+          targetAmount: Number(form.targetAmount),
+          priority: form.priority,
           status: goal.status,
-          deadline: deadline || undefined,
-          link: link.trim() || undefined,
+          deadline: form.deadline || undefined,
+          link: form.link.trim() || undefined,
         },
       })
       onOpenChange(false)
@@ -78,10 +70,10 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
     }
   }
 
-  const isValid = name.trim() && targetAmount && Number(targetAmount) > 0
+  const isValid = form.name.trim() && form.targetAmount && Number(form.targetAmount) > 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} key={goal?.id}>
       <DialogContent
         className="bg-card border-border sm:max-w-112.5"
         onOpenAutoFocus={(e) => {
@@ -103,8 +95,8 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
               <Input
                 ref={inputRef}
                 placeholder={t('savingsGoals:namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 disabled={isUpdating}
                 className="bg-background border-border"
               />
@@ -116,8 +108,8 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={targetAmount}
-                  onChange={(e) => setTargetAmount(e.target.value)}
+                  value={form.targetAmount}
+                  onChange={(e) => setForm((prev) => ({ ...prev, targetAmount: e.target.value }))}
                   disabled={isUpdating}
                   className="bg-background border-border"
                   min="0.01"
@@ -126,7 +118,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('savingsGoals:priority')}</Label>
-                <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
+                <Select value={form.priority} onValueChange={(v) => setForm((prev) => ({ ...prev, priority: v as typeof prev.priority }))}>
                   <SelectTrigger className="bg-background border-border">
                     <SelectValue />
                   </SelectTrigger>
@@ -145,8 +137,8 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
               <Label className="text-sm font-semibold">{t('savingsGoals:deadline')}</Label>
               <Input
                 type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
+                value={form.deadline}
+                onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))}
                 disabled={isUpdating}
                 className="bg-background border-border"
               />
@@ -156,8 +148,8 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
               <Label className="text-sm font-semibold">{t('savingsGoals:link')}</Label>
               <Input
                 placeholder={t('savingsGoals:linkPlaceholder')}
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
+                value={form.link}
+                onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
                 disabled={isUpdating}
                 className="bg-background border-border"
               />

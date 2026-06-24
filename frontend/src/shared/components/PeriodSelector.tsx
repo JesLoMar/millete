@@ -9,25 +9,24 @@ interface PeriodSelectorProps {
   className?: string
 }
 
+const OPTIONS = [
+  { value: "week" as PeriodFilter, labelKey: "header.period.week" as const },
+  { value: "month" as PeriodFilter, labelKey: "header.period.month" as const },
+  { value: "year" as PeriodFilter, labelKey: "header.period.year" as const },
+]
+
 export function PeriodSelector({ period, onPeriodChange, className }: PeriodSelectorProps) {
   const { t } = useTranslation(['dashboard'])
 
-  const options = [
-    { value: "week" as PeriodFilter, labelKey: "header.period.week" as const },
-    { value: "month" as PeriodFilter, labelKey: "header.period.month" as const },
-    { value: "year" as PeriodFilter, labelKey: "header.period.year" as const },
-  ]
-
   return (
-    <div 
+    <fieldset 
       className={cn(
         "flex sm:inline-flex p-1 bg-secondary/40 backdrop-blur-md rounded-xl border border-border/40 w-full sm:w-auto min-w-0",
         className
       )}
-      role="group"
       aria-label={t('header.period.ariaLabel')}
     >
-      {options.map((option) => {
+      {OPTIONS.map((option) => {
         const isActive = period === option.value
         return (
           <button
@@ -51,6 +50,6 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
           </button>
         )
       })}
-    </div>
+    </fieldset>
   )
 }

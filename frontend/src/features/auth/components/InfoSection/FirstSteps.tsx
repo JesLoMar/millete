@@ -43,6 +43,7 @@ export function FirstSteps() {
 
       <div className="pt-4">
         <button
+          type="button"
           onClick={() => navigate('/wiki')}
           className="w-full p-4 sm:p-5 rounded-xl bg-secondary/20 border border-border/50 flex items-center justify-between group cursor-pointer hover:bg-secondary/40 transition-all"
         >

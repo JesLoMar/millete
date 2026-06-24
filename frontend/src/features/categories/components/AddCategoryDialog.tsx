@@ -26,10 +26,12 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
   const { t } = useTranslation(['categories', 'common'])
   const { createCategory, isCreating } = useCategoryMutations()
   const [internalOpen, setInternalOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [color, setColor] = useState(CATEGORY_COLORS[0])
-  const [budgetLimit, setBudgetLimit] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({
+    name: "",
+    color: CATEGORY_COLORS[0],
+    budgetLimit: "",
+    error: null as string | null,
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isControlled = controlledOpen !== undefined
@@ -37,10 +39,12 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen
 
   const resetForm = () => {
-    setName("")
-    setColor(CATEGORY_COLORS[0])
-    setBudgetLimit("")
-    setError(null)
+    setForm({
+      name: "",
+      color: CATEGORY_COLORS[0],
+      budgetLimit: "",
+      error: null,
+    })
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -49,21 +53,21 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
   }
 
   const handleSave = async () => {
-    if (!name.trim()) return
-    setError(null)
+    if (!form.name.trim()) return
+    setForm((prev) => ({ ...prev, error: null }))
 
     try {
       await createCategory.mutateAsync({
-        name: name.trim(),
-        color: color,
-        budgetLimit: budgetLimit ? Number(budgetLimit) : null,
+        name: form.name.trim(),
+        color: form.color,
+        budgetLimit: form.budgetLimit ? Number(form.budgetLimit) : null,
       })
       setOpen(false)
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
       const message = apiError?.response?.data?.message || t('categories:createError')
-      setError(message)
+      setForm((prev) => ({ ...prev, error: message }))
     }
   }
 
@@ -98,8 +102,8 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
               <Input
                 ref={inputRef}
                 placeholder={t('categories:namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />
@@ -107,7 +111,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold">{t('categories:color')}</Label>
-              <ColorPicker value={color} onChange={setColor} />
+              <ColorPicker value={form.color} onChange={(v) => setForm((prev) => ({ ...prev, color: v }))} />
             </div>
 
             <div className="space-y-2">
@@ -115,8 +119,8 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
               <Input
                 type="number"
                 placeholder="0.00"
-                value={budgetLimit}
-                onChange={(e) => setBudgetLimit(e.target.value)}
+                value={form.budgetLimit}
+                onChange={(e) => setForm((prev) => ({ ...prev, budgetLimit: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
                 min="0"
@@ -125,8 +129,8 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
               <p className="text-xs text-muted-foreground">{t('categories:budgetHint')}</p>
             </div>
 
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            {form.error && (
+              <p className="text-red-400 text-sm text-center">{form.error}</p>
             )}
           </div>
 
@@ -136,7 +140,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isCreating || !name.trim()}
+              disabled={isCreating || !form.name.trim()}
               className="bg-primary hover:bg-primary/90 px-6"
             >
               {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('categories:save')}

@@ -56,6 +56,7 @@ export function RecentTransactions({
         </CardTitle>
         {hasExternalData && (
           <button
+            type="button"
             onClick={() => navigate("/transactions")}
             className="text-sm text-primary hover:underline transition-colors"
           >
@@ -77,10 +78,11 @@ export function RecentTransactions({
               const isExpense = tx.type === "EXPENSE"
 
               return (
-                <div
+                <button
+                  type="button"
                   key={tx.id}
                   onClick={() => navigate(`/transactions?id=${tx.id}`)}
-                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer"
+                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer w-full text-left"
                 >
                   <div className={`p-3 rounded-full ${color}`}>
                     <Icon className="size-5" />
@@ -113,7 +115,7 @@ export function RecentTransactions({
                       {isExpense ? t('dashboard:transactions.expense') : t('dashboard:transactions.income')}
                     </Badge>
                   </div>
-                </div>
+                </button>
               )
             })
           )}

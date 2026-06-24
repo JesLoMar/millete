@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,12 +27,13 @@ public class AccountLockService {
     }
 
     public void checkLockStatus(UUID userId) {
-        userSessionRepository.findByUserIdAndChannel(userId, CHANNEL_WEB).ifPresent(session -> {
+        List<UserSession> sessions = userSessionRepository.findByUserIdAndChannel(userId, CHANNEL_WEB);
+        for (UserSession session : sessions) {
             if (session.isBlocked()) {
                 throw new AccountLockedException(session.getBlockedUntil(), calculateRemainingMinutes(session.getBlockedUntil()));
             }
             sessionPersistenceService.saveSession(session);
-        });
+        }
     }
 
     public void handleFailedLogin(UUID userId) {
@@ -44,12 +46,13 @@ public class AccountLockService {
 
     @Transactional
     public void handleSuccessfulLogin(UUID userId) {
-        userSessionRepository.findByUserIdAndChannel(userId, CHANNEL_WEB).ifPresent(session -> {
+        List<UserSession> sessions = userSessionRepository.findByUserIdAndChannel(userId, CHANNEL_WEB);
+        for (UserSession session : sessions) {
             if (session.getLoginAttempts() > 0 || session.isBlocked()) {
                 session.resetAttempts();
                 userSessionRepository.save(session);
             }
-        });
+        }
     }
 
     private long calculateRemainingMinutes(LocalDateTime blockedUntil) {

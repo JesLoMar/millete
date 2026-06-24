@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.groupgoals.application.services.GroupGoalService;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
@@ -48,7 +49,7 @@ public class GroupGoalController {
 
     @GetMapping
     public ResponseEntity<List<GoalListItemResponseDTO>> getMyGoals(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         List<GoalListItemResponseDTO> goals = groupGoalService.getGoalsByUserId(userId);
         return ResponseEntity.ok(goals);
     }
@@ -57,7 +58,7 @@ public class GroupGoalController {
     public ResponseEntity<GoalDetailResponseDTO> getGoalDetail(
             @PathVariable UUID goalId,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         GoalDetailResponseDTO detail = groupGoalService.getGoalDetail(goalId, userId);
         return ResponseEntity.ok(detail);
     }
@@ -67,7 +68,7 @@ public class GroupGoalController {
             @RequestBody CreateGoalRequestDTO request,
             Authentication authentication) {
 
-        UUID adminId = UUID.fromString(authentication.getName());
+        UUID adminId = ((JwtUser) authentication.getPrincipal()).getId();
 
         GoalUnit goal = createGoalUnitUseCase.createGoalUnit(
                 adminId,
@@ -91,7 +92,7 @@ public class GroupGoalController {
             @RequestBody UpdateGoalRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         groupGoalService.updateGoal(goalId, userId, request);
         return ResponseEntity.ok().build();
     }
@@ -100,7 +101,7 @@ public class GroupGoalController {
     public ResponseEntity<Void> deleteGoal(
             @PathVariable UUID goalId,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         deleteGoalUnitUseCase.deleteGoalUnit(goalId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -112,7 +113,7 @@ public class GroupGoalController {
             @RequestBody UpdateMemberRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         groupGoalService.updateMember(goalId, memberId, userId, request);
         return ResponseEntity.ok().build();
     }
@@ -123,7 +124,7 @@ public class GroupGoalController {
             @PathVariable UUID memberId,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         groupGoalService.deleteMember(goalId, memberId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -139,7 +140,7 @@ public class GroupGoalController {
             @PathVariable UUID goalId,
             @RequestBody AddContributionRequestDTO request,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         groupGoalService.addContribution(goalId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -150,7 +151,7 @@ public class GroupGoalController {
             @RequestBody InviteMemberRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         GoalInvitation invitation = groupGoalService.inviteMember(goalId, userId, request.getIdentifier());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToInvitationResponse(invitation));
@@ -158,7 +159,7 @@ public class GroupGoalController {
 
     @GetMapping("/invitations/pending")
     public ResponseEntity<List<InvitationResponseDTO>> getPendingInvitations(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         List<GoalInvitation> invitations = groupGoalService.getPendingInvitations(userId);
         List<InvitationResponseDTO> response = invitations.stream()
                 .map(this::mapToInvitationResponse)
@@ -170,7 +171,7 @@ public class GroupGoalController {
     public ResponseEntity<Void> acceptInvitation(
             @PathVariable UUID invitationId,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         acceptInvitationUseCase.acceptInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }
@@ -179,7 +180,7 @@ public class GroupGoalController {
     public ResponseEntity<Void> rejectInvitation(
             @PathVariable UUID invitationId,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         groupGoalService.rejectInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }

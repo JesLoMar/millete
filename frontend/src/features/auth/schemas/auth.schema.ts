@@ -2,7 +2,7 @@ import * as z from "zod";
 
 const passwordSchema = z.string().min(8, "auth.form.passwordHint");
 
-export const authFormFieldsSchema = z.object({
+const authFormFieldsSchema = z.object({
   identifier: z.string().optional(),
   usernameRegistro: z.string().optional(),
   emailRegistro: z.string().optional(),
@@ -21,9 +21,16 @@ export const loginSchema = authFormFieldsSchema.refine(
 
 export const registerSchema = authFormFieldsSchema
   .refine(
-    (data) => !!data.usernameRegistro?.trim() || !!data.emailRegistro?.trim(),
+    (data) => !!data.usernameRegistro?.trim(),
     {
-      message: "auth.form.registerHint",
+      message: "auth.form.error.usernameRequired",
+      path: ["usernameRegistro"],
+    }
+  )
+  .refine(
+    (data) => !!data.emailRegistro?.trim(),
+    {
+      message: "auth.forgotPassword.emailRequired",
       path: ["emailRegistro"],
     }
   )

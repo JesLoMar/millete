@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.savingsgoals.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.*;
@@ -134,7 +135,7 @@ public class SavingsGoalController {
     }
 
     private UUID getUserId(Authentication authentication) {
-        return UUID.fromString(authentication.getName());
+        return ((JwtUser) authentication.getPrincipal()).getId();
     }
 
     private SavingsGoalResponseDTO mapToResponse(SavingsGoal goal) {

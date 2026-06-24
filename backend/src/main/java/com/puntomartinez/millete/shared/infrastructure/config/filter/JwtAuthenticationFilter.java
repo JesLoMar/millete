@@ -1,6 +1,8 @@
 package com.puntomartinez.millete.shared.infrastructure.config.filter;
 
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
+import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,14 +17,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
+    private final UserSessionRepository userSessionRepository;
 
-    public JwtAuthenticationFilter(TokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(TokenProvider tokenProvider, UserSessionRepository userSessionRepository) {
         this.tokenProvider = tokenProvider;
+        this.userSessionRepository = userSessionRepository;
     }
 
     @Override
@@ -36,15 +41,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt) && tokenProvider.isTokenValid(jwt)) {
                 String userId = tokenProvider.extractUserId(jwt);
+                String sessionIdStr = tokenProvider.getClaim(jwt, "sessionId");
+
+                if (sessionIdStr == null || !userSessionRepository.existsByIdAndActiveTrue(UUID.fromString(sessionIdStr))) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
 
                 if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    String email = tokenProvider.getClaim(jwt, "email");
+                    String username = tokenProvider.getClaim(jwt, "username");
+                    JwtUser jwtUser = new JwtUser(UUID.fromString(userId), username, email);
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userId,
+                            jwtUser,
                             null,
                             Collections.emptyList()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    request.setAttribute("sessionId", UUID.fromString(sessionIdStr));
                 }
             }
         } catch (Exception ex) {

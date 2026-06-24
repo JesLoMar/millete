@@ -22,6 +22,7 @@ export function ExportCard({
 }: ExportCardProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       className={cn(

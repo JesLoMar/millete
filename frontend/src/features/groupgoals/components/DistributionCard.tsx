@@ -9,24 +9,32 @@ import {
 } from "@/shared/components/core/select"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 
+type DistributionVariant =
+  | "admin-equitative"
+  | "admin-custom-valid"
+  | "admin-custom-invalid"
+  | "member-equitative"
+  | "member-custom-valid"
+  | "member-custom-invalid"
+
 interface DistributionCardProps {
   distributionMode: string
-  isAdmin: boolean
-  isCustomMode: boolean
-  isPercentageInvalid: boolean
+  variant: DistributionVariant
   onModeChange: (mode: string) => void
   isChangingMode?: boolean
 }
 
 export function DistributionCard({
   distributionMode,
-  isAdmin,
-  isCustomMode,
-  isPercentageInvalid,
+  variant,
   onModeChange,
   isChangingMode = false,
 }: DistributionCardProps) {
   const { t } = useTranslation()
+
+  const isAdmin = variant.startsWith("admin")
+  const isCustomMode = variant.includes("custom")
+  const isValid = variant.endsWith("valid") || variant.endsWith("equitative")
 
   return (
     <Card className="border-subtle bg-primary/5 relative overflow-hidden">
@@ -61,16 +69,16 @@ export function DistributionCard({
 
         {isCustomMode && (
           <div className={`flex items-start gap-2 p-2 sm:p-3 rounded-lg border text-xs transition-colors ${
-            isPercentageInvalid 
-              ? "bg-amber-500/10 border-amber-500/20 text-amber-400" 
-              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+            isValid
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+              : "bg-amber-500/10 border-amber-500/20 text-amber-400"
           }`}>
-            {isPercentageInvalid ? (
-              <AlertCircle className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
-            ) : (
+            {isValid ? (
               <CheckCircle2 className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
+            ) : (
+              <AlertCircle className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
             )}
-            <span>{isPercentageInvalid ? t('groupGoals:customPercentageHint') : t('groupGoals:customPercentageOk')}</span>
+            <span>{isValid ? t('groupGoals:customPercentageOk') : t('groupGoals:customPercentageHint')}</span>
           </div>
         )}
       </CardContent>

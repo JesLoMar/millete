@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
@@ -35,15 +35,12 @@ export function UpdateGoalDialog({
   onSave,
 }: UpdateGoalDialogProps) {
   const { t } = useTranslation()
-  const [monthlyTarget, setMonthlyTarget] = useState("")
-  const [distributionMode, setDistributionMode] = useState(currentDistributionMode)
 
-  useEffect(() => {
-    if (open) {
-      setMonthlyTarget(currentMonthlyTarget > 0 ? currentMonthlyTarget.toString() : "")
-      setDistributionMode(currentDistributionMode)
-    }
-  }, [open, currentMonthlyTarget, currentDistributionMode])
+  const [editedMonthlyTarget, setEditedMonthlyTarget] = useState<string | null>(null)
+  const [editedDistributionMode, setEditedDistributionMode] = useState<string | null>(null)
+
+  const monthlyTarget = editedMonthlyTarget ?? (currentMonthlyTarget > 0 ? currentMonthlyTarget.toString() : "")
+  const distributionMode = editedDistributionMode ?? currentDistributionMode
 
   const handleSave = () => {
     const parsedGoal = parseFloat(monthlyTarget)
@@ -81,7 +78,7 @@ export function UpdateGoalDialog({
                   id="goal"
                   type="number"
                   value={monthlyTarget}
-                  onChange={(e) => setMonthlyTarget(e.target.value)}
+                  onChange={(e) => setEditedMonthlyTarget(e.target.value)}
                   className="bg-background border-border text-base pr-12"
                   min="0.01"
                   step="0.01"
@@ -97,7 +94,7 @@ export function UpdateGoalDialog({
               <Label className="text-sm font-semibold text-foreground/80">
                 {t('groupGoals:distributionMode')}
               </Label>
-              <Select value={distributionMode} onValueChange={setDistributionMode}>
+              <Select value={distributionMode} onValueChange={(v) => setEditedDistributionMode(v)}>
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue />
                 </SelectTrigger>

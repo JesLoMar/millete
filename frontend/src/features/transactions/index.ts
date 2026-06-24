@@ -10,7 +10,6 @@ export interface TransactionResponse {
   description: string;
   date: string;
   createdAt: string;
-  limitExceeded?: boolean;
   active?: boolean;
 }
 

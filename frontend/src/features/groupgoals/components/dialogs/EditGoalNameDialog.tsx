@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -23,12 +23,9 @@ export function EditGoalNameDialog({
   currentName,
   onSave,
 }: EditGoalNameDialogProps) {
-  const [name, setName] = useState(currentName)
+  const [editedName, setEditedName] = useState<string | null>(null)
+  const name = editedName ?? currentName
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (open) setName(currentName)
-  }, [open, currentName])
 
   const handleSave = () => {
     if (!name.trim()) return
@@ -54,7 +51,7 @@ export function EditGoalNameDialog({
             <Input
               ref={inputRef}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setEditedName(e.target.value)}
               placeholder="Nombre del goal"
             />
           </div>

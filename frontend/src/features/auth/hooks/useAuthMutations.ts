@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import type { ApiError } from '@/shared/types/api';
 import type { LoginRequest } from '../types';
 

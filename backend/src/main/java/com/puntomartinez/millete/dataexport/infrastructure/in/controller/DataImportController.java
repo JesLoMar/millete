@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.dataexport.application.services.DataImportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class DataImportController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         log.info("Solicitud de importación para usuario: {}", userId);
 
         // ─── Validación: archivo no vacío ──────────────────

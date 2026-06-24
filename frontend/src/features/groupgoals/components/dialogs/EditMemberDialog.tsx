@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
@@ -33,14 +33,6 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
   const [customPercentage, setCustomPercentage] = useState(
     member?.customPercentage?.toString() || ""
   )
-
-  useEffect(() => {
-    if (member) {
-      setRole(member.role || "MEMBER")
-      setSalary(member.salary?.toString() || "")
-      setCustomPercentage(member.customPercentage?.toString() || "")
-    }
-  }, [member])
 
   const handleSave = () => {
     if (member) {

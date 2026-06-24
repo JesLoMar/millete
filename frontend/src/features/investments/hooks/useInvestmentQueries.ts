@@ -4,7 +4,7 @@ import type { PeriodFilter } from "@/shared/components/PeriodSelector"
 import type { InvestmentResponse, InvestmentMetricsData, EvolutionResponse, DistributionResponse } from "../types"
 
 export function useInvestmentQueries(period: PeriodFilter) {
-  const investments = useQuery<InvestmentResponse[]>({
+  const { data: investmentsData, isLoading: investmentsIsLoading } = useQuery<InvestmentResponse[]>({
     queryKey: ['investments'],
     queryFn: async () => {
       const response = await apiClient.get('investments')
@@ -14,7 +14,7 @@ export function useInvestmentQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const metrics = useQuery<InvestmentMetricsData>({
+  const { data: metricsData, isLoading: metricsIsLoading } = useQuery<InvestmentMetricsData>({
     queryKey: ['investmentMetrics', period],
     queryFn: async () => {
       const response = await apiClient.get(`dashboard/investments/metrics?period=${period}`)
@@ -24,7 +24,7 @@ export function useInvestmentQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const evolution = useQuery<EvolutionResponse>({
+  const { data: evolutionData, isLoading: evolutionIsLoading } = useQuery<EvolutionResponse>({
     queryKey: ['investmentEvolution', period],
     queryFn: async () => {
       const res = await apiClient.get(`dashboard/investments/evolution?period=${period}`)
@@ -34,7 +34,7 @@ export function useInvestmentQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const distribution = useQuery<DistributionResponse>({
+  const { data: distributionData, isLoading: distributionIsLoading } = useQuery<DistributionResponse>({
     queryKey: ['investmentDistribution', period],
     queryFn: async () => {
       const response = await apiClient.get(`dashboard/investments/distribution?period=${period}`)
@@ -44,5 +44,10 @@ export function useInvestmentQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  return { investments, metrics, evolution, distribution }
+  return {
+    investments: { data: investmentsData, isLoading: investmentsIsLoading },
+    metrics: { data: metricsData, isLoading: metricsIsLoading },
+    evolution: { data: evolutionData, isLoading: evolutionIsLoading },
+    distribution: { data: distributionData, isLoading: distributionIsLoading },
+  }
 }

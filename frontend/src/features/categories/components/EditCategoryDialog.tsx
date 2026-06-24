@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, CheckCircle } from "lucide-react"
 import {
@@ -29,15 +29,6 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
   const [color, setColor] = useState("")
   const [budgetLimit, setBudgetLimit] = useState("")
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (category) {
-      setName(category.name)
-      setColor(category.color || "#EF4444")
-      setBudgetLimit(category.budgetLimit !== null ? category.budgetLimit.toString() : "")
-      setError(null)
-    }
-  }, [category])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +63,7 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} key={category?.id}>
       <DialogContent className="sm:max-w-120 bg-card border-border rounded-2xl">
         <div className="max-h-[85dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>

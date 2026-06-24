@@ -15,8 +15,9 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
   }
 }
 
+const currencyFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' })
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount)
+  return currencyFormatter.format(amount)
 }
 
 interface Props {

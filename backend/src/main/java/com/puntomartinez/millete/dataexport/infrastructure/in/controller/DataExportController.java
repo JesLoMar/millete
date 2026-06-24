@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.dataexport.application.services.DataExportService;
 import com.puntomartinez.millete.dataexport.domain.model.PeriodType;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
@@ -27,7 +28,7 @@ public class DataExportController {
     @GetMapping(value = "/export", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDataSnapshot> exportData(Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         log.info("Solicitud de exportación para usuario: {}", userId);
 
@@ -47,7 +48,7 @@ public class DataExportController {
 
     @GetMapping("/export/zip")
     public ResponseEntity<byte[]> exportDataAsZip(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         log.info("Solicitud de exportación ZIP para usuario: {}", userId);
 
         byte[] zip = dataExportService.exportUserDataAsZip(userId);
@@ -65,7 +66,7 @@ public class DataExportController {
             @PathVariable String entityType,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         log.info("Solicitud de exportación CSV ({}) para usuario: {}", entityType, userId);
 
         byte[] csv = dataExportService.exportUserDataAsCsv(userId, entityType);
@@ -83,7 +84,7 @@ public class DataExportController {
             @RequestParam(defaultValue = "1m") String period,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         PeriodType periodType = PeriodType.fromCode(period);
         log.info("Solicitud de exportación PDF para usuario: {} (periodo: {})", userId, periodType.getCode());
 

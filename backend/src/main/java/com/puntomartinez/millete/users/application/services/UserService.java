@@ -65,7 +65,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     // CASO DE USO: LOGIN
     // ==========================================
     @Override
-    public String login(LoginUserCommand command) {
+    public User login(LoginUserCommand command) {
         User user = userRepository.findByIdentifier(command.identifier())
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
@@ -77,7 +77,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         }
         accountLockService.handleSuccessfulLogin(user.getId());
 
-        return tokenProvider.generateToken(user);
+        return user;
     }
 
     // ==========================================

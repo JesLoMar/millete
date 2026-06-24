@@ -10,7 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -33,7 +34,7 @@ class SessionPersistenceServiceTest {
     @DisplayName("persistFailedAttempt - crea nueva sesión si no existe y registra fallo")
     void persistFailedAttemptShouldCreateSessionAndRegisterFailure() {
         when(userSessionRepository.findByUserIdAndChannel(userId, "WEB"))
-                .thenReturn(Optional.empty());
+                .thenReturn(Collections.emptyList());
         when(userSessionRepository.save(any(UserSession.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -57,7 +58,7 @@ class SessionPersistenceServiceTest {
         LocalDateTime previousLastAttempt = existingSession.getLastAttemptAt();
 
         when(userSessionRepository.findByUserIdAndChannel(userId, "WEB"))
-                .thenReturn(Optional.of(existingSession));
+                .thenReturn(Collections.singletonList(existingSession));
         when(userSessionRepository.save(any(UserSession.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -78,7 +79,7 @@ class SessionPersistenceServiceTest {
     void persistFailedAttemptShouldBlockAtFifthAttempt() {
         UserSession existingSession = createSession(userId, 4); // 4 fallos previos
         when(userSessionRepository.findByUserIdAndChannel(userId, "WEB"))
-                .thenReturn(Optional.of(existingSession));
+                .thenReturn(Collections.singletonList(existingSession));
         when(userSessionRepository.save(any(UserSession.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -99,7 +100,7 @@ class SessionPersistenceServiceTest {
         UserSession existingSession = createSession(userId, 5);
         existingSession.setBlockedUntil(LocalDateTime.now().plusMinutes(5)); // Ya bloqueado
         when(userSessionRepository.findByUserIdAndChannel(userId, "WEB"))
-                .thenReturn(Optional.of(existingSession));
+                .thenReturn(Collections.singletonList(existingSession));
         when(userSessionRepository.save(any(UserSession.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -126,6 +127,7 @@ class SessionPersistenceServiceTest {
         session.setId(UUID.randomUUID());
         session.setUserId(userId);
         session.setChannel("WEB");
+        session.setActive(true); // <-- necesario para que getOrCreateSession la reconozca
         session.setLoginAttempts(attempts);
         session.setLastAttemptAt(LocalDateTime.now().minusMinutes(2));
         session.setCreatedAt(LocalDateTime.now().minusHours(1));

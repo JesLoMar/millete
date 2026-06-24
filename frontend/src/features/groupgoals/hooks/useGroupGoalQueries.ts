@@ -40,7 +40,7 @@ export function useGroupGoalQueries(selectedGoalId: string | null) {
   })
 
   const sortedGoals = useMemo(() => {
-    return [...goals].sort((a, b) => {
+    return goals.toSorted((a, b) => {
       if (a.isAdmin && !b.isAdmin) return -1
       if (!a.isAdmin && b.isAdmin) return 1
       return a.name.localeCompare(b.name)

@@ -83,6 +83,7 @@ export function TopNav({ className }: TopNavProps) {
         </Button>
 
         <button
+          type="button"
           onClick={() => handleNavigate("/dashboard")}
           className="flex items-center gap-2.5 select-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('goToDashboard')}

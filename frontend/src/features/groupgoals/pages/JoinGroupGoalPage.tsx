@@ -14,7 +14,7 @@ export const JoinGroupGoalPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { isLoading: authLoading } = useAuth()
-  const token = searchParams.get("token")
+  const invitationId = searchParams.get("invitationId")
 
   const [status, setStatus] = useState<"ready" | "accepting" | "success" | "error">("ready")
   const [message, setMessage] = useState("")
@@ -27,7 +27,7 @@ export const JoinGroupGoalPage = () => {
     )
   }
 
-  if (!token) {
+  if (!invitationId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full border-subtle">
@@ -49,7 +49,7 @@ export const JoinGroupGoalPage = () => {
   const handleAccept = async () => {
     setStatus("accepting")
     try {
-      await apiClient.post(`/goals/invitations/${token}/accept`)
+      await apiClient.post(`/goals/invitations/${invitationId}/accept`)
       setStatus("success")
       const successMsg = t('groupGoals:invitationAccepted')
       setMessage(successMsg)
@@ -66,7 +66,7 @@ export const JoinGroupGoalPage = () => {
   const handleReject = async () => {
     setStatus("accepting")
     try {
-      await apiClient.post(`/goals/invitations/${token}/reject`)
+      await apiClient.post(`/goals/invitations/${invitationId}/reject`)
       setStatus("error")
       setMessage("Invitación rechazada")
       notify.info("Has rechazado la invitación")

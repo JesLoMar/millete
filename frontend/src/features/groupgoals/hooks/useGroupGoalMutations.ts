@@ -8,14 +8,6 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
 
-  const invalidateAll = () => {
-    queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-    if (selectedGoalId) {
-      queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-      queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-    }
-  }
-
   const createGoal = useMutation({
     mutationFn: async ({
       name,
@@ -33,7 +25,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       })
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
@@ -51,7 +47,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       })
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.inviteSuccess'))
     },
     onError: (err: ApiError) => {
@@ -81,7 +81,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       return apiClient.put(`/goals/${goalId}`, payload)
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.goalSuccess'))
     },
     onError: (err: ApiError) => {
@@ -96,7 +100,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       return apiClient.delete(`/goals/${goalId}`)
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
@@ -128,7 +136,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       return apiClient.put(`/goals/${goalId}/members/${memberId}`, payload)
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.memberEditSuccess'))
     },
     onError: (err: ApiError) => {
@@ -149,7 +161,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       return apiClient.delete(`/goals/${goalId}/members/${memberId}`)
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.memberDeleteSuccess'))
     },
     onError: (err: ApiError) => {
@@ -170,7 +186,11 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       return apiClient.post(`/goals/${goalId}/contributions`, { amount })
     },
     onSuccess: () => {
-      invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      if (selectedGoalId) {
+        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
+        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      }
       notify.success(t('groupGoals:alerts.contributionSuccess'))
     },
     onError: (err: ApiError) => {

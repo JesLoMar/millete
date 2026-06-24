@@ -123,23 +123,22 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Login con credenciales correctas resetea intentos y devuelve token")
+    @DisplayName("Login con credenciales correctas resetea intentos y devuelve usuario")
     void shouldLoginSuccessfully() {
         User user = mock(User.class);
         when(user.getId()).thenReturn(defaultUserId);
         when(user.getPassword()).thenReturn(hashedPassword);
         when(passwordHasher.matches(rawPassword, hashedPassword)).thenReturn(true);
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
-        when(tokenProvider.generateToken(user)).thenReturn(token);
 
         LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(email, rawPassword);
 
-        String result = userService.login(command);
+        User result = userService.login(command);
 
-        assertThat(result).isEqualTo(token);
+        assertThat(result).isEqualTo(user);
         verify(accountLockService).checkLockStatus(defaultUserId);
         verify(accountLockService).handleSuccessfulLogin(defaultUserId);
-        verify(tokenProvider).generateToken(user);
+        verify(tokenProvider, never()).generateToken(any());
     }
 
     @Test

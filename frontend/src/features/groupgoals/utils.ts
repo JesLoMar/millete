@@ -1,6 +1,6 @@
 import type { GroupGoalDetail, ContributionMember } from "./types"
 
-export function formatDate(dateStr: string): string {
+function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("es-ES", {
     day: "2-digit",
     month: "short",

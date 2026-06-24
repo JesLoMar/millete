@@ -18,11 +18,13 @@ import type { SavingsGoal } from "../types"
 export const SavingsGoalsPage = () => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<PeriodFilter>("month")
-  const [search, setSearch] = useState("")
+  const [ui, setUi] = useState({
+    search: "",
+    isContributionOpen: false,
+    isEditOpen: false,
+    deletingGoal: null as SavingsGoal | null,
+  })
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null)
-  const [isContributionOpen, setIsContributionOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [deletingGoal, setDeletingGoal] = useState<SavingsGoal | null>(null)
 
   const { data: goals, isLoading, error } = useSavingsGoals()
   const { mutateAsync: addContribution } = useAddContribution()
@@ -34,36 +36,36 @@ export const SavingsGoalsPage = () => {
 
   const filteredGoals = useMemo(() => {
     if (!goals) return []
-    if (!search.trim()) return goals
-    const lower = search.toLowerCase()
+    if (!ui.search.trim()) return goals
+    const lower = ui.search.toLowerCase()
     return goals.filter((g) => g.name.toLowerCase().includes(lower))
-  }, [goals, search])
+  }, [goals, ui.search])
 
   const handleAddContribution = async (amount: number) => {
     if (!selectedGoal) return
     await addContribution({ id: selectedGoal.id, amount })
-    setIsContributionOpen(false)
+    setUi((prev) => ({ ...prev, isContributionOpen: false }))
     setSelectedGoal(null)
   }
 
   const handleDelete = async () => {
-    if (!deletingGoal) return
-    await deleteGoal(deletingGoal.id)
-    setDeletingGoal(null)
+    if (!ui.deletingGoal) return
+    await deleteGoal(ui.deletingGoal.id)
+    setUi((prev) => ({ ...prev, deletingGoal: null }))
   }
 
   const openContribution = (goal: SavingsGoal) => {
     setSelectedGoal(goal)
-    setIsContributionOpen(true)
+    setUi((prev) => ({ ...prev, isContributionOpen: true }))
   }
 
   const openEdit = (goal: SavingsGoal) => {
     setSelectedGoal(goal)
-    setIsEditOpen(true)
+    setUi((prev) => ({ ...prev, isEditOpen: true }))
   }
 
   const openDelete = (goal: SavingsGoal) => {
-    setDeletingGoal(goal)
+    setUi((prev) => ({ ...prev, deletingGoal: goal }))
   }
 
   return (
@@ -93,13 +95,14 @@ export const SavingsGoalsPage = () => {
           <div className="relative">
             <Input
               placeholder={t('savingsGoals:searchPlaceholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={ui.search}
+              onChange={(e) => setUi((prev) => ({ ...prev, search: e.target.value }))}
               className="w-full"
             />
-            {search && (
+            {ui.search && (
               <button
-                onClick={() => setSearch("")}
+                type="button"
+                onClick={() => setUi((prev) => ({ ...prev, search: "" }))}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label={t('savingsGoals:clearSearch')}
               >
@@ -139,9 +142,9 @@ export const SavingsGoalsPage = () => {
       </div>
 
       <ContributionModal
-        isOpen={isContributionOpen}
+        isOpen={ui.isContributionOpen}
         onClose={() => {
-          setIsContributionOpen(false)
+          setUi((prev) => ({ ...prev, isContributionOpen: false }))
           setSelectedGoal(null)
         }}
         onSubmit={handleAddContribution}
@@ -149,24 +152,24 @@ export const SavingsGoalsPage = () => {
       />
 
       <SavingsGoalEditDialog
-        open={isEditOpen}
+        open={ui.isEditOpen}
         onOpenChange={(open) => {
-          setIsEditOpen(open)
+          setUi((prev) => ({ ...prev, isEditOpen: open }))
           if (!open) setSelectedGoal(null)
         }}
         goal={selectedGoal}
       />
 
       <ConfirmDeletionDialog
-        open={!!deletingGoal}
+        open={!!ui.deletingGoal}
         onOpenChange={(open) => {
-          if (!open) setDeletingGoal(null)
+          if (!open) setUi((prev) => ({ ...prev, deletingGoal: null }))
         }}
-        itemName={deletingGoal?.name || ""}
+        itemName={ui.deletingGoal?.name || ""}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
         title={t('savingsGoals:deleteGoalTitle')}
-        description={t("savingsGoals.deleteGoalConfirmation", { name: deletingGoal?.name })}
+        description={t("savingsGoals.deleteGoalConfirmation", { name: ui.deletingGoal?.name })}
       />
     </div>
   )

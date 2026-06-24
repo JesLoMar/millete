@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -34,58 +34,46 @@ interface EditRecurringTransactionDialogProps {
 export function EditRecurringTransactionDialog({ transaction, open, onOpenChange }: EditRecurringTransactionDialogProps) {
   const { t } = useTranslation(['transactions', 'common', 'auth'])
   const { updateRecurring, isUpdating } = useTransactionMutations()
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE")
-  const [frequencyType, setFrequencyType] = useState("")
-  const [frequencyInterval, setFrequencyInterval] = useState("1")
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({
+    description: "",
+    category: "",
+    amount: "",
+    type: "EXPENSE" as "INCOME" | "EXPENSE",
+    frequencyType: "",
+    frequencyInterval: "1",
+    startDate: "",
+    endDate: "",
+    error: null as string | null,
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (open && transaction) {
-      setDescription(transaction.description || "")
-      setCategory(transaction.categoryId || "")
-      setAmount(Math.abs(transaction.amount).toString())
-      setType(transaction.type || "EXPENSE")
-      setFrequencyType(transaction.frequencyType || "")
-      setFrequencyInterval(transaction.frequencyInterval?.toString() || "1")
-      setStartDate(transaction.startDate || "")
-      setEndDate(transaction.endDate || "")
-      setError(null)
-    }
-  }, [open, transaction])
-
   const handleSave = async () => {
-    if (!transaction || !description || !category || !amount || !frequencyType || !startDate) return
-    setError(null)
+    if (!transaction || !form.description || !form.category || !form.amount || !form.frequencyType || !form.startDate) return
+    setForm((prev) => ({ ...prev, error: null }))
 
     try {
       await updateRecurring.mutateAsync({
         id: transaction.id,
         data: {
-          description: description.trim(),
-          categoryId: category,
-          amount: type === "EXPENSE" ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
-          type,
-          frequencyType,
-          frequencyInterval: Number(frequencyInterval),
-          startDate,
-          endDate: endDate || null,
+          description: form.description.trim(),
+          categoryId: form.category,
+          amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+          type: form.type,
+          frequencyType: form.frequencyType,
+          frequencyInterval: Number(form.frequencyInterval),
+          startDate: form.startDate,
+          endDate: form.endDate || null,
         },
       })
       onOpenChange(false)
     } catch (err) {
       const apiError = err as ApiError
       const message = apiError?.response?.data?.message || t('transactions:createError')
-      setError(message)
+      setForm((prev) => ({ ...prev, error: message }))
     }
   }
 
-  const isValid = description.trim() && category && amount && Number(amount) > 0 && frequencyType && startDate
+  const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
   const today = new Date().toISOString().split('T')[0]
 
   // ✅ Extraer las traducciones a variables separadas
@@ -101,7 +89,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
     yearsLabel
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} key={transaction?.id}>
       <DialogContent
         className="bg-card border-border sm:max-w-125"
         onOpenAutoFocus={(e) => {
@@ -124,8 +112,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               <Input
                 id="edit-recurring-description"
                 ref={inputRef}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={form.description}
+                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 disabled={isUpdating}
                 placeholder={t('transactions:descriptionPlaceholder')}
                 className="bg-background border-border text-base"
@@ -135,7 +123,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
-                <TypeToggle value={type} onChange={setType} />
+                <TypeToggle value={form.type} onChange={(v) => setForm((prev) => ({ ...prev, type: v }))} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-amount" className="text-sm font-semibold">

@@ -17,16 +17,18 @@ import { ExportModal } from '../components/ExportModal'
 import { useDashboardQueries } from '../hooks/useDashboardQueries'
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { apiClient } from '@/shared/api/axiosClient'
-import { notify } from '@/shared/utils/notifications/notify'
+import { notify } from "@/shared/utils/notifications/notify"
 
 export const DashboardPage = () => {
   const { t } = useTranslation(['dashboard', 'common'])
   const [period, setPeriod] = useState<PeriodFilter>("month")
-  const [isImportOpen, setIsImportOpen] = useState(false)
-  const [isExportOpen, setIsExportOpen] = useState(false)
-  const [isImporting, setIsImporting] = useState(false)
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
+  const [ui, setUi] = useState({
+    isImportOpen: false,
+    isExportOpen: false,
+    isImporting: false,
+    isAddOpen: false,
+    isAddCategoryOpen: false,
+  })
   const queryClient = useQueryClient()
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
@@ -36,7 +38,7 @@ export const DashboardPage = () => {
   const { metrics, history, categories, budgets, recentTransactions } = useDashboardQueries(period)
 
   const handleImport = useCallback(async (file: File) => {
-    setIsImporting(true)
+    setUi((prev) => ({ ...prev, isImporting: true }))
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -47,7 +49,7 @@ export const DashboardPage = () => {
       })
 
       await queryClient.invalidateQueries()
-      setIsImportOpen(false)
+      setUi((prev) => ({ ...prev, isImportOpen: false }))
       notify.success(t('dashboard:import.success') || 'Datos importados correctamente')
     } catch (err) {
       const error = err as { response?: { status?: number; data?: { message?: string } } }
@@ -61,12 +63,12 @@ export const DashboardPage = () => {
 
       notify.error(errorMessage)
     } finally {
-      setIsImporting(false)
+      setUi((prev) => ({ ...prev, isImporting: false }))
     }
   }, [queryClient, t])
 
   const handleExportClick = useCallback(() => {
-    setIsExportOpen(true)
+    setUi((prev) => ({ ...prev, isExportOpen: true }))
   }, [])
 
   const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
@@ -81,12 +83,12 @@ export const DashboardPage = () => {
           <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} />
           
           <QuickActions
-            onImportClick={() => setIsImportOpen(true)}
+            onImportClick={() => setUi((prev) => ({ ...prev, isImportOpen: true }))}
             onExportClick={handleExportClick}
-            onAddClick={() => setIsAddOpen(true)}
-            onAddCategoryClick={() => setIsAddCategoryOpen(true)}
+            onAddClick={() => setUi((prev) => ({ ...prev, isAddOpen: true }))}
+            onAddCategoryClick={() => setUi((prev) => ({ ...prev, isAddCategoryOpen: true }))}
             isExporting={false}
-            isImporting={isImporting}
+            isImporting={ui.isImporting}
           />
 
           <div className="min-h-30">
@@ -150,16 +152,16 @@ export const DashboardPage = () => {
         </main>
       </div>
       <ImportModal 
-        isOpen={isImportOpen} 
-        onClose={() => setIsImportOpen(false)} 
+        isOpen={ui.isImportOpen} 
+        onClose={() => setUi((prev) => ({ ...prev, isImportOpen: false }))} 
         onImport={handleImport}
       />
       <ExportModal
-        open={isExportOpen}
-        onOpenChange={setIsExportOpen}
+        open={ui.isExportOpen}
+        onOpenChange={(open) => setUi((prev) => ({ ...prev, isExportOpen: open }))}
       />
-      <NewTransactionDialog open={isAddOpen} onOpenChange={setIsAddOpen} />
-      <AddCategoryDialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen} />
+      <NewTransactionDialog open={ui.isAddOpen} onOpenChange={(open) => setUi((prev) => ({ ...prev, isAddOpen: open }))} />
+      <AddCategoryDialog open={ui.isAddCategoryOpen} onOpenChange={(open) => setUi((prev) => ({ ...prev, isAddCategoryOpen: open }))} />
     </div>
   )
 }

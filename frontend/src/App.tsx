@@ -12,7 +12,7 @@ import { JoinGroupGoalPage } from '@/features/groupgoals/pages/JoinGroupGoalPage
 import { Toaster } from '@/shared/components/core/sonner';
 import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
-import { SettingsPage } from '@/features/settings/pages/page';
+import { ProfilePage } from '@/features/profile/pages/page';
 import { SavingsGoalsPage } from '@/features/savingsgoals/pages/page';
 
 export default function App() {
@@ -40,7 +40,7 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/investments" element={<InvestmentsPage />} />
             <Route path="/group-goals" element={<GroupGoalsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/savings-goals" element={<SavingsGoalsPage />} />
           </Route>
 

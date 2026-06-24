@@ -18,6 +18,7 @@ public class UserSession {
     private LocalDateTime lastAttemptAt;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private boolean active;
 
     public UserSession() {}
 

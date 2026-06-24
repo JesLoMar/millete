@@ -94,6 +94,7 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
         {step === "config" && (
           <div className="space-y-4 py-4">
             <button
+              type="button"
               onClick={() => setStep("format")}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

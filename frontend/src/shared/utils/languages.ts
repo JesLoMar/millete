@@ -17,13 +17,19 @@ const LANGUAGE_MAP: Record<SupportedLanguageCode, Omit<Language, "code">> = {
   ja: { nativeName: "日本語", englishName: "Japanese", flag: "🇯🇵" },
 }
 
-const displayNamesCache = new Map<string, Intl.DisplayNames>()
+// Pre-create Intl.DisplayNames for known locales at module scope
+const precreatedDisplayNames: Record<SupportedLanguageCode, Intl.DisplayNames> = {
+  es: new Intl.DisplayNames(["es"], { type: "language" }),
+  en: new Intl.DisplayNames(["en"], { type: "language" }),
+  fr: new Intl.DisplayNames(["fr"], { type: "language" }),
+  de: new Intl.DisplayNames(["de"], { type: "language" }),
+  it: new Intl.DisplayNames(["it"], { type: "language" }),
+  pt: new Intl.DisplayNames(["pt"], { type: "language" }),
+  ja: new Intl.DisplayNames(["ja"], { type: "language" }),
+}
 
-function getDisplayNames(code: string): Intl.DisplayNames {
-  if (!displayNamesCache.has(code)) {
-    displayNamesCache.set(code, new Intl.DisplayNames([code], { type: "language" }))
-  }
-  return displayNamesCache.get(code)!
+function getDisplayNames(code: string): Intl.DisplayNames | undefined {
+  return precreatedDisplayNames[code as SupportedLanguageCode];
 }
 
 function getFlagFromCode(code: string): string {
@@ -37,8 +43,11 @@ function getFlagFromCode(code: string): string {
 }
 
 function getNativeNameFromCode(code: string): string {
+  const displayNames = getDisplayNames(code)
+  if (!displayNames) {
+    return code.toUpperCase()
+  }
   try {
-    const displayNames = getDisplayNames(code)
     return displayNames.of(code) || code.toUpperCase()
   } catch {
     return code.toUpperCase()
@@ -62,7 +71,7 @@ export function getLanguageFromCode(code: string): Language {
   }
 }
 
-export function getSupportedLanguages(): Language[] {
+function getSupportedLanguages(): Language[] {
   return (Object.keys(LANGUAGE_MAP) as SupportedLanguageCode[]).map((code) => ({
     code,
     ...LANGUAGE_MAP[code],

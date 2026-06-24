@@ -57,11 +57,7 @@ export function ProgressBar({
           "w-full bg-secondary rounded-full overflow-hidden flex",
           className
         )}
-        role="progressbar"
         aria-label={ariaLabel}
-        aria-valuenow={ariaValueNow}
-        aria-valuemin={ariaValueMin}
-        aria-valuemax={ariaValueMax}
       >
         {segments.map((segment, i) => (
           <div
@@ -81,17 +77,14 @@ export function ProgressBar({
   }
 
   return (
-    <div
+    <progress
+      value={value ?? 0}
+      max={max}
       className={cn(
         sizeClasses[size],
         "w-full bg-secondary rounded-full overflow-hidden",
         className
       )}
-      role="progressbar"
-      aria-label={ariaLabel}
-      aria-valuenow={ariaValueNow ?? Math.round(percentage ?? 0)}
-      aria-valuemin={ariaValueMin}
-      aria-valuemax={ariaValueMax}
     >
       <div
         className={cn(
@@ -104,6 +97,6 @@ export function ProgressBar({
           ...(color && variant === "default" ? { backgroundColor: color } : {}),
         }}
       />
-    </div>
+    </progress>
   )
 }

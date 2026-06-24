@@ -28,34 +28,38 @@ export function NewInvestmentDialog() {
   const { t } = useTranslation()
   const { createInvestment, isCreating } = useInvestmentMutations()
   const [open, setOpen] = useState(false)
-  const [assetName, setAssetName] = useState("")
-  const [ticker, setTicker] = useState("")
-  const [quantity, setQuantity] = useState("")
-  const [purchasePrice, setPurchasePrice] = useState("")
-  const [type, setType] = useState("STOCK")
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0])
+  const [form, setForm] = useState({
+    assetName: "",
+    ticker: "",
+    quantity: "",
+    purchasePrice: "",
+    type: "STOCK",
+    purchaseDate: new Date().toISOString().split('T')[0],
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   const resetForm = () => {
-    setAssetName("")
-    setTicker("")
-    setQuantity("")
-    setPurchasePrice("")
-    setType("STOCK")
-    setPurchaseDate(new Date().toISOString().split('T')[0])
+    setForm({
+      assetName: "",
+      ticker: "",
+      quantity: "",
+      purchasePrice: "",
+      type: "STOCK",
+      purchaseDate: new Date().toISOString().split('T')[0],
+    })
   }
 
   const handleSave = async () => {
-    if (!assetName || !quantity || !purchasePrice) return
+    if (!form.assetName || !form.quantity || !form.purchasePrice) return
 
     try {
       await createInvestment.mutateAsync({
-        assetName: assetName.trim(),
-        ticker: ticker.toUpperCase().trim() || null,
-        quantity: Number(quantity),
-        purchasePrice: Number(purchasePrice),
-        type,
-        purchaseDate: purchaseDate,
+        assetName: form.assetName.trim(),
+        ticker: form.ticker.toUpperCase().trim() || null,
+        quantity: Number(form.quantity),
+        purchasePrice: Number(form.purchasePrice),
+        type: form.type,
+        purchaseDate: form.purchaseDate,
       })
       setOpen(false)
       resetForm()
@@ -66,7 +70,7 @@ export function NewInvestmentDialog() {
     }
   }
 
-  const isValid = assetName.trim() && quantity && Number(quantity) > 0 && purchasePrice && Number(purchasePrice) > 0
+  const isValid = form.assetName.trim() && form.quantity && Number(form.quantity) > 0 && form.purchasePrice && Number(form.purchasePrice) > 0
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) resetForm() }}>
@@ -99,8 +103,8 @@ export function NewInvestmentDialog() {
                 <Input
                   ref={inputRef}
                   placeholder={t('investments:assetNamePlaceholder')}
-                  value={assetName}
-                  onChange={(e) => setAssetName(e.target.value)}
+                  value={form.assetName}
+                  onChange={(e) => setForm((prev) => ({ ...prev, assetName: e.target.value }))}
                   disabled={isCreating}
                   className="bg-background border-border"
                 />
@@ -109,8 +113,8 @@ export function NewInvestmentDialog() {
                 <Label className="text-sm font-semibold">{t('investments:ticker')}</Label>
                 <Input
                   placeholder="AAPL"
-                  value={ticker}
-                  onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                  value={form.ticker}
+                  onChange={(e) => setForm((prev) => ({ ...prev, ticker: e.target.value.toUpperCase() }))}
                   disabled={isCreating}
                   className="bg-background border-border"
                 />
@@ -119,7 +123,7 @@ export function NewInvestmentDialog() {
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold">{t('investments:type')}</Label>
-              <Select value={type} onValueChange={setType}>
+              <Select value={form.type} onValueChange={(v) => setForm((prev) => ({ ...prev, type: v }))}>
                 <SelectTrigger className="bg-background border-border">
                   <SelectValue />
                 </SelectTrigger>
@@ -142,8 +146,8 @@ export function NewInvestmentDialog() {
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  value={form.quantity}
+                  onChange={(e) => setForm((prev) => ({ ...prev, quantity: e.target.value }))}
                   disabled={isCreating}
                   className="bg-background border-border"
                   min="0.0001"
@@ -155,8 +159,8 @@ export function NewInvestmentDialog() {
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={purchasePrice}
-                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  value={form.purchasePrice}
+                  onChange={(e) => setForm((prev) => ({ ...prev, purchasePrice: e.target.value }))}
                   disabled={isCreating}
                   className="bg-background border-border"
                   min="0.01"
@@ -169,8 +173,8 @@ export function NewInvestmentDialog() {
               <Label className="text-sm font-semibold">{t('investments:purchaseDate')}</Label>
               <Input
                 type="date"
-                value={purchaseDate}
-                onChange={(e) => setPurchaseDate(e.target.value)}
+                value={form.purchaseDate}
+                onChange={(e) => setForm((prev) => ({ ...prev, purchaseDate: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />

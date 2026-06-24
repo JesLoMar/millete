@@ -9,6 +9,7 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryComman
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.CategoryResponseDTO;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.RegisterCategoryRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public class CategoryController {
             @Valid @RequestBody RegisterCategoryRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         RegisterCategoryCommand command = new RegisterCategoryCommand(
                 userId,
                 request.name(),
@@ -58,7 +59,7 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAll(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         List<CategoryResponseDTO> response = getCategoryUseCase.findByUserId(userId)
                 .stream()
@@ -74,7 +75,7 @@ public class CategoryController {
             @Valid @RequestBody RegisterCategoryRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         UpdateCategoryCommand command = new UpdateCategoryCommand(
                 request.name(),
                 request.color(),
@@ -90,7 +91,7 @@ public class CategoryController {
             @PathVariable UUID id,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         categoryService.delete(id, userId);
         return ResponseEntity.noContent().build();
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { SavingsGoal } from "../types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/components/core/dialog"
@@ -17,10 +17,6 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
   const { t } = useTranslation()
   const [amount, setAmount] = useState("")
 
-  useEffect(() => {
-    if (isOpen) setAmount("")
-  }, [isOpen])
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const numAmount = parseFloat(amount)
@@ -30,7 +26,7 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} key={goal?.id}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("savingsGoals.addFunds", { name: goal?.name })}</DialogTitle>

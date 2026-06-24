@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -51,7 +51,7 @@ class AccountLockServiceTest {
     @DisplayName("checkLockStatus - sesión no existe no hace nada")
     void checkLockStatusShouldDoNothingWhenSessionNotFound() {
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.empty());
+                .thenReturn(Collections.emptyList());
 
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
@@ -64,7 +64,7 @@ class AccountLockServiceTest {
     @DisplayName("checkLockStatus - sesión no bloqueada guarda cambios pendientes")
     void checkLockStatusShouldSaveWhenNotBlocked() {
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.of(session));
+                .thenReturn(Collections.singletonList(session));
 
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
@@ -79,7 +79,7 @@ class AccountLockServiceTest {
         session.setBlockedUntil(LocalDateTime.now().plusMinutes(10));
 
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.of(session));
+                .thenReturn(Collections.singletonList(session));
 
         assertThatThrownBy(() -> accountLockService.checkLockStatus(userId))
                 .isInstanceOf(AccountLockedException.class)
@@ -95,7 +95,7 @@ class AccountLockServiceTest {
         session.setBlockedUntil(LocalDateTime.now().minusMinutes(5)); // Ya expiró
 
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.of(session));
+                .thenReturn(Collections.singletonList(session));
 
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
@@ -140,7 +140,7 @@ class AccountLockServiceTest {
     @DisplayName("handleSuccessfulLogin - no hace nada si no existe sesión")
     void handleSuccessfulLoginShouldDoNothingWhenSessionNotFound() {
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.empty());
+                .thenReturn(Collections.emptyList());
 
         assertThatCode(() -> accountLockService.handleSuccessfulLogin(userId))
                 .doesNotThrowAnyException();
@@ -155,7 +155,7 @@ class AccountLockServiceTest {
         session.setBlockedUntil(LocalDateTime.now().plusMinutes(5));
 
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.of(session));
+                .thenReturn(Collections.singletonList(session));
 
         accountLockService.handleSuccessfulLogin(userId);
 
@@ -172,7 +172,7 @@ class AccountLockServiceTest {
         session.setBlockedUntil(null);
 
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Optional.of(session));
+                .thenReturn(Collections.singletonList(session));
 
         accountLockService.handleSuccessfulLogin(userId);
 

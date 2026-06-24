@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import { secureStorage } from '@/shared/utils/secureStorage';
 import i18n from '@/lib/i18n';
 
@@ -39,7 +39,6 @@ apiClient.interceptors.response.use(
     const message = error.response?.data?.message || '';
 
     if (status === 401) {
-      secureStorage.clear();
       window.dispatchEvent(new CustomEvent('auth:logout'));
     }
 

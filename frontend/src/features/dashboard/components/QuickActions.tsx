@@ -71,9 +71,8 @@ export function QuickActions({
   const actions = allActions.filter((action) => action.onClick !== undefined)
 
   return (
-    <div 
-      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full"
-      role="group"
+    <fieldset 
+      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full border-0 p-0 m-0"
       aria-label={String(t('dashboard:quickActions.groupLabel'))}
     >
       {actions.map((action) => (
@@ -101,6 +100,6 @@ export function QuickActions({
           </span>
         </Button>
       ))}
-    </div>
+    </fieldset>
   )
 }

@@ -5,7 +5,6 @@ import {
   PieChart,
   TrendingUp,
   LayoutGrid,
-  Settings,
   PiggyBank
 } from "lucide-react"
 
@@ -20,13 +19,7 @@ export interface NavItem {
   order: number
 }
 
-// ─── Navigation Registry ──────────────────────────────────
-// Para añadir una nueva pestaña:
-// 1. Añade el objeto aquí
-// 2. Cambia enabled: false → true cuando esté lista
-// 3. El sidebar la mostrará automáticamente
-
-export const NAVIGATION_REGISTRY: NavItem[] = [
+const NAVIGATION_REGISTRY: NavItem[] = [
   // ─── Main Navigation ───────────────────────────────────
   {
     id: "dashboard",
@@ -81,15 +74,6 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
     enabled: true,
     section: "main",
     order: 6,
-  },
-  {
-    id: "settings",
-    icon: Settings,
-    labelKey: "settings",
-    path: "/settings",
-    enabled: true,
-    section: "bottom",
-    order: 7,
   }
 ]
 

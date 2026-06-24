@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -36,9 +36,6 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
   const deviationRatio = currentPrice > 0 ? Math.abs(targetPrice - currentPrice) / currentPrice : 0
   const isCriticalDeviation = deviationRatio > 0.5
 
-  useEffect(() => {
-    setNeedsConfirmation(false)
-  }, [newPrice])
 
   const handleUpdate = async () => {
     if (isSamePrice || targetPrice <= 0) return
@@ -85,7 +82,7 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
               ref={inputRef}
               type="number"
               value={newPrice}
-              onChange={(e) => setNewPrice(e.target.value)}
+              onChange={(e) => { setNewPrice(e.target.value); setNeedsConfirmation(false) }}
               disabled={isUpdating}
               className="bg-background border-border text-xl font-semibold"
               min="0.01"

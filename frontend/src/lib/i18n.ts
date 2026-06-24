@@ -16,6 +16,7 @@ import investmentsES from "@/assets/locales/es/investments.json";
 import groupGoalsES from "@/assets/locales/es/groupGoals.json";
 import savingsGoalsES from "@/assets/locales/es/savingsGoals.json";
 import settingsES from "@/assets/locales/es/settings.json";
+import userProfileES from "@/assets/locales/es/userProfile.json";
 import apiES from "@/assets/locales/es/api.json";
 import wikiES from "@/assets/locales/es/wiki.json";
 import infoES from "@/assets/locales/es/info.json";
@@ -34,12 +35,13 @@ import enInvestments from "@/assets/locales/en/investments.json";
 import enGroupGoals from "@/assets/locales/en/groupGoals.json";
 import enSavingsGoals from "@/assets/locales/en/savingsGoals.json";
 import enSettings from "@/assets/locales/en/settings.json";
+import userProfileEN from "@/assets/locales/en/userProfile.json";
 import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
 import enInfo from "@/assets/locales/en/info.json";
 
 // ============================================
-// IMPORTAR ALEMÁN (pendiente de traducción)
+// IMPORTAR ALEMÁN
 // ============================================
 import deCommon from "@/assets/locales/de/common.json";
 import deValidations from "@/assets/locales/de/validations.json";
@@ -57,7 +59,7 @@ import deWiki from "@/assets/locales/de/wiki.json";
 import deInfo from "@/assets/locales/de/info.json";
 
 // ============================================
-// IMPORTAR FRANCÉS (pendiente de traducción)
+// IMPORTAR FRANCÉS
 // ============================================
 import frCommon from "@/assets/locales/fr/common.json";
 import frValidations from "@/assets/locales/fr/validations.json";
@@ -75,7 +77,7 @@ import frWiki from "@/assets/locales/fr/wiki.json";
 import frInfo from "@/assets/locales/fr/info.json";
 
 // ============================================
-// IMPORTAR ITALIANO (pendiente de traducción)
+// IMPORTAR ITALIANO
 // ============================================
 import itCommon from "@/assets/locales/it/common.json";
 import itValidations from "@/assets/locales/it/validations.json";
@@ -93,7 +95,7 @@ import itWiki from "@/assets/locales/it/wiki.json";
 import itInfo from "@/assets/locales/it/info.json";
 
 // ============================================
-// IMPORTAR PORTUGUÉS (pendiente de traducción)
+// IMPORTAR PORTUGUÉS
 // ============================================
 import ptCommon from "@/assets/locales/pt/common.json";
 import ptValidations from "@/assets/locales/pt/validations.json";
@@ -111,7 +113,7 @@ import ptWiki from "@/assets/locales/pt/wiki.json";
 import ptInfo from "@/assets/locales/pt/info.json";
 
 // ============================================
-// IMPORTAR JAPONÉS (pendiente de traducción)
+// IMPORTAR JAPONÉS
 // ============================================
 import jaCommon from "@/assets/locales/ja/common.json";
 import jaValidations from "@/assets/locales/ja/validations.json";
@@ -149,6 +151,7 @@ i18n
       "groupGoals",
       "savingsGoals",
       "settings",
+      "userProfile",
       "api",
       "wiki",
       "info",
@@ -174,6 +177,7 @@ i18n
         groupGoals: groupGoalsES,
         savingsGoals: savingsGoalsES,
         settings: settingsES,
+        userProfile: userProfileES,
         api: apiES,
         wiki: wikiES,
         info: infoES,
@@ -194,6 +198,7 @@ i18n
         groupGoals: enGroupGoals,
         savingsGoals: enSavingsGoals,
         settings: enSettings,
+        userProfile: userProfileEN,
         api: enApi,
         wiki: enWiki,
         info: enInfo,

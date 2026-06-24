@@ -27,15 +27,97 @@ function xorTransform(text: string, key: string): string {
   return result;
 }
 
+function encrypt(value: string): string {
+  const key = deriveFingerprint();
+  return btoa(xorTransform(value, key));
+}
+
+function decrypt(value: string): string {
+  const key = deriveFingerprint();
+  return xorTransform(atob(value), key);
+}
+
+function addBase64Padding(base64: string): string {
+  const padding = 4 - (base64.length % 4);
+  if (padding !== 4) {
+    return base64 + '='.repeat(padding);
+  }
+  return base64;
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1];
+    if (!payload) return null;
+    const padded = addBase64Padding(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const decoded = atob(padded);
+    return JSON.parse(decoded) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function extractSessionId(token: string): string | null {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+  // El claim puede tener varios nombres comunes
+  const sessionId =
+    payload.sessionId ??
+    payload.sid ??
+    payload.jti ??
+    payload.sub;
+  if (typeof sessionId === 'string') {
+    return sessionId;
+  }
+  return null;
+}
+
 export const secureStorage = {
-  setToken(token: string): void {
+  setItem(key: string, value: string): void {
     try {
-      const key = deriveFingerprint();
+      const encrypted = encrypt(value);
+      localStorage.setItem(`${STORAGE_PREFIX}${key}`, encrypted);
+    } catch {
+      localStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+    }
+  },
+
+  getItem(key: string): string | null {
+    try {
+      const encrypted = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
+      if (!encrypted) return null;
+      return decrypt(encrypted);
+    } catch {
+      localStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+      return null;
+    }
+  },
+
+  removeItem(key: string): void {
+    localStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+  },
+
+  setToken(token: string): void {
+    // Guardar token — si falla, borrar
+    try {
       const payload = `${token}::${Date.now()}`;
-      const encrypted = btoa(xorTransform(payload, key));
+      const encrypted = encrypt(payload);
       localStorage.setItem(`${STORAGE_PREFIX}token`, encrypted);
     } catch {
       localStorage.removeItem(`${STORAGE_PREFIX}token`);
+      return;
+    }
+
+    // Extraer y guardar sessionId — si falla, NO borrar el token
+    try {
+      const sessionId = extractSessionId(token);
+      if (sessionId) {
+        this.setItem('sessionId', sessionId);
+      }
+    } catch {
+      // Silencioso: el token sigue siendo válido
     }
   },
 
@@ -43,8 +125,7 @@ export const secureStorage = {
     try {
       const encrypted = localStorage.getItem(`${STORAGE_PREFIX}token`);
       if (!encrypted) return null;
-      const key = deriveFingerprint();
-      const decrypted = xorTransform(atob(encrypted), key);
+      const decrypted = decrypt(encrypted);
       const [token] = decrypted.split('::');
       return token || null;
     } catch {
@@ -55,8 +136,7 @@ export const secureStorage = {
 
   setUser(user: unknown): void {
     try {
-      const key = deriveFingerprint();
-      const encrypted = btoa(xorTransform(JSON.stringify(user), key));
+      const encrypted = encrypt(JSON.stringify(user));
       localStorage.setItem(`${STORAGE_PREFIX}user`, encrypted);
     } catch {
       localStorage.removeItem(`${STORAGE_PREFIX}user`);
@@ -67,8 +147,7 @@ export const secureStorage = {
     try {
       const encrypted = localStorage.getItem(`${STORAGE_PREFIX}user`);
       if (!encrypted) return null;
-      const key = deriveFingerprint();
-      const decrypted = xorTransform(atob(encrypted), key);
+      const decrypted = decrypt(encrypted);
       return JSON.parse(decrypted) as T;
     } catch {
       localStorage.removeItem(`${STORAGE_PREFIX}user`);
@@ -76,8 +155,17 @@ export const secureStorage = {
     }
   },
 
+  setSessionId(sessionId: string): void {
+    this.setItem('sessionId', sessionId);
+  },
+
+  getSessionId(): string | null {
+    return this.getItem('sessionId');
+  },
+
   clear(): void {
     localStorage.removeItem(`${STORAGE_PREFIX}token`);
     localStorage.removeItem(`${STORAGE_PREFIX}user`);
+    localStorage.removeItem(`${STORAGE_PREFIX}sessionId`);
   },
 };

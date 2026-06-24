@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import i18n from '@/lib/i18n';
 import type { ApiError } from '@/shared/types/api';
 import type { RegisterUserRequest, LoginRequest, TokenResponse } from '../types';

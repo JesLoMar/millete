@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
@@ -32,38 +32,43 @@ interface EditTransactionDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+interface FormState {
+  description: string
+  category: string
+  amount: string
+  type: "INCOME" | "EXPENSE"
+  isSubmitting: boolean
+  error: string | null
+}
+
 export function EditTransactionDialog({ transaction, open, onOpenChange }: EditTransactionDialogProps) {
   const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const queryClient = useQueryClient()
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (open && transaction) {
-      setDescription(transaction.description || "")
-      setCategory(transaction.categoryId || "")
-      setAmount(Math.abs(transaction.amount).toString())
-      setType(transaction.type || "EXPENSE")
-      setError(null)
-    }
-  }, [open, transaction])
+  const [form, setForm] = useState<FormState>({
+    description: "",
+    category: "",
+    amount: "",
+    type: "EXPENSE",
+    isSubmitting: false,
+    error: null,
+  })
+
+  const updateForm = (updates: Partial<FormState>) => {
+    setForm(prev => ({ ...prev, ...updates }))
+  }
 
   const handleSave = async () => {
-    if (!transaction || !description || !amount) return
-    setError(null)
-    setIsSubmitting(true)
+    if (!transaction || !form.description || !form.amount) return
+    updateForm({ error: null, isSubmitting: true })
 
     try {
       await apiClient.put(`/transactions/${transaction.id}`, {
-        description: description.trim(),
-        categoryId: category || null,
-        amount: type === "EXPENSE" ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
-        type,
+        description: form.description.trim(),
+        categoryId: form.category || null,
+        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        type: form.type,
         date: transaction.date,
       })
 
@@ -80,16 +85,14 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
     } catch (err) {
       const axiosError = err as { response?: { data?: { message?: string } } }
       const message = axiosError?.response?.data?.message || t('transactions:createError')
-      setError(message)
-    } finally {
-      setIsSubmitting(false)
+      updateForm({ error: message, isSubmitting: false })
     }
   }
 
-  const isValid = description.trim() && amount && Number(amount) > 0
+  const isValid = form.description.trim() && form.amount && Number(form.amount) > 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} key={transaction?.id}>
       <DialogContent
         className="bg-card border-border sm:max-w-106.25"
         onOpenAutoFocus={(e) => {
@@ -112,10 +115,10 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
               <Input
                 id="edit-description"
                 ref={inputRef}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={form.description}
+                onChange={(e) => updateForm({ description: e.target.value })}
                 placeholder={t('transactions:descriptionPlaceholder')}
-                disabled={isSubmitting}
+                disabled={form.isSubmitting}
                 className="bg-background border-border text-base"
               />
             </div>
@@ -123,7 +126,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
-                <TypeToggle value={type} onChange={setType} />
+                <TypeToggle value={form.type} onChange={(type) => updateForm({ type })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-amount" className="text-sm font-semibold">
@@ -132,9 +135,9 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
                 <Input
                   id="edit-amount"
                   type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  disabled={isSubmitting}
+                  value={form.amount}
+                  onChange={(e) => updateForm({ amount: e.target.value })}
+                  disabled={form.isSubmitting}
                   className="bg-background border-border text-base"
                   min="0.01"
                   step="0.01"
@@ -142,10 +145,10 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
               </div>
             </div>
 
-            <CategorySelect value={category} onValueChange={setCategory} />
+            <CategorySelect value={form.category} onValueChange={(category) => updateForm({ category })} />
 
-            {error && (
-              <p className="text-destructive text-sm text-center font-medium">{error}</p>
+            {form.error && (
+              <p className="text-destructive text-sm text-center font-medium">{form.error}</p>
             )}
           </div>
 
@@ -153,17 +156,17 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
             <Button 
               variant="outline" 
               onClick={() => onOpenChange(false)} 
-              disabled={isSubmitting}
+              disabled={form.isSubmitting}
               className="border-border"
             >
               {t('common:actions.cancel')}
             </Button>
             <Button 
               onClick={handleSave} 
-              disabled={isSubmitting || !isValid} 
+              disabled={form.isSubmitting || !isValid} 
               className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
-              {isSubmitting ? (
+              {form.isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
                   {t('common:actions.saving')}

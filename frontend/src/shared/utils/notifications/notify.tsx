@@ -1,28 +1,18 @@
 import { type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { CircleCheck, AlertTriangle, Info, AlertCircle, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { CircleCheck, AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import { ToastContent } from './ToastContent';
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-interface NotifyOptions {
-  description?: string;
-  duration?: number;
-}
-
-const config: Record<
-  ToastType,
-  {
-    icon: ReactNode;
-    iconBg: string;
-    iconShadow: string;
-    borderColor: string;
-    textTitle: string;
-    textDescription: string;
-    closeHover: string;
-    defaultDuration: number;
-  }
-> = {
+const config: Record<string, {
+  icon: ReactNode;
+  iconBg: string;
+  iconShadow: string;
+  borderColor: string;
+  textTitle: string;
+  textDescription: string;
+  closeHover: string;
+  defaultDuration: number;
+}> = {
   success: {
     icon: <CircleCheck className="h-5 w-5" />,
     iconBg: 'bg-emerald-500 text-white',
@@ -65,68 +55,29 @@ const config: Record<
   },
 };
 
-const ToastContent = ({
-  type,
-  message,
-  description,
-  onClose,
-}: {
-  type: ToastType;
-  message: string;
+interface NotifyOptions {
   description?: string;
-  onClose: () => void;
-}) => {
-  const styles = config[type];
-  const { t } = useTranslation()
-
-  return (
-    <div
-      className={`w-full max-w-sm pointer-events-auto flex items-center gap-4 p-5 rounded-4xl border backdrop-blur-md transition-all shadow-xl bg-card/90 dark:bg-surface/80 ${styles.borderColor}`}
-    >
-      {/* Icono de Estado */}
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-md ${styles.iconBg} ${styles.iconShadow}`}>
-        {styles.icon}
-      </div>
-
-      {/* Contenido de texto informativo */}
-      <div className="flex-1 space-y-1 min-w-0">
-        <p className={`font-semibold text-sm leading-snug ${styles.textTitle}`}>{message}</p>
-        {description && (
-          <p className={`text-xs leading-relaxed ${styles.textDescription}`}>{description}</p>
-        )}
-      </div>
-
-      {/* Botón interactivo de cierre rápido */}
-      <button
-        type="button"
-        onClick={onClose}
-        className={`p-1 rounded-full transition-colors shrink-0 ${styles.closeHover}`}
-        aria-label={t('common:actions.close')}
-      >
-        <X className="size-3.5" />
-      </button>
-    </div>
-  );
-};
+  duration?: number;
+}
 
 export const notify = {
   success: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
-      <ToastContent type="success" message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
+      <ToastContent styles={config.success} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
     ), { duration: options?.duration ?? config.success.defaultDuration }),
 
   error: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
-      <ToastContent type="error" message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
+      <ToastContent styles={config.error} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
     ), { duration: options?.duration ?? config.error.defaultDuration }),
 
   info: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
-      <ToastContent type="info" message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
+      <ToastContent styles={config.info} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
     ), { duration: options?.duration ?? config.info.defaultDuration }),
 
   warning: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
-      <ToastContent type="warning" message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
+      <ToastContent styles={config.warning} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
     ), { duration: options?.duration ?? config.warning.defaultDuration }),
 };
