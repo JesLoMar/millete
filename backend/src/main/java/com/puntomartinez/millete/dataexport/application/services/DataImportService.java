@@ -60,11 +60,17 @@ public class DataImportService {
 
             snapshot = validateAndMigrate(snapshot);
 
+            // ─── Sanitización: sobrescribir todos los userId del snapshot ───
+            sanitizeSnapshot(snapshot, loggedInUserId);
+
             Map<UUID, UUID> categoryIdMap = new HashMap<>();
             int totalImported = importCategories(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importTransactions(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importPlannedTransactions(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importInvestments(snapshot, loggedInUserId);
+
+            // ─── Verificación post-importación ───
+            verifyImportedTransactions(loggedInUserId, categoryIdMap);
 
             String summary = String.format(
                     "Importación exitosa. %d registros importados. v%s",
@@ -102,6 +108,32 @@ public class DataImportService {
         return snapshot;
     }
 
+    // ─── Sanitización: forzar userId del destino ────────────────
+
+    private void sanitizeSnapshot(UserDataSnapshot snapshot, UUID loggedInUserId) {
+        if (snapshot.categories() != null) {
+            for (Category cat : snapshot.categories()) {
+                cat.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.transactions() != null) {
+            for (Transaction tx : snapshot.transactions()) {
+                tx.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.plannedTransactions() != null) {
+            for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
+                ptx.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.investments() != null) {
+            for (Investment inv : snapshot.investments()) {
+                inv.setUserId(loggedInUserId);
+            }
+        }
+        log.debug("Snapshot sanitizado con userId destino: {}", loggedInUserId);
+    }
+
     // ─── Importación por entidad ────────────────────────
 
     private int importCategories(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
@@ -119,6 +151,12 @@ public class DataImportService {
 
         int count = 0;
         for (Category cat : snapshot.categories()) {
+            // Saltar categorías inactivas del snapshot
+            if (!cat.isActive()) {
+                log.debug("Categoría inactiva omitida: {}", cat.getName());
+                continue;
+            }
+
             String nameLower = cat.getName().toLowerCase();
             Category existing = existingByName.get(nameLower);
             
@@ -131,7 +169,7 @@ public class DataImportService {
                 categoryIdMap.put(cat.getId(), existing.getId());
                 log.debug("Categoría reutilizada: {} -> {}", cat.getName(), existing.getId());
             } else {
-                // Crear nueva categoría
+                // Crear nueva categoría con UUID nuevo (nunca reutilizar el del snapshot)
                 UUID newId = UUID.randomUUID();
                 categoryIdMap.put(cat.getId(), newId);
                 Category safeCat = new Category(
@@ -154,7 +192,20 @@ public class DataImportService {
 
         int count = 0;
         for (Transaction tx : snapshot.transactions()) {
-            UUID newCategoryId = tx.getCategoryId() != null ? categoryIdMap.get(tx.getCategoryId()) : null;
+            // Saltar transacciones inactivas del snapshot
+            if (!tx.isActive()) {
+                continue;
+            }
+
+            UUID newCategoryId = null;
+            if (tx.getCategoryId() != null) {
+                newCategoryId = categoryIdMap.get(tx.getCategoryId());
+                if (newCategoryId == null) {
+                    log.warn("Transacción {} referencia categoría {} no encontrada en el mapa. Se importará sin categoría.",
+                            tx.getId(), tx.getCategoryId());
+                }
+            }
+
             Transaction safeTx = new Transaction(
                     UUID.randomUUID(), loggedInUserId, newCategoryId, tx.getAmount(),
                     tx.getDate(), tx.getType(), tx.getDescription(),
@@ -174,7 +225,20 @@ public class DataImportService {
 
         int count = 0;
         for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
-            UUID newCategoryId = ptx.getCategoryId() != null ? categoryIdMap.get(ptx.getCategoryId()) : null;
+            // Saltar transacciones recurrentes inactivas del snapshot
+            if (!ptx.isActive()) {
+                continue;
+            }
+
+            UUID newCategoryId = null;
+            if (ptx.getCategoryId() != null) {
+                newCategoryId = categoryIdMap.get(ptx.getCategoryId());
+                if (newCategoryId == null) {
+                    log.warn("Transacción recurrente {} referencia categoría {} no encontrada en el mapa. Se importará sin categoría.",
+                            ptx.getId(), ptx.getCategoryId());
+                }
+            }
+
             PlannedTransaction safePtx = new PlannedTransaction(
                     UUID.randomUUID(), loggedInUserId, newCategoryId, ptx.getAmount(),
                     ptx.getType(), ptx.getDescription(), ptx.getFrequencyType(),
@@ -195,6 +259,11 @@ public class DataImportService {
 
         int count = 0;
         for (Investment inv : snapshot.investments()) {
+            // Saltar inversiones inactivas del snapshot
+            if (!inv.isActive()) {
+                continue;
+            }
+
             Investment safeInv = new Investment(
                     UUID.randomUUID(), loggedInUserId, inv.getAssetName(), inv.getTicker(),
                     inv.getQuantity(), inv.getPurchasePrice(), inv.getCurrentPrice(),
@@ -206,5 +275,28 @@ public class DataImportService {
         }
         log.debug("Inversiones: {}", count);
         return count;
+    }
+
+    // ─── Verificación post-importación ────────────────────────
+
+    private void verifyImportedTransactions(UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
+        // Verificar que todas las transacciones importadas del usuario tengan categoría resoluble
+        var allTransactions = transactionRepository.findAllByUserId(loggedInUserId);
+        int orphanCount = 0;
+        for (Transaction tx : allTransactions) {
+            if (tx.getCategoryId() != null) {
+                boolean resolvable = categoryRepository.findActiveByIdAndUserId(tx.getCategoryId(), loggedInUserId).isPresent();
+                if (!resolvable) {
+                    orphanCount++;
+                    log.warn("Transacción {} tiene categoría {} no resoluble para el usuario {}",
+                            tx.getId(), tx.getCategoryId(), loggedInUserId);
+                }
+            }
+        }
+        if (orphanCount > 0) {
+            log.warn("{} transacciones tienen categorías no resueltas tras la importación", orphanCount);
+        } else {
+            log.debug("Todas las transacciones tienen categorías resolubles correctamente");
+        }
     }
 }

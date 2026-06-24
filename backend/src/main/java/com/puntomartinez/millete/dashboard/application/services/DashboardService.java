@@ -101,7 +101,7 @@ public class DashboardService implements GetDashboardDataUseCase {
             BigDecimal amount = entry.getValue().stream().map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
             double percentage = calculatePercentage(amount, totalExpenses);
 
-            String categoryName = categoryRepository.findById(categoryId).map(Category::getName).orElse("Sin categoría");
+            String categoryName = categoryRepository.findActiveByIdAndUserId(categoryId, userId).map(Category::getName).orElse("Sin categoría");
 
             categoryItems.add(new CategoryExpenseItemResponseDTO(categoryName, amount, percentage, entry.getValue().size()));
         }
@@ -168,7 +168,7 @@ public class DashboardService implements GetDashboardDataUseCase {
             String catName = "Sin categoría";
             String catColor = null;
             if (t.getCategoryId() != null) {
-                var cat = categoryRepository.findById(t.getCategoryId());
+                var cat = categoryRepository.findActiveByIdAndUserId(t.getCategoryId(), userId);
                 if (cat.isPresent()) {
                     catName = cat.get().getName();
                     catColor = cat.get().getColor();

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -18,12 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/core/select"
-import { CategorySelect } from "../CategorySelect"
-import { TypeToggle } from "../TypeToggle"
-import { FREQUENCY_TYPES } from "../../constants"
-import { useTransactionMutations } from "../../hooks/useTransactionMutation"
-import type { PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
-import type { ApiError } from "@/shared/types/api"
+import { apiClient } from "@/shared/api/axiosClient"
+import { useQueryClient } from "@tanstack/react-query"
+import { notify } from "@/shared/utils/notifications/notify"
+
+interface PlannedTransaction {
+  id: string
+  description: string
+  categoryId: string | null
+  amount: number
+  type: "INCOME" | "EXPENSE"
+  frequencyType: string
+  frequencyInterval: number
+  startDate: string
+  endDate: string | null
+  lastExecutedDate: string | null
+}
 
 interface EditRecurringTransactionDialogProps {
   transaction: PlannedTransaction | null
@@ -31,9 +41,15 @@ interface EditRecurringTransactionDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-export function EditRecurringTransactionDialog({ transaction, open, onOpenChange }: EditRecurringTransactionDialogProps) {
-  const { t } = useTranslation(['transactions', 'common', 'auth'])
-  const { updateRecurring, isUpdating } = useTransactionMutations()
+export function EditRecurringTransactionDialog({
+  transaction,
+  open,
+  onOpenChange,
+}: EditRecurringTransactionDialogProps) {
+  const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
+  const queryClient = useQueryClient()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const [form, setForm] = useState({
     description: "",
     category: "",
@@ -67,47 +83,37 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
   const handleSave = async () => {
     if (!transaction || !form.description || !form.category || !form.amount || !form.frequencyType || !form.startDate) return
     setForm((prev) => ({ ...prev, error: null }))
+    setIsSubmitting(true)
 
     try {
-      await updateRecurring.mutateAsync({
-        id: transaction.id,
-        data: {
-          description: form.description.trim(),
-          categoryId: form.category,
-          amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
-          type: form.type,
-          frequencyType: form.frequencyType,
-          frequencyInterval: Number(form.frequencyInterval),
-          startDate: form.startDate,
-          endDate: form.endDate || null,
-        },
+      await apiClient.put(`/planned-transactions/${transaction.id}`, {
+        description: form.description.trim(),
+        categoryId: form.category || null,
+        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        type: form.type,
+        frequencyType: form.frequencyType,
+        frequencyInterval: Number(form.frequencyInterval),
+        startDate: form.startDate,
+        endDate: form.endDate || null,
       })
+
+      queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] })
       onOpenChange(false)
     } catch (err) {
-      const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t('transactions:createError')
-      setForm((prev) => ({ ...prev, error: message }))
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      setForm((prev) => ({ ...prev, error: axiosError?.response?.data?.message || t('transactions:createError') }))
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
-  const today = new Date().toISOString().split('T')[0]
-
-  const daysLabel = t('transactions:recurring.days')
-  const weeksLabel = t('transactions:recurring.weeks')
-  const monthsLabel = t('transactions:recurring.months')
-  const yearsLabel = t('transactions:recurring.years')
-
-  const frequencyUnit = 
-    form.frequencyType === "DAYS" ? daysLabel :
-    form.frequencyType === "WEEKS" ? weeksLabel :
-    form.frequencyType === "MONTHS" ? monthsLabel :
-    yearsLabel
+  const isValid = form.description.trim() && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} key={transaction?.id}>
       <DialogContent
-        className="bg-card border-border sm:max-w-125"
+        className="bg-card border-border sm:max-w-106.25"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -115,7 +121,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
       >
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
+            <DialogTitle className="text-xl font-semibold text-foreground">
               {t('transactions:recurring.editTitle')}
             </DialogTitle>
           </DialogHeader>
@@ -130,8 +136,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 ref={inputRef}
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                disabled={isUpdating}
                 placeholder={t('transactions:descriptionPlaceholder')}
+                disabled={isSubmitting}
                 className="bg-background border-border text-base"
               />
             </div>
@@ -139,7 +145,15 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
-                <TypeToggle value={form.type} onChange={(v) => setForm((prev) => ({ ...prev, type: v }))} />
+                <Select value={form.type} onValueChange={(v) => setForm((prev) => ({ ...prev, type: v as "INCOME" | "EXPENSE" }))}>
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    <SelectItem value="INCOME">{t('transactions:types.income')}</SelectItem>
+                    <SelectItem value="EXPENSE">{t('transactions:types.expense')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-amount" className="text-sm font-semibold">
@@ -150,7 +164,7 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                   type="number"
                   value={form.amount}
                   onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
-                  disabled={isUpdating}
+                  disabled={isSubmitting}
                   className="bg-background border-border text-base"
                   min="0.01"
                   step="0.01"
@@ -158,37 +172,46 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               </div>
             </div>
 
-            <CategorySelect value={form.category} onValueChange={(v) => setForm((prev) => ({ ...prev, category: v }))} />
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t('transactions:category')}</Label>
+              <Select value={form.category} onValueChange={(v) => setForm((prev) => ({ ...prev, category: v }))}>
+                <SelectTrigger className="bg-background border-border">
+                  <SelectValue placeholder={t('transactions:selectCategory')} />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {/* Categories would be loaded here */}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('transactions:recurring.frequency')}</Label>
+                <Label className="text-sm font-semibold">{t('transactions:recurring.frequencyType')}</Label>
                 <Select value={form.frequencyType} onValueChange={(v) => setForm((prev) => ({ ...prev, frequencyType: v }))}>
-                  <SelectTrigger 
-                    className="bg-background border-border text-base"
-                    aria-label={t('transactions:recurring.selectFrequency')}
-                  >
-                    <SelectValue placeholder={t('transactions:recurring.selectFrequency')} />
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
-                    {FREQUENCY_TYPES.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>{t(freq.labelKey)}</SelectItem>
-                    ))}
+                    <SelectItem value="DAILY">{t('transactions:recurring.frequencies.daily')}</SelectItem>
+                    <SelectItem value="WEEKLY">{t('transactions:recurring.frequencies.weekly')}</SelectItem>
+                    <SelectItem value="MONTHLY">{t('transactions:recurring.frequencies.monthly')}</SelectItem>
+                    <SelectItem value="YEARLY">{t('transactions:recurring.frequencies.yearly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-interval" className="text-sm font-semibold">
-                  {t('transactions:recurring.interval')}
+                  {t('transactions:recurring.frequencyInterval')}
                 </Label>
                 <Input
                   id="edit-recurring-interval"
                   type="number"
                   value={form.frequencyInterval}
                   onChange={(e) => setForm((prev) => ({ ...prev, frequencyInterval: e.target.value }))}
-                  disabled={isUpdating}
+                  disabled={isSubmitting}
                   className="bg-background border-border text-base"
                   min="1"
+                  step="1"
                 />
               </div>
             </div>
@@ -203,65 +226,45 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                   type="date"
                   value={form.startDate}
                   onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
-                  disabled={isUpdating}
-                  className="bg-background border-border text-base"
+                  disabled={isSubmitting}
+                  className="bg-background border-border"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-end" className="text-sm font-semibold">
                   {t('transactions:recurring.endDate')}
-                  <span className="text-xs text-muted-foreground ml-1">({t('auth:form.optional')})</span>
                 </Label>
                 <Input
                   id="edit-recurring-end"
                   type="date"
                   value={form.endDate}
                   onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
-                  disabled={isUpdating}
-                  className="bg-background border-border text-base"
-                  min={form.startDate || today}
+                  disabled={isSubmitting}
+                  className="bg-background border-border"
                 />
               </div>
             </div>
-
-            {form.frequencyType && form.startDate && (
-              <div className="bg-accent/20 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground space-y-1">
-                <p className="font-medium text-foreground mb-1.5">
-                  {t('transactions:recurring.summary')}
-                </p>
-                <p className="leading-relaxed">
-                  {t("transactions:recurring.summaryText", {
-                    description: form.description || "...",
-                    amount: form.amount || "0",
-                    frequency: form.frequencyInterval,
-                    type: frequencyUnit,
-                    start: form.startDate || "...",
-                    end: form.endDate || t('transactions:recurring.indefinite'),
-                  })}
-                </p>
-              </div>
-            )}
 
             {form.error && (
               <p className="text-destructive text-sm text-center font-medium">{form.error}</p>
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-3 pt-2 pb-1 sticky bottom-0 bg-card">
+          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isUpdating}
-              className="border-border min-h-11"
+              disabled={isSubmitting}
+              className="border-border"
             >
               {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isUpdating || !isValid}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 min-h-11"
+              disabled={isSubmitting || !isValid}
+              className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
-              {isUpdating ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
                   {t('common:actions.saving')}
