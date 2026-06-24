@@ -27,6 +27,10 @@ if [ "$SELECTION" = "q" ]; then
     exit 0
 fi
 
+case "$SELECTION" in
+    ''|*[!0-9]*) echo "Invalid selection"; exit 1 ;;
+esac
+
 BACKUP_FILE=$(ls -1t "${BACKUP_DIR}"/*.sql.gz 2>/dev/null | sed -n "${SELECTION}p")
 
 if [ -z "$BACKUP_FILE" ]; then

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/axiosClient"
@@ -82,10 +82,6 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     itemsPerPage: ITEMS_PER_PAGE,
     initialPage: 1,
   })
-
-  useEffect(() => {
-    goToPage(1)
-  }, [state.filter, state.searchTerm, goToPage])
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE

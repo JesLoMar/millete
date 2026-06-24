@@ -25,8 +25,8 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
     @Override
     public RegisterTransactionResult register(RegisterTransactionCommand command) {
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Category does not exist."));
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
+                    .orElseThrow(() -> new RuntimeException("Category does not exist or does not belong to you."));
         }
 
         UUID newId = UUID.randomUUID();
@@ -122,8 +122,8 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
         Transaction transaction = this.getByIdAndUserId(id, command.userId());
 
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Category does not exist."));
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
+                    .orElseThrow(() -> new RuntimeException("Category does not exist or does not belong to you."));
         }
 
         transaction.updateDetails(

@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  loadEnv(mode, process.cwd(), '');
+  loadEnv(mode, process.cwd(), 'VITE_');
   const isProduction = mode === 'production';
   
   return {

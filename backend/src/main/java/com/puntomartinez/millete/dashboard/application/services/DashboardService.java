@@ -146,7 +146,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         List<BudgetItemResponseDTO> budgetItems = categoriesWithBudget.stream().map(category -> {
             BigDecimal spent = periodTransactions.stream().filter(t -> t.getCategoryId() != null && t.getCategoryId().equals(category.getId())).filter(t -> t.getType() == TransactionType.EXPENSE).map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
             return new BudgetItemResponseDTO(category.getId(), category.getName(), spent, category.getBudgetLimit(), calculatePercentage(spent, category.getBudgetLimit()));
-        }).filter(b -> b.spent().compareTo(BigDecimal.ZERO) > 0).sorted((a, b) -> {
+        }).sorted((a, b) -> {
             boolean aOver = a.percentage() >= 100;
             boolean bOver = b.percentage() >= 100;
             if (aOver && !bOver) return -1;

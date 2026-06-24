@@ -21,17 +21,10 @@ export const loginSchema = authFormFieldsSchema.refine(
 
 export const registerSchema = authFormFieldsSchema
   .refine(
-    (data) => !!data.usernameRegistro?.trim(),
+    (data) => !!data.usernameRegistro?.trim() || !!data.emailRegistro?.trim(),
     {
       message: "auth.form.error.usernameRequired",
       path: ["usernameRegistro"],
-    }
-  )
-  .refine(
-    (data) => !!data.emailRegistro?.trim(),
-    {
-      message: "auth.forgotPassword.emailRequired",
-      path: ["emailRegistro"],
     }
   )
   .refine(

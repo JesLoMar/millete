@@ -79,7 +79,7 @@ public class PlannedTransactionService implements
 
     @Override
     @Transactional
-    public void processScheduledTasks() {
+    public synchronized void processScheduledTasks() {
         LocalDate today = LocalDate.now();
 
         List<PlannedTransaction> templates = plannedTransactionRepository.findAllActive();

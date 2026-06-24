@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -47,6 +47,23 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
   })
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Pre-popular formulario cuando se abre el modal con una transacción existente
+  useEffect(() => {
+    if (open && transaction) {
+      setForm({
+        description: transaction.description || "",
+        category: transaction.categoryId || "",
+        amount: transaction.amount ? String(Math.abs(transaction.amount)) : "",
+        type: transaction.type === "INCOME" ? "INCOME" : "EXPENSE",
+        frequencyType: transaction.frequencyType || "",
+        frequencyInterval: transaction.frequencyInterval ? String(transaction.frequencyInterval) : "1",
+        startDate: transaction.startDate || "",
+        endDate: transaction.endDate || "",
+        error: null,
+      })
+    }
+  }, [open, transaction])
+
   const handleSave = async () => {
     if (!transaction || !form.description || !form.category || !form.amount || !form.frequencyType || !form.startDate) return
     setForm((prev) => ({ ...prev, error: null }))
@@ -76,16 +93,15 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
   const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
   const today = new Date().toISOString().split('T')[0]
 
-  // ✅ Extraer las traducciones a variables separadas
   const daysLabel = t('transactions:recurring.days')
   const weeksLabel = t('transactions:recurring.weeks')
   const monthsLabel = t('transactions:recurring.months')
   const yearsLabel = t('transactions:recurring.years')
 
   const frequencyUnit = 
-    frequencyType === "DAYS" ? daysLabel :
-    frequencyType === "WEEKS" ? weeksLabel :
-    frequencyType === "MONTHS" ? monthsLabel :
+    form.frequencyType === "DAYS" ? daysLabel :
+    form.frequencyType === "WEEKS" ? weeksLabel :
+    form.frequencyType === "MONTHS" ? monthsLabel :
     yearsLabel
 
   return (
@@ -132,8 +148,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 <Input
                   id="edit-recurring-amount"
                   type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={form.amount}
+                  onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
                   disabled={isUpdating}
                   className="bg-background border-border text-base"
                   min="0.01"
@@ -142,12 +158,12 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
               </div>
             </div>
 
-            <CategorySelect value={category} onValueChange={setCategory} />
+            <CategorySelect value={form.category} onValueChange={(v) => setForm((prev) => ({ ...prev, category: v }))} />
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:recurring.frequency')}</Label>
-                <Select value={frequencyType} onValueChange={setFrequencyType}>
+                <Select value={form.frequencyType} onValueChange={(v) => setForm((prev) => ({ ...prev, frequencyType: v }))}>
                   <SelectTrigger 
                     className="bg-background border-border text-base"
                     aria-label={t('transactions:recurring.selectFrequency')}
@@ -168,8 +184,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 <Input
                   id="edit-recurring-interval"
                   type="number"
-                  value={frequencyInterval}
-                  onChange={(e) => setFrequencyInterval(e.target.value)}
+                  value={form.frequencyInterval}
+                  onChange={(e) => setForm((prev) => ({ ...prev, frequencyInterval: e.target.value }))}
                   disabled={isUpdating}
                   className="bg-background border-border text-base"
                   min="1"
@@ -185,8 +201,8 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 <Input
                   id="edit-recurring-start"
                   type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  value={form.startDate}
+                  onChange={(e) => setForm((prev) => ({ ...prev, startDate: e.target.value }))}
                   disabled={isUpdating}
                   className="bg-background border-border text-base"
                 />
@@ -199,35 +215,35 @@ export function EditRecurringTransactionDialog({ transaction, open, onOpenChange
                 <Input
                   id="edit-recurring-end"
                   type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  value={form.endDate}
+                  onChange={(e) => setForm((prev) => ({ ...prev, endDate: e.target.value }))}
                   disabled={isUpdating}
                   className="bg-background border-border text-base"
-                  min={startDate || today}
+                  min={form.startDate || today}
                 />
               </div>
             </div>
 
-            {frequencyType && startDate && (
+            {form.frequencyType && form.startDate && (
               <div className="bg-accent/20 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground mb-1.5">
                   {t('transactions:recurring.summary')}
                 </p>
                 <p className="leading-relaxed">
                   {t("transactions:recurring.summaryText", {
-                    description: description || "...",
-                    amount: amount || "0",
-                    frequency: frequencyInterval,
+                    description: form.description || "...",
+                    amount: form.amount || "0",
+                    frequency: form.frequencyInterval,
                     type: frequencyUnit,
-                    start: startDate || "...",
-                    end: endDate || t('transactions:recurring.indefinite'),
+                    start: form.startDate || "...",
+                    end: form.endDate || t('transactions:recurring.indefinite'),
                   })}
                 </p>
               </div>
             )}
 
-            {error && (
-              <p className="text-destructive text-sm text-center font-medium">{error}</p>
+            {form.error && (
+              <p className="text-destructive text-sm text-center font-medium">{form.error}</p>
             )}
           </div>
 

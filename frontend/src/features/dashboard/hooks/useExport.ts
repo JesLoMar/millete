@@ -22,12 +22,12 @@ export function useExport() {
           break
         case "csv":
           if (!configValue) return
-          response = (await apiClient.get(`/data/export/csv/${configValue}`, { responseType: "blob" })).data
+          response = (await apiClient.get(`/data/export/csv/${encodeURIComponent(configValue)}`, { responseType: "blob" })).data
           filename = `familybudget_${configValue}.csv`
           break
         case "pdf":
           if (!configValue) return
-          response = (await apiClient.get(`/data/export/pdf?period=${configValue}`, { responseType: "blob" })).data
+          response = (await apiClient.get(`/data/export/pdf?${new URLSearchParams({ period: configValue })}`, { responseType: "blob" })).data
           filename = `millete_financial_data_${configValue}.pdf`
           break
       }

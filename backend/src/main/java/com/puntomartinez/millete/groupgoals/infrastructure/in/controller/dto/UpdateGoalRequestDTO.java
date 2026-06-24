@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class UpdateGoalRequestDTO {
+    private String name;
     private BigDecimal monthlyTarget;
     private String distributionMode;
 }

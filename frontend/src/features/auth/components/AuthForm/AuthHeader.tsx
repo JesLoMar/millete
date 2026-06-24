@@ -11,12 +11,12 @@ export function AuthHeader() {
         <div className="bg-primary/20 p-1 rounded-xl flex items-center justify-center">
           <img 
             src="/web-app-icon.png" 
-            alt={t("app:name")} 
+            alt={t("auth:brand.name")} 
             className="size-13 object-contain" 
           />
         </div>
         <span className="text-2xl font-bold tracking-tight text-white">
-          {t("app:name")}
+          {t("auth:brand.name")}
         </span>
       </div>
       <div className="flex items-center gap-2">

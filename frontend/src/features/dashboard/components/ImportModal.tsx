@@ -27,13 +27,20 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
     setDragOver(false)
   }, [])
 
-  const validateAndSetFile = useCallback((file: File) => {
+  const validateAndSetFile = useCallback(async (file: File) => {
     if (file.type !== "application/json" && !file.name.endsWith(".json")) {
       setError(t('dashboard:importModal.jsonOnly'))
       return
     }
-    setFileName(file.name)
-    setSelectedFile(file)
+    try {
+      const text = await file.text()
+      JSON.parse(text)
+      setFileName(file.name)
+      setSelectedFile(file)
+      setError(null)
+    } catch {
+      setError(t('dashboard:importModal.invalidContent'))
+    }
   }, [t])
 
   const handleDrop = useCallback((e: React.DragEvent) => {

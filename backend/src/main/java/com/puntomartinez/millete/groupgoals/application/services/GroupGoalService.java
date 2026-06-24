@@ -70,7 +70,11 @@ public class GroupGoalService implements
     }
 
     @Override
-    public Map<UUID, BigDecimal> calculateContributions(UUID goalId) {
+    public Map<UUID, BigDecimal> calculateContributions(UUID goalId, UUID callerId) {
+        GoalMember member = goalMemberRepository.findByGoalIdAndUserId(goalId, callerId)
+                .filter(GoalMember::isActive)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+
         GoalUnit goalUnit = goalUnitRepository.findById(goalId)
                 .orElseThrow(() -> new RuntimeException("Goal Unit not found"));
         List<GoalMember> members = goalMemberRepository.findByGoalId(goalId);
@@ -156,7 +160,8 @@ public class GroupGoalService implements
         }
 
         GoalMember member = goalMemberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .filter(m -> m.getGoalId().equals(goalId))
+                .orElseThrow(() -> new RuntimeException("Member not found in this goal"));
 
         if (request.getRole() != null) member.setRole(GoalRole.valueOf(request.getRole()));
         if (request.getSalary() != null) member.setSalary(request.getSalary());
@@ -178,6 +183,8 @@ public class GroupGoalService implements
                 .orElseThrow(() -> new RuntimeException("Goal not found"));
 
         DistributionMode oldMode = goal.getDistributionMode();
+
+        if (request.getName() != null) goal.setName(request.getName());
 
         if (request.getMonthlyTarget() != null) goal.setMonthlyTarget(request.getMonthlyTarget());
 
@@ -221,7 +228,8 @@ public class GroupGoalService implements
         }
 
         GoalMember member = goalMemberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .filter(m -> m.getGoalId().equals(goalId))
+                .orElseThrow(() -> new RuntimeException("Member not found in this goal"));
         member.setActive(false);
         member.setModifiedAt(LocalDateTime.now());
         goalMemberRepository.save(member);
@@ -229,6 +237,10 @@ public class GroupGoalService implements
     }
 
     public void addContribution(UUID goalId, UUID userId, AddContributionRequestDTO request) {
+        GoalMember member = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
+                .filter(GoalMember::isActive)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+
         GoalContribution contribution = new GoalContribution();
         contribution.setId(UUID.randomUUID());
         contribution.setGoalId(goalId);

@@ -17,10 +17,19 @@ RUN mvn clean package
 # FASE 2: Entorno de Ejecución Ligero y Seguro
 # =========================================================================
 FROM eclipse-temurin:25-jre-jammy
+
+RUN groupadd -r millete -g 1001 && \
+    useradd -r -g millete -u 1001 millete
+
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder --chown=millete:millete /app/target/*.jar app.jar
+
+USER millete
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD exec 3<>/dev/tcp/127.0.0.1/8080 && exec 3<&-
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

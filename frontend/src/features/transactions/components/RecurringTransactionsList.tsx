@@ -12,7 +12,11 @@ import { EditRecurringTransactionDialog } from "./dialogs/EditRecurringTransacti
 import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
 import { RecurringTransactionRow } from "./RecurringTransactionRow"
 import { TransactionSkeleton } from "./TransactionSkeleton"
+import { TransactionListPagination } from "./TransactionListPagination"
+import { usePagination } from "@/features/categories/hooks/usePagination"
 import { FILTERS, FILTER_LABELS, type Filter } from "../constants"
+
+const ITEMS_PER_PAGE = 10
 
 export function RecurringTransactionsList() {
   const { t } = useTranslation()
@@ -45,6 +49,18 @@ export function RecurringTransactionsList() {
       return matchesSearch && matchesFilter
     })
   }, [transactions, recurringFilter, searchTerm])
+
+  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
+    totalItems: filteredTransactions.length,
+    itemsPerPage: ITEMS_PER_PAGE,
+    initialPage: 1,
+  })
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    const end = start + ITEMS_PER_PAGE
+    return filteredTransactions.slice(start, end)
+  }, [filteredTransactions, currentPage])
 
   if (isLoading) return <TransactionSkeleton rows={5} />
 
@@ -88,12 +104,12 @@ export function RecurringTransactionsList() {
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex flex-col">
-          {filteredTransactions.length === 0 ? (
+          {paginatedTransactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('transactions:recurring.emptyFilter')}
             </p>
           ) : (
-            filteredTransactions.map((tx) => (
+            paginatedTransactions.map((tx) => (
               <RecurringTransactionRow
                 key={tx.id}
                 transaction={tx}
@@ -103,6 +119,16 @@ export function RecurringTransactionsList() {
             ))
           )}
         </div>
+
+        <TransactionListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
+          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)}
+          total={filteredTransactions.length}
+          onPrev={prevPage}
+          onNext={nextPage}
+        />
       </div>
 
       <EditRecurringTransactionDialog

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, PiggyBank } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -46,6 +46,19 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
     link: "",
   })
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Pre-popular formulario cuando se abre el modal con una meta existente
+  useEffect(() => {
+    if (open && goal) {
+      setForm({
+        name: goal.name || "",
+        targetAmount: goal.targetAmount ? String(goal.targetAmount) : "",
+        priority: goal.priority || "MEDIUM",
+        deadline: goal.deadline || "",
+        link: goal.link || "",
+      })
+    }
+  }, [open, goal])
 
   const handleSave = async () => {
     if (!goal || !form.name.trim() || !form.targetAmount) return

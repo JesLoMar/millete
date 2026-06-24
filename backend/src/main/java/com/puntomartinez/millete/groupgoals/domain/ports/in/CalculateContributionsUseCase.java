@@ -5,5 +5,5 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface CalculateContributionsUseCase {
-    Map<UUID, BigDecimal> calculateContributions(UUID goalId);
+    Map<UUID, BigDecimal> calculateContributions(UUID goalId, UUID callerId);
 }

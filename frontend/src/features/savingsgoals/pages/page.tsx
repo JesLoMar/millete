@@ -80,16 +80,11 @@ export const SavingsGoalsPage = () => {
               defaultPeriod={period}
               hidePeriodSelector
             />
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-              <PeriodSelector
-                period={period}
-                onPeriodChange={handlePeriodChange}
-                className="w-full sm:flex-none"
-              />
-              <div className="w-full sm:w-auto flex flex-col">
-                <SavingsGoalDialog />
-              </div>
+
+            <div className="w-full sm:w-auto flex flex-col">
+              <SavingsGoalDialog />
             </div>
+
           </div>
 
           <div className="relative">

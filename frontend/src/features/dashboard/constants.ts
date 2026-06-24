@@ -98,7 +98,6 @@ export const EXPORT_ENTITY_TYPES = [
   { value: "transactions", labelKey: "entities.transactions" },
   { value: "investments", labelKey: "entities.investments" },
   { value: "savingsgoals", labelKey: "entities.savingsGoals" },
-  { value: "groupgoals", labelKey: "entities.groupGoals" },
 ]
 
 export const EXPORT_PERIOD_OPTIONS = [
@@ -106,5 +105,4 @@ export const EXPORT_PERIOD_OPTIONS = [
   { value: "3m", labelKey: "export.period3m" },
   { value: "6m", labelKey: "export.period6m" },
   { value: "1y", labelKey: "export.period1y" },
-  { value: "all", labelKey: "export.periodAll" },
 ]

@@ -7,15 +7,10 @@ import { cn } from "@/lib/utils"
 import { getEnabledNavItems, getDisabledNavItems, type NavItem } from "@/shared/config/navigation"
 import { notify } from "@/shared/utils/notifications/notify"
 
-declare global {
-  interface Window {
-    __sidebarOpen?: () => void;
-  }
-}
-
 interface SidebarProps {
   className?: string
   showDisabled?: boolean
+  onOpenMobile?: () => void
 }
 
 function notifyComingSoon(featureName: string, messageTemplate: string) {
@@ -23,7 +18,7 @@ function notifyComingSoon(featureName: string, messageTemplate: string) {
   notify.info(finalMessage);
 }
 
-export function Sidebar({ className, showDisabled = true }: SidebarProps) {
+export function Sidebar({ className, showDisabled = true, onOpenMobile }: SidebarProps) {
   const { t } = useTranslation(['nav', 'common'])
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,11 +37,10 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   }, [isMobileOpen])
 
   useEffect(() => {
-    window.__sidebarOpen = () => setIsMobileOpen(true)
-    return () => {
-      delete window.__sidebarOpen
+    if (onOpenMobile) {
+      onOpenMobile()
     }
-  }, [])
+  }, [onOpenMobile])
 
   const mainItems = getEnabledNavItems("main")
   const bottomItems = getEnabledNavItems("bottom")

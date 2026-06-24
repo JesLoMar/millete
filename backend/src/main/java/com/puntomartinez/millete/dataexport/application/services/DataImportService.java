@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -58,9 +60,10 @@ public class DataImportService {
 
             snapshot = validateAndMigrate(snapshot);
 
-            int totalImported = importCategories(snapshot, loggedInUserId);
-            totalImported += importTransactions(snapshot, loggedInUserId);
-            totalImported += importPlannedTransactions(snapshot, loggedInUserId);
+            Map<UUID, UUID> categoryIdMap = new HashMap<>();
+            int totalImported = importCategories(snapshot, loggedInUserId, categoryIdMap);
+            totalImported += importTransactions(snapshot, loggedInUserId, categoryIdMap);
+            totalImported += importPlannedTransactions(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importInvestments(snapshot, loggedInUserId);
 
             String summary = String.format(
@@ -101,33 +104,59 @@ public class DataImportService {
 
     // ─── Importación por entidad ────────────────────────
 
-    private int importCategories(UserDataSnapshot snapshot, UUID loggedInUserId) {
+    private int importCategories(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
         if (snapshot.categories() == null || snapshot.categories().isEmpty()) {
             return 0;
         }
 
+        // Obtener categorías existentes del usuario para evitar duplicados
+        Map<String, Category> existingByName = new HashMap<>();
+        for (Category existing : categoryRepository.findByIdUsuario(loggedInUserId)) {
+            if (existing.isActive()) {
+                existingByName.put(existing.getName().toLowerCase(), existing);
+            }
+        }
+
         int count = 0;
         for (Category cat : snapshot.categories()) {
-            Category safeCat = new Category(
-                    cat.getId(), loggedInUserId, cat.getName(), cat.getColor(),
-                    cat.getBudgetLimit(), cat.getCreatedAt(), cat.getModifiedAt(), cat.isActive()
-            );
-            categoryRepository.save(safeCat);
-            count++;
+            String nameLower = cat.getName().toLowerCase();
+            Category existing = existingByName.get(nameLower);
+            
+            if (existing != null) {
+                // Reutilizar categoría existente: actualizar y mapear el ID antiguo al existente
+                existing.setColor(cat.getColor());
+                existing.setBudgetLimit(cat.getBudgetLimit());
+                existing.setModifiedAt(java.time.LocalDateTime.now());
+                categoryRepository.save(existing);
+                categoryIdMap.put(cat.getId(), existing.getId());
+                log.debug("Categoría reutilizada: {} -> {}", cat.getName(), existing.getId());
+            } else {
+                // Crear nueva categoría
+                UUID newId = UUID.randomUUID();
+                categoryIdMap.put(cat.getId(), newId);
+                Category safeCat = new Category(
+                        newId, loggedInUserId, cat.getName(), cat.getColor(),
+                        cat.getBudgetLimit(), cat.getCreatedAt(), cat.getModifiedAt(), cat.isActive()
+                );
+                categoryRepository.save(safeCat);
+                existingByName.put(nameLower, safeCat);
+                count++;
+            }
         }
-        log.debug("Categorías: {}", count);
+        log.debug("Categorías importadas: {} (nuevas: {})", snapshot.categories().size(), count);
         return count;
     }
 
-    private int importTransactions(UserDataSnapshot snapshot, UUID loggedInUserId) {
+    private int importTransactions(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
         if (snapshot.transactions() == null || snapshot.transactions().isEmpty()) {
             return 0;
         }
 
         int count = 0;
         for (Transaction tx : snapshot.transactions()) {
+            UUID newCategoryId = tx.getCategoryId() != null ? categoryIdMap.get(tx.getCategoryId()) : null;
             Transaction safeTx = new Transaction(
-                    tx.getId(), loggedInUserId, tx.getCategoryId(), tx.getAmount(),
+                    UUID.randomUUID(), loggedInUserId, newCategoryId, tx.getAmount(),
                     tx.getDate(), tx.getType(), tx.getDescription(),
                     tx.getCreatedAt(), tx.getModifiedAt(), tx.isActive()
             );
@@ -138,15 +167,16 @@ public class DataImportService {
         return count;
     }
 
-    private int importPlannedTransactions(UserDataSnapshot snapshot, UUID loggedInUserId) {
+    private int importPlannedTransactions(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
         if (snapshot.plannedTransactions() == null || snapshot.plannedTransactions().isEmpty()) {
             return 0;
         }
 
         int count = 0;
         for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
+            UUID newCategoryId = ptx.getCategoryId() != null ? categoryIdMap.get(ptx.getCategoryId()) : null;
             PlannedTransaction safePtx = new PlannedTransaction(
-                    ptx.getId(), loggedInUserId, ptx.getCategoryId(), ptx.getAmount(),
+                    UUID.randomUUID(), loggedInUserId, newCategoryId, ptx.getAmount(),
                     ptx.getType(), ptx.getDescription(), ptx.getFrequencyType(),
                     ptx.getFrequencyInterval(), ptx.getStartDate(), ptx.getEndDate(),
                     ptx.getCreatedAt(), ptx.getModifiedAt(), ptx.isActive(), ptx.getLastExecutedDate()
@@ -166,7 +196,7 @@ public class DataImportService {
         int count = 0;
         for (Investment inv : snapshot.investments()) {
             Investment safeInv = new Investment(
-                    inv.getId(), loggedInUserId, inv.getAssetName(), inv.getTicker(),
+                    UUID.randomUUID(), loggedInUserId, inv.getAssetName(), inv.getTicker(),
                     inv.getQuantity(), inv.getPurchasePrice(), inv.getCurrentPrice(),
                     inv.getType(), inv.getPurchaseDate(),
                     inv.getCreatedAt(), inv.getModifiedAt(), inv.isActive()

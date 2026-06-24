@@ -41,10 +41,10 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
             throw new RuntimeException("Se requiere un email o un nombre de usuario para registrarse.");
         }
         if (hasEmail && userRepository.findByEmail(command.email()).isPresent()) {
-            throw new RuntimeException("El email " + command.email() + " ya está registrado.");
+            throw new RuntimeException("El usuario o el email ya están registrados.");
         }
         if (hasUsername && userRepository.findByUsername(command.username()).isPresent()) {
-            throw new RuntimeException("El nombre de usuario " + command.username() + " ya está en uso.");
+            throw new RuntimeException("El usuario o el email ya están registrados.");
         }
         String encryptedPassword = passwordHasher.hashPassword(command.rawPassword());
         LocalDateTime now = LocalDateTime.now();

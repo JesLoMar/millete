@@ -37,6 +37,12 @@ v0.1.0 [CAMBIOS EN BD]
 - [ ] Añadir pequeña guía para nuevos usuarios.
 - [ ] Añadir animaciones y feedback visual a todas las vistas.
 
+------
+COSAS POR HACER
+------
+- Al importar datos de una cuenta a otra, la relacion entre categorías y transacciones parece que se pierde, al menos en la sección de transacciones todas las transacciones aparecen con el mensaje de "sin categoría", pero después al ir al dashboard aparecen categorizados, cómo el modal al darle a editar no carga los datos actuales de la categoría no puedo comprobar directamente si tiene categoría o no asignada realmente para diferenciar entre un bug visual o de lógica/flujo de datos.
+
+
 ====
 HACER AL FINAL: Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0
 ====

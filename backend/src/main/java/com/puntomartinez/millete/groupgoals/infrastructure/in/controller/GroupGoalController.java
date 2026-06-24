@@ -130,8 +130,11 @@ public class GroupGoalController {
     }
 
     @GetMapping("/{goalId}/contributions")
-    public ResponseEntity<Map<UUID, BigDecimal>> getContributions(@PathVariable UUID goalId) {
-        Map<UUID, BigDecimal> contributions = calculateContributionsUseCase.calculateContributions(goalId);
+    public ResponseEntity<Map<UUID, BigDecimal>> getContributions(
+            @PathVariable UUID goalId,
+            Authentication authentication) {
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
+        Map<UUID, BigDecimal> contributions = calculateContributionsUseCase.calculateContributions(goalId, userId);
         return ResponseEntity.ok(contributions);
     }
 

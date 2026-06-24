@@ -68,7 +68,8 @@ export const GroupGoalsPage = () => {
     if (!actions.editingGoal) return
     try {
       await apiClient.put(`/goals/${actions.editingGoal.id}`, { name: newName })
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      await queryClient.invalidateQueries({ queryKey: ["group-goals"] })
+      setActions((prev) => ({ ...prev, editingGoal: null }))
       notify.success("Nombre actualizado correctamente")
     } catch (err) {
       const apiError = err as ApiError

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
@@ -54,6 +54,20 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
     isSubmitting: false,
     error: null,
   })
+
+  // Pre-popular formulario cuando se abre el modal con una transacción existente
+  useEffect(() => {
+    if (open && transaction) {
+      setForm({
+        description: transaction.description || "",
+        category: transaction.categoryId || "",
+        amount: transaction.amount ? String(Math.abs(transaction.amount)) : "",
+        type: transaction.type === "INCOME" ? "INCOME" : "EXPENSE",
+        isSubmitting: false,
+        error: null,
+      })
+    }
+  }, [open, transaction])
 
   const updateForm = (updates: Partial<FormState>) => {
     setForm(prev => ({ ...prev, ...updates }))

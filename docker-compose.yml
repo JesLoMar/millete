@@ -16,8 +16,10 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "${DB_PORT:-5432}:5432"
+    # ports:
+    #   - "${DB_PORT:-5432}:5432"
+    # Si necesitas acceso local, usa loopback: 127.0.0.1:5432:5432
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -106,6 +108,7 @@ services:
     image: postgres:16-alpine
     container_name: millete-db-backup
     restart: unless-stopped
+    user: "1000:1000"
     env_file:
       - .env
     environment:

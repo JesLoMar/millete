@@ -22,8 +22,9 @@ export const apiClient = axios.create({
 // ─── INTERCEPTOR DE REQUEST ────────────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
+    const isPublic = config.url === '/auth/register' || config.url === '/auth/login';
     const token = secureStorage.getToken();
-    if (token && config.headers) {
+    if (token && config.headers && !isPublic) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -39,7 +40,10 @@ apiClient.interceptors.response.use(
     const message = error.response?.data?.message || '';
 
     if (status === 401) {
-      window.dispatchEvent(new CustomEvent('auth:logout'));
+      // Logout silencioso: limpiar storage y recargar para evitar bucles
+      secureStorage.clear();
+      window.location.href = '/login';
+      return Promise.reject(error);
     }
 
     // ─── Notificación global de errores ────────────────────────

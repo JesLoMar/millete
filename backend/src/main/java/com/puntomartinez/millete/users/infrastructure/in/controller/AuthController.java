@@ -121,16 +121,17 @@ public class AuthController {
     }
 
     @GetMapping("/telegram/status")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> getTelegramStatus(
-            @RequestParam Long chatId) {
+            @RequestParam Long chatId,
+            Authentication authentication) {
 
-        UUID userId = userService.getUserIdByTelegramChatId(chatId);
+        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+        User user = userService.getUserById(jwtUser.getId());
 
         Map<String, Object> response = new HashMap<>();
-        response.put("linked", userId != null);
-        if (userId != null) {
-            response.put("userId", userId.toString());
-        }
+        boolean linked = user.getTelegramChatId() != null && user.getTelegramChatId().equals(chatId);
+        response.put("linked", linked);
 
         return ResponseEntity.ok(response);
     }

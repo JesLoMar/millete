@@ -56,8 +56,8 @@ public class CategoryService implements RegisterCategoryUseCase, UpdateCategoryU
         return categoryRepository.save(category);
     }
 
-    public Category findById(UUID id) {
-        return categoryRepository.findById(id)
+    public Category findByIdAndUserId(UUID id, UUID userId) {
+        return categoryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Categoría no encontrada"));
     }
