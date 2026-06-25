@@ -9,6 +9,8 @@ import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPla
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +49,7 @@ public class PlannedTransactionService implements
     public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
         if (command.categoryId() != null) {
             categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("The specified category does not exist."));
+                    .orElseThrow(() -> new ResourceNotFoundException("The specified category does not exist."));
         }
 
         UUID newId = UUID.randomUUID();
@@ -118,15 +120,15 @@ public class PlannedTransactionService implements
     @Override
     public PlannedTransaction update(UUID id, UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand command) {
         PlannedTransaction tx = plannedTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Planned transaction not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Planned transaction not found."));
 
         if (!tx.getUserId().equals(command.userId())) {
-            throw new RuntimeException("You do not have permission to edit this transaction.");
+            throw new ForbiddenOperationException("You do not have permission to edit this transaction.");
         }
 
         if (command.categoryId() != null) {
             categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Category does not exist."));
+                    .orElseThrow(() -> new ResourceNotFoundException("Category does not exist."));
         }
 
         boolean recurrenceChanged = !tx.getStartDate().equals(command.startDate()) ||
@@ -157,10 +159,10 @@ public class PlannedTransactionService implements
     @Override
     public void deleteByIdAndUserId(UUID id, UUID userId) {
         PlannedTransaction tx = plannedTransactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Planned transaction not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Planned transaction not found."));
 
         if (!tx.getUserId().equals(userId)) {
-            throw new RuntimeException("You do not have permission to delete this transaction.");
+            throw new ForbiddenOperationException("You do not have permission to delete this transaction.");
         }
 
         tx.setActive(false);

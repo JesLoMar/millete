@@ -353,4 +353,4 @@ Cada vez que se añade una contribución o se actualiza el objetivo (cambiando `
 
 ## Conexión con el Dashboard
 
-El módulo de dashboard (`DashboardService.getSavingsGoals()`) actualmente genera metas de ahorro sugeridas basadas en cálculos sobre transacciones. Esta funcionalidad está diseñada para ser reemplazada en el futuro por una lectura directa de la tabla `savings_goals`, de modo que el dashboard muestre los objetivos reales del usuario en lugar de metas estimadas. El `SavingsGoalRepository` ya expone los métodos necesarios (`findAllByUserId`) para realizar esta integración cuando se requiera.
+El módulo de dashboard (`DashboardService`) lee las metas de ahorro reales del usuario desde la tabla `savings_goals` mediante `SavingsGoalRepository.findAllByUserId`. El dashboard muestra el progreso actual de cada meta (currentAmount / targetAmount) sin metas estimadas.

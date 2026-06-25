@@ -15,12 +15,17 @@
 - domain/ports/out/UserSessionRepository.java — Interfaz del repositorio de sesiones de usuario (v0.1.0)
 - domain/ports/out/PasswordHasherPort.java — Interfaz de hashing de contraseñas
 - domain/ports/out/TokenProvider.java — Interfaz de generación de JWT
-- infrastructure/in/controller/AuthController.java — Controlador REST con endpoints
+- infrastructure/in/controller/AuthController.java — Controlador REST de autenticación
+- infrastructure/in/controller/ProfileController.java — Controlador REST de perfil, sesiones y Telegram
 - infrastructure/in/controller/dto/LoginRequestDTO.java — DTO de petición de login
 - infrastructure/in/controller/dto/RegisterUserRequestDTO.java — DTO de petición de registro
 - infrastructure/in/controller/dto/TokenResponseDTO.java — DTO de respuesta con JWT
 - infrastructure/in/controller/dto/TopNavUserResponseDTO.java — DTO para barra de navegación
 - infrastructure/in/controller/dto/UserResponseDTO.java — DTO de respuesta del usuario
+- infrastructure/in/controller/dto/UpdateProfileRequestDTO.java — DTO de actualización de perfil
+- infrastructure/in/controller/dto/ChangePasswordRequestDTO.java — DTO de cambio de contraseña
+- infrastructure/in/controller/dto/DeactivateAccountRequestDTO.java — DTO de desactivación de cuenta
+- infrastructure/in/controller/dto/UserSessionResponseDTO.java — DTO de sesión de usuario
 - infrastructure/out/persistence/postgresql/adapters/UserPostgresAdapter.java — Adaptador del repositorio de usuarios
 - infrastructure/out/persistence/postgresql/adapters/UserSessionPostgresAdapter.java — Adaptador del repositorio de sesiones (v0.1.0)
 - infrastructure/out/persistence/postgresql/entity/UserEntity.java — Entidad JPA de usuarios
@@ -77,6 +82,73 @@ Este endpoint está protegido con @PreAuthorize("isAuthenticated()") y validaci�
 4. Devuelve TopNavUserResponseDTO con username y email.
 
 La doble protección (anotación + validación manual) garantiza que nunca se intente acceder a datos de usuario sin un contexto de seguridad válido, incluso si la configuración de rutas públicas cambiase.
+
+### POST /logout
+
+1. Requiere autenticación.
+2. Recibe el `sessionId` del token JWT vía `@RequestAttribute`.
+3. Marca la sesión como inactiva en `user_sessions` mediante `SessionPersistenceService`.
+4. Responde 200 OK.
+
+### POST /telegram/link
+
+1. Requiere autenticación.
+2. Recibe `{"chatId": 123456789}` en el body.
+3. Vincula el `chatId` de Telegram con el usuario autenticado.
+4. Verifica que el `chatId` no esté ya vinculado a otro usuario.
+5. Responde 200 OK o 409 Conflict si ya está en uso.
+
+### GET /telegram/status
+
+1. Requiere autenticación.
+2. Recibe `chatId` como query param.
+3. Devuelve `{"linked": true|false}` indicando si el `chatId` coincide con el del usuario autenticado.
+
+---
+
+## ProfileController.java
+
+Controlador REST mapeado a `/api/v1/profile`. Requiere autenticación en todos sus endpoints.
+
+### GET /profile
+
+Devuelve el perfil del usuario autenticado (`UserProfileDTO`): id, username, email, active, anonymized, telegramChatId.
+
+### PUT /profile
+
+Actualiza username y/o email del usuario. Requiere la contraseña actual para confirmar la operación.
+
+### PUT /profile/password
+
+Cambia la contraseña del usuario. Requiere contraseña actual y nueva. Tras el cambio, cierra todas las demás sesiones del usuario excepto la actual.
+
+### GET /profile/preferences
+
+Devuelve las preferencias del usuario como string JSON.
+
+### PUT /profile/preferences
+
+Guarda las preferencias del usuario. Valida que el body sea un JSON parseable y que sea un objeto.
+
+### DELETE /profile/telegram
+
+Desvincula la cuenta de Telegram del usuario (pone `telegram_chat_id` a null).
+
+### GET /profile/sessions
+
+Lista las sesiones activas del usuario con id, canal (WEB/TELEGRAM), estado y fecha de creación.
+
+### DELETE /profile/sessions/:sessionId
+
+Cierra una sesión específica del usuario. Valida que la sesión pertenezca al usuario autenticado.
+
+### DELETE /profile/sessions?currentSessionId=
+
+Cierra todas las demás sesiones del usuario excepto la sesión actual.
+
+### POST /profile/deactivate
+
+Desactiva la cuenta del usuario de forma irreversible (anonimiza los datos). Requiere contraseña actual.
 
 ---
 
@@ -141,6 +213,7 @@ Entidad rica con lógica de negocio propia. Usa las anotaciones de Lombok.
 - username (String, opcional)
 - email (String, opcional)
 - password (String, hasheada)
+- telegramChatId (Long, opcional)
 - createdAt (LocalDateTime, inmutable)
 - modifiedAt (LocalDateTime)
 - active (boolean)
@@ -158,6 +231,7 @@ Entidad rica con lógica de negocio propia. Usa las anotaciones de Lombok.
 - deactivate(): desactiva la cuenta y actualiza modifiedAt.
 - hasValidIdentity(): devuelve true si tiene al menos un identificador válido.
 - getPrimaryIdentifier(): devuelve email si existe, si no devuelve username.
+- setTelegramChatId() / getTelegramChatId(): vincula/desvincula el chatId de Telegram.
 
 ---
 
@@ -225,7 +299,7 @@ Define: generateToken (crea JWT con claims del usuario), extractUserId (extrae e
 
 ### UserEntity
 
-Entidad JPA mapeada a la tabla users. Columnas: id (UUID, PK), username (unique), email (unique), password, created_at, modified_at, active, anonymized. Usa Lombok para getters, setters y constructores.
+Entidad JPA mapeada a la tabla users. Columnas: id (UUID, PK), username (unique), email (unique), password, telegram_chat_id (unique, nullable), created_at, modified_at, active, anonymized. Usa Lombok para getters, setters y constructores.
 
 ### UserSessionEntity
 
@@ -312,7 +386,23 @@ El módulo auth del frontend se comunica con estos endpoints:
 
 - POST /api/v1/auth/register -> Petición con RegisterUserRequestDTO -> 201 Created con UserResponseDTO
 - POST /api/v1/auth/login -> Petición con LoginRequestDTO -> 200 OK con TokenResponseDTO. Si la cuenta está penalizada por intentos fallidos, el servidor retorna un error de estado 423 Locked detallando el tiempo de espera restante.
+- POST /api/v1/auth/logout -> Cabecera Authorization: Bearer token -> 200 OK. Marca la sesión actual como inactiva.
 - GET /api/v1/auth/me/topnav -> Cabecera Authorization: Bearer token -> 200 OK con TopNavUserResponseDTO
+- POST /api/v1/auth/telegram/link -> Body {"chatId": Long} -> 200 OK. Vincula Telegram.
+- GET /api/v1/auth/telegram/status?chatId= -> 200 OK con {"linked": boolean}.
+
+El módulo profile se comunica con:
+
+- GET /api/v1/profile -> 200 OK con UserProfileDTO
+- PUT /api/v1/profile -> Actualiza username/email
+- PUT /api/v1/profile/password -> Cambio de contraseña
+- GET /api/v1/profile/preferences -> Preferencias como JSON string
+- PUT /api/v1/profile/preferences -> Guarda preferencias
+- DELETE /api/v1/profile/telegram -> Desvincula Telegram
+- GET /api/v1/profile/sessions -> Lista sesiones activas
+- DELETE /api/v1/profile/sessions/:id -> Cierra sesión específica
+- DELETE /api/v1/profile/sessions?currentSessionId= -> Cierra otras sesiones
+- POST /api/v1/profile/deactivate -> Desactiva cuenta
 
 ---
 

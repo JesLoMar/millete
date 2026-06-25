@@ -13,6 +13,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransac
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,9 +82,8 @@ public class DataImportService {
 
         } catch (Exception e) {
             log.error("Error al importar: {}", e.getMessage(), e);
-            throw new RuntimeException(
-                    "Error al importar: " + e.getMessage()
-                            + ". Asegúrate de que el archivo sea compatible con v"
+            throw new InvalidInputException(
+                    "Error al importar el archivo. Asegúrate de que sea compatible con v"
                             + ExportVersion.CURRENT, e);
         }
     }
@@ -94,7 +94,7 @@ public class DataImportService {
         ExportVersion fileVersion = ExportVersion.fromString(snapshot.metadata().version());
 
         if (!fileVersion.isCompatibleWith(ExportVersion.CURRENT)) {
-            throw new RuntimeException(
+            throw new InvalidInputException(
                     String.format("Versión incompatible. Archivo v%s, sistema v%s.",
                             fileVersion, ExportVersion.CURRENT));
         }

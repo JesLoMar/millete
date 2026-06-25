@@ -15,26 +15,25 @@
 - **ThemeSelector.tsx** — Selector de tema visual con paletas
 - **TopNav.tsx** — Barra superior con logo, idioma, tema y menú de usuario
 
-### components/ui/
-- **badge.tsx** — Componente Badge
-- **button.tsx** — Componente Button
+### components/core/
+Componentes primitivos de UI generados por shadcn/ui o adaptados al proyecto:
+
+- **badge.tsx** — Componente Badge con variantes (`badge-variants.ts`)
+- **button.tsx** — Componente Button con variantes (`button-variants.ts`)
 - **card.tsx** — Componentes Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter
-- **carousel.tsx** — Componente Carousel
-- **chart.tsx** — Componentes ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig
 - **dialog.tsx** — Componentes Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 - **dropdown-menu.tsx** — Componentes DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator
-- **form.tsx** — Componentes de formulario con react-hook-form
 - **input.tsx** — Componente Input
 - **label.tsx** — Componente Label
-- **progress.tsx** — Componente Progress
 - **select.tsx** — Componentes Select, SelectTrigger, SelectContent, SelectItem, SelectValue
-- **sheet.tsx** — Componente Sheet
-- **skeleton.tsx** — Componente Skeleton
 - **sonner.tsx** — Componente Toaster de Sonner
-- **tooltip.tsx** — Componente Tooltip
+- **chart-tooltip.tsx** — Tooltip personalizado para gráficos
+- **donut-chart.tsx** — Gráfico de donut reutilizable
+- **simple-bar-chart.tsx** — Gráfico de barras simple
+- **progress-bar.tsx** — Barra de progreso reutilizable
 
 ### config/
-- **navigation.ts** — Registro centralizado de navegación con items habilitados/deshabilitados
+- **navigation.ts** — Registro centralizado de navegación principal
 
 ### hooks/
 - **useCategories.ts** — Query de categorías con filtro de activas
@@ -122,13 +121,11 @@ Barra lateral de navegación. Común a todas las páginas.
 ### Props
 
 - **className?:** clases adicionales.
-- **showDisabled?:** mostrar items deshabilitados (default true).
 
 ### Estructura
 
 - **Navegación principal:** items de `getEnabledNavItems("main")` ordenados. Cada item muestra icono y texto traducido. El item activo tiene indicador visual: borde izquierdo primary, fondo accent/50, icono con scale-105 y color primary.
 - **Items deshabilitados:** sección "Próximamente" con icono Construction, opacidad reducida y cursor pointer que muestra notificación info al hacer clic.
-- **Navegación inferior:** items de `getEnabledNavItems("bottom")` anclados abajo con `mt-auto` y separador `border-t`.
 
 ### Detección de item activo
 
@@ -289,19 +286,14 @@ Registro centralizado de navegación de la aplicación.
 
 ### NAVIGATION_REGISTRY
 
-Array con 8 items:
+Array con 6 items habilitados en la sección principal:
 
-**Main (orden 1-6):**
 1. Dashboard (LayoutDashboard, `/dashboard`, enabled)
-2. Transacciones (ArrowLeftRight, `/transactions`, enabled)
-3. Categorías (LayoutGrid, `/categories`, enabled)
+2. Categorías (LayoutGrid, `/categories`, enabled)
+3. Transacciones (ArrowLeftRight, `/transactions`, enabled)
 4. Inversiones (TrendingUp, `/investments`, enabled)
-5. Familia (PieChart, `/family`, enabled)
-6. Reportes (FileText, `/reports`, disabled)
-
-**Bottom (orden 1-2):**
-1. Configuración (Settings, `/settings`, disabled)
-2. Ayuda (HelpCircle, `/help`, disabled)
+5. Metas de ahorro (PiggyBank, `/savings-goals`, enabled)
+6. Metas grupales (PieChart, `/group-goals`, enabled)
 
 ### Helpers
 
@@ -465,17 +457,17 @@ Utilidades para gestión de idiomas.
 
 ### Tipos
 
-- **SupportedLanguageCode:** "de" | "en" | "es" | "fr" | "it" | "pt".
+- **SupportedLanguageCode:** "de" | "en" | "es" | "fr" | "it" | "pt" | "ja".
 - **Language:** code, nativeName, englishName, flag.
 
 ### LANGUAGE_MAP
 
-Mapeo estático de 6 idiomas con nombre nativo, nombre en inglés y bandera (emoji).
+Mapeo estático de 7 idiomas con nombre nativo, nombre en inglés y bandera (emoji).
 
 ### Funciones
 
 - **getLanguageFromCode(code):** si el código está en LANGUAGE_MAP, devuelve los datos predefinidos. Si no, genera nombre nativo con `Intl.DisplayNames`, bandera con código Unicode y nombre en inglés con código uppercase.
-- **getSupportedLanguages():** devuelve array de Language con los 6 idiomas soportados.
+- **getSupportedLanguages():** devuelve array de Language con los 7 idiomas soportados.
 - **getDisplayNames(code):** caché de instancias `Intl.DisplayNames` por código de idioma.
 - **getFlagFromCode(code):** convierte código de 2 letras a emoji de bandera (ej: "es" → "🇪🇸").
 - **getNativeNameFromCode(code):** obtiene nombre nativo con `Intl.DisplayNames`.
@@ -488,7 +480,7 @@ Formateo de moneda y números con `Intl.NumberFormat` según el idioma activo de
 
 ### Mapeo de locales
 
-6 idiomas mapeados a locale: es → es-ES, en → en-GB, fr → fr-FR, de → de-DE, it → it-IT, pt → pt-PT. Default: es-ES.
+7 idiomas mapeados a locale: es → es-ES, en → en-GB, fr → fr-FR, de → de-DE, it → it-IT, pt → pt-PT, ja → ja-JP. Default: es-ES.
 
 ### Moneda
 
@@ -538,15 +530,18 @@ Cada método llama a `toast.custom()` con el componente ToastContent y duración
 
 ---
 
-## Mejoras implementadas (v0.0.1)
+## Notas de versión actual (v0.1.0)
 
+- **Componentes shadcn/ui en `shared/components/core/`:** los primitivos de UI se ubican en `core/` en lugar de `ui/`, siguiendo la convención del proyecto.
+- **Navegación actualizada:** el registro refleja las 6 rutas principales habilitadas (dashboard, categories, transactions, investments, savings-goals, group-goals).
+- **Soporte de 7 idiomas:** añadido japonés (`ja`) al conjunto de idiomas soportados.
 - **secureStorage con ofuscación:** tokens y datos de usuario se almacenan cifrados con XOR + base64 usando fingerprint del dispositivo como clave. Previene lectura directa de localStorage.
-- **apiClient con skipGlobalErrorNotify:** opción para omitir notificaciones globales en peticiones específicas (ej: importación de datos que maneja sus propias notificaciones).
+- **apiClient con skipGlobalErrorNotify:** opción para omitir notificaciones globales en peticiones específicas.
 - **Interceptor 401 con evento global:** emite `auth:logout` en window para que AuthContext ejecute limpieza sin dependencia circular.
-- **Sistema de notificaciones unificado:** 4 variantes (success, error, info, warning) con estilos consistentes, descripciones opcionales y duraciones configurables.
-- **Formateo i18n de moneda/números:** `formatCurrency` y `formatNumber` usan `Intl.NumberFormat` con locale detectado de i18next. Corrección automática de decimales inconsistentes.
+- **Sistema de notificaciones unificado:** 4 variantes (success, error, info, warning) con estilos consistentes.
+- **Formateo i18n de moneda/números:** `formatCurrency` y `formatNumber` usan `Intl.NumberFormat` con locale detectado de i18next.
 - **Temas dinámicos con 28 variables CSS:** 4 paletas completas aplicadas mediante `useTheme` con persistencia en localStorage. Fuerza modo oscuro.
-- **Navigation registry centralizado:** items de navegación con enabled/disabled, orden y sección. Sidebar renderiza automáticamente desde el registro.
+- **Navigation registry centralizado:** items de navegación con enabled/disabled, orden y sección.
 - **Greeting dinámico en Header:** saludo según hora del día (mañana/tarde/noche) con fecha formateada y número de semana.
 - **MetricCard con skeleton:** placeholder animado que coincide con la estructura real de la tarjeta.
 - **FormattedMetricCard con tendencia invertida:** soporte para `invertedTrend` en gastos (tendencia negativa se muestra en verde).

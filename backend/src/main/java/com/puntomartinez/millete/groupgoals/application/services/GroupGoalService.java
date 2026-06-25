@@ -6,6 +6,10 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.*;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -73,10 +77,10 @@ public class GroupGoalService implements
     public Map<UUID, BigDecimal> calculateContributions(UUID goalId, UUID callerId) {
         GoalMember member = goalMemberRepository.findByGoalIdAndUserId(goalId, callerId)
                 .filter(GoalMember::isActive)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
 
         GoalUnit goalUnit = goalUnitRepository.findById(goalId)
-                .orElseThrow(() -> new RuntimeException("Goal Unit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Goal Unit not found"));
         List<GoalMember> members = goalMemberRepository.findByGoalId(goalId);
         goalUnit.setMembers(members);
         return goalUnit.calculateContributions();
@@ -112,13 +116,13 @@ public class GroupGoalService implements
 
     public GoalDetailResponseDTO getGoalDetail(UUID goalId, UUID userId) {
         GoalUnit goal = goalUnitRepository.findById(goalId)
-                .orElseThrow(() -> new RuntimeException("Goal not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
 
         List<GoalMember> allMembers = goalMemberRepository.findByGoalId(goalId);
         boolean isMember = allMembers.stream().anyMatch(m -> m.getUserId().equals(userId) && m.isActive());
 
         if (!isMember) {
-            throw new RuntimeException("You do not have access to this goal");
+            throw new ForbiddenOperationException("You do not have access to this goal");
         }
 
         boolean isAdmin = allMembers.stream()
@@ -154,14 +158,14 @@ public class GroupGoalService implements
 
     public void updateMember(UUID goalId, UUID memberId, UUID userId, UpdateMemberRequestDTO request) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Only administrators can edit members");
+            throw new ForbiddenOperationException("Only administrators can edit members");
         }
 
         GoalMember member = goalMemberRepository.findById(memberId)
                 .filter(m -> m.getGoalId().equals(goalId))
-                .orElseThrow(() -> new RuntimeException("Member not found in this goal"));
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
 
         if (request.getRole() != null) member.setRole(GoalRole.valueOf(request.getRole()));
         if (request.getSalary() != null) member.setSalary(request.getSalary());
@@ -174,13 +178,13 @@ public class GroupGoalService implements
 
     public void updateGoal(UUID goalId, UUID userId, UpdateGoalRequestDTO request) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Only administrators can edit the goal");
+            throw new ForbiddenOperationException("Only administrators can edit the goal");
         }
 
         GoalUnit goal = goalUnitRepository.findById(goalId)
-                .orElseThrow(() -> new RuntimeException("Goal not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
 
         DistributionMode oldMode = goal.getDistributionMode();
 
@@ -222,14 +226,14 @@ public class GroupGoalService implements
 
     public void deleteMember(UUID goalId, UUID memberId, UUID userId) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Only administrators can delete members");
+            throw new ForbiddenOperationException("Only administrators can delete members");
         }
 
         GoalMember member = goalMemberRepository.findById(memberId)
                 .filter(m -> m.getGoalId().equals(goalId))
-                .orElseThrow(() -> new RuntimeException("Member not found in this goal"));
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
         member.setActive(false);
         member.setModifiedAt(LocalDateTime.now());
         goalMemberRepository.save(member);
@@ -239,7 +243,7 @@ public class GroupGoalService implements
     public void addContribution(UUID goalId, UUID userId, AddContributionRequestDTO request) {
         GoalMember member = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
                 .filter(GoalMember::isActive)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
 
         GoalContribution contribution = new GoalContribution();
         contribution.setId(UUID.randomUUID());
@@ -257,25 +261,25 @@ public class GroupGoalService implements
 
     public GoalInvitation inviteMember(UUID goalId, UUID inviterUserId, String identifier) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, inviterUserId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Only administrators can invite members");
+            throw new ForbiddenOperationException("Only administrators can invite members");
         }
 
         User invitedUser = userRepository.findByIdentifier(identifier)
-                .orElseThrow(() -> new RuntimeException("User not found: " + identifier));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + identifier));
 
         UUID invitedUserId = invitedUser.getId();
 
         Optional<GoalMember> existingMember = goalMemberRepository.findByGoalIdAndUserId(goalId, invitedUserId);
         if (existingMember.isPresent() && existingMember.get().isActive()) {
-            throw new RuntimeException("User is already a member of this goal");
+            throw new ResourceAlreadyExistsException("User is already a member of this goal");
         }
 
         Optional<GoalInvitation> existingInvitation = goalInvitationRepository
                 .findByGoalIdAndInvitedUserIdAndStatus(goalId, invitedUserId, InvitationStatus.PENDING);
         if (existingInvitation.isPresent()) {
-            throw new RuntimeException("There is already a pending invitation for this user");
+            throw new ResourceAlreadyExistsException("There is already a pending invitation for this user");
         }
 
         GoalInvitation invitation = new GoalInvitation();
@@ -303,19 +307,19 @@ public class GroupGoalService implements
     @Override
     public GoalInvitation acceptInvitation(UUID userId, UUID invitationId) {
         GoalInvitation invitation = goalInvitationRepository.findById(invitationId)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
 
         if (!invitation.getInvitedUserId().equals(userId)) {
-            throw new RuntimeException("This invitation is not for you");
+            throw new ForbiddenOperationException("This invitation is not for you");
         }
 
         if (!invitation.isAcceptable()) {
-            throw new RuntimeException("The invitation is not valid or has expired");
+            throw new InvalidInputException("The invitation is not valid or has expired");
         }
 
         goalMemberRepository.findByGoalIdAndUserId(invitation.getGoalId(), userId)
                 .ifPresent(m -> {
-                    if (m.isActive()) throw new RuntimeException("You are already a member of this goal");
+                    if (m.isActive()) throw new ResourceAlreadyExistsException("You are already a member of this goal");
                 });
 
         GoalMember member = new GoalMember();
@@ -338,14 +342,14 @@ public class GroupGoalService implements
 
     public void rejectInvitation(UUID userId, UUID invitationId) {
         GoalInvitation invitation = goalInvitationRepository.findById(invitationId)
-                .orElseThrow(() -> new RuntimeException("Invitation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invitation not found"));
 
         if (!invitation.getInvitedUserId().equals(userId)) {
-            throw new RuntimeException("This invitation is not for you");
+            throw new ForbiddenOperationException("This invitation is not for you");
         }
 
         if (!InvitationStatus.PENDING.equals(invitation.getStatus())) {
-            throw new RuntimeException("This invitation can no longer be rejected");
+            throw new InvalidInputException("This invitation can no longer be rejected");
         }
 
         invitation.markAsRejected();
@@ -356,15 +360,15 @@ public class GroupGoalService implements
     @Override
     public void deleteGoalUnit(UUID goalId, UUID userId) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this goal"));
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
         if (!requester.isAdmin()) {
-            throw new RuntimeException("Only administrators can delete the goal");
+            throw new ForbiddenOperationException("Only administrators can delete the goal");
         }
 
         GoalUnit goal = goalUnitRepository.findById(goalId)
-                .orElseThrow(() -> new RuntimeException("Goal not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
         if (!goal.isActive()) {
-            throw new RuntimeException("Goal is already deleted");
+            throw new InvalidInputException("Goal is already deleted");
         }
 
         goal.setActive(false);

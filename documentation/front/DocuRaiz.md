@@ -41,12 +41,15 @@ Envuelve rutas que requieren autenticación. Si el usuario no tiene sesión, red
 
 | Ruta | Componente | Feature |
 |------|-----------|---------|
-| `/join-family` | JoinFamilyPage | Aceptar invitación a familia |
 | `/dashboard` | DashboardPage | Panel principal |
 | `/transactions` | TransactionsPage | Gestión de transacciones |
 | `/categories` | CategoriesPage | Gestión de categorías |
 | `/investments` | InvestmentsPage | Gestión de inversiones |
-| `/family` | FamilyPage | Gestión familiar |
+| `/savings-goals` | SavingsGoalsPage | Metas de ahorro personales |
+| `/group-goals` | GroupGoalsPage | Metas grupales / familiares |
+| `/join-group-goal` | JoinGroupGoalPage | Aceptar invitación a meta grupal |
+| `/profile` | ProfilePage | Perfil de usuario |
+| `/wiki` | WikiPage | Wiki de ayuda |
 
 #### Ruta 404 (catch-all)
 

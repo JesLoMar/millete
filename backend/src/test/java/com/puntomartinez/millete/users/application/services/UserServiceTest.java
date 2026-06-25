@@ -7,6 +7,10 @@ import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +51,6 @@ class UserServiceTest {
     private final String hashedPassword = "hashed_123";
     private final String email = "ana@mail.com";
     private final String username = "ana";
-    private final String token = "jwt_token";
 
     @Test
     @DisplayName("Registrar usuario con email")
@@ -90,7 +93,7 @@ class UserServiceTest {
         RegisterUserUseCase.RegisterUserCommand command = new RegisterUserUseCase.RegisterUserCommand(
                 null, null, rawPassword);
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(InvalidInputException.class)
                 .isThrownBy(() -> userService.register(command))
                 .withMessage("Se requiere un email o un nombre de usuario para registrarse.");
     }
@@ -103,9 +106,9 @@ class UserServiceTest {
         RegisterUserUseCase.RegisterUserCommand command = new RegisterUserUseCase.RegisterUserCommand(
                 null, email, rawPassword);
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceAlreadyExistsException.class)
                 .isThrownBy(() -> userService.register(command))
-                .withMessage("El email " + email + " ya está registrado.");
+                .withMessage("El usuario o el email ya están registrados.");
         verify(userRepository, never()).save(any());
     }
 
@@ -117,9 +120,9 @@ class UserServiceTest {
         RegisterUserUseCase.RegisterUserCommand command = new RegisterUserUseCase.RegisterUserCommand(
                 username, null, rawPassword);
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceAlreadyExistsException.class)
                 .isThrownBy(() -> userService.register(command))
-                .withMessage("El nombre de usuario " + username + " ya está en uso.");
+                .withMessage("El usuario o el email ya están registrados.");
     }
 
     @Test
@@ -152,7 +155,7 @@ class UserServiceTest {
 
         LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(email, "wrong");
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(AuthenticationFailedException.class)
                 .isThrownBy(() -> userService.login(command))
                 .withMessage("Credenciales inválidas");
 
@@ -192,7 +195,7 @@ class UserServiceTest {
 
         LoginUserUseCase.LoginUserCommand command = new LoginUserUseCase.LoginUserCommand(email, rawPassword);
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(AuthenticationFailedException.class)
                 .isThrownBy(() -> userService.login(command))
                 .withMessage("Credenciales inválidas");
 
@@ -238,7 +241,7 @@ class UserServiceTest {
         UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> userService.getUserById(id))
                 .withMessage("Usuario no encontrado con el ID proporcionado");
     }

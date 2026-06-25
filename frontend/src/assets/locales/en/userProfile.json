@@ -49,7 +49,9 @@
     "confirmTitle": "Unlink Telegram",
     "confirmDescription": "Are you sure you want to unlink your Telegram account?",
     "success": "Telegram unlinked successfully",
-    "error": "Error unlinking Telegram"
+    "error": "Error unlinking Telegram",
+    "instructions": "Open the Telegram bot @Millete_bot and send /start to link your account. Once done, reload this page to see the updated status.",
+    "openBot": "Open Telegram bot"
   },
   "sessions": {
     "title": "Active sessions",

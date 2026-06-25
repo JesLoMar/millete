@@ -6,6 +6,8 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +48,7 @@ class TransactionServiceTest {
                 userId, categoryId, new BigDecimal("-50.00"), LocalDateTime.now(),
                 Transaction.TransactionType.EXPENSE, "Compra");
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(mock(Category.class)));
+        when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(mock(Category.class)));
         when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -64,11 +66,11 @@ class TransactionServiceTest {
                 userId, categoryId, new BigDecimal("50.00"), LocalDateTime.now(),
                 Transaction.TransactionType.EXPENSE, "Compra");
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> transactionService.register(command))
-                .withMessage("Category does not exist.");
+                .withMessage("Category does not exist or does not belong to you.");
     }
 
     @Test
@@ -128,7 +130,7 @@ class TransactionServiceTest {
         when(tx.getUserId()).thenReturn(UUID.randomUUID());
         when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> transactionService.getByIdAndUserId(id, userId))
                 .withMessage("You do not have permission to view this transaction.");
     }
@@ -140,7 +142,7 @@ class TransactionServiceTest {
         Transaction tx = mock(Transaction.class);
         when(tx.getUserId()).thenReturn(userId);
         when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(mock(Category.class)));
+        when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(mock(Category.class)));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
 
         UpdateTransactionUseCase.UpdateTransactionCommand command = new UpdateTransactionUseCase.UpdateTransactionCommand(
@@ -175,7 +177,7 @@ class TransactionServiceTest {
         when(tx.getUserId()).thenReturn(UUID.randomUUID());
         when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> transactionService.deleteByIdAndUserId(id, userId))
                 .withMessage("You do not have permission to view this transaction.");
     }

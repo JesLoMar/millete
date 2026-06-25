@@ -163,7 +163,7 @@ Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
 
 ### CURRENT
 
-Versión actual del formato: 0.0.1.
+Versión actual del formato: 0.1.0.
 
 ### Reglas de compatibilidad
 
@@ -317,7 +317,7 @@ Cadena de migraciones que transforma datos desde cualquier versión anterior has
 
 ### Migraciones actuales
 
-Ninguna. La versión 0.0.1 es la primera, por lo que el registro de migraciones está vacío. Las migraciones se añadirán cuando el esquema de exportación evolucione.
+Ninguna. La versión 0.1.0 es la primera documentada, por lo que el registro de migraciones está vacío. Las migraciones se añadirán cuando el esquema de exportación evolucione.
 
 ---
 

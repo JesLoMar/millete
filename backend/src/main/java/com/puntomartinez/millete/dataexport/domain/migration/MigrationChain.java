@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.domain.migration;
 
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -52,9 +53,9 @@ public class MigrationChain {
                     currentVersion = migration.toVersion();
                     System.out.println("  ✓ v" + currentVersion);
                 } catch (Exception e) {
-                    throw new RuntimeException(
+                    throw new InvalidInputException(
                             "Error en migración " + migration.fromVersion()
-                                    + " → " + migration.toVersion() + ": " + e.getMessage(), e);
+                                    + " → " + migration.toVersion(), e);
                 }
             }
         }

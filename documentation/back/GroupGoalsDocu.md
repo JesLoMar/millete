@@ -259,8 +259,8 @@ Las aportaciones se ordenan por fecha descendente. Los miembros y aportaciones f
 ## Migraciones Flyway
 
 - V1: Crea las tablas originales con nombres family_*.
-- V2: Añade columnas inviter_user_id e invited_user_id a family_invitations, hace opcionales email y token, añade estado REJECTED.
-- V3: Renombra todas las tablas y columnas de family_* a goal_*. Actualiza constraints, foreign keys e índices. Elimina la foreign key obsoleta de categories a family_units.
+- V2: Añade tablas de sesiones, preferencias, metas de ahorro y campos premium/Telegram. Añade columnas inviter_user_id e invited_user_id a family_invitations, hace opcionales email y token, añade estado REJECTED y EXPIRED. Renombra todas las tablas y columnas de family_* a goal_*. Actualiza constraints, foreign keys e índices. Elimina la foreign key obsoleta de categories a family_units.
+- V3: Elimina la restricción uq_user_channel de user_sessions y añade la columna active para soporte multi-sesión.
 
 ---
 

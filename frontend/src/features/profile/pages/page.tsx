@@ -3,7 +3,6 @@ import { TopNav } from '@/shared/components/TopNav';
 import { Sidebar } from '@/shared/components/Sidebar';
 import { PersonalInfoSection } from '../components/PersonalInfoSection';
 import { ChangePasswordSection } from '../components/ChangePasswordSection';
-import { PreferencesSection } from '../components/PreferencesSection';
 import { TelegramSection } from '../components/TelegramSection';
 import { SessionsSection } from '../components/SessionsSection';
 import { DeleteAccountSection } from '../components/DeleteAccountSection';
@@ -21,7 +20,6 @@ export const ProfilePage = () => {
             <h1 className="text-2xl font-bold">{t('title')}</h1>
             <PersonalInfoSection />
             <ChangePasswordSection />
-            <PreferencesSection />
             <TelegramSection />
             <SessionsSection />
             <DeleteAccountSection />

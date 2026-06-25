@@ -69,7 +69,7 @@ public class DataImportController {
                     .body(Map.of(
                             "success", false,
                             "error", "ERROR_IMPORTACION",
-                            "message", e.getMessage()
+                            "message", "Error al importar el archivo. Verifica el formato y la versión."
                     ));
         }
     }

@@ -16,6 +16,8 @@ IDEAS A CHOLON
 - Añadir más avisos y alertas.
 - Dejar actualizada la documentación.
 - Más tipos de monedas.
+- Añadir pequeña guía para nuevos usuarios.
+- Añadir animaciones y feedback visual a todas las vistas.
 
 ===================================
 v0.1.0 [CAMBIOS EN BD]
@@ -34,8 +36,6 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Crear perfil de usuario y pestaña de settings.
 
 - [...] Eliminar la necesidad de correo, invitaciones por notificación in-app. Falta comprobar que funcione.
-- [ ] Añadir pequeña guía para nuevos usuarios.
-- [ ] Añadir animaciones y feedback visual a todas las vistas.
 
 ------
 COSAS POR HACER

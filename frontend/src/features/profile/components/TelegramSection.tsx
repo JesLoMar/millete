@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/shared/components/core/button';
 import { Badge } from '@/shared/components/core/badge';
 import { SettingsSection } from './SettingsSection';
 import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
 import { useProfile } from '../hooks/useProfile';
 import { useTelegramUnlink } from '../hooks/useTelegramUnlink';
+
+const TELEGRAM_BOT_URL = 'https://t.me/Millete_bot';
 
 export function TelegramSection() {
   const { t } = useTranslation('userProfile');
@@ -32,7 +34,7 @@ export function TelegramSection() {
     >
       {isLoading ? (
         <div className="text-sm text-muted-foreground">{t('common:loading')}</div>
-      ) : (
+      ) : isLinked ? (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{t('telegram.chatId')}</span>
@@ -40,16 +42,35 @@ export function TelegramSection() {
               {profile?.telegramChatId ?? '—'}
             </span>
           </div>
-          {isLinked && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirmOpen(true)}
-              disabled={isPending}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirmOpen(true)}
+            disabled={isPending}
+          >
+            {t('telegram.unlink')}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t('telegram.instructions')}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <a
+              href={TELEGRAM_BOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2"
             >
-              {t('telegram.unlink')}
-            </Button>
-          )}
+              <ExternalLink className="h-4 w-4" />
+              {t('telegram.openBot')}
+            </a>
+          </Button>
         </div>
       )}
 

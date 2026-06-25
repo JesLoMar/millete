@@ -91,7 +91,7 @@ class DashboardServiceTest {
 
         when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
                 .thenReturn(List.of(expense));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(categoryRepository.findActiveByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
 
         var result = dashboardService.getCategories(userId, "month");
 
@@ -127,7 +127,7 @@ class DashboardServiceTest {
     }
 
     @Test
-    @DisplayName("Obtener presupuestos sin gastos no muestra nada")
+    @DisplayName("Obtener presupuestos sin gastos muestra 0 de gasto")
     void shouldNotShowBudgetsWithNoSpending() {
         UUID categoryId = UUID.randomUUID();
         Category category = mock(Category.class);
@@ -141,7 +141,9 @@ class DashboardServiceTest {
 
         var result = dashboardService.getBudgets(userId, "month");
 
-        assertThat(result.budgets()).isEmpty();
+        assertThat(result.budgets()).hasSize(1);
+        assertThat(result.budgets().get(0).spent()).isEqualByComparingTo("0");
+        assertThat(result.budgets().get(0).percentage()).isEqualTo(0.0);
     }
 
     @Test
@@ -153,7 +155,7 @@ class DashboardServiceTest {
         when(tx.getCategoryId()).thenReturn(UUID.randomUUID());
 
         when(transactionRepository.findRecentByUserId(userId, 5)).thenReturn(List.of(tx));
-        when(categoryRepository.findById(any())).thenReturn(Optional.of(mock(Category.class)));
+        when(categoryRepository.findActiveByIdAndUserId(any(), eq(userId))).thenReturn(Optional.of(mock(Category.class)));
 
         var result = dashboardService.getRecentTransactions(userId, 5);
 

@@ -49,7 +49,9 @@
     "confirmTitle": "Desvincular Telegram",
     "confirmDescription": "¿Estás seguro de que deseas desvincular tu cuenta de Telegram?",
     "success": "Telegram desvinculado correctamente",
-    "error": "Error al desvincular Telegram"
+    "error": "Error al desvincular Telegram",
+    "instructions": "Abre el bot de Telegram @Millete_bot y envía /start para vincular tu cuenta. Una vez hecho, recarga esta página para ver el estado actualizado.",
+    "openBot": "Abrir bot de Telegram"
   },
   "sessions": {
     "title": "Sesiones activas",

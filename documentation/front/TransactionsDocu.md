@@ -7,10 +7,16 @@
 - components/RecurringTransactionRow.tsx — Fila individual de transacción recurrente
 - components/RecurringTransactionsList.tsx — Lista de transacciones recurrentes con filtros
 - components/TransactionActions.tsx — Botones de acciones (nueva normal + nueva recurrente)
-- components/TransactionList.tsx — Lista paginada de transacciones con filtros
-- components/TransactionRow.tsx — Fila individual de transacción
+- components/TransactionList.tsx — Orquestador de la lista paginada (desktop/mobile/filtros/paginación)
+- components/TransactionListDesktop.tsx — Tabla de transacciones para escritorio
+- components/TransactionListMobile.tsx — Tarjetas de transacciones para móvil
+- components/TransactionListFilters.tsx — Filtros de tipo, búsqueda y ordenación
+- components/TransactionListPagination.tsx — Paginación de la lista
+- components/TransactionListSkeleton.tsx — Skeleton específico de la lista
+- components/TransactionRow.tsx — Fila individual de transacción (legacy)
 - components/TransactionSkeleton.tsx — Esqueleto de carga reutilizable
 - components/TransactionSummary.tsx — Tarjetas de métricas de transacciones
+- components/types.ts — Tipos locales del componente
 - components/dialogs/NewTransactionDialog.tsx — Diálogo de creación de transacción
 - components/dialogs/EditTransactionDialog.tsx — Diálogo de edición de transacción
 - components/dialogs/NewRecurringTransactionDialog.tsx — Diálogo de creación de transacción recurrente
@@ -547,6 +553,20 @@ Mismos campos que NewRecurringTransactionDialog. Los valores se inicializan desd
 - TransactionActions simplificado: solo orquesta los dos diálogos con sus Triggers, sin estado interno.
 - formatDate con i18n dinámico: usa i18n.language para formatear fechas en el idioma actual del usuario.
 - TransactionSummary con tipos internos: define interfaz TransactionMetrics local con 8 campos (4 valores + 4 tendencias). Query key incluye período para recargar al cambiar.
+
+---
+
+## Refactorización de TransactionList (v0.1.0)
+
+El componente `TransactionList.tsx` fue dividido en subcomponentes especializados para mejorar mantenibilidad y responsive:
+
+- **TransactionList.tsx:** orquesta el estado de filtros (tipo, búsqueda, ordenación), paginación y selección de vista desktop/mobile.
+- **TransactionListFilters.tsx:** contiene el buscador, selector de tipo (all/income/expense) y ordenación.
+- **TransactionListDesktop.tsx:** renderiza la tabla de transacciones para escritorio.
+- **TransactionListMobile.tsx:** renderiza tarjetas apilables para dispositivos móviles.
+- **TransactionListPagination.tsx:** control de páginas con botones anterior/siguiente e info de página actual.
+- **TransactionListSkeleton.tsx:** skeleton específico que coincide con el layout de la lista.
+- **components/types.ts:** tipos locales compartidos entre los subcomponentes.
 
 ---
 

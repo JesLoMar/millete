@@ -4,13 +4,15 @@
 
 - components/BudgetBars.tsx — Barras de presupuesto con paginación (5 por página)
 - components/CategoryDonut.tsx — Gráfico de donut de gastos por categoría
+- components/ExportCard.tsx — Tarjeta de acciones de exportación (JSON, CSV, PDF)
+- components/ExportModal.tsx — Modal de exportación con selección de formato y período
 - components/HistoryChart.tsx — Gráfico de barras de historial de gastos
 - components/ImportModal.tsx — Modal para importar datos desde archivo JSON
 - components/QuickActions.tsx — Botones de acciones rápidas
 - components/RecentTransactions.tsx — Lista de últimas transacciones
 - constants.ts — Colores e iconos compartidos
 - hooks/useDashboardQueries.ts — Hook centralizado con todas las queries
-- hooks/index.ts — Re-exportación del hook
+- hooks/useExport.ts — Hook de mutaciones para exportar datos
 - pages/page.tsx — Página principal del dashboard
 - types/index.ts — Tipos y contratos de datos
 - utils.ts — Función de formateo de fechas
@@ -25,7 +27,7 @@ Página principal del dashboard. Orquesta todos los componentes y centraliza las
 
 - period: "week", "month" o "year". Controla el período de todos los gráficos y métricas.
 - isImportOpen: controla la visibilidad del modal de importación.
-- isExporting / isImporting: estados de carga para los botones de exportación/importación.
+- isExportOpen: controla la visibilidad del modal de exportación.
 - isAddOpen: controla el diálogo de nueva transacción.
 - isAddCategoryOpen: controla el diálogo de nueva categoría.
 
@@ -318,6 +320,41 @@ Modal para seleccionar y cargar un archivo JSON de importación.
 
 ---
 
+## hooks/useExport.ts
+
+Hook para exportar datos en múltiples formatos.
+
+### Estado
+
+- **isExporting:** boolean que indica si hay una exportación en curso.
+
+### performExport(format, configValue?)
+
+Descarga el archivo correspondiente usando `responseType: 'blob'`:
+
+- **json:** `GET /data/export` → `familybudget_export.json`
+- **zip:** `GET /data/export/zip` → `familybudget_export.zip`
+- **csv:** `GET /data/export/csv/:entityType` → `familybudget_{entityType}.csv`
+- **pdf:** `GET /data/export/pdf?period=` → `millete_financial_data_{period}.pdf`
+
+Crea un objeto URL temporal, simula clic en enlace de descarga y libera el recurso.
+
+---
+
+## components/ExportCard.tsx
+
+Tarjeta con botones para abrir el modal de exportación y acciones rápidas de importación.
+
+## components/ExportModal.tsx
+
+Modal para seleccionar formato de exportación (JSON, ZIP, CSV, PDF) y opciones adicionales:
+
+- **CSV:** selección de tipo de entidad (transactions, categories, investments, etc.).
+- **PDF:** selección de período (week, month, year).
+- **JSON/ZIP:** exportación directa sin configuración adicional.
+
+---
+
 ## Actualización automática del dashboard
 
 Cuando se crea una transacción desde NewTransactionDialog o una categoría desde AddCategoryDialog, se invalidan todas las queries del dashboard para reflejar los cambios al instante:
@@ -346,6 +383,9 @@ La importación de datos ejecuta queryClient.invalidateQueries() sin filtro para
 | GET | /dashboard/recent-transactions?limit=5 | Últimas transacciones |
 | POST | /data/import | Importar datos (multipart/form-data) |
 | GET | /data/export | Exportar datos (blob JSON) |
+| GET | /data/export/zip | Exportar datos comprimidos (ZIP) |
+| GET | /data/export/csv/:entityType | Exportar entidad como CSV |
+| GET | /data/export/pdf?period= | Exportar informe PDF por período |
 
 ---
 

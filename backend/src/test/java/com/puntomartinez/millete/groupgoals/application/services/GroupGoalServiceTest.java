@@ -7,6 +7,10 @@ import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.Upd
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateMemberRequestDTO;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -95,7 +99,7 @@ class GroupGoalServiceTest {
         when(member.isAdmin()).thenReturn(false);
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(member));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> groupGoalService.inviteMember(goalId, userId, "invitado"))
                 .withMessage("Only administrators can invite members");
     }
@@ -108,7 +112,7 @@ class GroupGoalServiceTest {
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(admin));
         when(userRepository.findByIdentifier("fantasma")).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> groupGoalService.inviteMember(goalId, userId, "fantasma"))
                 .withMessage("User not found: fantasma");
     }
@@ -130,7 +134,7 @@ class GroupGoalServiceTest {
         when(userRepository.findByIdentifier("invitado")).thenReturn(Optional.of(invitedUser));
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, invitedUserId)).thenReturn(Optional.of(existingMember));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceAlreadyExistsException.class)
                 .isThrownBy(() -> groupGoalService.inviteMember(goalId, userId, "invitado"))
                 .withMessage("User is already a member of this goal");
     }
@@ -164,7 +168,7 @@ class GroupGoalServiceTest {
         when(invitation.getInvitedUserId()).thenReturn(UUID.randomUUID());
         when(goalInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> groupGoalService.acceptInvitation(userId, invitationId))
                 .withMessage("This invitation is not for you");
     }
@@ -178,7 +182,7 @@ class GroupGoalServiceTest {
         when(invitation.isAcceptable()).thenReturn(false);
         when(goalInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(InvalidInputException.class)
                 .isThrownBy(() -> groupGoalService.acceptInvitation(userId, invitationId))
                 .withMessage("The invitation is not valid or has expired");
     }
@@ -216,6 +220,10 @@ class GroupGoalServiceTest {
     void shouldAddContribution() {
         AddContributionRequestDTO request = new AddContributionRequestDTO();
         request.setAmount(new BigDecimal("100.00"));
+
+        GoalMember member = mock(GoalMember.class);
+        when(member.isActive()).thenReturn(true);
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(member));
         when(contributionRepository.save(any(GoalContribution.class))).thenAnswer(inv -> inv.getArgument(0));
 
         groupGoalService.addContribution(goalId, userId, request);
@@ -228,10 +236,12 @@ class GroupGoalServiceTest {
     void shouldCalculateContributions() {
         GoalUnit goal = mock(GoalUnit.class);
         GoalMember m1 = mock(GoalMember.class);
+        when(m1.isActive()).thenReturn(true);
         when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(goal));
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(m1));
         when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(m1));
 
-        groupGoalService.calculateContributions(goalId);
+        groupGoalService.calculateContributions(goalId, userId);
 
         verify(goal).setMembers(List.of(m1));
         verify(goal).calculateContributions();
@@ -301,6 +311,7 @@ class GroupGoalServiceTest {
         GoalMember requester = mock(GoalMember.class);
         when(requester.isAdmin()).thenReturn(true);
         GoalMember member = mock(GoalMember.class);
+        when(member.getGoalId()).thenReturn(goalId);
 
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(requester));
         when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
@@ -344,6 +355,7 @@ class GroupGoalServiceTest {
         GoalMember requester = mock(GoalMember.class);
         when(requester.isAdmin()).thenReturn(true);
         GoalMember member = mock(GoalMember.class);
+        when(member.getGoalId()).thenReturn(goalId);
 
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(requester));
         when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
@@ -386,7 +398,7 @@ class GroupGoalServiceTest {
 
         UpdateGoalRequestDTO request = new UpdateGoalRequestDTO();
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> groupGoalService.updateGoal(goalId, userId, request))
                 .withMessage("Only administrators can edit the goal");
     }
@@ -399,7 +411,7 @@ class GroupGoalServiceTest {
         when(member.isAdmin()).thenReturn(false);
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(member));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> groupGoalService.deleteMember(goalId, memberId, userId))
                 .withMessage("Only administrators can delete members");
     }

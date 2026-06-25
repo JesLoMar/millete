@@ -7,6 +7,10 @@ import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
+import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,13 +42,13 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         boolean hasUsername = command.username() != null && !command.username().isBlank();
         boolean hasEmail = command.email() != null && !command.email().isBlank();
         if (!hasUsername && !hasEmail) {
-            throw new RuntimeException("Se requiere un email o un nombre de usuario para registrarse.");
+            throw new InvalidInputException("Se requiere un email o un nombre de usuario para registrarse.");
         }
         if (hasEmail && userRepository.findByEmail(command.email()).isPresent()) {
-            throw new RuntimeException("El usuario o el email ya están registrados.");
+            throw new ResourceAlreadyExistsException("El usuario o el email ya están registrados.");
         }
         if (hasUsername && userRepository.findByUsername(command.username()).isPresent()) {
-            throw new RuntimeException("El usuario o el email ya están registrados.");
+            throw new ResourceAlreadyExistsException("El usuario o el email ya están registrados.");
         }
         String encryptedPassword = passwordHasher.hashPassword(command.rawPassword());
         LocalDateTime now = LocalDateTime.now();
@@ -67,13 +71,13 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     @Override
     public User login(LoginUserCommand command) {
         User user = userRepository.findByIdentifier(command.identifier())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+                .orElseThrow(() -> new AuthenticationFailedException("Credenciales inválidas"));
 
         // 2. Control preliminar de bloqueo: ¿Este usuario tiene la sesión web temporalmente bloqueada?
         accountLockService.checkLockStatus(user.getId());
         if (!passwordHasher.matches(command.rawPassword(), user.getPassword())) {
             accountLockService.handleFailedLogin(user.getId());
-            throw new RuntimeException("Credenciales inválidas");
+            throw new AuthenticationFailedException("Credenciales inválidas");
         }
         accountLockService.handleSuccessfulLogin(user.getId());
 
@@ -86,17 +90,17 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     @Override
     public User getUserById(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el ID proporcionado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con el ID proporcionado"));
     }
 
     public void linkTelegram(UUID userId, Long chatId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         // Verificar que el chatId no esté ya vinculado a otro usuario
         userRepository.findByTelegramChatId(chatId).ifPresent(existing -> {
             if (!existing.getId().equals(userId)) {
-                throw new RuntimeException("Este Telegram ya está vinculado a otra cuenta");
+                throw new ResourceAlreadyExistsException("Este Telegram ya está vinculado a otra cuenta");
             }
         });
 

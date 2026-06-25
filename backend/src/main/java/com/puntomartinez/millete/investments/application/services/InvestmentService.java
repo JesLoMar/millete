@@ -5,6 +5,8 @@ import com.puntomartinez.millete.investments.domain.ports.in.ListInvestmentsUseC
 import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentPriceUseCase;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -62,11 +64,11 @@ public class InvestmentService implements RegisterInvestmentUseCase, ListInvestm
     public Investment updatePrice(UUID id, UUID userId, BigDecimal newPrice) {
         // 1. Buscamos la inversión en la base de datos
         Investment investment = investmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inversión no encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Inversión no encontrada."));
 
         // 2. Seguridad Anti-IDOR: Verificamos que el usuario sea el dueño
         if (!investment.getUserId().equals(userId)) {
-            throw new RuntimeException("No tienes permiso para actualizar esta inversión.");
+            throw new ForbiddenOperationException("No tienes permiso para actualizar esta inversión.");
         }
 
         // 3. Actualizamos el precio usando la lógica de nuestro modelo de Dominio
