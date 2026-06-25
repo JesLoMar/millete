@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, PiggyBank } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -35,30 +35,21 @@ interface Props {
   goal: SavingsGoal | null
 }
 
+function getInitialForm(goal: SavingsGoal | null) {
+  return {
+    name: goal?.name || "",
+    targetAmount: goal?.targetAmount ? String(goal.targetAmount) : "",
+    priority: goal?.priority || "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
+    deadline: goal?.deadline || "",
+    link: goal?.link || "",
+  }
+}
+
 export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
   const { t } = useTranslation()
   const { mutateAsync: updateGoal, isPending: isUpdating } = useUpdateSavingsGoal()
-  const [form, setForm] = useState({
-    name: "",
-    targetAmount: "",
-    priority: "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
-    deadline: "",
-    link: "",
-  })
+  const [form, setForm] = useState(() => getInitialForm(goal))
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Pre-popular formulario cuando se abre el modal con una meta existente
-  useEffect(() => {
-    if (open && goal) {
-      setForm({
-        name: goal.name || "",
-        targetAmount: goal.targetAmount ? String(goal.targetAmount) : "",
-        priority: goal.priority || "MEDIUM",
-        deadline: goal.deadline || "",
-        link: goal.link || "",
-      })
-    }
-  }, [open, goal])
 
   const handleSave = async () => {
     if (!goal || !form.name.trim() || !form.targetAmount) return
@@ -86,7 +77,7 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
   const isValid = form.name.trim() && form.targetAmount && Number(form.targetAmount) > 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} key={goal?.id}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="bg-card border-border sm:max-w-112.5"
         onOpenAutoFocus={(e) => {

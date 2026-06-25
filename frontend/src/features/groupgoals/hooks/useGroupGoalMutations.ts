@@ -42,7 +42,7 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
   const inviteMember = useMutation({
     mutationFn: async (identifier: string) => {
       if (!selectedGoalId) throw new Error("No goal selected")
-      return apiClient.post(`/goals/${selectedGoalId}/invite`, {
+      return apiClient.post(`/goals/${selectedGoalId}/invitations`, {
         identifier,
       })
     },
@@ -52,6 +52,8 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
         queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
         queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
       }
+      queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
       notify.success(t('groupGoals:alerts.inviteSuccess'))
     },
     onError: (err: ApiError) => {

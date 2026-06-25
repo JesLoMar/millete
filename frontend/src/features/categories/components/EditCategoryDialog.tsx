@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2, CheckCircle } from "lucide-react"
 import {
@@ -21,24 +21,25 @@ interface EditCategoryDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+function getInitialState(category: Category | null) {
+  return {
+    name: category?.name ?? "",
+    color: category?.color ?? "",
+    budgetLimit: category?.budgetLimit !== null && category?.budgetLimit !== undefined ? String(category.budgetLimit) : "",
+    error: null as string | null,
+  }
+}
+
 export function EditCategoryDialog({ category, open, onOpenChange }: EditCategoryDialogProps) {
   const { t } = useTranslation(['categories', 'common'])
   const { updateCategory, isUpdating } = useCategoryMutations()
 
-  const [name, setName] = useState("")
-  const [color, setColor] = useState("")
-  const [budgetLimit, setBudgetLimit] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [{ name, color, budgetLimit, error }, setState] = useState(() => getInitialState(category))
 
-  // Pre-popular formulario cuando se abre el modal con una categoría
-  useEffect(() => {
-    if (open && category) {
-      setName(category.name)
-      setColor(category.color)
-      setBudgetLimit(category.budgetLimit !== null && category.budgetLimit !== undefined ? String(category.budgetLimit) : "")
-      setError(null)
-    }
-  }, [open, category])
+  const setName = (name: string) => setState((prev) => ({ ...prev, name }))
+  const setColor = (color: string) => setState((prev) => ({ ...prev, color }))
+  const setBudgetLimit = (budgetLimit: string) => setState((prev) => ({ ...prev, budgetLimit }))
+  const setError = (error: string | null) => setState((prev) => ({ ...prev, error }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,8 +68,9 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
         },
       })
       onOpenChange(false)
-    } catch (err: any) {
-      setError(err.message || t('categories:updateError'))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('categories:updateError')
+      setError(message)
     }
   }
 

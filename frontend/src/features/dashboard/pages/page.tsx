@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { TopNav } from '@/shared/components/TopNav'
@@ -19,14 +19,48 @@ import { Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react"
 import { apiClient } from '@/shared/api/axiosClient'
 import { notify } from '@/shared/utils/notifications/notify'
 
+interface UIState {
+  isImportOpen: boolean
+  isExportOpen: boolean
+  isImporting: boolean
+  isAddOpen: boolean
+  isAddCategoryOpen: boolean
+}
+
+type UIAction =
+  | { type: 'OPEN_MODAL'; modal: 'import' | 'export' | 'add' | 'addCategory' }
+  | { type: 'CLOSE_MODAL'; modal: 'import' | 'export' | 'add' | 'addCategory' }
+  | { type: 'SET_IMPORTING'; value: boolean }
+
+function uiReducer(state: UIState, action: UIAction): UIState {
+  switch (action.type) {
+    case 'OPEN_MODAL':
+      return { ...state, [`is${capitalize(action.modal)}Open`]: true }
+    case 'CLOSE_MODAL':
+      return { ...state, [`is${capitalize(action.modal)}Open`]: false }
+    case 'SET_IMPORTING':
+      return { ...state, isImporting: action.value }
+    default:
+      return state
+  }
+}
+
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+const initialUIState: UIState = {
+  isImportOpen: false,
+  isExportOpen: false,
+  isImporting: false,
+  isAddOpen: false,
+  isAddCategoryOpen: false,
+}
+
 export const DashboardPage = () => {
   const { t } = useTranslation(['dashboard', 'common'])
   const [period, setPeriod] = useState<PeriodFilter>("month")
-  const [isImportOpen, setIsImportOpen] = useState(false)
-  const [isExportOpen, setIsExportOpen] = useState(false)
-  const [isImporting, setIsImporting] = useState(false)
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false)
+  const [ui, dispatch] = useReducer(uiReducer, initialUIState)
   const queryClient = useQueryClient()
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
@@ -36,7 +70,7 @@ export const DashboardPage = () => {
   const { metrics, history, categories, budgets, recentTransactions } = useDashboardQueries(period)
 
   const handleImport = useCallback(async (file: File) => {
-    setIsImporting(true)
+    dispatch({ type: 'SET_IMPORTING', value: true })
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -47,7 +81,7 @@ export const DashboardPage = () => {
       })
 
       await queryClient.invalidateQueries()
-      setIsImportOpen(false)
+      dispatch({ type: 'CLOSE_MODAL', modal: 'import' })
       notify.success(t('dashboard:import.success') || 'Datos importados correctamente')
     } catch (err) {
       const error = err as { response?: { status?: number; data?: { message?: string } } }
@@ -61,12 +95,12 @@ export const DashboardPage = () => {
 
       notify.error(errorMessage)
     } finally {
-      setIsImporting(false)
+      dispatch({ type: 'SET_IMPORTING', value: false })
     }
   }, [queryClient, t])
 
   const handleExportClick = useCallback(() => {
-    setIsExportOpen(true)
+    dispatch({ type: 'OPEN_MODAL', modal: 'export' })
   }, [])
 
   const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
@@ -82,12 +116,12 @@ export const DashboardPage = () => {
           
           <div className="mb-6">
             <QuickActions
-              onImportClick={() => setIsImportOpen(true)}
+              onImportClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'import' })}
               onExportClick={handleExportClick}
-              onAddClick={() => setIsAddOpen(true)}
-              onAddCategoryClick={() => setIsAddCategoryOpen(true)}
+              onAddClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'add' })}
+              onAddCategoryClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'addCategory' })}
               isExporting={false}
-              isImporting={isImporting}
+              isImporting={ui.isImporting}
             />
           </div>
 
@@ -152,16 +186,16 @@ export const DashboardPage = () => {
         </main>
       </div>
       <ImportModal 
-        isOpen={isImportOpen} 
-        onClose={() => setIsImportOpen(false)} 
+        isOpen={ui.isImportOpen} 
+        onClose={() => dispatch({ type: 'CLOSE_MODAL', modal: 'import' })} 
         onImport={handleImport}
       />
       <ExportModal
-        open={isExportOpen}
-        onOpenChange={setIsExportOpen}
+        open={ui.isExportOpen}
+        onOpenChange={(open) => dispatch({ type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL', modal: 'export' })}
       />
-      <NewTransactionDialog open={isAddOpen} onOpenChange={setIsAddOpen} />
-      <AddCategoryDialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen} />
+      <NewTransactionDialog open={ui.isAddOpen} onOpenChange={(open) => dispatch({ type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL', modal: 'add' })} />
+      <AddCategoryDialog open={ui.isAddCategoryOpen} onOpenChange={(open) => dispatch({ type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL', modal: 'addCategory' })} />
     </div>
   )
 }

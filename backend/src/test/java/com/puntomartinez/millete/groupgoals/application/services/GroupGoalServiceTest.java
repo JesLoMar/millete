@@ -5,6 +5,9 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.*;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateGoalRequestDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateMemberRequestDTO;
+import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
+import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
@@ -46,6 +49,9 @@ class GroupGoalServiceTest {
     @Mock
     private GoalContributionRepository contributionRepository;
 
+    @Mock
+    private CreateNotificationUseCase createNotificationUseCase;
+
     @InjectMocks
     private GroupGoalService groupGoalService;
 
@@ -85,11 +91,34 @@ class GroupGoalServiceTest {
                 .thenReturn(Optional.empty());
         when(goalInvitationRepository.save(any(GoalInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
 
+        GoalUnit goalUnit = mock(GoalUnit.class);
+        when(goalUnit.getName()).thenReturn("Meta de prueba");
+        when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(goalUnit));
+
+        User inviter = mock(User.class);
+        when(inviter.getUsername()).thenReturn("admin");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(inviter));
+
+        when(createNotificationUseCase.create(any(CreateNotificationUseCase.CreateNotificationCommand.class)))
+                .thenAnswer(inv -> {
+                    CreateNotificationUseCase.CreateNotificationCommand cmd = inv.getArgument(0);
+                    Notification n = new Notification();
+                    n.setId(UUID.randomUUID());
+                    n.setUserId(cmd.userId());
+                    n.setType(cmd.type());
+                    n.setTitle(cmd.title());
+                    n.setMessage(cmd.message());
+                    n.setMetadata(cmd.metadata());
+                    n.setActionRequired(cmd.actionRequired());
+                    return n;
+                });
+
         GoalInvitation result = groupGoalService.inviteMember(goalId, userId, "invitado");
 
         assertThat(result.getInvitedUserId()).isEqualTo(invitedUserId);
         assertThat(result.getStatus()).isEqualTo(InvitationStatus.PENDING);
         verify(goalInvitationRepository).save(any(GoalInvitation.class));
+        verify(createNotificationUseCase).create(any(CreateNotificationUseCase.CreateNotificationCommand.class));
     }
 
     @Test

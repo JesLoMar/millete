@@ -53,6 +53,15 @@
     "instructions": "Abre el bot de Telegram @Millete_bot y envía /start para vincular tu cuenta. Una vez hecho, recarga esta página para ver el estado actualizado.",
     "openBot": "Abrir bot de Telegram"
   },
+  "notifications": {
+    "title": "Invitaciones pendientes",
+    "description": "Notificaciones e invitaciones que requieren tu atención",
+    "empty": "No tienes invitaciones pendientes",
+    "message": "Mensaje",
+    "actions": "Acciones",
+    "accept": "Aceptar",
+    "reject": "Rechazar"
+  },
   "sessions": {
     "title": "Sesiones activas",
     "description": "Gestiona los dispositivos donde has iniciado sesión",

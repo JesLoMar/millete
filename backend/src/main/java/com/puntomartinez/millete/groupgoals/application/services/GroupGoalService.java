@@ -4,6 +4,8 @@ import com.puntomartinez.millete.groupgoals.domain.model.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.*;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
+import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
@@ -30,18 +32,21 @@ public class GroupGoalService implements
     private final GoalInvitationRepository goalInvitationRepository;
     private final GoalContributionRepository goalContributionRepository;
     private final UserRepository userRepository;
+    private final CreateNotificationUseCase createNotificationUseCase;
 
     public GroupGoalService(
             GoalUnitRepository goalUnitRepository,
             GoalMemberRepository goalMemberRepository,
             GoalInvitationRepository goalInvitationRepository,
             GoalContributionRepository goalContributionRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            CreateNotificationUseCase createNotificationUseCase) {
         this.goalUnitRepository = goalUnitRepository;
         this.goalMemberRepository = goalMemberRepository;
         this.goalInvitationRepository = goalInvitationRepository;
         this.goalContributionRepository = goalContributionRepository;
         this.userRepository = userRepository;
+        this.createNotificationUseCase = createNotificationUseCase;
     }
 
     @Override
@@ -296,6 +301,30 @@ public class GroupGoalService implements
         invitation.setActive(true);
 
         invitation = goalInvitationRepository.save(invitation);
+
+        GoalUnit goalUnit = goalUnitRepository.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
+        User inviter = userRepository.findById(inviterUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inviter not found"));
+
+        String inviterName = inviter.getUsername() != null ? inviter.getUsername() : inviter.getEmail();
+        Map<String, Object> metadata = Map.of(
+                "goalId", goalId.toString(),
+                "invitationId", invitation.getId().toString(),
+                "goalName", goalUnit.getName(),
+                "inviterName", inviterName
+        );
+
+        createNotificationUseCase.create(new CreateNotificationUseCase.CreateNotificationCommand(
+                invitedUserId,
+                NotificationType.GOAL_INVITATION,
+                "Nueva invitación a meta grupal",
+                inviterName + " te ha invitado a unirte a \"" + goalUnit.getName() + "\".",
+                metadata,
+                true,
+                invitation.getExpiresAt()
+        ));
+
         log.info("User {} invited user {} to goal {}", inviterUserId, invitedUserId, goalId);
         return invitation;
     }

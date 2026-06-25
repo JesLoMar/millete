@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -41,6 +41,20 @@ interface EditRecurringTransactionDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+function getInitialForm(transaction: PlannedTransaction | null) {
+  return {
+    description: transaction?.description || "",
+    category: transaction?.categoryId || "",
+    amount: transaction?.amount ? String(Math.abs(transaction.amount)) : "",
+    type: transaction?.type === "INCOME" ? "INCOME" : "EXPENSE" as "INCOME" | "EXPENSE",
+    frequencyType: transaction?.frequencyType || "",
+    frequencyInterval: transaction?.frequencyInterval ? String(transaction.frequencyInterval) : "1",
+    startDate: transaction?.startDate || "",
+    endDate: transaction?.endDate || "",
+    error: null as string | null,
+  }
+}
+
 export function EditRecurringTransactionDialog({
   transaction,
   open,
@@ -50,35 +64,8 @@ export function EditRecurringTransactionDialog({
   const queryClient = useQueryClient()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const [form, setForm] = useState({
-    description: "",
-    category: "",
-    amount: "",
-    type: "EXPENSE" as "INCOME" | "EXPENSE",
-    frequencyType: "",
-    frequencyInterval: "1",
-    startDate: "",
-    endDate: "",
-    error: null as string | null,
-  })
+  const [form, setForm] = useState(() => getInitialForm(transaction))
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Pre-popular formulario cuando se abre el modal con una transacción existente
-  useEffect(() => {
-    if (open && transaction) {
-      setForm({
-        description: transaction.description || "",
-        category: transaction.categoryId || "",
-        amount: transaction.amount ? String(Math.abs(transaction.amount)) : "",
-        type: transaction.type === "INCOME" ? "INCOME" : "EXPENSE",
-        frequencyType: transaction.frequencyType || "",
-        frequencyInterval: transaction.frequencyInterval ? String(transaction.frequencyInterval) : "1",
-        startDate: transaction.startDate || "",
-        endDate: transaction.endDate || "",
-        error: null,
-      })
-    }
-  }, [open, transaction])
 
   const handleSave = async () => {
     if (!transaction || !form.description || !form.category || !form.amount || !form.frequencyType || !form.startDate) return
@@ -111,7 +98,7 @@ export function EditRecurringTransactionDialog({
   const isValid = form.description.trim() && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} key={transaction?.id}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="bg-card border-border sm:max-w-106.25"
         onOpenAutoFocus={(e) => {

@@ -6,6 +6,7 @@ import { ChangePasswordSection } from '../components/ChangePasswordSection';
 import { TelegramSection } from '../components/TelegramSection';
 import { SessionsSection } from '../components/SessionsSection';
 import { DeleteAccountSection } from '../components/DeleteAccountSection';
+import { NotificationsTable } from '../components/NotificationsTable';
 
 export const ProfilePage = () => {
   const { t } = useTranslation('userProfile');
@@ -21,6 +22,7 @@ export const ProfilePage = () => {
             <PersonalInfoSection />
             <ChangePasswordSection />
             <TelegramSection />
+            <NotificationsTable />
             <SessionsSection />
             <DeleteAccountSection />
           </div>

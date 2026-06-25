@@ -191,3 +191,44 @@ CREATE INDEX IF NOT EXISTS idx_goal_contributions_goal ON goal_contributions(goa
 
 -- REMOVE OBSOLETE FOREIGN KEY FROM CATEGORIES
 ALTER TABLE categories DROP CONSTRAINT IF EXISTS fk_categories_family;
+
+-- ==============================================================
+-- Millete v0.2.0 - Profile Management, Multi-Session Support
+-- (fusionado de la antigua V3)
+-- ==============================================================
+
+-- 1. Eliminar la restricción que impide múltiples sesiones en el mismo canal
+ALTER TABLE user_sessions DROP CONSTRAINT IF EXISTS uq_user_channel;
+
+-- 2. Añadir control de estado para poder cerrar sesiones remotamente
+ALTER TABLE user_sessions ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- 3. Actualizar índice para incluir estado activo
+CREATE INDEX IF NOT EXISTS idx_sessions_user_active ON user_sessions(user_id, active) WHERE active = TRUE;
+
+-- ==============================================================
+-- Millete v0.2.0 - Sistema de notificaciones internas persistentes
+-- (fusionado de la antigua V4)
+-- ==============================================================
+
+-- 1. NOTIFICATIONS
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    metadata JSONB NOT NULL DEFAULT '{}',
+    read BOOLEAN NOT NULL DEFAULT FALSE,
+    action_required BOOLEAN NOT NULL DEFAULT FALSE,
+    actioned_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT chk_notification_type CHECK (type IN ('GOAL_INVITATION', 'SYSTEM')),
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_notifications_user_active ON notifications(user_id, active);
+CREATE INDEX idx_notifications_user_read ON notifications(user_id, read) WHERE active = TRUE;
+CREATE INDEX idx_notifications_user_created ON notifications(user_id, created_at DESC);

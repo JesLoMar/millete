@@ -147,6 +147,7 @@ export const SavingsGoalsPage = () => {
       />
 
       <SavingsGoalEditDialog
+        key={selectedGoal?.id}
         open={ui.isEditOpen}
         onOpenChange={(open) => {
           setUi((prev) => ({ ...prev, isEditOpen: open }))

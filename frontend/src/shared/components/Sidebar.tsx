@@ -10,7 +10,6 @@ import { notify } from "@/shared/utils/notifications/notify"
 interface SidebarProps {
   className?: string
   showDisabled?: boolean
-  onOpenMobile?: () => void
 }
 
 function notifyComingSoon(featureName: string, messageTemplate: string) {
@@ -18,7 +17,7 @@ function notifyComingSoon(featureName: string, messageTemplate: string) {
   notify.info(finalMessage);
 }
 
-export function Sidebar({ className, showDisabled = true, onOpenMobile }: SidebarProps) {
+export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const { t } = useTranslation(['nav', 'common'])
   const navigate = useNavigate()
   const location = useLocation()
@@ -37,10 +36,10 @@ export function Sidebar({ className, showDisabled = true, onOpenMobile }: Sideba
   }, [isMobileOpen])
 
   useEffect(() => {
-    if (onOpenMobile) {
-      onOpenMobile()
-    }
-  }, [onOpenMobile])
+    const handleOpen = () => setIsMobileOpen(true)
+    window.addEventListener('sidebar:open', handleOpen)
+    return () => window.removeEventListener('sidebar:open', handleOpen)
+  }, [])
 
   const mainItems = getEnabledNavItems("main")
   const bottomItems = getEnabledNavItems("bottom")

@@ -132,6 +132,7 @@ export function RecurringTransactionsList() {
       </div>
 
       <EditRecurringTransactionDialog
+        key={editingTransaction?.id}
         transaction={editingTransaction}
         open={!!editingTransaction}
         onOpenChange={(open) => { if (!open) setEditingTransaction(null) }}

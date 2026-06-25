@@ -15,32 +15,29 @@ import {
 interface InviteMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onInvite: (email: string) => void
+  onInvite: (identifier: string) => void
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMemberDialogProps) {
   const { t } = useTranslation()
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [error, setError] = useState<string | null>(null)
 
-  const isValidEmail = EMAIL_REGEX.test(email.trim())
-
   const handleInvite = () => {
-    if (!isValidEmail) {
-      setError(t('groupGoals:invalidEmail'))
+    const trimmed = identifier.trim()
+    if (!trimmed) {
+      setError(t('groupGoals:invalidIdentifier'))
       return
     }
-    onInvite(email.trim())
-    setEmail("")
+    onInvite(trimmed)
+    setIdentifier("")
     setError(null)
     onOpenChange(false)
   }
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      setEmail("")
+      setIdentifier("")
       setError(null)
     }
     onOpenChange(isOpen)
@@ -57,14 +54,14 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t('groupGoals:email')}</Label>
+            <Label htmlFor="identifier">{t('groupGoals:identifier')}</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder={t('groupGoals:emailPlaceholder')}
-              value={email}
+              id="identifier"
+              type="text"
+              placeholder={t('groupGoals:identifierPlaceholder')}
+              value={identifier}
               onChange={(e) => {
-                setEmail(e.target.value)
+                setIdentifier(e.target.value)
                 setError(null)
               }}
               className="bg-background border-border"
@@ -78,7 +75,7 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
           <Button variant="outline" onClick={() => handleOpenChange(false)} className="border-border">
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleInvite} disabled={!email.trim()}>
+          <Button onClick={handleInvite} disabled={!identifier.trim()}>
             {t('groupGoals:sendInvitation')}
           </Button>
         </DialogFooter>

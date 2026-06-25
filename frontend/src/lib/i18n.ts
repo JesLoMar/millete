@@ -20,6 +20,7 @@ import userProfileES from "@/assets/locales/es/userProfile.json";
 import apiES from "@/assets/locales/es/api.json";
 import wikiES from "@/assets/locales/es/wiki.json";
 import infoES from "@/assets/locales/es/info.json";
+import notificationsES from "@/assets/locales/es/notifications.json";
 
 // ============================================
 // IMPORTAR INGLÉS (completo)
@@ -39,6 +40,7 @@ import userProfileEN from "@/assets/locales/en/userProfile.json";
 import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
 import enInfo from "@/assets/locales/en/info.json";
+import notificationsEN from "@/assets/locales/en/notifications.json";
 
 // ============================================
 // IMPORTAR ALEMÁN
@@ -155,6 +157,7 @@ i18n
       "api",
       "wiki",
       "info",
+      "notifications",
     ],
     defaultNS: "common",
     debug: import.meta.env.DEV,
@@ -181,6 +184,7 @@ i18n
         api: apiES,
         wiki: wikiES,
         info: infoES,
+        notifications: notificationsES,
       },
 
       // ==========================================
@@ -202,6 +206,7 @@ i18n
         api: enApi,
         wiki: enWiki,
         info: enInfo,
+        notifications: notificationsEN,
       },
 
       // ==========================================

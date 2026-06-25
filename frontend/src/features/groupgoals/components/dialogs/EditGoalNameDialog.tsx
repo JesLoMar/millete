@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -26,13 +26,6 @@ export function EditGoalNameDialog({
   const [editedName, setEditedName] = useState<string | null>(null)
   const name = editedName ?? currentName
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Reset editedName when dialog opens with a different goal
-  useEffect(() => {
-    if (open) {
-      setEditedName(null)
-    }
-  }, [open, currentName])
 
   const handleSave = () => {
     if (!name.trim()) return

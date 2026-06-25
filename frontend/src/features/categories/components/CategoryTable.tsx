@@ -157,6 +157,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
       </div>
 
       <EditCategoryDialog
+        key={editingCategory?.id}
         category={editingCategory}
         open={!!editingCategory}
         onOpenChange={(open) => { if (!open) setEditingCategory(null) }}

@@ -15,6 +15,7 @@ import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"
 import { LanguageSelector } from "./LanguageSelector"
 import { ThemeSelector } from "./ThemeSelector"
+import { NotificationBell } from "@/features/notifications/components/NotificationBell"
 
 interface TopNavProps {
   className?: string
@@ -106,6 +107,7 @@ export function TopNav({ className }: TopNavProps) {
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
+        <NotificationBell />
         <div className="h-8 w-px bg-border/60 mx-1 sm:mx-2" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

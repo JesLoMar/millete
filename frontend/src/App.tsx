@@ -14,6 +14,7 @@ import WikiLayout from '@/features/wiki/components/WikiLayout';
 import WikiPage from '@/features/wiki/pages/page';
 import { ProfilePage } from '@/features/profile/pages/page';
 import { SavingsGoalsPage } from '@/features/savingsgoals/pages/page';
+import NotificationsPage from '@/features/notifications/pages/page';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/group-goals" element={<GroupGoalsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/savings-goals" element={<SavingsGoalsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
 
           {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}

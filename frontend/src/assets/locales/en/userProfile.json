@@ -53,6 +53,15 @@
     "instructions": "Open the Telegram bot @Millete_bot and send /start to link your account. Once done, reload this page to see the updated status.",
     "openBot": "Open Telegram bot"
   },
+  "notifications": {
+    "title": "Pending invitations",
+    "description": "Notifications and invitations that require your attention",
+    "empty": "You have no pending invitations",
+    "message": "Message",
+    "actions": "Actions",
+    "accept": "Accept",
+    "reject": "Reject"
+  },
   "sessions": {
     "title": "Active sessions",
     "description": "Manage devices where you are logged in",

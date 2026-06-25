@@ -152,6 +152,7 @@ export function TransactionList({ period: _period }: TransactionListProps) {
       </div>
 
       <EditTransactionDialog
+        key={state.editingTransaction?.id}
         transaction={state.editingTransaction}
         open={!!state.editingTransaction}
         onOpenChange={(open) => { if (!open) updateState({ editingTransaction: null }) }}

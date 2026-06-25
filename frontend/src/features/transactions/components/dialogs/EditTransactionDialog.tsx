@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
@@ -41,33 +41,23 @@ interface FormState {
   error: string | null
 }
 
+function getInitialForm(transaction: Transaction | null): FormState {
+  return {
+    description: transaction?.description || "",
+    category: transaction?.categoryId || "",
+    amount: transaction?.amount ? String(Math.abs(transaction.amount)) : "",
+    type: transaction?.type === "INCOME" ? "INCOME" : "EXPENSE",
+    isSubmitting: false,
+    error: null,
+  }
+}
+
 export function EditTransactionDialog({ transaction, open, onOpenChange }: EditTransactionDialogProps) {
   const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const queryClient = useQueryClient()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [form, setForm] = useState<FormState>({
-    description: "",
-    category: "",
-    amount: "",
-    type: "EXPENSE",
-    isSubmitting: false,
-    error: null,
-  })
-
-  // Pre-popular formulario cuando se abre el modal con una transacción existente
-  useEffect(() => {
-    if (open && transaction) {
-      setForm({
-        description: transaction.description || "",
-        category: transaction.categoryId || "",
-        amount: transaction.amount ? String(Math.abs(transaction.amount)) : "",
-        type: transaction.type === "INCOME" ? "INCOME" : "EXPENSE",
-        isSubmitting: false,
-        error: null,
-      })
-    }
-  }, [open, transaction])
+  const [form, setForm] = useState<FormState>(() => getInitialForm(transaction))
 
   const updateForm = (updates: Partial<FormState>) => {
     setForm(prev => ({ ...prev, ...updates }))
@@ -106,7 +96,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
   const isValid = form.description.trim() && form.amount && Number(form.amount) > 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} key={transaction?.id}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="bg-card border-border sm:max-w-106.25"
         onOpenAutoFocus={(e) => {
