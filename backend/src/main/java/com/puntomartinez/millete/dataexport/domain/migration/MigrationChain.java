@@ -22,8 +22,7 @@ public class MigrationChain {
     }
 
     private void registerMigrations() {
-        // Sin migraciones - primera versión del formato (0.0.1)
-        // Añadir aquí las migraciones cuando el esquema evolucione
+        migrations.add(new Migration001to010());
     }
 
     public UserDataSnapshot migrateToLatest(UserDataSnapshot snapshot) {

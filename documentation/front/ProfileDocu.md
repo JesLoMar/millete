@@ -2,6 +2,7 @@
 
 ## Estructura de archivos
 
+- **components/NotificationsTable.tsx** — Tabla de notificaciones/invitaciones pendientes en el perfil
 - **components/ChangePasswordSection.tsx** — Sección de cambio de contraseña
 - **components/DeleteAccountSection.tsx** — Sección de eliminación/desactivación de cuenta
 - **components/PersonalInfoSection.tsx** — Sección de información personal (usuario/email)
@@ -10,13 +11,15 @@
 - **components/TelegramSection.tsx** — Sección de vinculación/desvinculación de Telegram
 - **hooks/useChangePassword.ts** — Mutación de cambio de contraseña
 - **hooks/useDeactivateAccount.ts** — Mutación de desactivación de cuenta
-- **hooks/usePreferences.ts** — Query y mutación de preferencias de usuario
+- **hooks/useNotifications.ts** — Query de notificaciones del usuario (reexportado desde features/notifications)
+- **hooks/useAcceptInvitation.ts** / **useRejectInvitation.ts** — Mutaciones para responder invitaciones a Group Goals
 - **hooks/useProfile.ts** — Query de perfil de usuario
 - **hooks/useSessions.ts** — Queries y mutaciones de sesiones
 - **hooks/useTelegramUnlink.ts** — Mutación para desvincular Telegram
 - **hooks/useUpdateProfile.ts** — Mutación para actualizar perfil
 - **pages/page.tsx** — Página principal de perfil
 - **services/profileService.ts** — Servicio de API de perfil
+- **services/invitations.service.ts** — Servicio de API para aceptar/rechazar invitaciones
 - **types/index.ts** — Tipos y contratos de datos
 
 ---
@@ -28,8 +31,9 @@ Página de perfil de usuario. Renderiza un layout vertical con secciones indepen
 1. **PersonalInfoSection** — edición de usuario/email.
 2. **ChangePasswordSection** — cambio de contraseña.
 3. **TelegramSection** — vinculación con Telegram.
-4. **SessionsSection** — gestión de sesiones activas.
-5. **DeleteAccountSection** — desactivación de cuenta.
+4. **NotificationsTable** — tabla de invitaciones/notificaciones pendientes.
+5. **SessionsSection** — gestión de sesiones activas.
+6. **DeleteAccountSection** — desactivación de cuenta.
 
 > **Nota:** La sección de preferencias (tema/idioma/moneda/formato de fecha) no se renderiza porque el tema y el idioma se gestionan globalmente desde `ThemeSelector` y `LanguageSelector` en `shared/components/`. Las preferencias de moneda y formato de fecha aún no están implementadas.
 
@@ -137,9 +141,43 @@ Usa `ConfirmDeletionDialog` para confirmar antes de llamar a `useTelegramUnlink`
 
 ---
 
-## components/SessionsSection.tsx
+## components/NotificationsTable.tsx
 
-Gestión de sesiones activas.
+Tabla de notificaciones/invitaciones pendientes del usuario. Muestra solo notificaciones de tipo `GOAL_INVITATION` que requieren acción y no han sido actionadas.
+
+### Props
+
+Ninguna. Usa hooks internamente.
+
+### Hooks utilizados
+
+- `useNotifications()` — obtiene todas las notificaciones activas del usuario.
+- `useAcceptInvitation()` — mutación para aceptar invitación a Group Goal.
+- `useRejectInvitation()` — mutación para rechazar invitación a Group Goal.
+
+### Estructura
+
+- Renderiza dentro de un `SettingsSection` con título traducido desde `userProfile:notificationsTitle`.
+- Usa el componente `Table` de `shared/components/core/table` con `TableHeader`, `TableBody`, `TableRow`, `TableCell`.
+- Cada fila muestra el título de la notificación y dos botones de acción:
+  - ✓ (aceptar): llama a `accept(n.metadata.invitationId)`.
+  - ✕ (rechazar): llama a `reject(n.metadata.invitationId)`.
+- Tras aceptar/rechazar, invalida las queries `['notifications']` y `['group-goals']`.
+- Si no hay notificaciones pendientes, muestra un mensaje vacío.
+
+### Conexión con Group Goals
+
+Cuando un usuario es invitado a un Group Goal, el backend crea una notificación interna. Esta tabla permite al usuario ver y responder la invitación directamente desde el perfil, sin necesidad de ir a `/group-goals`.
+
+---
+
+## hooks/useNotifications, useAcceptInvitation, useRejectInvitation
+
+- **useNotifications:** reexportado desde `@/features/notifications/hooks/useNotifications`. Query key `['notifications']`.
+- **useAcceptInvitation:** `POST /goals/invitations/:id/accept`. Invalida `['notifications']` y `['group-goals']`.
+- **useRejectInvitation:** `POST /goals/invitations/:id/reject`. Invalida `['notifications']` y `['group-goals']`.
+
+---
 
 ### Estados
 
@@ -170,3 +208,9 @@ Gestión de sesiones activas.
 - Todos los mensajes de éxito/error de los hooks de perfil están hardcodeados en español. Pendiente de revisión completa de i18n.
 - El botón de Telegram usa `asChild` en `Button` para envolver un enlace `<a>` a `https://t.me/Millete_bot`.
 - La desactivación de cuenta requiere confirmación mediante checkbox y contraseña.
+
+## Notas de versión v0.2.0
+
+- Se añadió `NotificationsTable` entre `TelegramSection` y `SessionsSection` en la página de perfil.
+- Se eliminó `usePreferences.ts` (archivo no referenciado desde ningún entry point).
+- `EditCategoryDialog` eliminó el `useEffect` de pre-populado; ahora el estado se inicializa directamente y el padre fuerza el reset con `key={editingCategory?.id}`.

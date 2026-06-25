@@ -35,10 +35,7 @@ v0.1.0 [CAMBIOS EN BD]
 - [x] Integración con bot de telegram.
 - [x] Crear perfil de usuario y pestaña de settings.
 - [x] Eliminar la necesidad de correo, invitaciones por notificación in-app. Falta comprobar que funcione.
-
-====
-HACER AL FINAL: Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0
-====
+- [x] Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0
 
 ===================================
 MEJORAS v0.0.4

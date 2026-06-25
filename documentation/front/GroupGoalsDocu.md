@@ -11,7 +11,7 @@
 - **components/dialogs/CreateGroupGoalDialog.tsx** — Diálogo para crear nueva meta
 - **components/dialogs/EditGoalNameDialog.tsx** — Diálogo para editar nombre de la meta
 - **components/dialogs/EditMemberDialog.tsx** — Diálogo para editar miembro
-- **components/dialogs/InviteMemberDialog.tsx** — Diálogo para invitar por usuario/email
+- **components/dialogs/InviteMemberDialog.tsx** — Diálogo para invitar por nombre de usuario o email (acepta cualquier identificador no vacío, sin validación de formato)
 - **components/dialogs/UpdateGoalDialog.tsx** — Diálogo para cambiar objetivo mensual
 - **constants.ts** — Colores de miembros
 - **hooks/useGroupGoalQueries.ts** — Hook centralizado de queries
@@ -318,11 +318,11 @@ Historial de aportaciones.
 
 **Props:** open, onOpenChange, onInvite.
 
-**Campos:** identifier con validación de formato (username o email).
+**Campos:** identifier (nombre de usuario o email, cualquier texto no vacío). El input es de tipo `text` sin validación de formato (el backend valida que el identificador corresponda a un usuario registrado).
 
-**Validación:** botón deshabilitado si identifier vacío.
+**Validación:** muestra error si identifier está vacío. Botón deshabilitado si identifier vacío.
 
-**Flujo:** al invitar, llama a `onInvite(identifier.trim())`, resetea identifier y cierra. Al cerrar el diálogo se resetean los campos.
+**Flujo:** al invitar, llama a `onInvite(identifier.trim())`, resetea identifier y cierra. Al cerrar el diálogo se resetean los campos. Tras éxito, invalida las queries de `notifications` y `notifications/unread-count` para que la tabla del perfil se refresque.
 
 ---
 
@@ -399,8 +399,14 @@ Historial de aportaciones.
 - El feature fue renombrado de `family` a `groupgoals` para alinearse con el dominio del backend (`GroupGoal`).
 - Los endpoints cambiaron de `/families` a `/group-goals`.
 - Se añadió el diálogo `EditGoalNameDialog` para permitir renombrar la meta.
-- `InviteMemberDialog` ahora usa `identifier` (puede ser username o email) en lugar de solo email.
+- `InviteMemberDialog` ahora usa `identifier` (puede ser username o email) en lugar de solo email. No valida formato en el frontend; el backend valida que el identificador corresponda a un usuario registrado.
 - Todos los tipos utilizan `Goal*` y `GroupGoal*` en lugar de `Family*`.
 - Se mantiene la invalidación completa de queries en todas las mutaciones.
 - Notificaciones toast en todas las mutaciones y en `JoinGroupGoalPage`.
+
+## Notas de versión v0.2.0
+
+- `InviteMemberDialog` eliminó la validación regex de email. Ahora acepta cualquier identificador no vacío (nombre de usuario o email).
+- La mutación `inviteMember` invalida además las queries `['notifications']` y `['notifications', 'unread-count']` para que la tabla de notificaciones del perfil se refresque automáticamente tras enviar una invitación.
+- `EditGoalNameDialog` eliminó el `useEffect` de reset de estado; el padre fuerza el reset con `key={actions.editingGoal?.id}`.
 - `calculateContributions` sigue manejando los tres modos de distribución y casos límite.

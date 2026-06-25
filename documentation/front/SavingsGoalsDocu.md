@@ -128,6 +128,10 @@ Diálogo para editar una meta existente.
 
 Incluye los campos de creación más estado (`ACTIVE`, `PAUSED`, `COMPLETED`, `CANCELLED`).
 
+### Reinicio de estado (v0.2.0)
+
+El formulario se inicializa directamente desde la prop `goal` mediante `getInitialForm(goal)`. El componente padre (`page.tsx`) fuerza el reset completo pasando `key={selectedGoal?.id}`. Esto elimina el `useEffect` de sincronización de estado que causaba renders extra (problema reportado por react-doctor).
+
 ---
 
 ## components/ContributionModal.tsx

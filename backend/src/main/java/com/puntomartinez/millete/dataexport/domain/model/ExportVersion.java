@@ -7,7 +7,7 @@ public record ExportVersion(int major, int minor, int patch) implements Comparab
     private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$");
 
     // Incrementar cuando cambie el esquema de exportación
-    public static final ExportVersion CURRENT = new ExportVersion(0, 0, 1);
+    public static final ExportVersion CURRENT = new ExportVersion(0, 1, 0);
 
     public static ExportVersion fromString(String version) {
         if (version == null || version.isBlank()) {

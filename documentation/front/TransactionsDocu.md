@@ -437,12 +437,14 @@ Diálogo de edición de transacción. Siempre controlado: se abre desde Transact
 
 Mismos campos que NewTransactionDialog: descripción, tipo, importe y categoría.
 
-#### Flujo
+#### Flujo (v0.2.0)
 
-1. Al abrirse, los campos se inicializan con los valores de la transacción (usa key={transaction?.id ?? "new"} en Dialog para forzar reinicio al cambiar de transacción).
+1. El estado del formulario se inicializa directamente desde la prop `transaction` mediante `getInitialForm(transaction)`. El componente padre (`TransactionList`) fuerza el reset completo pasando `key={state.editingTransaction?.id}`.
 2. Al guardar, hace PUT /transactions/:id con description, categoryId, amount, type y date (mantiene la fecha original).
 3. Invalida 8 queries manualmente (transactions, transactionMetrics, dashboardMetrics, historyChart, categoryStats, budgets, recentTransactions, categoryExpenses).
 4. Cierra el diálogo.
+
+> **Nota v0.2.0:** Se eliminó el `useEffect` de pre-populado que sincronizaba estado con la prop. Ahora el estado se inicializa directamente y el padre fuerza el reset con `key`. Esto corrige el problema de "derived state copied into state" reportado por react-doctor.
 
 #### Validaciones
 
@@ -503,11 +505,14 @@ Diálogo de edición de transacción recurrente. Siempre controlado.
 
 Mismos campos que NewRecurringTransactionDialog. Los valores se inicializan desde la transacción al montar el componente (no usa useEffect, se inicializan directamente en useState con transaction?.description || "").
 
-#### Flujo
+#### Flujo (v0.2.0)
 
-1. Al guardar, llama a updateRecurring.mutateAsync con id y data (description, categoryId, amount, type, frequencyType, frequencyInterval, startDate, endDate).
-2. onSuccess de la mutación invalida 9 queries y muestra notificación.
-3. Cierra el diálogo.
+1. El estado del formulario se inicializa directamente desde la prop `transaction` mediante `getInitialForm(transaction)`. El componente padre (`RecurringTransactionsList`) fuerza el reset completo pasando `key={editingTransaction?.id}`.
+2. Al guardar, llama a updateRecurring.mutateAsync con id y data (description, categoryId, amount, type, frequencyType, frequencyInterval, startDate, endDate).
+3. onSuccess de la mutación invalida 9 queries y muestra notificación.
+4. Cierra el diálogo.
+
+> **Nota v0.2.0:** Se eliminó el `useEffect` de pre-populado que sincronizaba estado con la prop. Ahora el estado se inicializa directamente y el padre fuerza el reset con `key`. Esto corrige el problema de "derived state copied into state" reportado por react-doctor.
 
 #### Validaciones
 

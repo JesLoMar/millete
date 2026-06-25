@@ -37,7 +37,7 @@ public class DataExportController {
         // Headers para forzar la descarga como archivo físico
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=familybudget_export.json");
+                "attachment; filename=millete_export.json");
         headers.add("X-Export-Version", snapshot.metadata().version());
         headers.add("X-Export-Date", snapshot.metadata().exportDate().toString());
 
@@ -56,7 +56,7 @@ public class DataExportController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/zip"));
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=familybudget_export.zip");
+                "attachment; filename=millete_export.zip");
 
         return new ResponseEntity<>(zip, headers, HttpStatus.OK);
     }
@@ -74,7 +74,7 @@ public class DataExportController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv"));
         headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=familybudget_" + entityType + ".csv");
+                "attachment; filename=millete_" + entityType + ".csv");
 
         return new ResponseEntity<>(csv, headers, HttpStatus.OK);
     }

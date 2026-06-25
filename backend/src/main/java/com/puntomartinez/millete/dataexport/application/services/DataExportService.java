@@ -4,6 +4,12 @@ import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.dataexport.domain.model.*;
 import com.puntomartinez.millete.dataexport.domain.ports.out.FileExportPort;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
@@ -12,6 +18,8 @@ import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.users.domain.model.UserPreferences;
+import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +41,10 @@ public class DataExportService {
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final InvestmentRepository investmentRepository;
     private final SavingsGoalRepository savingsGoalRepository;
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final GoalUnitRepository goalUnitRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalContributionRepository goalContributionRepository;
     private final FileExportPort fileExportPort;
     private final FileExportPort pdfFileExportPort;
 
@@ -45,6 +57,10 @@ public class DataExportService {
             PlannedTransactionRepository plannedTransactionRepository,
             InvestmentRepository investmentRepository,
             SavingsGoalRepository savingsGoalRepository,
+            UserPreferencesRepository userPreferencesRepository,
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
             @Qualifier("zipFileExportAdapter") FileExportPort fileExportPort,
             @Qualifier("pdfFileExportAdapter") FileExportPort pdfFileExportPort) {
         this.categoryRepository = categoryRepository;
@@ -52,12 +68,35 @@ public class DataExportService {
         this.plannedTransactionRepository = plannedTransactionRepository;
         this.investmentRepository = investmentRepository;
         this.savingsGoalRepository = savingsGoalRepository;
+        this.userPreferencesRepository = userPreferencesRepository;
+        this.goalUnitRepository = goalUnitRepository;
+        this.goalMemberRepository = goalMemberRepository;
+        this.goalContributionRepository = goalContributionRepository;
         this.fileExportPort = fileExportPort;
         this.pdfFileExportPort = pdfFileExportPort;
     }
 
     public UserDataSnapshot exportAllUserData(UUID userId) {
         log.info("Exportando datos para usuario: {}", userId);
+
+        // Recolectar datos de Group Goals del usuario
+        List<GoalMember> userGoalMembers = goalMemberRepository.findByUserId(userId);
+        Set<UUID> userGoalIds = new HashSet<>();
+        for (GoalMember gm : userGoalMembers) {
+            userGoalIds.add(gm.getGoalId());
+        }
+
+        List<GoalUnit> goalUnits = new ArrayList<>();
+        List<GoalMember> goalMembers = new ArrayList<>();
+        List<GoalContribution> goalContributions = new ArrayList<>();
+
+        for (UUID goalId : userGoalIds) {
+            goalUnitRepository.findById(goalId).ifPresent(goalUnits::add);
+            goalMembers.addAll(goalMemberRepository.findByGoalId(goalId));
+            goalContributions.addAll(goalContributionRepository.findByGoalId(goalId));
+        }
+
+        UserPreferences userPreferences = userPreferencesRepository.findByUserId(userId).orElse(null);
 
         UserDataSnapshot snapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
@@ -69,7 +108,11 @@ public class DataExportService {
                 transactionRepository.findAllByUserId(userId),
                 plannedTransactionRepository.findAllByUserId(userId),
                 investmentRepository.findAllByUserId(userId),
-                savingsGoalRepository.findAllByUserId(userId)
+                savingsGoalRepository.findAllByUserId(userId),
+                userPreferences,
+                goalUnits,
+                goalMembers,
+                goalContributions
         );
 
         log.info("Exportación completada. v{}", ExportVersion.CURRENT);

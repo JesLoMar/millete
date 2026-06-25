@@ -6,6 +6,7 @@
 - **application/services/DataImportService.java** — Servicio de importación con validación y migración
 - **domain/migration/DataMigration.java** — Interfaz de migración entre versiones
 - **domain/migration/MigrationChain.java** — Cadena de migraciones versionadas
+- **domain/migration/Migration001to010.java** — Migración v0.0.1 → v0.1.0
 - **domain/model/ExportData.java** — DTO para exportación tabular (CSV/ZIP)
 - **domain/model/ExportVersion.java** — Versionado semántico del formato
 - **domain/model/PdfExportData.java** — DTO para exportación PDF con métricas
@@ -32,6 +33,7 @@ Exporta todos los datos del usuario autenticado en un archivo JSON (snapshot com
 2. Llama a DataExportService.exportAllUserData().
 3. Devuelve el UserDataSnapshot como archivo descargable con cabeceras Content-Disposition.
 4. Incluye cabeceras X-Export-Version y X-Export-Date.
+5. El nombre del archivo es **millete_export.json**.
 
 ### GET /export/zip
 
@@ -40,7 +42,7 @@ Exporta todos los datos del usuario autenticado en un archivo ZIP con un CSV por
 1. Extrae el userId del token JWT.
 2. Llama a DataExportService.exportUserDataAsZip().
 3. Devuelve el archivo ZIP como descargable con Content-Type application/zip.
-4. El nombre del archivo es familybudget_export.zip.
+4. El nombre del archivo es **millete_export.zip**.
 5. Contiene cinco archivos CSV: categories.csv, transactions.csv, planned_transactions.csv, investments.csv, savings_goals.csv.
 6. Los campos exportados están optimizados para análisis en Excel o Google Sheets, excluyendo IDs, timestamps internos y metadatos.
 
@@ -52,7 +54,7 @@ Exporta una entidad concreta en formato CSV individual.
 2. El parámetro entityType puede ser: categories, transactions, planned_transactions, investments, savings_goals.
 3. Llama a DataExportService.exportUserDataAsCsv(userId, entityType).
 4. Devuelve el archivo CSV como descargable con Content-Type text/csv.
-5. El nombre del archivo es familybudget_{entityType}.csv.
+5. El nombre del archivo es **millete_{entityType}.csv**.
 
 ### GET /export/pdf
 
@@ -91,11 +93,21 @@ Importa datos desde un archivo JSON previamente exportado con GET /export.
 
 Servicio que genera exportaciones de datos en múltiples formatos.
 
+### Dependencias inyectadas
+
+- CategoryRepository, TransactionRepository, PlannedTransactionRepository, InvestmentRepository, SavingsGoalRepository
+- **UserPreferencesRepository** — preferencias del usuario
+- **GoalUnitRepository** — metas grupales (GoalUnit)
+- **GoalMemberRepository** — miembros de metas grupales
+- **GoalContributionRepository** — aportaciones a metas grupales
+- FileExportPort (ZIP/CSV) y FileExportPort (PDF)
+
 ### exportAllUserData
 
 1. Crea un SnapshotMetadata con la versión actual del formato, fecha de exportación y versión de la app.
-2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas, inversiones y savings goals.
-3. Devuelve un UserDataSnapshot con metadata y datos.
+2. Recopila datos de los repositorios: categorías, transacciones, transacciones programadas, inversiones, savings goals, **userPreferences**, **goalUnits**, **goalMembers** y **goalContributions**.
+3. Para las entidades de Group Goals, primero obtiene los GoalMember del usuario, luego recupera las GoalUnit, GoalMember y GoalContribution asociadas a esas metas.
+4. Devuelve un UserDataSnapshot con metadata y datos.
 
 ### buildExportData
 
@@ -141,19 +153,48 @@ Servicio que genera exportaciones de datos en múltiples formatos.
 
 Servicio que importa datos con validación de compatibilidad de versión y migración automática.
 
+### Dependencias inyectadas
+
+- CategoryRepository, TransactionRepository, PlannedTransactionRepository, InvestmentRepository, **SavingsGoalRepository**
+- **UserPreferencesRepository** — preferencias del usuario
+- **GoalUnitRepository** — metas grupales
+- **GoalMemberRepository** — miembros de metas grupales
+- **GoalContributionRepository** — aportaciones a metas grupales
+- MigrationChain
+
 ### importUserData
 
 1. Deserializa el archivo JSON a UserDataSnapshot.
 2. Valida la compatibilidad de versión: mismo MAJOR que la versión actual.
 3. Si la versión es anterior, aplica las migraciones necesarias mediante MigrationChain.
-4. Importa cada entidad asignando el userId del usuario autenticado.
-5. Devuelve un resumen con el número de registros importados y la versión.
+4. Sanitiza el snapshot: sobrescribe todos los userId con el del usuario autenticado.
+5. Importa cada entidad en orden:
+   - Categorías (con deduplicación por nombre)
+   - Transacciones (mapeando categoryId)
+   - Transacciones programadas (mapeando categoryId)
+   - Inversiones
+   - **Savings goals**
+   - **Preferencias de usuario** (actualiza si existen, crea si no)
+   - **Group goals** (GoalUnit → GoalMember → GoalContribution, con regeneración de UUIDs y mapeo de goalId)
+6. Verifica post-importación que las transacciones tengan categorías resolubles.
+7. Devuelve un resumen con el número de registros importados y la versión.
 
 ### validateAndMigrate
 
 - Compara la versión del archivo con ExportVersion.CURRENT.
 - Si el MAJOR es distinto: error de incompatibilidad.
 - Si la versión es anterior: aplica MigrationChain.migrateToLatest().
+
+### Sanitización (sanitizeSnapshot)
+
+Sobrescribe el userId en todas las entidades del snapshot para evitar que datos de otro usuario se importen con el ID original. Afecta a: categories, transactions, plannedTransactions, investments, savingsGoals, goalMembers, goalContributions y userPreferences.
+
+### Importación de Group Goals (importGroupGoals)
+
+1. **GoalUnit**: Regenera UUIDs para cada GoalUnit y construye un mapa goalIdMap (oldId → newId).
+2. **GoalMember**: Mapea goalId al nuevo UUID, regenera IDs de miembros, asigna userId del usuario autenticado.
+3. **GoalContribution**: Mapea goalId al nuevo UUID, regenera IDs de contribuciones, asigna userId del usuario autenticado.
+4. Las GoalInvitation no se importan (son efímeras).
 
 ---
 
@@ -163,7 +204,7 @@ Versionado semántico (MAJOR.MINOR.PATCH) para el formato de exportación JSON.
 
 ### CURRENT
 
-Versión actual del formato: 0.1.0.
+Versión actual del formato: **0.1.0**.
 
 ### Reglas de compatibilidad
 
@@ -201,12 +242,22 @@ Enum que define los periodos disponibles para el informe PDF.
 
 ## UserDataSnapshot.java
 
-Contenedor de todos los datos exportados en formato JSON. Anotado con @JsonIgnoreProperties(ignoreUnknown = true) para permitir lectura de versiones anteriores.
+Contenedor de todos los datos exportados en formato JSON. Anotado con @JsonIgnoreProperties(ignoreUnknown = true) para permitir lectura de versiones anteriores (forward compatibility).
 
-### Estructura
+### Estructura (v0.1.0)
 
-- metadata: SnapshotMetadata con version, exportDate y appVersion.
-- categories, transactions, plannedTransactions, investments, savingsGoals: listas de datos.
+- **metadata**: SnapshotMetadata con version, exportDate y appVersion.
+- **categories**: lista de Category.
+- **transactions**: lista de Transaction.
+- **plannedTransactions**: lista de PlannedTransaction.
+- **investments**: lista de Investment.
+- **savingsGoals**: lista de SavingsGoal.
+- **userPreferences**: UserPreferences (opcional, puede ser null).
+- **goalUnits**: lista de GoalUnit (metas grupales, opcional).
+- **goalMembers**: lista de GoalMember (miembros de metas grupales, opcional).
+- **goalContributions**: lista de GoalContribution (aportaciones a metas grupales, opcional).
+
+Los campos opcionales permiten que snapshots de versiones anteriores (v0.0.1) se deserialicen sin error gracias a @JsonIgnoreProperties(ignoreUnknown = true).
 
 ---
 
@@ -220,7 +271,7 @@ DTO específico para la exportación tabular (CSV y ZIP). Contiene listas de rec
 - transactions: lista de TransactionExportRow (categoryName, amount, date, type, description).
 - plannedTransactions: lista de PlannedTransactionExportRow (categoryName, amount, type, description, frequencyType, frequencyInterval, startDate, endDate, lastExecutedDate).
 - investments: lista de InvestmentExportRow (assetName, ticker, quantity, purchasePrice, currentPrice, type, purchaseDate).
-- savingsGoals: lista de SavingsGoalExportRow (name, targetAmount, currentAmount, progress, deadline, priority, status, link).
+- savingsGoals: lista of SavingsGoalExportRow (name, targetAmount, currentAmount, progress, deadline, priority, status, link).
 
 ---
 
@@ -317,7 +368,21 @@ Cadena de migraciones que transforma datos desde cualquier versión anterior has
 
 ### Migraciones actuales
 
-Ninguna. La versión 0.1.0 es la primera documentada, por lo que el registro de migraciones está vacío. Las migraciones se añadirán cuando el esquema de exportación evolucione.
+| Migración | Origen | Destino | Descripción |
+|-----------|--------|---------|-------------|
+| Migration001to010 | 0.0.1 | 0.1.0 | Añade soporte para UserPreferences, GoalUnit, GoalMember y GoalContribution |
+
+---
+
+## Migration001to010.java
+
+Migración de formato de exportación v0.0.1 → v0.1.0.
+
+### Cambios
+
+- Añade los campos `userPreferences`, `goalUnits`, `goalMembers` y `goalContributions` al snapshot.
+- Los snapshots v0.0.1 no contienen estos campos, por lo que la migración los inicializa a null/listas vacías para mantener compatibilidad.
+- La deserialización con @JsonIgnoreProperties(ignoreUnknown = true) ya maneja la lectura de snapshots antiguos; esta migración explícita reconstruye el snapshot con los campos inicializados para claridad y consistencia.
 
 ---
 
@@ -416,3 +481,5 @@ Los valores válidos para period son: 1m (1 mes), 3m (3 meses), 6m (6 meses), 1y
 - La importación es transaccional: o se importa todo o nada.
 - Los archivos de versiones incompatibles se rechazan automáticamente.
 - Todos los endpoints de exportación requieren autenticación JWT válida.
+- Las entidades de Group Goals se importan regenerando UUIDs para evitar conflictos entre cuentas.
+- Las GoalInvitation no se exportan ni importan (son efímeras).

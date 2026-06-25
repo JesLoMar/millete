@@ -13,7 +13,7 @@
 - **PeriodSelector.tsx** — Selector de período semana/mes/año
 - **Sidebar.tsx** — Barra lateral de navegación con items activos/deshabilitados
 - **ThemeSelector.tsx** — Selector de tema visual con paletas
-- **TopNav.tsx** — Barra superior con logo, idioma, tema y menú de usuario
+- **TopNav.tsx** — Barra superior con logo, idioma, tema, notificaciones y menú de usuario
 
 ### components/core/
 Componentes primitivos de UI generados por shadcn/ui o adaptados al proyecto:
@@ -31,6 +31,7 @@ Componentes primitivos de UI generados por shadcn/ui o adaptados al proyecto:
 - **donut-chart.tsx** — Gráfico de donut reutilizable
 - **simple-bar-chart.tsx** — Gráfico de barras simple
 - **progress-bar.tsx** — Barra de progreso reutilizable
+- **table.tsx** — Componentes Table, TableHeader, TableBody, TableRow, TableHead, TableCell (React 19, sin forwardRef)
 
 ### config/
 - **navigation.ts** — Registro centralizado de navegación principal
@@ -92,7 +93,7 @@ Barra de navegación superior. Común a todas las páginas.
 ### Estructura
 
 - **Logo:** icono Wallet2 con fondo primary/10 y nombre de la app. Clic redirige a `/dashboard`.
-- **Controles:** LanguageSelector + ThemeSelector.
+- **Controles:** LanguageSelector + ThemeSelector + NotificationBell.
 - **Menú de usuario:** DropdownMenu con nombre/email del usuario.
   - `getUserDisplay`: función que determina qué mostrar:
     - Si hay name y email: name como primary, email como secondary.
@@ -100,6 +101,10 @@ Barra de navegación superior. Común a todas las páginas.
     - Si solo hay email: parte local como primary, email completo como secondary.
     - Si no hay nada: "Invitado" como primary.
   - Opciones: Perfil (navega a `/profile`) y Cerrar sesión (ejecuta logout con notificación).
+
+### NotificationBell (v0.2.0)
+
+Botón de campana con badge de contador de notificaciones no leídas. Al pulsar, abre un `Dialog` con el título "Notificaciones" y renderiza `NotificationList` dentro. El badge muestra el número de no leídas (máximo "99+"). Usa `useUnreadNotificationsCount` (query key `['notifications', 'unread-count']`).
 
 ### Hooks utilizados
 
@@ -130,6 +135,10 @@ Barra lateral de navegación. Común a todas las páginas.
 ### Detección de item activo
 
 Función `isActive`: para `/dashboard` compara exacta, para el resto usa `startsWith`. Esto evita que `/dashboard` coincida con rutas que empiecen igual.
+
+### Menú móvil
+
+En pantallas móviles, el sidebar está oculto por defecto (`-translate-x-full`). Se abre mediante el evento personalizado `sidebar:open` (disparado desde el botón de hamburguesa en `TopNav`). El componente escucha este evento con `addEventListener` y cierra al hacer clic fuera o en el botón de cierre.
 
 ### Hooks utilizados
 

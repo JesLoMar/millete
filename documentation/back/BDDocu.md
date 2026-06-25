@@ -7,8 +7,7 @@ El esquema de la base de datos se gestiona mediante Flyway con migraciones evolu
 | Archivo | Descripción |
 |---------|-------------|
 | `V1__initial_schema.sql` | Esquema inicial con 9 tablas base |
-| `V2__v0.1.0.sql` | Sesiones, preferencias, metas de ahorro, campos premium/Telegram, refactor `family_* → goal_*` |
-| `V3__update_sessions.sql` | Soporte multi-sesión por canal y estado activo/inactivo |
+| `V2__v0.1.0.sql` | Sesiones, preferencias, metas de ahorro, campos premium/Telegram, refactor `family_* → goal_*`, soporte multi-sesión y tabla de notificaciones |
 
 ---
 
@@ -90,7 +89,7 @@ Migración inicial que crea el esquema base para la versión 0.0.1.
 
 ## V2__v0.1.0.sql
 
-Migración principal de la versión 0.1.0. Añade nuevas tablas, campos y renombra el dominio de familias a metas grupales.
+Migración principal de la versión 0.1.0. Añade nuevas tablas, campos y renombra el dominio de familias a metas grupales. También incluye los cambios de las antiguas V3 (multi-sesión) y V4 (notificaciones), fusionados en esta migración para mantener un historial limpio.
 
 ### Nuevas tablas
 
@@ -100,6 +99,7 @@ Migración principal de la versión 0.1.0. Añade nuevas tablas, campos y renomb
 | 11 | user_sessions | Sesiones de usuario por canal (WEB/TELEGRAM) con control de intentos fallidos |
 | 12 | telegram_fsm_context | Contexto de la máquina de estados del bot de Telegram |
 | 13 | savings_goals | Metas de ahorro personales |
+| 14 | notifications | Notificaciones internas persistentes (GOAL_INVITATION, SYSTEM) |
 
 ### user_preferences
 
@@ -117,8 +117,9 @@ Migración principal de la versión 0.1.0. Añade nuevas tablas, campos y renomb
 - login_attempts (INT, DEFAULT 0)
 - blocked_until (TIMESTAMP)
 - last_attempt_at (TIMESTAMP)
+- active (BOOLEAN, DEFAULT TRUE) — permite cerrar sesiones remotamente
 - created_at, modified_at
-- UNIQUE (user_id, channel) — eliminado posteriormente en V3
+- Sin restricción UNIQUE por canal (eliminada para soporte multi-sesión)
 
 ### telegram_fsm_context
 
@@ -159,6 +160,36 @@ Migración principal de la versión 0.1.0. Añade nuevas tablas, campos y renomb
 - Añadidos `inviter_user_id` y `invited_user_id` (FK → users).
 - Estado `EXPIRED` añadido al CHECK.
 
+### Cambios en user_sessions (multi-sesión)
+
+- Elimina la restricción `uq_user_channel` que impedía múltiples sesiones en el mismo canal.
+- Añade la columna `active` (BOOLEAN, DEFAULT TRUE) para poder cerrar sesiones remotamente.
+- Añade índice `idx_sessions_user_active` para filtrar sesiones activas por usuario.
+
+### Notificaciones
+
+Tabla `notifications` con soporte para notificaciones internas persistentes:
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| id | UUID PK | Identificador único |
+| user_id | UUID FK → users ON DELETE CASCADE | Destinatario |
+| type | VARCHAR(50) | `GOAL_INVITATION` o `SYSTEM` |
+| title | VARCHAR(255) | Título de la notificación |
+| message | TEXT | Cuerpo del mensaje |
+| metadata | JSONB DEFAULT '{}' | Datos estructurados (ej: goalId, invitationId) |
+| read | BOOLEAN DEFAULT FALSE | Estado de lectura |
+| action_required | BOOLEAN DEFAULT FALSE | Requiere acción del usuario |
+| actioned_at | TIMESTAMP | Fecha en que se ejecutó la acción |
+| created_at | TIMESTAMP | Fecha de creación |
+| expires_at | TIMESTAMP | Fecha de expiración |
+| active | BOOLEAN DEFAULT TRUE | Soft delete |
+
+Índices:
+- `idx_notifications_user_active` — notificaciones activas por usuario
+- `idx_notifications_user_read` — no leídas y activas
+- `idx_notifications_user_created` — ordenadas por fecha descendente
+
 ### Refactor family_* → goal_*
 
 Tablas y columnas renombradas:
@@ -194,4 +225,5 @@ Esto permite que un usuario tenga varias sesiones WEB abiertas simultáneamente 
 
 - **Nunca modificar migraciones ya ejecutadas en producción.** Si se necesita un cambio, crear una nueva migración `V<N>__description.sql`.
 - Hibernate valida el esquema al arrancar. Cualquier discrepancia entre entidades JPA y tablas lanzará un error de validación.
-- Los índices parciales (con `WHERE`) se usan para optimizar consultas frecuentes sobre subconjuntos pequeños (sesiones activas, chatId no nulos).
+- Los índices parciales (con `WHERE`) se usan para optimizar consultas frecuentes sobre subconjuntos pequeños (sesiones activas, chatId no nulos, notificaciones no leídas).
+- Las migraciones V3 y V4 fueron fusionadas en V2 para mantener un historial limpio. En entornos de desarrollo con bases de datos limpias, solo se ejecutan V1 y V2.

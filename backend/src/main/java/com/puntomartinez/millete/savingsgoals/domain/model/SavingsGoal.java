@@ -1,10 +1,12 @@
 package com.puntomartinez.millete.savingsgoals.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SavingsGoal {
 
     private UUID id;

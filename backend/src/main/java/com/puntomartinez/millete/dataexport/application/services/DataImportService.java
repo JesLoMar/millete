@@ -7,12 +7,22 @@ import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.users.domain.model.UserPreferences;
+import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +42,11 @@ public class DataImportService {
     private final TransactionRepository transactionRepository;
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final InvestmentRepository investmentRepository;
+    private final SavingsGoalRepository savingsGoalRepository;
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final GoalUnitRepository goalUnitRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalContributionRepository goalContributionRepository;
     private final MigrationChain migrationChain;
     private final ObjectMapper objectMapper;
 
@@ -40,11 +55,21 @@ public class DataImportService {
             TransactionRepository transactionRepository,
             PlannedTransactionRepository plannedTransactionRepository,
             InvestmentRepository investmentRepository,
+            SavingsGoalRepository savingsGoalRepository,
+            UserPreferencesRepository userPreferencesRepository,
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
             MigrationChain migrationChain) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.plannedTransactionRepository = plannedTransactionRepository;
         this.investmentRepository = investmentRepository;
+        this.savingsGoalRepository = savingsGoalRepository;
+        this.userPreferencesRepository = userPreferencesRepository;
+        this.goalUnitRepository = goalUnitRepository;
+        this.goalMemberRepository = goalMemberRepository;
+        this.goalContributionRepository = goalContributionRepository;
         this.migrationChain = migrationChain;
 
         this.objectMapper = new ObjectMapper();
@@ -65,10 +90,15 @@ public class DataImportService {
             sanitizeSnapshot(snapshot, loggedInUserId);
 
             Map<UUID, UUID> categoryIdMap = new HashMap<>();
+            Map<UUID, UUID> goalIdMap = new HashMap<>();
+
             int totalImported = importCategories(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importTransactions(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importPlannedTransactions(snapshot, loggedInUserId, categoryIdMap);
             totalImported += importInvestments(snapshot, loggedInUserId);
+            totalImported += importSavingsGoals(snapshot, loggedInUserId);
+            totalImported += importUserPreferences(snapshot, loggedInUserId);
+            totalImported += importGroupGoals(snapshot, loggedInUserId, goalIdMap);
 
             // ─── Verificación post-importación ───
             verifyImportedTransactions(loggedInUserId, categoryIdMap);
@@ -130,6 +160,24 @@ public class DataImportService {
             for (Investment inv : snapshot.investments()) {
                 inv.setUserId(loggedInUserId);
             }
+        }
+        if (snapshot.savingsGoals() != null) {
+            for (SavingsGoal sg : snapshot.savingsGoals()) {
+                sg.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.goalMembers() != null) {
+            for (GoalMember gm : snapshot.goalMembers()) {
+                gm.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.goalContributions() != null) {
+            for (GoalContribution gc : snapshot.goalContributions()) {
+                gc.setUserId(loggedInUserId);
+            }
+        }
+        if (snapshot.userPreferences() != null) {
+            snapshot.userPreferences().setUserId(loggedInUserId);
         }
         log.debug("Snapshot sanitizado con userId destino: {}", loggedInUserId);
     }
@@ -274,6 +322,156 @@ public class DataImportService {
             count++;
         }
         log.debug("Inversiones: {}", count);
+        return count;
+    }
+
+    private int importSavingsGoals(UserDataSnapshot snapshot, UUID loggedInUserId) {
+        if (snapshot.savingsGoals() == null || snapshot.savingsGoals().isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (SavingsGoal sg : snapshot.savingsGoals()) {
+            if (!sg.isActive()) {
+                continue;
+            }
+
+            SavingsGoal safeSg = new SavingsGoal(
+                    UUID.randomUUID(), loggedInUserId, sg.getName(),
+                    sg.getTargetAmount(), sg.getCurrentAmount(), sg.getDeadline(),
+                    sg.getPriority(), sg.getStatus(), sg.getLink(),
+                    sg.getCreatedAt(), sg.getModifiedAt(), sg.isActive()
+            );
+            savingsGoalRepository.save(safeSg);
+            count++;
+        }
+        log.debug("Metas de ahorro: {}", count);
+        return count;
+    }
+
+    private int importUserPreferences(UserDataSnapshot snapshot, UUID loggedInUserId) {
+        if (snapshot.userPreferences() == null) {
+            return 0;
+        }
+
+        UserPreferences prefs = snapshot.userPreferences();
+        // Si ya existen preferencias para este usuario, las actualizamos
+        UserPreferences existing = userPreferencesRepository.findByUserId(loggedInUserId).orElse(null);
+        if (existing != null) {
+            existing.setPreferencesJson(prefs.getPreferencesJson());
+            existing.setModifiedAt(java.time.LocalDateTime.now());
+            userPreferencesRepository.save(existing);
+            log.debug("Preferencias de usuario actualizadas");
+        } else {
+            UserPreferences newPrefs = new UserPreferences(
+                    UUID.randomUUID(), loggedInUserId, prefs.getPreferencesJson()
+            );
+            newPrefs.setCreatedAt(prefs.getCreatedAt());
+            newPrefs.setModifiedAt(prefs.getModifiedAt());
+            userPreferencesRepository.save(newPrefs);
+            log.debug("Preferencias de usuario creadas");
+        }
+        return 1;
+    }
+
+    private int importGroupGoals(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> goalIdMap) {
+        if (snapshot.goalUnits() == null || snapshot.goalUnits().isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+
+        // ─── 1. Importar GoalUnits (regenerar UUIDs) ───
+        for (GoalUnit goalUnit : snapshot.goalUnits()) {
+            if (!goalUnit.isActive()) {
+                continue;
+            }
+
+            UUID oldGoalId = goalUnit.getId();
+            UUID newGoalId = UUID.randomUUID();
+            goalIdMap.put(oldGoalId, newGoalId);
+
+            GoalUnit safeGoalUnit = new GoalUnit();
+            safeGoalUnit.setId(newGoalId);
+            safeGoalUnit.setName(goalUnit.getName());
+            safeGoalUnit.setMonthlyTarget(goalUnit.getMonthlyTarget());
+            safeGoalUnit.setDistributionMode(goalUnit.getDistributionMode());
+            safeGoalUnit.setCreatedAt(goalUnit.getCreatedAt());
+            safeGoalUnit.setModifiedAt(goalUnit.getModifiedAt());
+            safeGoalUnit.setActive(goalUnit.isActive());
+            safeGoalUnit.setMembers(null); // Se reconstruyen después
+
+            goalUnitRepository.save(safeGoalUnit);
+            count++;
+        }
+        log.debug("GoalUnits importadas: {}", count);
+
+        // ─── 2. Importar GoalMembers (mapear goalId) ───
+        int memberCount = 0;
+        if (snapshot.goalMembers() != null) {
+            for (GoalMember gm : snapshot.goalMembers()) {
+                if (!gm.isActive()) {
+                    continue;
+                }
+
+                UUID newGoalId = goalIdMap.get(gm.getGoalId());
+                if (newGoalId == null) {
+                    log.warn("GoalMember {} referencia GoalUnit {} no encontrada en el mapa. Se omitirá.",
+                            gm.getId(), gm.getGoalId());
+                    continue;
+                }
+
+                GoalMember safeGm = new GoalMember();
+                safeGm.setId(UUID.randomUUID());
+                safeGm.setGoalId(newGoalId);
+                safeGm.setUserId(loggedInUserId);
+                safeGm.setRole(gm.getRole());
+                safeGm.setSalary(gm.getSalary());
+                safeGm.setCustomPercentage(gm.getCustomPercentage());
+                safeGm.setJoinedAt(gm.getJoinedAt());
+                safeGm.setCreatedAt(gm.getCreatedAt());
+                safeGm.setModifiedAt(gm.getModifiedAt());
+                safeGm.setActive(gm.isActive());
+
+                goalMemberRepository.save(safeGm);
+                memberCount++;
+            }
+        }
+        log.debug("GoalMembers importados: {}", memberCount);
+        count += memberCount;
+
+        // ─── 3. Importar GoalContributions (mapear goalId) ───
+        int contributionCount = 0;
+        if (snapshot.goalContributions() != null) {
+            for (GoalContribution gc : snapshot.goalContributions()) {
+                if (!gc.isActive()) {
+                    continue;
+                }
+
+                UUID newGoalId = goalIdMap.get(gc.getGoalId());
+                if (newGoalId == null) {
+                    log.warn("GoalContribution {} referencia GoalUnit {} no encontrada en el mapa. Se omitirá.",
+                            gc.getId(), gc.getGoalId());
+                    continue;
+                }
+
+                GoalContribution safeGc = new GoalContribution();
+                safeGc.setId(UUID.randomUUID());
+                safeGc.setGoalId(newGoalId);
+                safeGc.setUserId(loggedInUserId);
+                safeGc.setAmount(gc.getAmount());
+                safeGc.setDate(gc.getDate());
+                safeGc.setCreatedAt(gc.getCreatedAt());
+                safeGc.setModifiedAt(gc.getModifiedAt());
+                safeGc.setActive(gc.isActive());
+
+                goalContributionRepository.save(safeGc);
+                contributionCount++;
+            }
+        }
+        log.debug("GoalContributions importadas: {}", contributionCount);
+        count += contributionCount;
+
         return count;
     }
 

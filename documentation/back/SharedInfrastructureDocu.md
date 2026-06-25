@@ -12,6 +12,39 @@
 
 ---
 
+## Notificaciones (v0.2.0)
+
+El módulo de notificaciones internas (`com.puntomartinez.millete.notifications`) sigue la arquitectura hexagonal. Se integra con Group Goals para notificar al usuario cuando recibe una invitación a unirse a una meta compartida.
+
+### Endpoints REST
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/v1/notifications` | Lista notificaciones activas del usuario |
+| GET | `/api/v1/notifications/unread-count` | Devuelve el número de notificaciones no leídas |
+| POST | `/api/v1/notifications/{id}/read` | Marca una notificación como leída |
+| DELETE | `/api/v1/notifications/{id}` | Elimina (soft delete) una notificación |
+
+### Modelo de dominio
+
+- **Notification**: entidad con id, userId, type (`GOAL_INVITATION`, `SYSTEM`), title, message, metadata (JSONB), read, actionRequired, actionedAt, createdAt, expiresAt, active.
+- **NotificationType**: enum con los tipos soportados.
+
+### Servicio de aplicación
+
+`NotificationService` implementa `CreateNotificationUseCase` y expone métodos para:
+- Listar notificaciones activas de un usuario
+- Contar no leídas
+- Marcar como leída
+- Eliminar (soft delete)
+- Crear notificaciones de invitación a Group Goals
+
+### Integración con Group Goals
+
+`GroupGoalService.inviteMember()` llama a `CreateNotificationUseCase.create()` tras guardar la invitación. La notificación incluye metadata estructurada con `goalId`, `invitationId`, `goalName` e `inviterName`, permitiendo que el frontend muestre la invitación en la tabla de notificaciones del perfil y permita aceptar/rechazar directamente desde ahí.
+
+---
+
 ## SecurityConfig.java
 
 Configuración central de seguridad con Spring Security. Anotada con `@Configuration` y `@EnableWebSecurity`.

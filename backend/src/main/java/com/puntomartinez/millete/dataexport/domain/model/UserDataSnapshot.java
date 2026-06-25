@@ -3,10 +3,14 @@ package com.puntomartinez.millete.dataexport.domain.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.users.domain.model.UserPreferences;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +33,19 @@ public record UserDataSnapshot(
         List<Investment> investments,
 
         @JsonProperty("savingsGoals")
-        List<SavingsGoal> savingsGoals
+        List<SavingsGoal> savingsGoals,
+
+        @JsonProperty("userPreferences")
+        UserPreferences userPreferences,
+
+        @JsonProperty("goalUnits")
+        List<GoalUnit> goalUnits,
+
+        @JsonProperty("goalMembers")
+        List<GoalMember> goalMembers,
+
+        @JsonProperty("goalContributions")
+        List<GoalContribution> goalContributions
 ) {
     public UserDataSnapshot {
         if (metadata == null) {

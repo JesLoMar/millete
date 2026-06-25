@@ -73,6 +73,8 @@ Rechaza una invitación por ID. Verifica que la invitación sea para el usuario 
 
 Servicio central que implementa los 4 casos de uso y contiene métodos adicionales para el controlador. Utiliza @Slf4j de Lombok para logging estructurado. Todos los mensajes de excepción y logs están en inglés.
 
+Inyecta `CreateNotificationUseCase` para crear notificaciones internas cuando se envía una invitación a un Group Goal.
+
 ### Crear meta (createGoalUnit)
 1. Crea la GoalUnit con UUID aleatorio, nombre, objetivo y modo de distribución.
 2. Guarda en base de datos.
@@ -86,7 +88,8 @@ Servicio central que implementa los 4 casos de uso y contiene métodos adicional
 3. Verifica que no sea ya miembro activo.
 4. Verifica que no tenga invitación PENDING previa.
 5. Crea GoalInvitation con token único, expiración de 7 días y referencia al usuario invitado.
-6. Guarda y registra el evento mediante log.info.
+6. Crea una notificación interna (`NotificationType.GOAL_INVITATION`) para el usuario invitado mediante `CreateNotificationUseCase.create()`. La notificación incluye metadata con goalId, invitationId, goalName e inviterName.
+7. Guarda y registra el evento mediante log.info.
 
 ### Aceptar invitación (acceptInvitation)
 1. Busca la invitación por ID.
@@ -259,8 +262,7 @@ Las aportaciones se ordenan por fecha descendente. Los miembros y aportaciones f
 ## Migraciones Flyway
 
 - V1: Crea las tablas originales con nombres family_*.
-- V2: Añade tablas de sesiones, preferencias, metas de ahorro y campos premium/Telegram. Añade columnas inviter_user_id e invited_user_id a family_invitations, hace opcionales email y token, añade estado REJECTED y EXPIRED. Renombra todas las tablas y columnas de family_* a goal_*. Actualiza constraints, foreign keys e índices. Elimina la foreign key obsoleta de categories a family_units.
-- V3: Elimina la restricción uq_user_channel de user_sessions y añade la columna active para soporte multi-sesión.
+- V2: Añade tablas de sesiones, preferencias, metas de ahorro y campos premium/Telegram. Añade columnas inviter_user_id e invited_user_id a family_invitations, hace opcionales email y token, añade estado REJECTED y EXPIRED. Renombra todas las tablas y columnas de family_* a goal_*. Actualiza constraints, foreign keys e índices. Elimina la foreign key obsoleta de categories a family_units. Añade soporte multi-sesión (columna active en user_sessions, elimina uq_user_channel). Añade tabla notifications con índices para notificaciones activas, no leídas y ordenadas por fecha.
 
 ---
 

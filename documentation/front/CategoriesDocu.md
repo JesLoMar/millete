@@ -152,9 +152,9 @@ Diálogo para editar una categoría existente. Siempre controlado: se abre desde
 - Límite de presupuesto mensual: campo numérico con step 0.01, min 0 y sufijo "EUR". Oculta spinners con CSS [appearance:textfield].
 - Color: selector visual con ColorPicker, inicializado al color actual.
 
-### Efecto de reinicio
+### Efecto de reinicio (v0.2.0)
 
-useEffect que se dispara al cambiar category. Reinicia nombre, color y presupuesto con los valores de la categoría seleccionada. Si no hay categoría, los deja vacíos.
+El estado del formulario se inicializa directamente desde la prop `category` mediante una función `getInitialState`. El componente padre (`CategoryTable`) fuerza el reset completo del diálogo pasando `key={editingCategory?.id}`, de modo que React monta un nuevo componente cuando cambia la categoría en edición. Esto elimina el `useEffect` de sincronización de estado que causaba renders extra y valores obsoletos (problema reportado por react-doctor).
 
 ### Flujo
 
