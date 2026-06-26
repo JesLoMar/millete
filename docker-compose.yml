@@ -113,9 +113,46 @@ services:
       BACKUP_RETENTION_DAYS: 7
     volumes:
       - ./backups:/backups
-      - ./scripts/backup.sh:/backup.sh:ro
       - ./scripts/restore.sh:/restore.sh:ro
-    command: sh /backup.sh
+    command: >
+      sh -c '
+        echo "===================================";
+        echo "  Daily Backup System";
+        echo "===================================";
+        echo "Database: ${PGDATABASE}";
+        echo "Host: ${PGHOST}";
+        echo "User: ${PGUSER}";
+        echo "Retention: ${BACKUP_RETENTION_DAYS} days";
+        echo "===================================";
+        LAST_BACKUP="";
+        TODAY=$(date +%Y%m%d);
+        EXISTING_BACKUP=$(ls -t /backups/${PGDATABASE}_${TODAY}*.sql.gz 2>/dev/null | head -1);
+        if [ -n "$EXISTING_BACKUP" ]; then
+          echo "[$(date)] Today backup already exists: $(basename $EXISTING_BACKUP)";
+          LAST_BACKUP="$TODAY";
+        fi;
+        while true; do
+          HOUR=$(date +%H);
+          TODAY=$(date +%Y%m%d);
+          if [ "$HOUR" = "02" ] && [ "$LAST_BACKUP" != "$TODAY" ]; then
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S);
+            BACKUP_FILE="/backups/${PGDATABASE}_${TIMESTAMP}.sql.gz";
+            echo "[$(date)] Starting daily backup...";
+            if PGPASSWORD="${PGPASSWORD}" pg_dump -h "${PGHOST}" -U "${PGUSER}" -d "${PGDATABASE}" --no-owner --no-acl | gzip > "$BACKUP_FILE"; then
+              SIZE=$(ls -lh "$BACKUP_FILE" | awk "{print \$5}");
+              echo "[$(date)] Backup successful: $(basename $BACKUP_FILE) (${SIZE})";
+              LAST_BACKUP="$TODAY";
+              DELETED=$(find /backups -name "${PGDATABASE}_*.sql.gz" -mtime +${BACKUP_RETENTION_DAYS} -delete -print | wc -l);
+              if [ "$DELETED" -gt 0 ]; then
+                echo "[$(date)] Cleaned ${DELETED} old backup(s) (>${BACKUP_RETENTION_DAYS} days)";
+              fi;
+            else
+              echo "[$(date)] Backup failed";
+            fi;
+          fi;
+          sleep 60;
+        done
+      '
     depends_on:
       postgres:
         condition: service_healthy

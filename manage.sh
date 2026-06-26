@@ -77,12 +77,34 @@ case "$1" in
         else
             echo "⚠ Warning: scripts/init-app-user.sh not found."
         fi
+        # Fix restore script line endings
+        if [ -f "scripts/restore.sh" ]; then
+            sed -i 's/\r$//' scripts/restore.sh 2>/dev/null || true
+            chmod +x scripts/restore.sh
+            echo "✔ Restore script fixed."
+        fi
         echo ""
         echo "Initialization complete. You can now run: sh manage.sh start"
         ;;
     create-app-user)
         echo "Creating application user 'millete_app' in PostgreSQL..."
         docker compose exec postgres sh /docker-entrypoint-initdb.d/01-init-app-user.sh
+        ;;
+    fix-scripts)
+        echo "Fixing script line endings (Windows to Unix)..."
+        if [ -f "scripts/restore.sh" ]; then
+            sed -i 's/\r$//' scripts/restore.sh
+            echo "✔ scripts/restore.sh fixed."
+        fi
+        if [ -f "scripts/init-app-user.sh" ]; then
+            sed -i 's/\r$//' scripts/init-app-user.sh
+            echo "✔ scripts/init-app-user.sh fixed."
+        fi
+        if [ -f "manage.sh" ]; then
+            sed -i 's/\r$//' manage.sh
+            echo "✔ manage.sh fixed."
+        fi
+        echo "Done. All scripts are now in Unix format."
         ;;
     clean-all)
         echo "WARNING: This operation will permanently delete ALL containers, volumes, and backups."
@@ -112,6 +134,7 @@ case "$1" in
         echo "  restore         - Launch interactive database restoration wizard"
         echo "  init            - Bootstrap volumes and host directory permissions"
         echo "  create-app-user - Create millete_app user in existing database"
+        echo "  fix-scripts     - Convert script line endings to Unix format"
         echo "  clean-all       - WIPE everything (Containers, volumes, and backups)"
         ;;
 esac
