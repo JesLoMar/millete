@@ -221,7 +221,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
 
         // Act
@@ -288,7 +287,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
 
@@ -327,7 +325,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
 
         // Act
@@ -356,7 +353,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(userPreferencesRepository.findByUserId(destUserId)).thenReturn(Optional.empty());
         when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> inv.getArgument(0));
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
@@ -395,7 +391,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(userPreferencesRepository.findByUserId(destUserId)).thenReturn(Optional.of(existingPrefs));
         when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> inv.getArgument(0));
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
@@ -463,7 +458,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(goalUnitRepository.save(any(GoalUnit.class))).thenAnswer(inv -> inv.getArgument(0));
         when(goalMemberRepository.save(any(GoalMember.class))).thenAnswer(inv -> inv.getArgument(0));
         when(goalContributionRepository.save(any(GoalContribution.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -522,7 +516,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
 
         // Act
@@ -559,7 +552,6 @@ class DataImportServiceTest {
         String json = objectMapper.writeValueAsString(snapshot);
         MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
 
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
         when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
 
         // Act

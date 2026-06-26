@@ -39,9 +39,14 @@ public class Migration001to010 implements DataMigration {
         // simplemente serán null o listas vacías.
         //
         // Esta migración explícita reconstruye el snapshot con los campos
-        // inicializados para claridad y consistencia.
+        // inicializados para claridad y consistencia, y actualiza la versión.
+        UserDataSnapshot.SnapshotMetadata updatedMetadata = new UserDataSnapshot.SnapshotMetadata(
+                toVersion().toString(),
+                snapshot.metadata().exportDate(),
+                snapshot.metadata().appVersion()
+        );
         return new UserDataSnapshot(
-                snapshot.metadata(),
+                updatedMetadata,
                 snapshot.categories(),
                 snapshot.transactions(),
                 snapshot.plannedTransactions(),
