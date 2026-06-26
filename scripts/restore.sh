@@ -7,7 +7,7 @@ echo "  Database Restoration"
 echo "==================================="
 echo ""
 
-# List last 10 backups
+# List the last 10 available backups
 echo "Available backups:"
 echo "------------------------------"
 ls -1t "${BACKUP_DIR}"/*.sql.gz 2>/dev/null | head -10 | nl
@@ -18,7 +18,7 @@ if [ -z "$(ls -A ${BACKUP_DIR}/*.sql.gz 2>/dev/null)" ]; then
     exit 1
 fi
 
-# Select backup
+# Prompt user for backup selection
 echo -n "Enter backup number to restore (or 'q' to quit): "
 read SELECTION
 
@@ -27,10 +27,12 @@ if [ "$SELECTION" = "q" ]; then
     exit 0
 fi
 
+# Validate that input is strictly a number
 case "$SELECTION" in
     ''|*[!0-9]*) echo "Invalid selection"; exit 1 ;;
 esac
 
+# Resolve the filename from the selected number
 BACKUP_FILE=$(ls -1t "${BACKUP_DIR}"/*.sql.gz 2>/dev/null | sed -n "${SELECTION}p")
 
 if [ -z "$BACKUP_FILE" ]; then
@@ -52,11 +54,18 @@ fi
 echo ""
 echo "Starting restoration..."
 
+# FIX: Terminate all active connections to the target database before dropping it
+echo "[$(date)] Terminating active connections to ${PGDATABASE}..."
+PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d postgres -c \
+"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${PGDATABASE}' AND pid <> pg_backend_pid();"
+
 # Drop and recreate database
+echo "[$(date)] Dropping and recreating database..."
 PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d postgres -c "DROP DATABASE IF EXISTS ${PGDATABASE};"
 PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d postgres -c "CREATE DATABASE ${PGDATABASE} OWNER ${PGUSER};"
 
-# Restore backup
+# Restore the compressed backup file using a pipeline
+echo "[$(date)] Injecting schema and data..."
 if gunzip -c "${BACKUP_FILE}" | PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d "${PGDATABASE}"; then
     echo ""
     echo "Restoration completed successfully"

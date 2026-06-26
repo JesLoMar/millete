@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Configuration
 BACKUP_DIR="/backups"
 RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-7}
 LAST_BACKUP=""
@@ -10,14 +9,23 @@ echo "  Daily Backup System"
 echo "==================================="
 echo "Database: ${PGDATABASE}"
 echo "Host: ${PGHOST}"
+echo "User: ${PGUSER}"
 echo "Retention: ${RETENTION_DAYS} days"
 echo "==================================="
+
+# Check if a backup for today already exists on startup
+TODAY=$(date +%Y%m%d)
+EXISTING_BACKUP=$(ls -t "${BACKUP_DIR}/${PGDATABASE}_${TODAY}"*.sql.gz 2>/dev/null | head -1)
+if [ -n "$EXISTING_BACKUP" ]; then
+    echo "[$(date)] Today's backup already exists: $(basename ${EXISTING_BACKUP})"
+    LAST_BACKUP="$TODAY"
+fi
 
 while true; do
     HOUR=$(date +%H)
     TODAY=$(date +%Y%m%d)
     
-    # Backup at 2 AM (only once per day)
+    # Trigger backup at 2 AM (only once per day)
     if [ "$HOUR" = "02" ] && [ "$LAST_BACKUP" != "$TODAY" ]; then
         TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
         BACKUP_FILE="${BACKUP_DIR}/${PGDATABASE}_${TIMESTAMP}.sql.gz"
@@ -35,10 +43,10 @@ while true; do
             SIZE=$(ls -lh "${BACKUP_FILE}" | awk '{print $5}')
             echo "[$(date)] Backup successful: $(basename ${BACKUP_FILE}) (${SIZE})"
             
-            # Registrar que el backup de hoy ya se hizo
+            # Mark today's backup as completed
             LAST_BACKUP="$TODAY"
             
-            # Clean old backups
+            # Clean up old backups older than RETENTION_DAYS
             DELETED=$(find "${BACKUP_DIR}" -name "${PGDATABASE}_*.sql.gz" -mtime +${RETENTION_DAYS} -delete -print | wc -l)
             if [ "$DELETED" -gt 0 ]; then
                 echo "[$(date)] Cleaned ${DELETED} old backup(s) (>${RETENTION_DAYS} days)"

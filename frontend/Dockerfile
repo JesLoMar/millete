@@ -1,69 +1,61 @@
 # =========================================================================
-# ETAPA 1: BUILD (Compila la aplicación React con Node 22 + PNPM)
+# STAGE 1: BUILD (Compile the React application using Node 22 + PNPM)
 # =========================================================================
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Instalar pnpm de forma global (versión exacta requerida)
+# Install pnpm globally (exact version required)
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
 
-# Copiar archivos de dependencias primero (Aprovecha la caché de capas de Docker)
+# Copy dependency definition files first (Leverages Docker layer caching)
 COPY package.json pnpm-lock.yaml* ./
 
-# Instalar dependencias congelando el lockfile
+# Install dependencies freezing the lockfile
 RUN pnpm install --frozen-lockfile
 
-# Copiar el resto del código fuente del frontend
+# Copy the remaining frontend source code
 COPY . .
 
-# Variables de entorno para el proceso de build de Vite (Inyectadas desde el entorno)
+# Environment variables for the Vite build process
 ARG VITE_API_URL
 ARG VITE_APP_VERSION
 
 ENV VITE_API_URL=${VITE_API_URL:-/api/v1}
 ENV VITE_APP_VERSION=${VITE_APP_VERSION:-0.0.1}
 
-# Construir la aplicación (Vite generará los estáticos en /app/dist)
+# Build the application (Vite outputs static files to /app/dist)
 RUN pnpm run build
 
 # =========================================================================
-# ETAPA 2: RUNTIME (Servidor Nginx Rootless seguro para producción)
+# STAGE 2: RUNTIME (Secure Rootless Nginx Server for Production)
 # =========================================================================
 FROM nginx:1.27-alpine
 
-# Instalar utilidades para debugging y healthcheck
+# Install utilities for debugging and healthchecking
 RUN apk add --no-cache curl
 
-# Crear usuario no root con un ID explícito por seguridad
+# Create a non-root user with an explicit ID for security
 RUN addgroup -g 1001 -S millete-group && \
     adduser -S millete-user -u 1001 -G millete-group
 
-# [CORREGIDO] Copiar tu archivo de configuración optimizado en lugar de usar el 'echo'
-# Ojo: Asegúrate de que el archivo se llama 'nginx.conf' y está en la raíz de tu carpeta frontend
+# Copy your optimized, rootless-ready Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# -------------------------------------------------------------------------
-# INYECCIÓN CLAVE: Ajustes de permisos para ejecución sin privilegios (Rootless)
-# -------------------------------------------------------------------------
-RUN sed -i '/^pid/d' /etc/nginx/nginx.conf && \
-    sed -i '1s/^/pid \/tmp\/nginx.pid;\n/' /etc/nginx/nginx.conf
-
-# Copiar los archivos compilados desde la etapa anterior
+# Copy the compiled static files from the build stage
 COPY --from=builder --chown=millete-user:millete-group /app/dist /usr/share/nginx/html
 
-# Asegurar permisos en directorios temporales que usará Nginx en modo no-root
+# Ensure proper permissions on temporary directories used by unprivileged Nginx
 RUN chown -R millete-user:millete-group /usr/share/nginx/html /var/cache/nginx /var/log/nginx /etc/nginx && \
     touch /tmp/nginx.pid && \
     chown millete-user:millete-group /tmp/nginx.pid && \
     mkdir -p /tmp/client_body /tmp/fastcgi_temp /tmp/proxy_temp /tmp/scgi_temp /tmp/uwsgi_temp && \
     chown -R millete-user:millete-group /tmp
 
-# Cambiar al usuario seguro sin privilegios
+# Switch to the secure unprivileged user
 USER millete-user
 
-# Cambiamos al 80; tu nginx.config escucha en el puerto 80 (listen 80;)
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
