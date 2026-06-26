@@ -38,7 +38,6 @@ case "$1" in
         ;;
     backup-now)
         echo "Executing manual backup..."
-        # Using fixed container execution with escaped variables to avoid host-side interpolation
         docker compose exec db-backup sh -c '
             TIMESTAMP=$(date +%Y%m%d_%H%M%S)
             FILE="/backups/${PGDATABASE}_manual_${TIMESTAMP}.sql.gz"
@@ -50,7 +49,6 @@ case "$1" in
         echo "Stopping backend to release active database connections..."
         docker compose stop backend
         echo ""
-        # CORRECTED: Added -it because restore.sh requires interactive user input (read prompts)
         docker compose run --rm -it db-backup sh /restore.sh
         RESTORE_EXIT=$?
         echo ""
@@ -65,10 +63,7 @@ case "$1" in
         ;;
     init)
         echo "Initializing production environment..."
-        # Create external docker volume if it does not exist
-        docker volume create millete_postgres_data >/dev/null && echo "✔ Docker volume created." || echo "ℹ Docker volume already exists."
-        
-        # Create backup directory and fix permissions for alpine postgreSQL user (UID 1000)
+        docker volume create millete_postgres_data 2>/dev/null && echo "✔ Docker volume created." || echo "ℹ Docker volume already exists."
         mkdir -p backups
         if chown 1000:1000 backups 2>/dev/null; then
             echo "✔ Backup folder permissions set up successfully."
@@ -76,10 +71,21 @@ case "$1" in
             echo "⚠ Warning: Could not set backup folder permissions."
             echo "  Please run: 'sudo chown -R 1000:1000 backups' if backups fail to write."
         fi
-        echo "\nInitialization complete. You can now run: sh manage.sh start"
+        if [ -f "scripts/init-app-user.sh" ]; then
+            chmod +x scripts/init-app-user.sh
+            echo "✔ Init script permissions set."
+        else
+            echo "⚠ Warning: scripts/init-app-user.sh not found."
+        fi
+        echo ""
+        echo "Initialization complete. You can now run: sh manage.sh start"
+        ;;
+    create-app-user)
+        echo "Creating application user 'millete_app' in PostgreSQL..."
+        docker compose exec postgres sh /docker-entrypoint-initdb.d/01-init-app-user.sh
         ;;
     clean-all)
-        echo "🚨 WARNING: This operation will permanently delete ALL containers, volumes, and backups."
+        echo "WARNING: This operation will permanently delete ALL containers, volumes, and backups."
         echo -n "Type 'DELETE' to confirm destruction: "
         read CONFIRM
         if [ "$CONFIRM" = "DELETE" ]; then
@@ -95,16 +101,17 @@ case "$1" in
         echo "Usage: sh manage.sh [command]"
         echo ""
         echo "Commands:"
-        echo "  start       - Start all services in the background"
-        echo "  stop        - Stop running services without removing them"
-        echo "  restart     - Quickly restart containers (ignores config/.env updates)"
-        echo "  reload      - Rebuild images and recreate containers with new configs"
-        echo "  down        - Stop and remove containers and networks"
-        echo "  status      - Display container health and list recent backups"
-        echo "  logs [svc]  - Tail logs (optionally filter by service name, e.g., 'backend')"
-        echo "  backup-now  - Trigger an instantaneous manual database backup"
-        echo "  restore     - Launch interactive database restoration wizard"
-        echo "  init        - Bootstrap volumes and host directory permissions"
-        echo "  clean-all   - WIPE everything (Containers, external volumes, and backup files)"
+        echo "  start           - Start all services in the background"
+        echo "  stop            - Stop running services without removing them"
+        echo "  restart         - Quickly restart containers (ignores config/.env updates)"
+        echo "  reload          - Rebuild images and recreate containers with new configs"
+        echo "  down            - Stop and remove containers and networks"
+        echo "  status          - Display container health and list recent backups"
+        echo "  logs [svc]      - Tail logs (optionally filter by service name)"
+        echo "  backup-now      - Trigger an instantaneous manual database backup"
+        echo "  restore         - Launch interactive database restoration wizard"
+        echo "  init            - Bootstrap volumes and host directory permissions"
+        echo "  create-app-user - Create millete_app user in existing database"
+        echo "  clean-all       - WIPE everything (Containers, volumes, and backups)"
         ;;
 esac

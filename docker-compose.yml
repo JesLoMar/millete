@@ -14,9 +14,10 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
       PGDATA: /var/lib/postgresql/data/pgdata
+      APP_DB_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-app-user.sql:/docker-entrypoint-initdb.d/01-init-app-user.sql:ro
+      - ./scripts/init-app-user.sh:/docker-entrypoint-initdb.d/01-init-app-user.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${DATABASE_USER} -d $${DATABASE_NAME}"]
       interval: 10s
