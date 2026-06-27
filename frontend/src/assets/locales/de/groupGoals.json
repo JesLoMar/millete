@@ -92,7 +92,7 @@
     "createSuccess": "Gruppenziel erfolgreich erstellt",
     "createError": "Fehler beim Erstellen des Gruppenziels",
     "inviteSuccess": "Einladung erfolgreich gesendet",
-    "inviteError": "Fehler beim Senden della Einladung",
+    "inviteError": "Fehler beim Senden der Einladung",
     "modeSuccess": "Verteilungsmodus aktualisiert",
     "modeError": "Fehler beim Ändern des Modus",
     "goalSuccess": "Gruppenziel erfolgreich aktualisiert",

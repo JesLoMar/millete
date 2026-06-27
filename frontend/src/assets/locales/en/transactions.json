@@ -24,7 +24,7 @@
   "deleteConfirm": "$t(common:prompts.deleteConfirm)",
   "new": "$t(common:actions.add) $t(common:entities.transaction)",
   "newShort": "$t(common:entities.transaction)",
-  "newTitle": "Register Transaction",
+  "newTitle": "Record Transaction",
   "moreOptions": "More options",
   "recurring": {
     "deleteTitle": "$t(common:actions.delete) recurring $t(common:entities.transaction)",

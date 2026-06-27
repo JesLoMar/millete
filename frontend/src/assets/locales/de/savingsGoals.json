@@ -19,7 +19,7 @@
   "linkPlaceholder": "https://...",
   "progress": "Fortschritt",
   "of": "von",
-  "addFunds": "$t(common:actions.add) Mittel zu {{name}} hinzu",
+  "addFunds": "Mittel zu {{name}} hinzufügen",
   "amount": "Betrag (€)",
   "add": "$t(common:actions.add)",
   "create": "$t(common:actions.create) Ziel",

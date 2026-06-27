@@ -8,6 +8,7 @@
     "deleting": "Suppression...",
     "add": "Ajouter",
     "accept": "Accepter",
+    "welcome": "Connexion réussie",
     "reject": "Refuser",
     "close": "Fermer",
     "search": "Rechercher par nom...",
@@ -20,7 +21,8 @@
     "invite": "Inviter",
     "refresh": "Actualiser",
     "export": "Exporter",
-    "import": "Importer"
+    "import": "Importer",
+    "send": "Envoyer"
   },
   "status": {
     "loading": "Chargement...",

@@ -6,12 +6,12 @@
       {
         "number": "01",
         "title": "Crea tu cuenta",
-        "description": "Sin tarjeta de crédito. Solo usuario y/o correo y contraseña."
+        "description": "Solo contraseña y usuario y/o correo"
       },
       {
         "number": "02",
         "title": "Crea tu primera categoría",
-        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio...)."
+        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio, Ingresos...)."
       },
       {
         "number": "03",
@@ -21,21 +21,16 @@
     ]
   },
   "wiki": {
-    "link": "Consultar la wiki completa"
+    "link": "Consultar la wiki"
   },
   "news": {
     "title": "Novedades recientes",
     "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
     "items": [
       {
-        "tag": "v0.0.4",
-        "title": "Japonés añadido. Ahora es posible exportar e importar datos entre cuentas sin limitaciones de usuario.",
-        "description": "Ahora es posible exportar los datos a un archivo JSON e importarlos en otra cuenta. Esto elimina las restricciones en la migración de información, permitiendo una gestión de datos más flexible. Además, se ha añadido soporte para el idioma japonés."
-      },
-      {
-        "tag": "v0.0.3",
-        "title": "Arreglos de fallos visuales y de lógica",
-        "description": "Adaptación de los estilos para ser compatible con navegadores como Safari. Se dejan de tener en cuenta las categorías y transacciones eliminadas para el cálculo de métricas."
+        "tag": "v0.1.0",
+        "title": "Actualización mayor",
+        "description": "- Nuevo sistema de notificaciones \n - Añadir perfil de usuario \n - Añadir metas de ahorro \n - Módulo Familias refactorizado y mejorado (ahora se llama Metas Grupales) \n - Integración con bot de Telegram \n - Invitaciones a Metas Grupales con notificaciones dentro de la web \n - Incrementadas las funcionalidades de exportación. Ahora soporta CSV y PDF. \n - Reducción del uso de dependencias externas. \n -  Mejoras en el sistema de traducción. "
       }
     ]
   }

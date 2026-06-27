@@ -8,6 +8,7 @@
     "deleting": "Excluindo...",
     "add": "Adicionar",
     "accept": "Aceitar",
+    "welcome": "Início de sessão bem-sucedido",
     "reject": "Rejeitar",
     "close": "Fechar",
     "search": "Buscar por nome...",
@@ -20,7 +21,8 @@
     "invite": "Convidar",
     "refresh": "Atualizar",
     "export": "Exportar",
-    "import": "Importar"
+    "import": "Importar",
+    "send": "Enviar"
   },
   "status": {
     "loading": "Carregando...",

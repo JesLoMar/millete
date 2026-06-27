@@ -8,6 +8,7 @@
     "deleting": "Eliminando...",
     "add": "Añadir",
     "accept": "Aceptar",
+    "welcome": "Inicio de sesión exitoso",
     "reject": "Rechazar",
     "close": "Cerrar",
     "search": "Buscar por nombre...",
@@ -20,7 +21,8 @@
     "invite": "Invitar",
     "refresh": "Actualizar",
     "export": "Exportar",
-    "import": "Importar"
+    "import": "Importar",
+    "send": "Enviar"
   },
   "status": {
     "loading": "Cargando...",
@@ -37,8 +39,8 @@
     "categories": "Categorías",
     "investment": "Inversión",
     "investments": "Inversiones",
-    "groupGoal": "Group Goal",
-    "groupGoals": "Group Goals",
+    "groupGoal": "Meta grupal",
+    "groupGoals": "Metas grupales",
     "savingsGoal": "Meta de Ahorro",
     "savingsGoals": "Metas de Ahorro",
     "user": "Usuario",

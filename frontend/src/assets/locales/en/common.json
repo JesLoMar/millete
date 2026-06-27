@@ -8,6 +8,7 @@
     "deleting": "Deleting...",
     "add": "Add",
     "accept": "Accept",
+    "welcome": "Successful login",
     "reject": "Reject",
     "close": "Close",
     "search": "Search by name...",
@@ -20,7 +21,8 @@
     "invite": "Invite",
     "refresh": "Refresh",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "send": "Send"
   },
   "status": {
     "loading": "Loading...",

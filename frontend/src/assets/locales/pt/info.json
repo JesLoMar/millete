@@ -1,41 +1,36 @@
 {
   "steps": {
     "title": "Primeiros passos",
-    "subtitle": "Comece a gerenciar suas finanças em menos de 5 minutos com nosso guia rápido.",
+    "subtitle": "Comece a gerenciar suas finanças em menos de 5 minutos com o nosso guia rápido.",
     "items": [
       {
         "number": "01",
         "title": "Crie sua conta",
-        "description": "Sem cartão de crédito. Apenas usuário e/ou e-mail e senha."
+        "description": "Apenas senha e nome de usuário e/ou e-mail"
       },
       {
         "number": "02",
         "title": "Crie sua primeira categoria",
-        "description": "Defina categorias personalizadas para organizar suas despesas (ex. Alimentação, Transporte, Lazer...)."
+        "description": "Defina categorias personalizadas para organizar suas despesas (ex. Alimentação, Transporte, Lazer, Receitas...)."
       },
       {
         "number": "03",
         "title": "Registre suas despesas",
-        "description": "Adicione transações a partir de sua seção correspondente ou facilmente pelo dashboard."
+        "description": "Adicione transações a partir da seção dedicada ou facilmente através do dashboard."
       }
     ]
   },
   "wiki": {
-    "link": "Consultar a wiki completa"
+    "link": "Consultar o wiki"
   },
   "news": {
     "title": "Novidades recentes",
     "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
     "items": [
       {
-        "tag": "v0.0.4",
-        "title": "Japonês adicionado. Agora é possível exportar e importar dados entre contas sem limitações de usuário.",
-        "description": "Agora é possível exportar os dados para um arquivo JSON e importá-los em outra conta. Isso elimina as restrições na migração de informações, permitindo uma gestão de dados mais flexível. Além disso, foi adicionado suporte para o idioma japonês."
-      },
-      {
-        "tag": "v0.0.3",
-        "title": "Correções de erros visuais e de lógica",
-        "description": "Adaptação dos estilos para compatibilidade com navegadores como Safari. As categorias e transações excluídas deixam de ser consideradas no cálculo das métricas."
+        "tag": "v0.1.0",
+        "title": "Atualização principal",
+        "description": "- Novo sistema de notificações \n - Adicionar perfil de usuário \n - Adicionar metas de poupança \n - Módulo de Metas de Grupo refatorado e melhorado \n - Integração com o bot do Telegram \n - Convites para Metas de Grupo com notificações dentro do site \n - Aumento das funcionalidades de exportação. Agora suporta CSV e PDF. \n - Redução do uso de dependências externas. \n - Melhorias no sistema de tradução."
       }
     ]
   }

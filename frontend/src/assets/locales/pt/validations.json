@@ -1,7 +1,7 @@
 {
   "required": "Campo obrigatório",
   "invalid_email": "O formato do e-mail não é válido",
-  "invalid_number": "Insira un número válido",
+  "invalid_number": "Insira um número válido",
   "min_length": "Deve ter pelo menos {{min}} caracteres",
   "max_length": "Deve ter no máximo {{max}} caracteres",
   "min_value": "O valor mínimo é {{min}}",

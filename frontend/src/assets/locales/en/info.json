@@ -1,41 +1,36 @@
 {
   "steps": {
-    "title": "First steps",
+    "title": "First Steps",
     "subtitle": "Start managing your finances in less than 5 minutes with our quick guide.",
     "items": [
       {
         "number": "01",
         "title": "Create your account",
-        "description": "No credit card required. Only username and/or email and password."
+        "description": "Just a password and username and/or email"
       },
       {
         "number": "02",
         "title": "Create your first category",
-        "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure...)."
+        "description": "Define custom categories to organize your expenses (e.g., Food, Transport, Leisure, Income...)."
       },
       {
         "number": "03",
         "title": "Record your expenses",
-        "description": "Add transactions from their section or easily from the dashboard."
+        "description": "Add transactions from their specific section or easily right from the dashboard."
       }
     ]
   },
   "wiki": {
-    "link": "Consult the full wiki"
+    "link": "Check the wiki"
   },
   "news": {
-    "title": "Recent news",
+    "title": "Recent News",
     "subtitle": "Discover the latest improvements added to the platform.",
     "items": [
       {
-        "tag": "v0.0.4",
-        "title": "Japanese language added. It is now possible to export and import data between accounts without user limitations.",
-        "description": "You can now export data to a JSON file and import it into another account. This removes restrictions on data migration, allowing more flexible data management. Additionally, Japanese language support has been added."
-      },
-      {
-        "tag": "v0.0.3",
-        "title": "Visual and logical bug fixes",
-        "description": "Adapted styles for compatibility with browsers like Safari. Deleted categories and transactions are no longer considered for metrics calculation."
+        "tag": "v0.1.0",
+        "title": "Major update",
+        "description": "- New notification system \n - Add user profile \n - Add savings goals \n - Group Goals module refactored and improved \n - Integration with Telegram bot \n - Invitations to Group Goals with in-app notifications \n - Increased export functionalities. Now supports CSV and PDF. \n - Reduced use of external dependencies. \n - Improvements to the translation system."
       }
     ]
   }

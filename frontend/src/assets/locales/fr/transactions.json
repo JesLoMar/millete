@@ -52,7 +52,7 @@
     "indefinite": "Sans date de fin",
     "nextExecution": "Prochaine exécution",
     "summary": "Résumé",
-    "summaryText": "Une transaction de {{amount}} € sera créée tous les {{frequency}} {{type}} à partir du {{start}} {{end}}",
+    "summaryText": "Une transaction de {{amount}} € sera créée tous les {{frequency}} {{type}} du {{start}} au {{end}}",
     "units": {
       "days": "jours",
       "weeks": "semaines",

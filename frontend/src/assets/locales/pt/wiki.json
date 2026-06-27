@@ -2,91 +2,91 @@
   "sections": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "El panel principal donde ves el estado de tus finanzas y accedes a las funciones clave.",
+      "description": "O painel principal onde você vê o status das suas finanças e acessa as principais funções.",
       "topics": [
         {
-          "title": "Accesos rápidos",
-          "content": "Desde el Dashboard tienes acceso a los accesos rápidos a: \n\n- Añadir transacción: Permite añadir ingresos o gastos al saldo de la cuenta. Deben ser categorizadas.\n\n- Crear categoría: Permite crear nuevas categorías para organizar tus transacciones. Se les puede asignar un presupuesto.\n\n- Importar datos: Permite importar datos del usuario desde una versión anterior a la actual.\n\n- Exportar datos: Permite exportar los datos para su posterior importación."
+          "title": "Ações Rápidas",
+          "content": "A partir do Dashboard, você tem acesso às ações rápidas para:\n\n- Adicionar transação: Permite adicionar receitas ou despesas ao saldo da conta. Elas devem ser categorizadas.\n\n- Criar categoria: Permite criar novas categorias para organizar suas transações. É possível atribuir um orçamento a elas.\n\n- Importar dados: Permite importar dados do usuário de uma versão anterior para a atual.\n\n- Exportar dados: Permite exportar os dados para posterior importação."
         },
         {
-          "title": "Métricas principales",
-          "content": "En la parte inmediatamente inferior a la sección anterior encontrarás cuatro tarjetas con tu balance actual, ingresos, gastos y balance libre. Cada una muestra la tendencia respecto al período anterior con un porcentaje en verde o rojo.\n\nUsa el selector de período (semana, mes, año) para cambiar el rango de tiempo."
+          "title": "Principais Métricas",
+          "content": "Na parte imediatamente inferior à seção anterior, você encontrará quatro cartões com seu saldo total, receitas, despesas e saldo livre. Cada um mostra a tendência em relação ao período anterior com uma porcentagem em verde ou vermelho.\n\nUse o seletor de período (semana, mês, ano) para alterar o intervalo de tempo."
         },
         {
-          "title": "Paneles de información",
-          "content": "Bajo las métricas principales, encontrarás paneles con gráficos e información resumida de tus gastos y presupuestos.\n\n- Historial de gastos: Muestra un gráfico de barras con la evolución de tus gastos a lo largo del tiempo.\n\n- Gráfico de gastos por categoría: Muestra un gráfico tipo donut con el total gastado en cada categoría durante el período seleccionado.\n\n- Presupuestos: Si tienes categorías con presupuesto, verás una barra que indica cuánto has gastado respecto al presupuesto."
+          "title": "Painéis de Informação",
+          "content": "Abaixo das principais métricas, você encontrará painéis com gráficos e informações resumidas das suas despesas e orçamentos.\n\n- Histórico de gastos: Mostra um gráfico de barras com a evolução dos seus gastos ao longo do tempo.\n\n- Gráfico de gastos por categoria: Mostra um gráfico do tipo donut com o total gasto em cada categoria durante o período selecionado.\n\n- Orçamentos: Se você tiver categorias com orçamento configurado, verá uma barra que indica o quanto gastou em relação ao orçamento."
         }
       ]
     },
     "transactions": {
-      "title": "Transacciones",
-      "description": "El módulo donde registras y administras todos tus movimientos financieros, ya sean operaciones puntuales o automatizadas.",
+      "title": "Transações",
+      "description": "O módulo onde você registra e gerencia todos os seus movimentos financeiros, sejam operações pontuais ou automatizadas.",
       "topics": [
         {
-          "title": "Registrar Transacción",
-          "content": "Para añadir un movimiento único, haz clic en el botón '+ Nueva Transacción'. Se abrirá un formulario donde debes indicar:\n\n- Descripción: Un nombre o concepto identificativo (ej. Compra semanal en Lidl).\n- Tipo: Permite clasificar la operación como 'Gasto' o 'Ingreso'.\n- Cantidad (€): El importe exacto de la operación.\n- Categoría: Permite asignar el movimiento a una categoría existente a través de un menú desplegable."
+          "title": "Registrar Transação",
+          "content": "Para adicionar um movimento único, clique no botão '+ Nova Transação'. Um formulário será aberto onde você deve indicar:\n\n- Descrição: Um nome ou conceito identificador (ex: Compra semanal no Lidl).\n- Tipo: Permite classificar a operação como 'Despesa' ou 'Receita'.\n- Quantia (€): O valor exato da operação.\n- Categoria: Permite atribuir o movimento a uma categoria existente por meio de um menu suspenso."
         },
         {
-          "title": "Nueva Transacción Recurrente",
-          "content": "Si tienes pagos o cobros fijos, puedes automatizarlos mediante el botón 'Recurrentes'. Este formulario incluye los campos básicos de una transacción normal, añadiendo opciones de programación:\n\n- Frecuencia e Intervalo: Permite configurar cada cuánto tiempo se repetirá la operación.\n- Fecha de inicio: Define el día exacto en el que el sistema empezará a registrar el movimiento automáticamente.\n- Fecha de fin (opcional): Establece un límite temporal para que la transacción deje de repetirse."
+          "title": "Nova Transação Recorrente",
+          "content": "Se você tiver pagamentos ou recebimentos fixos, pode automatizá-los através do botão 'Recorrentes'. Este formulário inclui os campos básicos de uma transação normal, adicionando opções de agendamento:\n\n- Frequência e Intervalo: Permite configurar de quanto em quanto tempo a operação se repetirá.\n- Data de início: Define o dia exato em que o sistema começará a registrar o movimento automaticamente.\n- Data de término (opcional): Estabelece um limite temporal para que a transação pare de se repetir."
         },
         {
-          "title": "Filtrado y Búsqueda",
-          "content": "El sistema incluye herramientas para localizar rápidamente tus registros:\n\n- Pestañas rápidas: Botones para filtrar la lista mostrando 'Todas', solo 'Ingresos' o solo 'Gastos'. Incluye un contador con el total de operaciones encontradas.\n- Buscador: Una barra de texto ('Buscar por descripción...') que te permite encontrar un movimiento específico tecleando las palabras clave de su concepto."
+          "title": "Filtragem e Busca",
+          "content": "O sistema inclui ferramentas para localizar rapidamente seus registros:\n\n- Abas rápidas: Botões para filtrar a lista mostrando 'Todos', apenas 'Receitas' ou apenas 'Despesas'. Inclui um contador com o total de operações encontradas.\n- Buscador: Uma barra de texto ('Buscar por descrição...') que permite encontrar um movimento específico digitando as palavras-chave do seu conceito."
         }
       ]
     },
     "categories": {
-      "title": "Categorías",
-      "description": "El módulo diseñado para clasificar tus movimientos financieros y establecer límites de gasto mensuales para mantener tus presupuestos bajo control.",
+      "title": "Categorias",
+      "description": "O módulo projetado para classificar seus movimentos financeiros e estabelecer limites de gastos mensais para manter seus orçamentos sob controle.",
       "topics": [
         {
-          "title": "Crear Nueva Categoría",
-          "content": "Para dar de alta una nueva clasificación, haz clic en el botón '+ Nueva Categoría'. Se desplegará un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre: El término identificativo de la categoría (ej. Alimentación, Transporte, Ocio).\n- Color: Un selector visual o campo de texto para asignar un color personalizado en formato hexadecimal (ej. #FF5733), lo que facilitará su identificación visual en los gráficos.\n- Presupuesto mensual (€): El límite máximo de dinero que planeas gastar en esta categoría a lo largo del mes."
+          "title": "Criar Nova Categoria",
+          "content": "Para cadastrar uma nova classificação, clique no botão '+ Nova Categoria'. Um formulário flutuante será exibido com os seguintes campos obrigatórios:\n\n- Nome: O termo identificador da categoria (ex: Alimentação, Transporte, Lazer).\n- Cor: Um seletor visual ou campo de texto para atribuir uma cor personalizada em formato hexadecimal (ex: #FF5733), o que facilitará sua identificação visual nos gráficos.\n- Orçamento mensal (€): O limite máximo de dinheiro que você planeja gastar nesta categoria ao longo do mês."
         },
         {
-          "title": "Panel de Gestión y Visualización",
-          "content": "En la pantalla principal del módulo verás una cuadrícula con todas tus categorías activas. Cada tarjeta te muestra de forma clara:\n\n- El nombre de la categoría y su color distintivo asociado.\n- El presupuesto mensual asignado (o la indicación correspondientes si se configuró sin límite de presupuesto).\n- Los botones de acción rápida para gestionar el elemento en tiempo real."
+          "title": "Painel de Gerenciamento e Visualização",
+          "content": "Na tela principal do módulo, você verá uma grade com todas as suas categorias ativas. Cada cartão mostra claramente:\n\n- O nome da categoria e sua cor distintiva associada.\n- O orçamento mensal atribuído (ou a indicação correspondente se tiver sido configurada sem limite de orçamento).\n- Os botões de ação rápida para gerenciar o elemento em tempo real."
         },
         {
-          "title": "Modificar y Eliminar",
-          "content": "Cada tarjeta de categoría cuenta con dos iconos de acción directa en la esquina superior derecha:\n\n- Icono de Edición (Lápiz): Abre de nuevo el formulario para modificar el nombre, cambiar la paleta de color o ajustar el límite del presupuesto mensual.\n- Icono de Eliminación (Papelera): Permite dar de baja la categoría del sistema de forma segura."
+          "title": "Modificar e Excluir",
+          "content": "Cada cartão de categoria possui dois ícones de ação direta no canto superior direito:\n\n- Ícone de Edição (Lápis): Abre novamente o formulário para modificar o nome, alterar a paleta de cores ou ajustar o limite do orçamento mensal.\n- Ícone de Exclusão (Lixeira): Permite excluir a categoria do sistema de forma segura."
         }
       ]
     },
     "investments": {
-      "title": "Inversiones",
-      "description": "El módulo diseñado para el seguimiento de tus activos financieros variables, permitiéndote controlar la evolución del valor de tu cartera y su rentabilidad en tiempo real.",
+      "title": "Investimentos",
+      "description": "O módulo projetado para o acompanhamento dos seus ativos financeiros variáveis, permitindo controlar a evolução do valor da sua carteira e sua rentabilidade em tempo real.",
       "topics": [
         {
-          "title": "Métricas y Gráficos del Portafolio",
-          "content": "En la parte superior del panel se muestran tres tarjetas analíticas que consolidan el estado global de tu cartera:\n\n- Capital Invertido: La suma total del dinero que has destinado a la compra de tus activos.\n- Valor Actual: El valor de mercado actual de todas tus posesiones combinadas.\n- Rendimiento / Ganancia: El beneficio o pérdida neta acumulada (con un porcentaje e indicador de tendencia en color verde o rojo).\n\nJusto debajo dispones de paneles visuales avanzados, incluyendo un gráfico de líneas que dibuja la evolución temporal del valor de tu patrimonio y un gráfico que detalla la distribución de tus fondos según el tipo de activo."
+          "title": "Métricas e Gráficos da Carteira",
+          "content": "Na parte superior do painel, são exibidos três cartões analíticos que consolidam o status global da sua carteira:\n\n- Capital Investido: A soma total do dinheiro que você destinou à compra dos seus ativos.\n- Valor Atual: O valor de mercado atual de todas as suas posses combinadas.\n- Rendimento / Ganho: O lucro ou prejuízo líquido acumulado (com uma porcentagem e indicador de tendência em cor verde ou vermelho).\n\nLogo abaixo, você dispõe de painéis visuais avançados, incluindo um gráfico de linhas que desenha a evolução temporal do valor do seu patrimônio e um gráfico que detalha a distribuição dos seus fundos de acordo com o tipo de ativo."
         },
         {
-          "title": "Registrar Nueva Inversión",
-          "content": "Para añadir un nuevo activo a tu cartera, haz clic en el botón '+ Nueva Inversión'. Se abrirá un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre y Ticker: El nombre del activo (ej. Apple) y su código abreviado de cotización (ej. AAPL).\n- Cantidad: El número total de unidades o acciones adquiridas.\n- Precio de compra (€): El coste unitario que pagaste al adquirir el activo.\n- Precio actual (€): El valor unitario de cotización actual en el mercado.\n- Tipo de inversión: Desplegable para clasificar la naturaleza del activo."
+          "title": "Registrar Novo Investimento",
+          "content": "Para adicionar um novo ativo à sua carteira, clique no botão '+ Novo Investimento'. Um formulário flutuante será aberto com os seguintes campos obrigatórios:\n\n- Nome e Ticker: O nome do ativo (ex: Apple) e seu código abreviado de cotação (ex: AAPL).\n- Quantidade: O número total de unidades ou ações adquiridas.\n- Preço de compra (€): O custo unitário que você pagou ao adquirir o ativo.\n- Preço atual (€): O valor unitário de cotação atual no mercado.\n- Tipo de investimento: Menu suspenso para classificar a natureza do ativo."
         },
         {
-          "title": "Actualización de Precios y Operaciones",
-          "content": "En la cuadrícula o listado inferior se muestran todas las inversiones activas. Cada elemento cuenta con botones de acción rápida para mantener tus datos al día:\n\n- Actualizar Precio Actual: Un acceso directo exclusivo que te permite modificar rápidamente la cotización de mercado del activo de forma aislada para recalcular de inmediato las ganancias sin necesidad de editar toda la ficha.\n- Editar Inversión: Permite corregir cualquiera de los parámetros originales del registro.\n- Dar de Baja (Papelera): Realiza un borrado lógico para retirar de forma segura el activo de tu visualización del portafolio activo."
+          "title": "Atualização de Preços e Operações",
+          "content": "Na grade ou listagem inferior, são exibidos todos os investimentos ativos. Cada elemento conta com botões de ação rápida para manter seus dados em dia:\n\n- Atualizar Preço Atual: Um acesso direto exclusivo que permite modificar rapidamente a cotação de mercado do ativo de forma isolada para recalcular imediatamente os ganhos, sem a necessidade de editar a ficha completa.\n- Editar Investimento: Permite corrigir qualquer um dos parâmetros originais do registro.\n- Excluir (Lixeira): Realiza uma exclusão lógica para remover de forma segura o ativo da sua visualização da carteira ativa."
         }
       ]
     },
-    "family": {
-      "title": "Familia",
-      "description": "El módulo cooperativo que te permite gestionar un presupuesto compartido, invitar a otros usuarios y monitorizar las aportaciones de cada integrante hacia una meta común.",
+    "groupGoals": {
+      "title": "Metas de Grupo",
+      "description": "O módulo colaborativo que permite gerenciar um orçamento compartilhado, convidar outros usuários e monitorar as contribuições de cada integrante em direção a uma meta comum.",
       "topics": [
         {
-          "title": "Progreso y Ajustes de la Familia",
-          "content": "En la parte superior visualizarás tu 'Meta Mensual' y una barra de 'Progreso de este mes' que refleja gráficamente el porcentaje y la cantidad total reunida. Puedes modificar las reglas del grupo desde el icono de engranaje (Ajustes de la familia), donde definirás:\n\n- Nombre de la Familia: Identificador del grupo.\n- Objetivo Mensual (€): La cantidad económica total que el grupo aspira a reunir en el mes.\n- Modo de Distribución: Permite elegir cómo se divide el pago del objetivo entre los usuarios mediante tres opciones: 'Partes iguales', 'Proporcional al sueldo' o 'Porcentajes personalizados'."
+          "title": "Progresso e Ajustes da Meta de Grupo",
+          "content": "Na parte superior, você visualizará sua 'Meta Mensal' e uma barra de 'Progresso deste mês' que reflete graficamente a porcentagem e a quantia total reunida. Você pode modificar as regras do grupo a partir do ícone de engrenagem (Ajustes da meta de grupo), onde definirá:\n\n- Nome da Meta de Grupo: Identificador do grupo.\n- Objetivo Mensal (€): A quantia econômica total que o grupo aspira reunir no mês.\n- Modo de Divisão: Permite escolher como se divide o pagamento do objetivo entre os usuários através de três opções: 'Partes iguais', 'Proporcional ao salário' ou 'Porcentagens personalizadas'."
         },
         {
-          "title": "Gestión de Miembros e Invitaciones",
-          "content": "El panel central 'Miembros de la Familia' desglosa a los integrantes, su rol (ADMIN o MEMBER), su configuración de reparto (sueldo/porcentaje), su 'Cuota' asignada (lo que deben pagar) y lo que ya han 'Aportado'.\n\n- + Invitar Miembro: Abre un cuadro de diálogo para añadir a alguien nuevo introduciendo el 'Email del usuario a invitar'.\n- Acciones individuales: Al final de la fila de cada miembro hay un menú de opciones (tres puntos) que permite 'Editar miembro' (para ajustar sus parámetros financieros) o 'Eliminar miembro' para sacarlo del grupo."
+          "title": "Gerenciamento de Membros e Convites",
+          "content": "O painel central 'Membros da Meta de Grupo' detalha os integrantes, sua função (ADMIN ou MEMBER), sua configuração de divisão (salário/porcentagem), sua 'Cota' atribuída (o que devem pagar) e o que já foi 'Contribuído'.\n\n- + Convidar Membro: Abre uma caixa de diálogo para adicionar alguém novo inserindo o 'E-mail do usuário a convidar'.\n- Ações individuais: Ao final da linha de cada membro, há um menu de opções (três pontos) que permite 'Editar membro' (para ajustar seus parâmetros financeiros) ou 'Remover membro' para retirá-lo do grupo."
         },
         {
-          "title": "Registro y Control de Aportaciones",
-          "content": "En la tabla inferior 'Aportaciones Recientes' se lleva el registro histórico de las inyecciones de capital al fondo común:\n\n- Botón + Añadir: Abre el formulario 'Registrar Aportación' donde debes indicar la 'Cantidad a aportar (€)'. Esto actualizará automáticamente la barra de progreso general.\n- Historial: Muestra el nombre del miembro, la cantidad aportada y la fecha de la operación. Cuenta con un icono de papelera bajo la columna 'Acciones' para eliminar aportaciones registradas por error."
+          "title": "Registro e Controle de Contribuições",
+          "content": "Na tabela inferior 'Contribuições Recentes', mantém-se o registro histórico das injeções de capital no fundo comum:\n\n- Botão + Adicionar: Abre o formulário 'Registrar Contribuição' onde você deve indicar a 'Quantia a contribuir (€)'. Isso atualizará automaticamente a barra de progresso geral.\n- Histórico: Mostra o nome do membro, a quantia contribuída e a data da operação. Conta com um ícone de lixeira sob a coluna 'Ações' para excluir contribuições registradas por erro."
         }
       ]
     }

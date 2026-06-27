@@ -81,7 +81,7 @@
     "telegram": "Telegram"
   },
   "deleteAccount": {
-    "title": "Danger zone",
+    "title": "Danger Zone",
     "description": "Once you delete your account, there is no going back. All your data will be permanently deleted.",
     "button": "Delete my account",
     "modalTitle": "Delete account",

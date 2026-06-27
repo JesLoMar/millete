@@ -4,9 +4,9 @@
     "income": "Income for {{period}}",
     "expenses": "Expenses for {{period}}",
     "savings": "Total Savings",
-    "vsLastWeek": "vs. previous week",
-    "vsLastMonth": "vs. previous month",
-    "vsLastYear": "vs. previous year",
+    "vsLastWeek": "vs. Previous Week",
+    "vsLastMonth": "vs. Previous Month",
+    "vsLastYear": "vs. Previous Year",
     "errors": {
       "noDataAvailable": "No data available"
     }

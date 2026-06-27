@@ -8,6 +8,7 @@
     "deleting": "Wird gelöscht...",
     "add": "Hinzufügen",
     "accept": "Akzeptieren",
+    "welcome": "Erfolgreiche Anmeldung",
     "reject": "Ablehnen",
     "close": "Schließen",
     "search": "Nach Name suchen...",
@@ -20,7 +21,8 @@
     "invite": "Einladen",
     "refresh": "Aktualisieren",
     "export": "Exportieren",
-    "import": "Importieren"
+    "import": "Importieren",
+    "send": "Senden"
   },
   "status": {
     "loading": "Wird geladen...",
@@ -38,7 +40,7 @@
     "investment": "Investition",
     "investments": "Investitionen",
     "groupGoal": "Gruppenziel",
-    "groupGoals": "Gruppenzeile",
+    "groupGoals": "Gruppenziele",
     "savingsGoal": "Sparziel",
     "savingsGoals": "Sparziele",
     "user": "Benutzer",

@@ -8,6 +8,7 @@
     "deleting": "Eliminazione...",
     "add": "Aggiungi",
     "accept": "Accetta",
+    "welcome": "Accesso effettuato con successo",
     "reject": "Rifiuta",
     "close": "Chiudi",
     "search": "Cerca per nome...",
@@ -20,7 +21,8 @@
     "invite": "Invita",
     "refresh": "Aggiorna",
     "export": "Esporta",
-    "import": "Importa"
+    "import": "Importa",
+    "send": "Invia"
   },
   "status": {
     "loading": "Caricamento...",

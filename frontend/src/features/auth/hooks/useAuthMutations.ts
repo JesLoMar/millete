@@ -42,7 +42,7 @@ export const useLoginMutation = () => {
     onSuccess: async (data) => {
       await login(data.token);
       queryClient.clear();
-      notify.success(t('common:actions.accept'));
+      notify.success(t('common:actions.welcome'));
 
       const fromState = location.state?.from?.pathname
         ? location.state.from.pathname + (location.state.from.search || '') + (location.state.from.hash || '')

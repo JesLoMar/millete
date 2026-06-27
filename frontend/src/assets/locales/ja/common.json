@@ -8,6 +8,7 @@
     "deleting": "削除中...",
     "add": "追加",
     "accept": "承認",
+    "welcome": "ログインに成功しました",
     "reject": "拒否",
     "close": "閉じる",
     "search": "名前で検索...",
@@ -20,7 +21,8 @@
     "invite": "招待",
     "refresh": "更新",
     "export": "エクスポート",
-    "import": "インポート"
+    "import": "インポート",
+    "send": "送信"
   },
   "status": {
     "loading": "読み込み中...",

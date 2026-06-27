@@ -1,41 +1,36 @@
 {
   "steps": {
     "title": "Erste Schritte",
-    "subtitle": "Beginnen Sie in weniger als 5 Minuten mit unserer Kurzanleitung, Ihre Finanzen zu verwalten.",
+    "subtitle": "Beginnen Sie in weniger als 5 Minuten mit der Verwaltung Ihrer Finanzen mithilfe unserer Kurzanleitung.",
     "items": [
       {
         "number": "01",
         "title": "Konto erstellen",
-        "description": "Keine Kreditkarte erforderlich. Nur Benutzername und/oder E-Mail und Passwort."
+        "description": "Nur Passwort und Benutzername und/oder E-Mail"
       },
       {
         "number": "02",
         "title": "Erste Kategorie erstellen",
-        "description": "Definieren Sie benutzerdefinierte Kategorien, um Ihre Ausgaben zu organisieren (z. B. Lebensmittel, Transport, Freizeit...)."
+        "description": "Definieren Sie benutzerdefinierte Kategorien, um Ihre Ausgaben zu organisieren (z. B. Lebensmittel, Transport, Freizeit, Einnahmen...)."
       },
       {
         "number": "03",
         "title": "Ausgaben erfassen",
-        "description": "Fügen Sie Transaktionen direkt aus dem entsprechenden Bereich oder einfach über das Dashboard hinzu."
+        "description": "Fügen Sie Transaktionen über den entsprechenden Bereich oder ganz einfach direkt über das Dashboard hinzu."
       }
     ]
   },
   "wiki": {
-    "link": "Vollständiges Wiki konsultieren"
+    "link": "Wiki konsultieren"
   },
   "news": {
     "title": "Aktuelle Neuigkeiten",
     "subtitle": "Entdecken Sie die neuesten Verbesserungen auf der Plattform.",
     "items": [
       {
-        "tag": "v0.0.4",
-        "title": "Japanisch hinzugefügt. Es ist jetzt möglich, Daten ohne Benutzerbeschränkungen zwischen Konten zu exportieren und zu importieren.",
-        "description": "Es ist nun möglich, Daten in eine JSON-Datei zu exportieren und in ein anderes Konto zu importieren. Dies hebt Einschränkungen bei der Datenmigration auf und ermöglicht eine flexiblere Datenverwaltung. Zudem wurde Unterstützung für die japanische Sprache hinzugefügt."
-      },
-      {
-        "tag": "v0.0.3",
-        "title": "Behebung von visuellen und logischen Fehlern",
-        "description": "Anpassung der Stile zur Kompatibilität mit Browsern wie Safari. Gelöschte Kategorien und Transaktionen werden bei der Berechnung der Kennzahlen nicht mehr berücksichtigt."
+        "tag": "v0.1.0",
+        "title": "Großes Update",
+        "description": "- Neues Benachrichtigungssystem \n - Benutzerprofil hinzufügen \n - Sparziele hinzufügen \n - Gruppenziele-Modul überarbeitet und verbessert \n - Integration mit Telegram-Bot \n - Einladungen zu Gruppenzielen mit Benachrichtigungen innerhalb der Website \n - Erweiterte Exportfunktionen. Unterstützt jetzt CSV und PDF. \n - Reduzierung der Nutzung externer Abhängigkeiten. \n - Verbesserungen am Übersetzungssystem."
       }
     ]
   }

@@ -43,7 +43,7 @@
     "of": "of"
   },
   "modes": {
-    "equitative": "Equitable",
+    "equitative": "Equal",
     "equitativeDesc": "All members contribute the same amount",
     "proportional": "Proportional",
     "proportionalDesc": "The contribution is proportional to each member's salary",

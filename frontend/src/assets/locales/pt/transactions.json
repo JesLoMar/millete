@@ -33,7 +33,7 @@
     "shortLabel": "Recorrente",
     "newTitle": "Nova Transação Recorrente",
     "editTitle": "Editar Transação Recorrente",
-    "listTitle": "Transações Recurrentes",
+    "listTitle": "Transações Recorrentes",
     "emptyFilter": "Não há transações recorrentes com este filtro.",
     "frequency": "Frequência",
     "selectFrequency": "Frequência...",
@@ -52,7 +52,7 @@
     "indefinite": "Sem data de término",
     "nextExecution": "Próxima execução",
     "summary": "Resumo",
-    "summaryText": "Será criada uma transação de {{amount}} € a cada {{frequency}} {{type}} a partir de {{start}} {{end}}",
+    "summaryText": "Uma transação de {{amount}} € será criada a cada {{frequency}} {{type}} de {{start}} a {{end}}",
     "units": {
       "days": "dias",
       "weeks": "semanas",

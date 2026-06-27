@@ -35,7 +35,7 @@
     "editTitle": "Wiederkehrende Transaktion bearbeiten",
     "listTitle": "Wiederkehrende Transaktionen",
     "emptyFilter": "Keine wiederkehrenden Transaktionen mit diesem Filter gefunden.",
-    "frequency": "Frecuencia",
+    "frequency": "Frequenz",
     "selectFrequency": "Frequenz...",
     "interval": "Intervall",
     "startDate": "Startdatum",
@@ -52,7 +52,7 @@
     "indefinite": "Kein Enddatum",
     "nextExecution": "Nächste Ausführung",
     "summary": "Zusammenfassung",
-    "summaryText": "Es wird alle {{frequency}} {{type}} ab dem {{start}} {{end}} eine Transaktion über {{amount}} € erstellt",
+    "summaryText": "Eine Transaktion über {{amount}} € wird ab dem {{start}} bis {{end}} alle {{frequency}} {{type}} erstellt",
     "units": {
       "days": "Tage",
       "weeks": "Wochen",

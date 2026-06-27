@@ -7,7 +7,7 @@
   "deleteGoalConfirmation": "$t(common:prompts.deleteConfirm)",
   "searchPlaceholder": "Buscar meta por nome...",
   "clearSearch": "Limpar busca",
-  "loadingError": "Erro ao carregar as metas. Tente de novo.",
+  "loadingError": "Erro ao carregar as metas. Tente novamente.",
   "loadingDetails": "Carregando detalhes...",
   "emptyState": "Nenhuma meta de poupança ativa.",
   "name": "Nome",

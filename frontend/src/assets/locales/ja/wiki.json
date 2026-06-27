@@ -1,92 +1,92 @@
 {
   "sections": {
     "dashboard": {
-      "title": "Dashboard",
-      "description": "El panel principal donde ves el estado de tus finanzas y accedes a las funciones clave.",
+      "title": "ダッシュボード",
+      "description": "資産の状況を確認し、主要な機能にアクセスするためのメイン画面です。",
       "topics": [
         {
-          "title": "Accesos rápidos",
-          "content": "Desde el Dashboard tienes acceso a los accesos rápidos a: \n\n- Añadir transacción: Permite añadir ingresos o gastos al saldo de la cuenta. Deben ser categorizadas.\n\n- Crear categoría: Permite crear nuevas categorías para organizar tus transacciones. Se les puede asignar un presupuesto.\n\n- Importar datos: Permite importar datos del usuario desde una versión anterior a la actual.\n\n- Exportar datos: Permite exportar los datos para su posterior importación."
+          "title": "クイックアクション",
+          "content": "ダッシュボードからは、以下の機能へ素早くアクセスできます：\n\n- 取引を追加：アカウント残高に収入または支出を追加します。取引はカテゴリ分けする必要があります。\n\n- カテゴリを作成：取引を整理するための新しいカテゴリを作成します。作成時に毎月の予算を設定できます。\n\n- データをインポート：旧バージョンから現行バージョンへユーザーデータを移行します。\n\n- データをエクスポート：後で再インポートできるようにデータを保存します。"
         },
         {
-          "title": "Métricas principales",
-          "content": "En la parte inmediatamente inferior a la sección anterior encontrarás cuatro tarjetas con tu balance actual, ingresos, gastos y balance libre. Cada una muestra la tendencia respecto al período anterior con un porcentaje en verde o rojo.\n\nUsa el selector de período (semana, mes, año) para cambiar el rango de tiempo."
+          "title": "主要メトリクス",
+          "content": "クイックアクションのすぐ下には、「総残高」「収入」「支出」「自由残高」の4つのカードがあります。それぞれのカードでは、前の期間と比較した傾向が緑色または赤色のパーセンテージで表示されます。\n\n期間セレクター（週、月、年）を使用すると、表示する時間範囲を切り替えることができます。"
         },
         {
-          "title": "Paneles de información",
-          "content": "Bajo las métricas principales, encontrarás paneles con gráficos e información resumida de tus gastos y presupuestos.\n\n- Historial de gastos: Muestra un gráfico de barras con la evolución de tus gastos a lo largo del tiempo.\n\n- Gráfico de gastos por categoría: Muestra un gráfico tipo donut con el total gastado en cada categoría durante el período seleccionado.\n\n- Presupuestos: Si tienes categorías con presupuesto, verás una barra que indica cuánto has gastado respecto al presupuesto."
+          "title": "情報パネル",
+          "content": "主要メトリクスの下には、支出や予算の概要を視覚的にまとめたグラフやパネルがあります。\n\n- 支出の履歴：時間の経過に伴う支出の推移を棒グラフで表示します。\n\n- カテゴリ別の支出：選択した期間中に各カテゴリで消費された合計額をドーナツグラフで表示します。\n\n- 予算の状況：予算が設定されているカテゴリがある場合、設定額に対してどのくらい支出したかを示すインジケーターバーが表示されます。"
         }
       ]
     },
     "transactions": {
-      "title": "Transacciones",
-      "description": "El módulo donde registras y administras todos tus movimientos financieros, ya sean operaciones puntuales o automatizadas.",
+      "title": "取引履歴",
+      "description": "単発の決済、または自動化されたスケジュール設定など、すべての資金移動を記録・管理するモジュールです。",
       "topics": [
         {
-          "title": "Registrar Transacción",
-          "content": "Para añadir un movimiento único, haz clic en el botón '+ Nueva Transacción'. Se abrirá un formulario donde debes indicar:\n\n- Descripción: Un nombre o concepto identificativo (ej. Compra semanal en Lidl).\n- Tipo: Permite clasificar la operación como 'Gasto' o 'Ingreso'.\n- Cantidad (€): El importe exacto de la operación.\n- Categoría: Permite asignar el movimiento a una categoría existente a través de un menú desplegable."
+          "title": "取引を記録",
+          "content": "単発の資金移動を追加するには、「+ 新しい取引」ボタンをクリックします。フォームが開くので、以下の項目を指定してください：\n\n- 説明：識別しやすい名称や内容（例：Lidlでの一週間分の買い物）。\n- タイプ：取引を「支出」または「収入」に分類します。\n- 金額 (€)：取引の正確な金額を入力します。\n- カテゴリ：ドロップダウンメニューから、既存のカテゴリに取引を割り当てます。"
         },
         {
-          "title": "Nueva Transacción Recurrente",
-          "content": "Si tienes pagos o cobros fijos, puedes automatizarlos mediante el botón 'Recurrentes'. Este formulario incluye los campos básicos de una transacción normal, añadiendo opciones de programación:\n\n- Frecuencia e Intervalo: Permite configurar cada cuánto tiempo se repetirá la operación.\n- Fecha de inicio: Define el día exacto en el que el sistema empezará a registrar el movimiento automáticamente.\n- Fecha de fin (opcional): Establece un límite temporal para que la transacción deje de repetirse."
+          "title": "新しい定期取引",
+          "content": "固定の支払いや定額の入金がある場合は、「定期取引」ボタンから自動化できます。このフォームには通常の取引に必要な基本項目に加え、以下のスケジュール設定オプションが追加されます：\n\n- 頻度と間隔：取引が繰り返される周期を設定します。\n- 開始日：システムが自動的に取引の記録を開始する正確な日付を指定します。\n- 終了日（任意）：取引の自動作成を停止する期限を設定します。"
         },
         {
-          "title": "Filtrado y Búsqueda",
-          "content": "El sistema incluye herramientas para localizar rápidamente tus registros:\n\n- Pestañas rápidas: Botones para filtrar la lista mostrando 'Todas', solo 'Ingresos' o solo 'Gastos'. Incluye un contador con el total de operaciones encontradas.\n- Buscador: Una barra de texto ('Buscar por descripción...') que te permite encontrar un movimiento específico tecleando las palabras clave de su concepto."
+          "title": "フィルターと検索",
+          "content": "履歴から特定の記録を素早く見つけるためのツールが用意されています：\n\n- クイックタブ：リストを「すべて」、または「収入」のみ、「支出」のみに絞り込むボタンです。該当する取引の総件数カウンターも表示されます。\n- 検索バー：「説明で検索...」のテキストバーにキーワードを入力することで、特定の取引を見つけ出すことができます。"
         }
       ]
     },
     "categories": {
-      "title": "Categorías",
-      "description": "El módulo diseñado para clasificar tus movimientos financieros y establecer límites de gasto mensuales para mantener tus presupuestos bajo control.",
+      "title": "カテゴリ一覧",
+      "description": "資金移動を分類し、月間の支出上限を設定することで、予算をしっかりとコントロールするためのモジュールです。",
       "topics": [
         {
-          "title": "Crear Nueva Categoría",
-          "content": "Para dar de alta una nueva clasificación, haz clic en el botón '+ Nueva Categoría'. Se desplegará un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre: El término identificativo de la categoría (ej. Alimentación, Transporte, Ocio).\n- Color: Un selector visual o campo de texto para asignar un color personalizado en formato hexadecimal (ej. #FF5733), lo que facilitará su identificación visual en los gráficos.\n- Presupuesto mensual (€): El límite máximo de dinero que planeas gastar en esta categoría a lo largo del mes."
+          "title": "新しいカテゴリを作成",
+          "content": "新しい分類を追加するには、「+ 新しいカテゴリ」ボタンをクリックします。ポップアップフォームが表示されるので、以下の必須項目を入力してください：\n\n- 名前：カテゴリの識別名（例：食費、交通費、娯楽など）。\n- カラー：視覚的なセレクターまたは16進数のカラーコード（例：#FF5733）を使用してカスタムカラーを割り当てます。これにより、グラフでの視覚的な識別が容易になります。\n- 毎月の予算 (€)：そのカテゴリで1ヶ月の間に支出する予定の最大上限額です。"
         },
         {
-          "title": "Panel de Gestión y Visualización",
-          "content": "En la pantalla principal del módulo verás una cuadrícula con todas tus categorías activas. Cada tarjeta te muestra de forma clara:\n\n- El nombre de la categoría y su color distintivo asociado.\n- El presupuesto mensual asignado (o la indicación correspondientes si se configuró sin límite de presupuesto).\n- Los botones de acción rápida para gestionar el elemento en tiempo real."
+          "title": "管理・閲覧パネル",
+          "content": "モジュールのメイン画面には、アクティブなすべてのカテゴリがグリッド表示されます。各カードには以下の情報が分かりやすく表示されます：\n\n- カテゴリ名と、それに関連付けられた識別カラー。\n- 設定された毎月の予算（上限なしで設定されている場合は、その旨のインジケーター）。\n- リアルタイムでその要素を管理するためのクイックアクションボタン。"
         },
         {
-          "title": "Modificar y Eliminar",
-          "content": "Cada tarjeta de categoría cuenta con dos iconos de acción directa en la esquina superior derecha:\n\n- Icono de Edición (Lápiz): Abre de nuevo el formulario para modificar el nombre, cambiar la paleta de color o ajustar el límite del presupuesto mensual.\n- Icono de Eliminación (Papelera): Permite dar de baja la categoría del sistema de forma segura."
+          "title": "変更と削除",
+          "content": "各カテゴリカードの右上隅には、2つの直接操作アイコンがあります：\n\n- 編集アイコン（鉛筆）：再度フォームを開き、名前の変更、カラーパレットの調整、または毎月の予算上限の修正を行います。\n- 削除アイコン（ゴミ箱）：システム内からそのカテゴリを安全に削除します。"
         }
       ]
     },
     "investments": {
-      "title": "Inversiones",
-      "description": "El módulo diseñado para el seguimiento de tus activos financieros variables, permitiéndote controlar la evolución del valor de tu cartera y su rentabilidad en tiempo real.",
+      "title": "投資一覧",
+      "description": "変動性のある金融資産を追跡するためのモジュールです。ポートフォリオ全体の価値の推移や運用利回りをリアルタイムで管理できます。",
       "topics": [
         {
-          "title": "Métricas y Gráficos del Portafolio",
-          "content": "En la parte superior del panel se muestran tres tarjetas analíticas que consolidan el estado global de tu cartera:\n\n- Capital Invertido: La suma total del dinero que has destinado a la compra de tus activos.\n- Valor Actual: El valor de mercado actual de todas tus posesiones combinadas.\n- Rendimiento / Ganancia: El beneficio o pérdida neta acumulada (con un porcentaje e indicador de tendencia en color verde o rojo).\n\nJusto debajo dispones de paneles visuales avanzados, incluyendo un gráfico de líneas que dibuja la evolución temporal del valor de tu patrimonio y un gráfico que detalla la distribución de tus fondos según el tipo de activo."
+          "title": "ポートフォリオのメトリクスとグラフ",
+          "content": "パネルの上部には、ポートフォリオの全体状況を統合した3つの分析カードが表示されます：\n\n- 投資元本：資産の購入に充てた総資金額。\n- 現在の価値：保有しているすべての資産の現在の市場評価額。\n- 損益 / 収益：累積された純利益または純損失（緑色または赤色のパーセンテージとトレンドインジケーター付き）。\n\nそのすぐ下には高度なビジュアルパネルがあり、総資産額の時間の経過に伴う推移を描くライングラフや、資産クラスごとの資金配分を詳細に示すグラフが配置されています。"
         },
         {
-          "title": "Registrar Nueva Inversión",
-          "content": "Para añadir un nuevo activo a tu cartera, haz clic en el botón '+ Nueva Inversión'. Se abrirá un formulario flotante con los siguientes campos obligatorios:\n\n- Nombre y Ticker: El nombre del activo (ej. Apple) y su código abreviado de cotización (ej. AAPL).\n- Cantidad: El número total de unidades o acciones adquiridas.\n- Precio de compra (€): El coste unitario que pagaste al adquirir el activo.\n- Precio actual (€): El valor unitario de cotización actual en el mercado.\n- Tipo de inversión: Desplegable para clasificar la naturaleza del activo."
+          "title": "新しい投資を記録",
+          "content": "ポートフォリオに新しい資産を追加するには、「+ 新しい投資」ボタンをクリックします。ポップアップフォームが開き、以下の必須項目の入力を求められます：\n\n- 資産名とティッカー：資産の名前（例：Apple）と、その取引コード（例：AAPL）。\n- 数量：購入したユニットまたは株式の総数。\n- 購入価格 (€)：資産を購入した際の単価。\n- 現在の価格 (€)：市場における現在の取引単価。\n- 投資クラス：資産の性質を分類するためのドロップダウンメニュー。"
         },
         {
-          "title": "Actualización de Precios y Operaciones",
-          "content": "En la cuadrícula o listado inferior se muestran todas las inversiones activas. Cada elemento cuenta con botones de acción rápida para mantener tus datos al día:\n\n- Actualizar Precio Actual: Un acceso directo exclusivo que te permite modificar rápidamente la cotización de mercado del activo de forma aislada para recalcular de inmediato las ganancias sin necesidad de editar toda la ficha.\n- Editar Inversión: Permite corregir cualquiera de los parámetros originales del registro.\n- Dar de Baja (Papelera): Realiza un borrado lógico para retirar de forma segura el activo de tu visualización del portafolio activo."
+          "title": "価格更新と運用操作",
+          "content": "下部のグリッドまたはリストには、アクティブなすべての投資が表示されます。各要素には、データを最新の状態に保つためのクイックアクションボタンが用意されています：\n\n- 現在の価格を更新：資産全体のデータを編集することなく、その資産の市場価格だけを素早く手動修正して即座に評価損益を再計算するための専用ショートカットです。\n- 投資を編集：登録データの初期パラメータを修正できます。\n- 削除（ゴミ箱）：論理削除を実行し、アクティブなポートフォリオ画面から該当資産を安全に取り除きます。"
         }
       ]
     },
-    "family": {
-      "title": "Familia",
-      "description": "El módulo cooperativo que te permite gestionar un presupuesto compartido, invitar a otros usuarios y monitorizar las aportaciones de cada integrante hacia una meta común.",
+    "groupGoals": {
+      "title": "グループ目標",
+      "description": "共通の予算を管理し、他のユーザーを招待して、共通の目標に向けた各メンバーの拠出状況をモニタリングできる共同管理モジュールです。",
       "topics": [
         {
-          "title": "Progreso y Ajustes de la Familia",
-          "content": "En la parte superior visualizarás tu 'Meta Mensual' y una barra de 'Progreso de este mes' que refleja gráficamente el porcentaje y la cantidad total reunida. Puedes modificar las reglas del grupo desde el icono de engranaje (Ajustes de la familia), donde definirás:\n\n- Nombre de la Familia: Identificador del grupo.\n- Objetivo Mensual (€): La cantidad económica total que el grupo aspira a reunir en el mes.\n- Modo de Distribución: Permite elegir cómo se divide el pago del objetivo entre los usuarios mediante tres opciones: 'Partes iguales', 'Proporcional al sueldo' o 'Porcentajes personalizados'."
+          "title": "進捗とグループ目標の設定",
+          "content": "上部には「月間目標額」と、集まった合計額および達成率を視覚的に示す「今月の進捗」バーが表示されます。歯車アイコン（グループ目標の設定）からグループのルールを変更し、以下を定義できます：\n\n- グループ目標の名前：グループの識別名称。\n- 月間目標額 (€)：グループがその月に集めることを目指す経済的な総目標額。\n- 分担モード：メンバー間で目標額の支払いをどのように分割するかを、「均等分担」「収入に比例」「カスタム比率」の3つのオプションから選択します。"
         },
         {
-          "title": "Gestión de Miembros e Invitaciones",
-          "content": "El panel central 'Miembros de la Familia' desglosa a los integrantes, su rol (ADMIN o MEMBER), su configuración de reparto (sueldo/porcentaje), su 'Cuota' asignada (lo que deben pagar) y lo que ya han 'Aportado'.\n\n- + Invitar Miembro: Abre un cuadro de diálogo para añadir a alguien nuevo introduciendo el 'Email del usuario a invitar'.\n- Acciones individuales: Al final de la fila de cada miembro hay un menú de opciones (tres puntos) que permite 'Editar miembro' (para ajustar sus parámetros financieros) o 'Eliminar miembro' para sacarlo del grupo."
+          "title": "メンバー管理と招待",
+          "content": "中央の「グループ目標のメンバー」パネルには、参加メンバー、それぞれの役割（ADMINまたはMEMBER）、分担設定（月収/比率）、割り当てられた「拠出予定額（支払うべき金額）」、および既に「拠出済みの金額」が一覧表示されます。\n\n- + メンバーを招待：ダイアログを開き、「招待するユーザーのメールアドレス」を入力して新しい人を追加します。\n- 個別アクション：各メンバーの行の末尾にあるメニュー（3つの点）から、「メンバーを編集」（財務パラメータの調整）や、グループから除外するための「メンバーを削除」を行うことができます。"
         },
         {
-          "title": "Registro y Control de Aportaciones",
-          "content": "En la tabla inferior 'Aportaciones Recientes' se lleva el registro histórico de las inyecciones de capital al fondo común:\n\n- Botón + Añadir: Abre el formulario 'Registrar Aportación' donde debes indicar la 'Cantidad a aportar (€)'. Esto actualizará automáticamente la barra de progreso general.\n- Historial: Muestra el nombre del miembro, la cantidad aportada y la fecha de la operación. Cuenta con un icono de papelera bajo la columna 'Acciones' para eliminar aportaciones registradas por error."
+          "title": "拠出金の記録と管理",
+          "content": "下部の「最近の拠出」テーブルには、共通資金への資本投入の履歴が時系列で保持されます：\n\n- + 追加ボタン：「拠出金を記録」フォームを開き、「拠出金額 (€)」を入力します。これにより、全体の進捗バーが自動的に更新されます。\n- 履歴：拠出したメンバーの名前、金額、および操作日が表示されます。「アクション」列の下にあるゴミ箱アイコンを使用して、誤って記録された拠出金を削除することができます。"
         }
       ]
     }

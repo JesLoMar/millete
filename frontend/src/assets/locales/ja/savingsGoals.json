@@ -1,6 +1,6 @@
 {
   "title": "$t(common:entities.savingsGoals)",
-  "newGoal": "$t(common:actions.add) 目標",
+  "newGoal": "目標の追加",
   "newGoalTitle": "$t(common:actions.add) $t(common:entities.savingsGoal)",
   "editGoalTitle": "$t(common:actions.edit) $t(common:entities.savingsGoal)",
   "deleteGoalTitle": "$t(common:actions.delete) $t(common:entities.savingsGoal)",
@@ -23,7 +23,7 @@
   "amount": "金額 (€)",
   "add": "$t(common:actions.add)",
   "create": "目標を $t(common:actions.create)",
-  "saveChanges": "変更を $t(common:actions.save)",
+  "saveChanges": "変更を保存",
   "editGoal": "目標を $t(common:actions.edit)",
   "deleteGoal": "目標を $t(common:actions.delete)",
   "addContribution": "拠出を $t(common:actions.add)",
