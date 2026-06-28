@@ -16,8 +16,28 @@
 
 ## Preview & Interface
 
+### Core Dashboard
 <p align="center">
-  <img src="documentation/screenshots/dashboard-preview.png" alt="Millete Dashboard Preview" width="85%">
+  <img src="documentation/screenshots/dashboard-preview.png" alt="Millete Dashboard Preview" width="100%">
+</p>
+
+### Modules & Features
+
+| Secure Access | 📑 Ledger & Categories |
+|---|---|
+| **Login Interface** <br> <img src="documentation/screenshots/login-preview.png" width="100%"> | **Category Management** <br> <img src="documentation/screenshots/categories-preview.png" width="100%"> |
+| **Investment Monitoring** | **Financial Goals** |
+| **Portfolio Tracker** <br> <img src="documentation/screenshots/investments-preview.png" width="100%"> | **Saving Goals** <br> <img src="documentation/screenshots/Saving-goals-preview.png" width="100%"> |
+
+### Cash Flow & Value Analysis
+<p align="center">
+  <b>Detailed Transactions Management</b>
+  <img src="documentation/screenshots/transactions-preview.png" alt="Transactions Ledger" width="100%">
+</p>
+
+<p align="center">
+  <b>System Value Metrics (React Doctor)</b> <br>
+  <img src="documentation/screenshots/react-doctor-value.png" alt="React Doctor Value Analysis" width="60%">
 </p>
 
 ---
