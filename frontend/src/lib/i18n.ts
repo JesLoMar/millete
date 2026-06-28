@@ -2,8 +2,6 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 // ============================================
 // IMPORTAR ESPAÑOL (completo)
 // ============================================
@@ -43,38 +41,6 @@ import enApi from "@/assets/locales/en/api.json";
 import enWiki from "@/assets/locales/en/wiki.json";
 import enInfo from "@/assets/locales/en/info.json";
 import notificationsEN from "@/assets/locales/en/notifications.json";
-=======
-import translationDE from '../assets/locales/de/translation.json';
-import translationEN from '../assets/locales/en/translation.json';
-import translationES from '../assets/locales/es/translation.json';
-import translationFR from '../assets/locales/fr/translation.json';
-import translationIT from '../assets/locales/it/translation.json';
-import translationPT from '../assets/locales/pt/translation.json';
-
-import wikiDE from '../assets/locales/de/wiki.json';
-import wikiEN from '../assets/locales/en/wiki.json';
-import wikiES from '../assets/locales/es/wiki.json';
-import wikiFR from '../assets/locales/fr/wiki.json';
-import wikiIT from '../assets/locales/it/wiki.json';
-import wikiPT from '../assets/locales/pt/wiki.json';
->>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
-=======
-import translationDE from '@/assets/locales/de/translation.json';
-import translationEN from '@/assets/locales/en/translation.json';
-import translationES from '@/assets/locales/es/translation.json';
-import translationFR from '@/assets/locales/fr/translation.json';
-import translationIT from '@/assets/locales/it/translation.json';
-import translationPT from '@/assets/locales/pt/translation.json';
-import translationJA from '@/assets/locales/ja/translation.json';
-
-import wikiDE from '@/assets/locales/de/wiki.json';
-import wikiEN from '@/assets/locales/en/wiki.json';
-import wikiES from '@/assets/locales/es/wiki.json';
-import wikiFR from '@/assets/locales/fr/wiki.json';
-import wikiIT from '@/assets/locales/it/wiki.json';
-import wikiPT from '@/assets/locales/pt/wiki.json';
-import wikiJA from '@/assets/locales/ja/wiki.json';
->>>>>>> 66c6332 (V0.0.4 (#6))
 
 // ============================================
 // IMPORTAR ALEMÁN
@@ -173,7 +139,6 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-<<<<<<< HEAD
     fallbackLng: "en",
     supportedLngs: ["de", "en", "es", "fr", "it", "pt", "ja"],
     ns: [
@@ -195,18 +160,11 @@ i18n
       "notifications",
     ],
     defaultNS: "common",
-=======
-    fallbackLng: 'en',
-    supportedLngs: ['de', 'en', 'es', 'fr', 'it', 'pt', 'ja'],
-    ns: ['translation', 'wiki'],
-    defaultNS: 'translation',
->>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
     debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false,
     },
     resources: {
-<<<<<<< HEAD
       // ==========================================
       // ESPAÑOL - COMPLETO
       // ==========================================
@@ -350,18 +308,6 @@ i18n
         wiki: jaWiki,
         info: jaInfo,
       },
-=======
-      de: { translation: translationDE, wiki: wikiDE },
-      en: { translation: translationEN, wiki: wikiEN },
-      es: { translation: translationES, wiki: wikiES },
-      fr: { translation: translationFR, wiki: wikiFR },
-      it: { translation: translationIT, wiki: wikiIT },
-      pt: { translation: translationPT, wiki: wikiPT },
-<<<<<<< HEAD
->>>>>>> 0e12808 (Revert "V0.0.4 (#5)")
-=======
-      ja: { translation: translationJA, wiki: wikiJA },
->>>>>>> 66c6332 (V0.0.4 (#6))
     },
   });
 
