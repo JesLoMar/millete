@@ -1,0 +1,18 @@
+package com.puntomartinez.millete.notifications.domain.ports.out;
+
+import com.puntomartinez.millete.notifications.domain.model.Notification;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface NotificationRepository {
+
+    Notification save(Notification notification);
+
+    Optional<Notification> findById(UUID id);
+
+    List<Notification> findActiveByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    long countUnreadByUserId(UUID userId);
+}

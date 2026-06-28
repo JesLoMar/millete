@@ -39,4 +39,5 @@ build/
 *.njsproj
 *.sln
 *.sw?
-out/
+**/out/
+!**/src/**/out/
