@@ -4,7 +4,8 @@ import {
   ArrowLeftRight,
   PieChart,
   TrendingUp,
-  LayoutGrid
+  LayoutGrid,
+  PiggyBank
 } from "lucide-react"
 
 // ─── Types ────────────────────────────────────────────────
@@ -18,18 +19,12 @@ export interface NavItem {
   order: number
 }
 
-// ─── Navigation Registry ──────────────────────────────────
-// Para añadir una nueva pestaña:
-// 1. Añade el objeto aquí
-// 2. Cambia enabled: false → true cuando esté lista
-// 3. El sidebar la mostrará automáticamente
-
-export const NAVIGATION_REGISTRY: NavItem[] = [
+const NAVIGATION_REGISTRY: NavItem[] = [
   // ─── Main Navigation ───────────────────────────────────
   {
     id: "dashboard",
     icon: LayoutDashboard,
-    labelKey: "sidebar.dashboard",
+    labelKey: "dashboard",
     path: "/dashboard",
     enabled: true,
     section: "main",
@@ -38,16 +33,16 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "categories",
     icon: LayoutGrid,
-    labelKey: "sidebar.categories",
+    labelKey: "categories",
     path: "/categories",
-    enabled: true,      //✅ Implementado
+    enabled: true,
     section: "main",
     order: 2,
   },
   {
     id: "transactions",
     icon: ArrowLeftRight,
-    labelKey: "sidebar.transactions",
+    labelKey: "transactions",
     path: "/transactions",
     enabled: true,
     section: "main",
@@ -56,20 +51,29 @@ export const NAVIGATION_REGISTRY: NavItem[] = [
   {
     id: "investments",
     icon: TrendingUp,
-    labelKey: "sidebar.investments",
+    labelKey: "investments",
     path: "/investments",
     enabled: true,
     section: "main",
     order: 4,
   },
   {
-    id: "family",
-    icon: PieChart,
-    labelKey: "sidebar.family",
-    path: "/family",
+    id: "savingsgoals",
+    icon: PiggyBank,
+    labelKey: "savingsgoals",
+    path: "/savings-goals",
     enabled: true,
     section: "main",
     order: 5,
+  },
+  {
+    id: "groupgoals",
+    icon: PieChart,
+    labelKey: "groupgoals",
+    path: "/group-goals",
+    enabled: true,
+    section: "main",
+    order: 6,
   }
 ]
 

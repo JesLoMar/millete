@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { Button } from "@/shared/components/core/button"
+import { ProgressBar } from "@/shared/components/core/progress-bar"
 import type { BudgetItem } from "../types"
 import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat'
 
@@ -17,7 +18,7 @@ export function BudgetBars({
   data: externalData,
   loading = false,
 }: BudgetBarsProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const [currentPage, setCurrentPage] = useState(1)
   
   const budgets = externalData || []
@@ -27,7 +28,6 @@ export function BudgetBars({
     currentPage * ITEMS_PER_PAGE
   )
 
-  // Vista de carga (Skeleton)
   if (loading) {
     return (
       <Card className="col-span-1 md:col-span-5 border-subtle">
@@ -52,18 +52,17 @@ export function BudgetBars({
     )
   }
 
-  // Estado vacío
   if (budgets.length === 0) {
     return (
       <Card className="col-span-1 md:col-span-5 border-subtle">
         <CardHeader>
           <CardTitle className="text-lg font-headline font-semibold">
-            {t("dashboard.budget.title")}
+            {t('dashboard:budget.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="min-h-85 flex items-center justify-center">
           <p className="text-center text-muted-foreground text-sm">
-            {t("dashboard.budget.empty")}
+            {t('dashboard:budget.empty')}
           </p>
         </CardContent>
       </Card>
@@ -74,20 +73,18 @@ export function BudgetBars({
     <Card className="col-span-1 md:col-span-5 border-subtle">
       <CardHeader>
         <CardTitle className="text-lg font-headline font-semibold">
-          {t("dashboard.budget.title")}
+          {t('dashboard:budget.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="min-h-85 flex flex-col">
         <div className="flex-1 space-y-4">
           {paginatedData.map((budget) => {
-            // Mejora de estabilidad: Evitamos problemas visuales si la API devuelve NaN, Infinity o nulos
-            const isPercentageValid = typeof budget.percentage === 'number' && !isNaN(budget.percentage) && isFinite(budget.percentage);
-            const percentageValue = isPercentageValid ? budget.percentage : 0;
-            
-            const percentage = Math.min(percentageValue, 100);
-            const isOverLimit = percentageValue >= 100;
-            const isNearLimit = percentageValue >= 80 && !isOverLimit;
-            const exceededAmount = budget.spent - budget.limit;
+            const isPercentageValid = typeof budget.percentage === 'number' && !isNaN(budget.percentage) && isFinite(budget.percentage)
+            const percentageValue = isPercentageValid ? budget.percentage : 0
+            const percentage = Math.min(percentageValue, 100)
+            const isOverLimit = percentageValue >= 100
+            const isNearLimit = percentageValue >= 80 && !isOverLimit
+            const exceededAmount = budget.spent - budget.limit
 
             return (
               <div key={budget.category} className="space-y-1.5">
@@ -102,21 +99,13 @@ export function BudgetBars({
                   </span>
                 </div>
                 
-                {/* Barra de progreso */}
-                <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-700 ${
-                      isOverLimit
-                        ? "bg-rose-500"
-                        : isNearLimit
-                          ? "bg-amber-500"
-                          : budget.color
-                    }`}
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+                <ProgressBar
+                  value={percentage}
+                  max={100}
+                  variant={isOverLimit ? "overbudget" : isNearLimit ? "warning" : "default"}
+                  size="sm"
+                />
                 
-                {/* Texto inferior de estado del presupuesto */}
                 <p className={`text-[10px] text-right ${
                   isOverLimit
                     ? "text-rose-400 font-medium"
@@ -125,12 +114,10 @@ export function BudgetBars({
                       : "text-muted-foreground"
                 }`}>
                   {isOverLimit
-                    ? t("dashboard.budget.exceededBy", {
-                        // Pasamos de forma coherente min y max en 0 para evitar el RangeError en Intl
+                    ? t('dashboard:budget.exceededBy', {
                         amount: formatNumber(exceededAmount, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                       })
-                    : t("dashboard.budget.remaining", {
-                        // Hacemos lo mismo para el cálculo restante
+                    : t('dashboard:budget.remaining', {
                         amount: formatNumber(budget.limit - budget.spent, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                       })}
                 </p>
@@ -139,7 +126,6 @@ export function BudgetBars({
           })}
         </div>
 
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
             <p className="text-xs text-muted-foreground">

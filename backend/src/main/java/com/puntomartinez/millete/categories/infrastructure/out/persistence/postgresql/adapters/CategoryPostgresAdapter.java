@@ -41,6 +41,11 @@ public class CategoryPostgresAdapter implements CategoryRepository {
     }
 
     @Override
+    public Optional<Category> findActiveByIdAndUserId(UUID id, UUID userId) {
+        return jpaRepository.findActiveByIdAndUserId(id, userId).map(mapper::toDomain);
+    }
+
+    @Override
     public List<Category> findByIdUsuario(UUID userId) {
         return jpaRepository.findByUserId(userId).stream()
                 .map(mapper::toDomain)

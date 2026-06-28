@@ -30,7 +30,7 @@ export default function WikiContent({ sectionKey }: WikiContentProps) {
 
       <div className="space-y-10">
         {section.topics.map((topic, i) => (
-          <div key={i}>
+          <div key={topic.title}>
             <h2 className="text-lg font-semibold mb-2">{topic.title}</h2>
             <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
               {topic.content}

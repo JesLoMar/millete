@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtTokenAdapter implements TokenProvider {
@@ -39,9 +40,31 @@ public class JwtTokenAdapter implements TokenProvider {
                 .compact();
     }
 
-    // ==========================================
-    // NUEVOS MÉTODOS AÑADIDOS
-    // ==========================================
+    @Override
+    public String generateToken(User user, UUID sessionId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationTime);
+
+        return Jwts.builder()
+                .subject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("username", user.getUsername())
+                .claim("sessionId", sessionId.toString())
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(key)
+                .compact();
+    }
+
+    @Override
+    public String getClaim(String token, String claimName) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get(claimName, String.class);
+    }
     @Override
     public String extractUserId(String token) {
         // Lee el token con nuestra clave secreta y extrae el "subject" (el ID)

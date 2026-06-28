@@ -1,0 +1,46 @@
+{
+  "user": "ユーザー",
+  "changeLanguage": "言語を変更",
+  "guest": "ゲスト",
+  "goToDashboard": "ダッシュボードへ",
+  "userMenu": "ユーザーメニュー",
+  "profile": "マイプロフィール",
+  "logout": "ログアウト",
+  "logoutSuccess": "正常にログアウトしました",
+  "mainNav": "メインナビゲーション",
+  "bottomNav": "サブナビゲーション",
+  "open": "メニューを開く",
+  "close": "メニューを閉じる",
+  "noItems": "利用可能なセクションがありません",
+  "mobileTitle": "Millete",
+  "dashboard": "$t(common:entities.dashboard)",
+  "transactions": "$t(common:entities.transactions)",
+  "categories": "$t(common:entities.categories)",
+  "investments": "$t(common:entities.investments)",
+  "groupgoals": "$t(common:entities.groupGoals)",
+  "savingsgoals": "$t(common:entities.savingsGoals)",
+  "settings": "設定",
+  "errors": {
+    "featureComingSoon": "{{feature}} は近日公開予定です",
+    "languageChangeFailed": "言語の変更に失敗しました"
+  },
+  "languages": {
+    "es": "スペイン語",
+    "en": "英語",
+    "fr": "フランス語",
+    "de": "ドイツ語",
+    "it": "イタリア語",
+    "pt": "ポルトガル語"
+  },
+  "theme": {
+    "selector": "テーマ選択",
+    "palette": "カラーパレット",
+    "errors": {
+      "themeChangeFailed": "テーマの変更に失敗しました"
+    }
+  },
+  "carousel": {
+    "previous": "前へ",
+    "next": "次へ"
+  }
+}

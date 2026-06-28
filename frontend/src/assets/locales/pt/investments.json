@@ -1,0 +1,60 @@
+{
+  "title": "$t(common:entities.investments)",
+  "portfolioValue": "Valor da Carteira",
+  "monthlyReturn": "Rentabilidade Mensal",
+  "dividends": "Dividendos",
+  "comingSoon": "$t(common:prompts.comingSoon)",
+  "evolution": "Evolução do Patrimônio",
+  "lastMonths": "Últimos {{count}} meses",
+  "distribution": "Distribuição",
+  "total": "Total",
+  "myAssets": "Meus Ativos",
+  "searchAsset": "Buscar ativo...",
+  "noAssets": "Não há ativos na sua carteira",
+  "shares": "cotas",
+  "filterAll": "$t(common:types.all)",
+  "new": "$t(common:actions.add) $t(common:entities.investment)",
+  "newTitle": "Registrar Novo Investimento",
+  "assetName": "Nome do Ativo",
+  "assetNamePlaceholder": "Ex: Apple Inc.",
+  "ticker": "Ticker",
+  "type": "Tipo de Ativo",
+  "quantity": "Quantidade",
+  "purchasePrice": "Preço de Compra",
+  "purchaseDate": "Data de Compra",
+  "save": "$t(common:actions.save) $t(common:entities.investment)",
+  "updatePrice": "Atualizar Preço",
+  "marketPrice": "Preço de Mercado",
+  "newPrice": "Novo Preço",
+  "updateNow": "$t(common:actions.update) Agora",
+  "delete": "$t(common:actions.delete)",
+  "deleteConfirm": "$t(common:prompts.deleteConfirm)",
+  "createError": "Erro ao criar o investimento. Tente novamente.",
+  "assetOptions": "Opções de {{name}}",
+  "deleteTitle": "$t(common:actions.delete) $t(common:entities.investment)",
+  "deleteConfirmation": "$t(common:prompts.deleteConfirm)",
+  "types": {
+    "stock": "Ações",
+    "crypto": "Criptomoedas",
+    "fund": "Fundos",
+    "realEstate": "Imobiliário",
+    "real_estate": "Imobiliário",
+    "other": "Outros"
+  },
+  "alerts": {
+    "createSuccess": "$t(common:entities.investment) registrada com sucesso",
+    "updatePriceSuccess": "Preço atualizado com sucesso",
+    "deleteSuccess": "$t(common:entities.investment) excluída com sucesso",
+    "warningTitle": "Desvio crítico detectado",
+    "warningDesc": "O preço inserido varia mais de 50% em relação ao preço atual. Clique novamente para confirmar."
+  },
+  "confirmUpdate": "Confirmar alteração crítica",
+  "updatePriceError": "Erro ao atualizar o preço",
+  "charts": {
+    "tooltip": {
+      "amount": "Gasto",
+      "percentage": "Porcentagem",
+      "wealth": "Patrimônio"
+    }
+  }
+}

@@ -6,6 +6,8 @@ import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +38,9 @@ class DashboardServiceTest {
 
     @Mock
     private InvestmentRepository investmentRepository;
+
+    @Mock
+    private SavingsGoalRepository savingsGoalRepository;
 
     @InjectMocks
     private DashboardService dashboardService;
@@ -85,7 +91,7 @@ class DashboardServiceTest {
 
         when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
                 .thenReturn(List.of(expense));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(categoryRepository.findActiveByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
 
         var result = dashboardService.getCategories(userId, "month");
 
@@ -121,7 +127,7 @@ class DashboardServiceTest {
     }
 
     @Test
-    @DisplayName("Obtener presupuestos sin gastos no muestra nada")
+    @DisplayName("Obtener presupuestos sin gastos muestra 0 de gasto")
     void shouldNotShowBudgetsWithNoSpending() {
         UUID categoryId = UUID.randomUUID();
         Category category = mock(Category.class);
@@ -135,7 +141,9 @@ class DashboardServiceTest {
 
         var result = dashboardService.getBudgets(userId, "month");
 
-        assertThat(result.budgets()).isEmpty();
+        assertThat(result.budgets()).hasSize(1);
+        assertThat(result.budgets().get(0).spent()).isEqualByComparingTo("0");
+        assertThat(result.budgets().get(0).percentage()).isEqualTo(0.0);
     }
 
     @Test
@@ -147,7 +155,7 @@ class DashboardServiceTest {
         when(tx.getCategoryId()).thenReturn(UUID.randomUUID());
 
         when(transactionRepository.findRecentByUserId(userId, 5)).thenReturn(List.of(tx));
-        when(categoryRepository.findById(any())).thenReturn(Optional.of(mock(Category.class)));
+        when(categoryRepository.findActiveByIdAndUserId(any(), eq(userId))).thenReturn(Optional.of(mock(Category.class)));
 
         var result = dashboardService.getRecentTransactions(userId, 5);
 
@@ -253,9 +261,15 @@ class DashboardServiceTest {
     @Test
     @DisplayName("Obtener metas de ahorro")
     void shouldGetSavingsGoals() {
-        Transaction income = createTransaction(Transaction.TransactionType.INCOME, "12000.00");
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(income));
+        SavingsGoal goal1 = new SavingsGoal(UUID.randomUUID(), userId, "Fondo de Emergencia",
+                new BigDecimal("5000"), new BigDecimal("1000"), LocalDate.now().plusMonths(6),
+                "HIGH", "ACTIVE", null, LocalDateTime.now(), LocalDateTime.now(), true);
+        SavingsGoal goal2 = new SavingsGoal(UUID.randomUUID(), userId, "Vacaciones",
+                new BigDecimal("2000"), new BigDecimal("500"), LocalDate.now().plusMonths(3),
+                "MEDIUM", "ACTIVE", null, LocalDateTime.now().minusDays(1), LocalDateTime.now(), true);
+
+        when(savingsGoalRepository.findAllByUserId(userId))
+                .thenReturn(List.of(goal1, goal2));
 
         var result = dashboardService.getSavingsGoals(userId);
 

@@ -1,9 +1,9 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Plus, Loader2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 import { ColorPicker } from "./ColorPicker"
 import { CATEGORY_COLORS } from "../constants"
 import { useCategoryMutations } from "../hooks/useCategoryMutation"
@@ -23,13 +23,15 @@ interface AddCategoryDialogProps {
 }
 
 export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controlledOnOpenChange }: AddCategoryDialogProps = {}) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
   const { createCategory, isCreating } = useCategoryMutations()
   const [internalOpen, setInternalOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [color, setColor] = useState(CATEGORY_COLORS[0])
-  const [budgetLimit, setBudgetLimit] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({
+    name: "",
+    color: CATEGORY_COLORS[0],
+    budgetLimit: "",
+    error: null as string | null,
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isControlled = controlledOpen !== undefined
@@ -37,10 +39,12 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen
 
   const resetForm = () => {
-    setName("")
-    setColor(CATEGORY_COLORS[0])
-    setBudgetLimit("")
-    setError(null)
+    setForm({
+      name: "",
+      color: CATEGORY_COLORS[0],
+      budgetLimit: "",
+      error: null,
+    })
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -49,21 +53,21 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
   }
 
   const handleSave = async () => {
-    if (!name.trim()) return
-    setError(null)
+    if (!form.name.trim()) return
+    setForm((prev) => ({ ...prev, error: null }))
 
     try {
       await createCategory.mutateAsync({
-        name: name.trim(),
-        color: color,
-        budgetLimit: budgetLimit ? Number(budgetLimit) : null,
+        name: form.name.trim(),
+        color: form.color,
+        budgetLimit: form.budgetLimit ? Number(form.budgetLimit) : null,
       })
       setOpen(false)
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t("categories.createError")
-      setError(message)
+      const message = apiError?.response?.data?.message || t('categories:createError')
+      setForm((prev) => ({ ...prev, error: message }))
     }
   }
 
@@ -73,7 +77,7 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
         <DialogTrigger asChild>
           <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4">
             <Plus size={16} />
-            {t("categories.add")}
+            {t('categories:add')}
           </Button>
         </DialogTrigger>
       )}
@@ -88,58 +92,58 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">
-              {t("categories.newTitle")}
+              {t('categories:newTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.name")}</Label>
+              <Label className="text-sm font-semibold">{t('categories:name')}</Label>
               <Input
                 ref={inputRef}
-                placeholder={t("categories.namePlaceholder")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder={t('categories:namePlaceholder')}
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.color")}</Label>
-              <ColorPicker value={color} onChange={setColor} />
+              <Label className="text-sm font-semibold">{t('categories:color')}</Label>
+              <ColorPicker value={form.color} onChange={(v) => setForm((prev) => ({ ...prev, color: v }))} />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t("categories.budget")}</Label>
+              <Label className="text-sm font-semibold">{t('categories:budget')}</Label>
               <Input
                 type="number"
                 placeholder="0.00"
-                value={budgetLimit}
-                onChange={(e) => setBudgetLimit(e.target.value)}
+                value={form.budgetLimit}
+                onChange={(e) => setForm((prev) => ({ ...prev, budgetLimit: e.target.value }))}
                 disabled={isCreating}
                 className="bg-background border-border"
                 min="0"
                 step="0.01"
               />
-              <p className="text-xs text-muted-foreground">{t("categories.budgetHint")}</p>
+              <p className="text-xs text-muted-foreground">{t('categories:budgetHint')}</p>
             </div>
 
-            {error && (
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            {form.error && (
+              <p className="text-red-400 text-sm text-center">{form.error}</p>
             )}
           </div>
 
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isCreating || !name.trim()}
+              disabled={isCreating || !form.name.trim()}
               className="bg-primary hover:bg-primary/90 px-6"
             >
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t("categories.save")}
+              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('categories:save')}
             </Button>
           </DialogFooter>
         </div>

@@ -1,13 +1,13 @@
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Languages, ChevronDown } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { useAvailableLanguages } from "@/shared/hooks/useLanguages"
 import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"
@@ -17,7 +17,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ className }: LanguageSelectorProps) {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['nav', 'common'])
   const availableLanguages = useAvailableLanguages()
 
   const currentLanguage = availableLanguages.find(
@@ -28,7 +28,7 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
     try {
       await i18n.changeLanguage(langCode)
     } catch (error) {
-      notify.error(t("nav.errors.languageChangeFailed"))
+      notify.error(t('nav:errors.languageChangeFailed'))
     }
   }, [i18n, t])
 
@@ -48,7 +48,7 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
             {currentLanguage?.code.toUpperCase() || "??"}
           </span>
           <ChevronDown className="size-4 opacity-50" />
-          <span className="sr-only">{t("nav.changeLanguage")}</span>
+          <span className="sr-only">{t('nav:changeLanguage')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">

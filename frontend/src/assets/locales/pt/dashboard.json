@@ -1,0 +1,130 @@
+{
+  "metrics": {
+    "balance": "Saldo Total",
+    "income": "Receitas do período {{period}}",
+    "expenses": "Despesas do período {{period}}",
+    "savings": "Poupança Total",
+    "vsLastWeek": "vs. semana anterior",
+    "vsLastMonth": "vs. mês anterior",
+    "vsLastYear": "vs. ano anterior",
+    "errors": {
+      "noDataAvailable": "Nenhum dado disponível"
+    }
+  },
+  "header": {
+    "greeting": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
+    },
+    "days": {
+      "0": "domingo",
+      "1": "segunda-feira",
+      "2": "terça-feira",
+      "3": "quarta-feira",
+      "4": "quinta-feira",
+      "5": "sexta-feira",
+      "6": "sábado"
+    },
+    "months": {
+      "0": "janeiro",
+      "1": "fevereiro",
+      "2": "março",
+      "3": "abril",
+      "4": "maio",
+      "5": "junho",
+      "6": "julho",
+      "7": "agosto",
+      "8": "setembro",
+      "9": "outubro",
+      "10": "novembro",
+      "11": "dezembro"
+    },
+    "separator": "•",
+    "dateFormat": "{{month}} {{year}}",
+    "week": "Semana {{week}}",
+    "period": {
+      "ariaLabel": "Selecionar período de tempo",
+      "week": "Sem",
+      "month": "Mês",
+      "year": "Ano"
+    }
+  },
+  "chart": {
+    "title": "Histórico de Gastos",
+    "empty": "Sem gastos neste período",
+    "showingLast": "Últimos {{count}}",
+    "periodLabel": {
+      "week": "Últimos 7 dias",
+      "month": "Últimas 5 semanas",
+      "year": "Últimos 12 meses"
+    },
+    "tooltip": {
+      "amount": "Gasto",
+      "percentage": "Porcentagem"
+    }
+  },
+  "donut": {
+    "title": "Gasto por Categoria",
+    "total": "Total",
+    "empty": "Sem gastos neste período"
+  },
+  "budget": {
+    "title": "Estado do Orçamento",
+    "empty": "Nenhum orçamento configurado",
+    "overLimit": "Limite ultrapassado!",
+    "remaining": "Restam {{amount}} €",
+    "exceededBy": "Excedido em {{amount}} €"
+  },
+  "transactions": {
+    "title": "Últimas Transações",
+    "viewAll": "Ver todas",
+    "empty": "Nenhuma transação recente",
+    "expense": "Despesa",
+    "income": "Receita",
+    "moreOptions": "Mais opções"
+  },
+  "goals": {
+    "title": "Metas de Poupança Ativas",
+    "empty": "Nenhuma meta de poupança configurada",
+    "completed": "Concluído!",
+    "remaining": "Faltam {{amount}} €"
+  },
+  "quickActions": {
+    "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
+    "createCategory": "$t(common:actions.create) $t(common:entities.category)",
+    "importData": "Importar dados",
+    "importing": "Importando...",
+    "exportData": "Exportar dados",
+    "exporting": "Exportando...",
+    "addExpenseAria": "Adicionar nova transação",
+    "createCategoryAria": "Criar nova categoria",
+    "importDataAria": "Importar dados de um arquivo",
+    "importingAria": "Importando dados, aguarde",
+    "exportDataAria": "Exportar cópia de segurança",
+    "exportingAria": "Exportando dados, aguarde",
+    "groupLabel": "Ações rápidas"
+  },
+  "importModal": {
+    "title": "Importar dados",
+    "description": "Arraste um arquivo JSON com suas transações",
+    "dropHere": "Solte seu arquivo aqui ou clique para selecionar",
+    "onlyJson": "Apenas arquivos .json",
+    "jsonOnly": "Apenas arquivos JSON são suportados",
+    "invalidJson": "O arquivo JSON não é válido",
+    "importing": "Importando dados...",
+    "success": "Dados importados com sucesso",
+    "importError": "Erro ao importar o arquivo",
+    "close": "$t(common:actions.close)"
+  },
+  "import": {
+    "success": "Dados importados com sucesso",
+    "errorGeneric": "Erro ao importar o arquivo",
+    "errorProperty": "Você não tem permissão para importar",
+    "errorFormat": "Formato de arquivo inválido"
+  },
+  "export": {
+    "success": "Cópia de segurança exportada com sucesso",
+    "error": "Erro ao exportar os dados"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "title": "$t(common:entities.investments)",
+  "portfolioValue": "Portfolio Value",
+  "monthlyReturn": "Monthly Return",
+  "dividends": "Dividends",
+  "comingSoon": "$t(common:prompts.comingSoon)",
+  "evolution": "Wealth Evolution",
+  "lastMonths": "Last {{count}} months",
+  "distribution": "Distribution",
+  "total": "Total",
+  "myAssets": "My Assets",
+  "searchAsset": "Search asset...",
+  "noAssets": "There are no assets in your portfolio",
+  "shares": "shares",
+  "filterAll": "$t(common:types.all)",
+  "new": "$t(common:actions.add) $t(common:entities.investment)",
+  "newTitle": "Register New Investment",
+  "assetName": "Asset Name",
+  "assetNamePlaceholder": "e.g., Apple Inc.",
+  "ticker": "Ticker",
+  "type": "Asset Type",
+  "quantity": "Quantity",
+  "purchasePrice": "Purchase Price",
+  "purchaseDate": "Purchase Date",
+  "save": "$t(common:actions.save) $t(common:entities.investment)",
+  "updatePrice": "Update Price",
+  "marketPrice": "Market Price",
+  "newPrice": "New Price",
+  "updateNow": "$t(common:actions.update) Now",
+  "delete": "$t(common:actions.delete)",
+  "deleteConfirm": "$t(common:prompts.deleteConfirm)",
+  "createError": "Error creating investment. Please try again.",
+  "assetOptions": "Options for {{name}}",
+  "deleteTitle": "$t(common:actions.delete) $t(common:entities.investment)",
+  "deleteConfirmation": "$t(common:prompts.deleteConfirm)",
+  "types": {
+    "stock": "Stocks",
+    "crypto": "Cryptocurrencies",
+    "fund": "Funds",
+    "realEstate": "Real Estate",
+    "real_estate": "Real Estate",
+    "other": "Other"
+  },
+  "alerts": {
+    "createSuccess": "$t(common:entities.investment) registered successfully",
+    "updatePriceSuccess": "Price updated successfully",
+    "deleteSuccess": "$t(common:entities.investment) deleted successfully",
+    "warningTitle": "Critical deviation detected",
+    "warningDesc": "The entered price varies by more than 50% from the current price. Click again to confirm."
+  },
+  "confirmUpdate": "Confirm critical change",
+  "updatePriceError": "Error updating price",
+  "charts": {
+    "tooltip": {
+      "amount": "Expense",
+      "percentage": "Percentage",
+      "wealth": "Wealth"
+    }
+  }
+}

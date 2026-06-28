@@ -60,7 +60,7 @@ function hashCode(str: string): number {
 }
 
 export function useDashboardQueries(period: PeriodFilter) {
-  const metrics = useQuery<DashboardMetrics>({
+  const { data: metricsData, isLoading: metricsIsLoading } = useQuery<DashboardMetrics>({
     queryKey: ['dashboardMetrics', period],
     queryFn: async () => {
       const response = await apiClient.get(`dashboard/metrics?period=${period}`)
@@ -70,7 +70,7 @@ export function useDashboardQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const history = useQuery<ChartDataPoint[]>({
+  const { data: historyData, isLoading: historyIsLoading } = useQuery<ChartDataPoint[]>({
     queryKey: ['historyChart', period],
     queryFn: async () => {
       const response = await apiClient.get<HistoryResponse>(`dashboard/history?period=${period}`)
@@ -80,7 +80,7 @@ export function useDashboardQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const categories = useQuery<CategoryData[]>({
+  const { data: categoriesData, isLoading: categoriesIsLoading } = useQuery<CategoryData[]>({
     queryKey: ['categoryStats', period],
     queryFn: async () => {
       const response = await apiClient.get<CategoriesResponse>(`dashboard/categories?period=${period}`)
@@ -90,7 +90,7 @@ export function useDashboardQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const budgets = useQuery<BudgetItem[]>({
+  const { data: budgetsData, isLoading: budgetsIsLoading } = useQuery<BudgetItem[]>({
     queryKey: ['budgets', period],
     queryFn: async () => {
       const response = await apiClient.get<BudgetsResponse>(`dashboard/budgets?period=${period}`)
@@ -100,7 +100,7 @@ export function useDashboardQueries(period: PeriodFilter) {
     staleTime: 30_000,
   })
 
-  const recentTransactions = useQuery<TransactionItem[]>({
+  const { data: recentTransactionsData, isLoading: recentTransactionsIsLoading } = useQuery<TransactionItem[]>({
     queryKey: ['recentTransactions'],
     queryFn: async () => {
       const response = await apiClient.get<TransactionsResponse>('dashboard/recent-transactions?limit=5')
@@ -111,10 +111,10 @@ export function useDashboardQueries(period: PeriodFilter) {
   })
 
   return {
-    metrics,
-    history,
-    categories,
-    budgets,
-    recentTransactions,
+    metrics: { data: metricsData, isLoading: metricsIsLoading },
+    history: { data: historyData, isLoading: historyIsLoading },
+    categories: { data: categoriesData, isLoading: categoriesIsLoading },
+    budgets: { data: budgetsData, isLoading: budgetsIsLoading },
+    recentTransactions: { data: recentTransactionsData, isLoading: recentTransactionsIsLoading },
   }
 }

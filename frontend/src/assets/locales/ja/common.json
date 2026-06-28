@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "deleting": "削除中...",
+    "add": "追加",
+    "accept": "承認",
+    "welcome": "ログインに成功しました",
+    "reject": "拒否",
+    "close": "閉じる",
+    "search": "名前で検索...",
+    "searchDesc": "説明で検索...",
+    "back": "戻る",
+    "continue": "続行",
+    "create": "作成",
+    "update": "更新",
+    "assign": "割り当て",
+    "invite": "招待",
+    "refresh": "更新",
+    "export": "エクスポート",
+    "import": "インポート",
+    "send": "送信"
+  },
+  "status": {
+    "loading": "読み込み中...",
+    "loadingSession": "セッション読み込み中...",
+    "error": "エラー",
+    "empty": "データがありません",
+    "processing": "処理中..."
+  },
+  "entities": {
+    "dashboard": "ダッシュボード",
+    "transaction": "取引",
+    "transactions": "取引履歴",
+    "category": "カテゴリ",
+    "categories": "カテゴリ一覧",
+    "investment": "投資",
+    "investments": "投資一覧",
+    "groupGoal": "グループ目標",
+    "groupGoals": "グループ目標一覧",
+    "savingsGoal": "貯金目標",
+    "savingsGoals": "貯金目標一覧",
+    "user": "ユーザー",
+    "family": "ファミリー"
+  },
+  "prompts": {
+    "deleteTitle": "{{item}} の削除",
+    "deleteConfirm": "本当に「{{name}}」を削除しますか？この操作は取り消せません。",
+    "noData": "データがありません",
+    "comingSoon": "近日公開",
+    "optional": "任意"
+  },
+  "periods": {
+    "week": "週",
+    "month": "月",
+    "year": "年",
+    "today": "今日",
+    "yesterday": "昨日"
+  },
+  "types": {
+    "income": "収入",
+    "expense": "支出",
+    "all": "すべて"
+  },
+  "errors": {
+    "default": "予期しないエラーが発生しました。もう一度お試しください。",
+    "noPermission": "この操作を実行する権限がありません"
+  }
+}

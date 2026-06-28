@@ -1,8 +1,72 @@
-# Millete – Personal Finance Web App
+# Millete – Personal Finance Enterprise Web App
 
-**Millete** is an all-in-one personal finance platform that helps you track income and expenses, manage recurring bills, monitor investments, and collaborate with your family — all in one place.
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk" alt="Java 25">
+  <img src="https://img.shields.io/badge/Spring_Boot-4.x-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 4">
+  <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React 19">
+  <img src="https://img.shields.io/badge/Docker-Ecosystem-blue?style=for-the-badge&logo=docker" alt="Docker">
+  <img src="https://img.shields.io/badge/Architecture-Hexagonal_%2F_DDD-red?style=for-the-badge" alt="Hexagonal/DDD">
+</p>
 
-Live at: [https://www.millete.online](https://www.millete.online)
+<p align="center">
+  <a href="https://www.millete.online" target="_blank">
+    <img src="https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20Millete%20Production-blueviolet?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Live Demo">
+  </a>
+</p>
+
+**Millete** is a production-ready, self-hosted personal finance platform engineered to track income/expenses, manage automated recurring bills, monitor complex investment portfolios, and enable secure family-unit collaboration—all powered by a decoupled, high-performance architecture.
+
+---
+
+## Preview & Interface
+
+### Core Dashboard
+<p align="center">
+  <img src="documentation/screenshots/dashboard-preview.png" alt="Millete Dashboard Preview" width="100%">
+</p>
+
+### Modules & Features
+
+| Secure Access | 📑 Ledger & Categories |
+|---|---|
+| **Login Interface** <br> <img src="documentation/screenshots/login-preview.png" width="100%"> | **Category Management** <br> <img src="documentation/screenshots/categories-preview.png" width="100%"> |
+| **Investment Monitoring** | **Financial Goals** |
+| **Portfolio Tracker** <br> <img src="documentation/screenshots/investments-preview.png" width="100%"> | **Saving Goals** <br> <img src="documentation/screenshots/Saving-goals-preview.png" width="100%"> |
+
+### Cash Flow & Value Analysis
+<p align="center">
+  <b>Detailed Transactions Management</b>
+  <img src="documentation/screenshots/transactions-preview.png" alt="Transactions Ledger" width="100%">
+</p>
+
+<p align="center">
+  <b>System Value Metrics (React Doctor)</b> <br>
+  <img src="documentation/screenshots/react-doctor-value.png" alt="React Doctor Value Analysis" width="60%">
+</p>
+
+---
+
+## Architecture & Core Principles
+
+This project abandons traditional monolithic coupling in favor of **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports & Adapters)**.
+
+### Architectural Flow Diagram
+
+```mermaid
+graph LR
+Client((Browser / UI)) -->|HTTPS| Nginx[Nginx Reverse Proxy]
+Nginx -->|Routing| Frontend[React 19 SPA]
+Nginx -->|REST API + JWT| Backend[Spring Boot Core]
+subgraph SpringBootApp
+Backend --> Infrastructure[Adapters: Controllers / Security]
+Infrastructure -->|Implements / Drives| Ports[Application Ports]
+Ports --> Domain[Domain Core: Entities / Value Objects]
+Infrastructure -->|Persistence Adapter| DB[(PostgreSQL)]
+end
+```
+
+* **Pure Domain Core:** The business logic has zero dependencies on frameworks, databases, or external libraries, guaranteeing maximum testability and long-term maintainability.
+* **Strict Anti-IDOR Layer:** Security is treated as a core architectural constraint. Every single database transaction validates cross-entity resource ownership dynamically against the authenticated context.
 
 ---
 
@@ -49,114 +113,145 @@ Get a bird's-eye view of your financial health:
 
 ---
 
-## Technology Stack
+## Tech Stack
+
+### Backend & Infrastructure
+* **Core:** Java 25 (LTS) & Spring Boot 4.x Framework.
+* **Security:** Spring Security, Stateless JWT Architecture (12-hour expiration), BCrypt password hashing.
+* **Persistence & Migrations:** PostgreSQL, Hibernate ORM, **Flyway** (Evolutionary automated schema management).
 
 ### Frontend
-- React 19 with TypeScript
-- Vite as build tool
-- Tailwind CSS for utility-first styling
-- TanStack Query (React Query) for data fetching, state management, and caching
-- Recharts for fluid data visualizations
-- Shadcn/ui & Radix UI component libraries
-- Sonner for sleek toast notifications
-
-### Backend
-- **Java 25** (LTS)
-- **Spring Boot 4.x** (Spring Security, Spring Data JPA)
-- PostgreSQL database
-- Flyway for database schema migrations
-- MapStruct for fast, type-safe entity mapping
-- Clean/Hexagonal Architecture core (ports and adapters)
-
-### Infrastructure & Deployment
-- **Docker & Docker Compose** multi-container ecosystem
-- **Nginx** acting as a high-performance Reverse Proxy and Frontend web server
-- Maven for backend build automation
-- Hibernate ORM for relational data mapping
-- BCrypt for robust password hashing
-- JavaMailSender for secure email invitations via Brevo SMTP
-- Spring Scheduled tasks for automated daily background processing
+* **Core & State:** React 19, TypeScript, Vite, **TanStack Query (React Query)** for server-state synchronization.
+* **UI/UX:** Tailwind CSS, **Shadcn/ui**, Radix UI primitives, Sonner notifications.
 
 ---
 
-## API Overview
+## Quick Start
 
-The production environment maps all routes through Nginx. The backend REST API is organized by domain and exposed without double context path constraints:
+Get Millete up and running locally in under 5 minutes using Docker Compose.
 
-- **Authentication** – `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me/topnav`
-- **Transactions** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/transactions` + `/metrics`
-- **Categories** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/categories`
-- **Planned Transactions** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/planned-transactions`
-- **Investments** – `GET`, `POST`, `PATCH /price`, `DELETE` `/api/v1/investments`
-- **Dashboard** – `GET` `/metrics`, `/history`, `/categories`, `/budgets`, `/recent-transactions`
-- **Family** – `GET`, `POST`, `PUT`, `DELETE` `/api/v1/families` (including invitations and contributions)
-- **Data Exchange** – `GET /api/v1/data/export`, `POST /api/v1/data/import`
+### Prerequisites
 
-All endpoints, except public authentication routes, require a valid JWT bearer token inside the `Authorization` header.
+* [Docker](https://docs.docker.com/get-docker/) (version 24.0+)
+* [Docker Compose](https://docs.compose.com/install/) (version 2.0+)
+* [Git](https://git-scm.com/downloads)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/puntomartinez/millete.git
+cd millete
+```
+
+### 2. Configure Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your preferred values. The defaults work out of the box for local development, but **make sure to change all passwords for production use**.
+
+> **Security Note:** Generate strong passwords using:
+> ```bash
+> openssl rand -base64 32
+> ```
+
+### 3. Initialize the Environment
+
+**Linux / macOS / WSL:**
+```bash
+chmod +x manage.sh scripts/*.sh
+sh manage.sh init
+```
+
+**Windows (Git Bash):**
+```bash
+sh manage.sh init
+```
+
+> **Windows Users:** Always use **Git Bash** to run shell scripts. PowerShell and CMD will not execute `.sh` files correctly.
+
+The `init` command performs the following setup tasks:
+- Creates the external Docker volume `millete_postgres_data` (if it doesn't exist)
+- Creates the `backups/` directory with proper permissions (UID 1000) for the Alpine-based backup container
+- Makes all shell scripts executable
+- Converts script line endings to Unix format automatically
+
+### 4. Start All Services
+
+```bash
+sh manage.sh start
+```
+
+Docker Compose will build and launch all four services:
+
+| Service | Container Name | Technology | Port |
+|---------|---------------|------------|------|
+| Database | `millete-db` | PostgreSQL 16 (Alpine) | 5432 (internal) |
+| Backend | `millete-backend` | Spring Boot 4 + Java 25 | 8080 (internal) |
+| Frontend | `millete-frontend` | React 19 + Vite + Nginx | 3000 (exposed) |
+| Backups | `millete-db-backup` | PostgreSQL 16 (Alpine) | N/A |
+
+### 5. Access the Application
+
+Open your browser and navigate to: http://localhost:3000
+
+The backend API is proxied through Nginx at `/api/v1`. You can register a new account directly from the login page.
+
+> **First Run Note:** If the database volume already existed from a previous deployment, the application user `millete_app` may not have been created automatically. Run this command once to create it:
+> ```bash
+> sh manage.sh create-app-user
+> ```
 
 ---
 
-## Database Schema
+## Management Script Reference
 
-The application uses 9 main tables with soft delete support (active flag):
+The `manage.sh` script provides a unified interface for all common operations:
 
-- `users` – account information with anonymization support
-- `categories` – user-defined spending categories
-- `transactions` – all income and expense records
-- `planned_transactions` – recurring transaction templates
-- `investments` – asset holdings
-- `family_units`, `family_members`, `family_invitations`, `family_contributions`
+| Command | Description |
+|---------|-------------|
+| `sh manage.sh start` | Start all services in the background |
+| `sh manage.sh stop` | Stop running services without removing them |
+| `sh manage.sh restart` | Quickly restart containers (ignores config/.env updates) |
+| `sh manage.sh reload` | Rebuild images and recreate containers with new configs |
+| `sh manage.sh down` | Stop and remove containers and networks |
+| `sh manage.sh status` | Display container health and list recent backups |
+| `sh manage.sh logs [svc]` | Tail logs (optionally filter by service name) |
+| `sh manage.sh backup-now` | Trigger an instantaneous manual database backup |
+| `sh manage.sh restore` | Launch interactive database restoration wizard |
+| `sh manage.sh init` | Bootstrap volumes and host directory permissions |
+| `sh manage.sh create-app-user` | Create `millete_app` user in existing database |
+| `sh manage.sh clean-all` | WIPE everything (containers, volumes, and backups) |
 
-Foreign keys use `CASCADE` for ownership and `SET NULL` for optional relationships (e.g., transactions when a category is deleted).
+### Common Workflows
 
----
+**View real-time logs:**
+```bash
+sh manage.sh logs backend
+```
 
-## Security Highlights
+**Rebuild after code changes:**
+```bash
+sh manage.sh reload
+```
 
-- **JWT-Based Stateless Auth:** Token-based security with 12-hour expiration.
-- **Strict CORS & Routing:** Production-hardened Spring Security configuration mapped precisely with Nginx reverse proxy origins.
-- **Password Hashing:** BCrypt hashing with custom workload factors (no plain-text storage).
-- **Anti-IDOR Protection:** Complete resource isolation; every single request validates cross-entity resource ownership.
-- **Soft Delete Pattern:** Preserves transaction history and financial integrity across deleted categories.
-- **Data Privacy:** Full anonymization support for user data upon account deletion and client-side encryption ready.
+**Manual database backup:**
+```bash
+sh manage.sh backup-now
+```
 
----
-
-## Known Limitations
-
-- Recurring transaction logic is currently evaluating start dates; full interval-based scheduling automation is under active deployment.
-- Investment price updates are handled manually; third-party market data API integration is planned for future versions.
-- Family invitations expire strictly after 48 hours; resend features are being developed.
-
----
-
-## License
-
-This project is licensed under the MIT License with Commons Clause.
-
-- You are free to use, copy, modify, and distribute this software for **non-commercial purposes only**.
-- Commercial use — including but not limited to selling, licensing, hosting as a service (SaaS), or including the software in a commercial product — is **strictly prohibited** without explicit permission from the author.
-- You must give appropriate credit to the original author and retain all copyright notices.
-- The software is provided "as is", without warranty of any kind.
-
-**MIT License with Commons Clause**
-
-Copyright (c) 2026 JesLopMar
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, and sublicense copies of the Software, **subject to the following condition**:
-
-The Software may not be used for commercial purposes. Commercial purposes means the intended use of the Software or the output of the Software in any activity that generates revenue, including but not limited to:
-
-- Selling the Software or any derivative work
-- Providing the Software as a hosted service (SaaS, PaaS, etc.)
-- Using the Software in a commercial product or service
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS is", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+**Restore from a previous backup:**
+```bash
+sh manage.sh restore
+```
 
 ---
 
-## Contact
+## Production Deployment Notes
 
-For questions or support, visit [https://www.millete.online](https://www.millete.online)
+- The backend port (`8080`) is **not exposed** to the host machine. All API traffic flows through Nginx.
+- The database uses a dedicated application user (`millete_app`) with minimal privileges. The superuser (`postgres`) is only used for backups.
+- Automated daily backups run at 2:00 AM with a 7-day retention policy.
+- All containers run as non-root users for security.
+- The external Docker volume `millete_postgres_data` persists data across container rebuilds and removals.

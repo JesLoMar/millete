@@ -1,0 +1,10 @@
+{
+  "errors": {
+    "default": "Errore imprevisto del server.",
+    "status_401": "La sessione è scaduta. Per favore, effettua nuovamente l'accesso.",
+    "status_403": "Non disponi dei permessi necessari per questa sezione.",
+    "status_404": "La risorsa richiesta non è disponibile.",
+    "status_500": "Problema interno del server. Riprova più tardi.",
+    "timeout": "La richiesta ha impiegato troppo tempo a rispondere."
+  }
+}

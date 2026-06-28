@@ -1,0 +1,24 @@
+{
+  "general": {
+    "title": "一般設定",
+    "description": "体験をカスタマイズする"
+  },
+  "currency": {
+    "title": "通貨",
+    "description": "希望する通貨を選択してください",
+    "placeholder": "通貨を選択"
+  },
+  "telegram": {
+    "title": "Telegram 接続",
+    "description": "Telegram との連携を管理します",
+    "connected": "{{username}} として接続中",
+    "since": "{{date}} から",
+    "status": {
+      "connected": "接続済み",
+      "disconnected": "切断済み",
+      "loading": "確認中...",
+      "error": "接続エラー"
+    },
+    "refresh": "$t(common:actions.refresh)"
+  }
+}

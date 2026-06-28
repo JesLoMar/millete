@@ -13,6 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -87,7 +90,7 @@ class InvestmentServiceTest {
         when(inv.getUserId()).thenReturn(UUID.randomUUID());
         when(investmentRepository.findById(id)).thenReturn(Optional.of(inv));
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> investmentService.updatePrice(id, userId, new BigDecimal("200.00")))
                 .withMessage("No tienes permiso para actualizar esta inversión.");
     }
@@ -98,7 +101,7 @@ class InvestmentServiceTest {
         UUID id = UUID.randomUUID();
         when(investmentRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> investmentService.updatePrice(id, userId, new BigDecimal("200.00")))
                 .withMessage("Inversión no encontrada.");
     }

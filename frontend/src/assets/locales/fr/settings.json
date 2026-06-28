@@ -1,0 +1,24 @@
+{
+  "general": {
+    "title": "Paramètres Généraux",
+    "description": "Personnalisez votre expérience"
+  },
+  "currency": {
+    "title": "Devise",
+    "description": "Sélectionnez votre devise préférée",
+    "placeholder": "Choisir la devise"
+  },
+  "telegram": {
+    "title": "Connexion Telegram",
+    "description": "Gérez votre intégration avec Telegram",
+    "connected": "Connecté en tant que {{username}}",
+    "since": "Depuis {{date}}",
+    "status": {
+      "connected": "Connecté",
+      "disconnected": "Déconnecté",
+      "loading": "Vérification...",
+      "error": "Erreur de connexion"
+    },
+    "refresh": "$t(common:actions.refresh)"
+  }
+}

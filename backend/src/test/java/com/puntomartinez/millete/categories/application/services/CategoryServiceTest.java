@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -102,7 +102,7 @@ class CategoryServiceTest {
         when(categoryRepository.findByIdAndUserId(id, userId))
                 .thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(ResponseStatusException.class)
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> categoryService.update(id, userId, command))
                 .withMessageContaining("Categoría no encontrada");
     }
@@ -118,7 +118,7 @@ class CategoryServiceTest {
         when(categoryRepository.findByIdAndUserId(id, otherUserId))
                 .thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(ResponseStatusException.class)
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> categoryService.update(id, otherUserId, command))
                 .withMessageContaining("Categoría no encontrada");
 
@@ -190,7 +190,7 @@ class CategoryServiceTest {
         when(categoryRepository.findByIdAndUserId(id, userId))
                 .thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(ResponseStatusException.class)
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> categoryService.delete(id, userId))
                 .withMessageContaining("Categoría no encontrada");
     }
@@ -203,7 +203,7 @@ class CategoryServiceTest {
         when(categoryRepository.findByIdAndUserId(id, otherUserId))
                 .thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(ResponseStatusException.class)
+        assertThatExceptionOfType(ResourceNotFoundException.class)
                 .isThrownBy(() -> categoryService.delete(id, otherUserId))
                 .withMessageContaining("Categoría no encontrada");
 

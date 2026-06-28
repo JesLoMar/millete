@@ -10,30 +10,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_ATTEMPTS = 5;
     private static final long WINDOW_MS = TimeUnit.MINUTES.toMillis(1);
+    private static final int MAX_IPS = 10_000;
     private static final String LOGIN_PATH = "/api/v1/auth/login";
 
-    private final ConcurrentHashMap<String, AttemptWindow> attemptsPerIp = new ConcurrentHashMap<>();
-
-    public LoginRateLimitFilter() {
-        Thread cleanupThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Thread.sleep(TimeUnit.MINUTES.toMillis(1));
-                    attemptsPerIp.entrySet().removeIf(entry -> entry.getValue().isExpired());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        }, "rate-limit-cleanup");
-        cleanupThread.setDaemon(true);
-        cleanupThread.start();
-    }
+    private final ConcurrentHashMap<String, AtomicInteger> attemptsPerIp = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> windowStartPerIp = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -45,22 +32,31 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        String clientIp = getClientIp(request);
+        String clientIp = request.getRemoteAddr();
+        long now = System.currentTimeMillis();
 
-        AttemptWindow window = attemptsPerIp.compute(clientIp, (ip, existing) -> {
-            if (existing == null || existing.isExpired()) {
-                return new AttemptWindow();
+        Long windowStart = windowStartPerIp.get(clientIp);
+        if (windowStart == null || now - windowStart > WINDOW_MS) {
+            // Expired or new window
+            if (attemptsPerIp.size() >= MAX_IPS) {
+                // Under memory pressure: evict oldest entries
+                evictExpiredEntries(now);
             }
-            existing.increment();
-            return existing;
-        });
+            windowStartPerIp.put(clientIp, now);
+            attemptsPerIp.put(clientIp, new AtomicInteger(1));
+            windowStart = now;
+        }
 
-        if (window.isBlocked()) {
+        AtomicInteger attempts = attemptsPerIp.get(clientIp);
+        int currentAttempts = attempts != null ? attempts.incrementAndGet() : 1;
+
+        if (currentAttempts > MAX_ATTEMPTS) {
+            long secondsUntilReset = Math.max(0, (WINDOW_MS - (now - windowStart)) / 1000);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json");
             response.getWriter().write(
                     "{\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"Demasiados intentos. Espera %d segundos.\"}"
-                            .formatted(window.secondsUntilReset())
+                            .formatted(secondsUntilReset)
             );
             return;
         }
@@ -73,38 +69,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                 request.getRequestURI().equals(LOGIN_PATH);
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
-    }
-
-    private static class AttemptWindow {
-        private int attempts;
-        private final long windowStart;
-
-        AttemptWindow() {
-            this.attempts = 1;
-            this.windowStart = System.currentTimeMillis();
-        }
-
-        void increment() {
-            this.attempts++;
-        }
-
-        boolean isExpired() {
-            return System.currentTimeMillis() - windowStart > WINDOW_MS;
-        }
-
-        boolean isBlocked() {
-            return !isExpired() && attempts > MAX_ATTEMPTS;
-        }
-
-        long secondsUntilReset() {
-            long elapsed = System.currentTimeMillis() - windowStart;
-            return Math.max(0, (WINDOW_MS - elapsed) / 1000);
-        }
+    private void evictExpiredEntries(long now) {
+        windowStartPerIp.entrySet().removeIf(entry -> now - entry.getValue() > WINDOW_MS);
+        attemptsPerIp.keySet().retainAll(windowStartPerIp.keySet());
     }
 }

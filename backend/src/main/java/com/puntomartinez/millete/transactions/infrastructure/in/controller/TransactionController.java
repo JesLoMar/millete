@@ -9,6 +9,7 @@ import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.R
 import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionMetricsResponseDTO;
 import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionResponseDTO;
 import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.UpdateTransactionRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
@@ -40,7 +41,7 @@ public class TransactionController {
     public ResponseEntity<TransactionMetricsResponseDTO> getMetrics(
             @RequestParam(defaultValue = "month") String period,
             Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         var command = new GetTransactionMetricsUseCase.MetricsCommand(userId, period);
         return ResponseEntity.ok(transactionMetricsUseCase.getMetrics(command));
     }
@@ -50,7 +51,7 @@ public class TransactionController {
     // =======================================================
     @GetMapping
     public ResponseEntity<List<TransactionResponseDTO>> listTransactions(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         List<TransactionResponseDTO> transactions = listTransactionsUseCase.findAllByUserId(userId)
                 .stream()
@@ -68,7 +69,7 @@ public class TransactionController {
             @Valid @RequestBody RegisterTransactionRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         RegisterTransactionCommand command = new RegisterTransactionCommand(
                 userId,
@@ -89,7 +90,7 @@ public class TransactionController {
     // =======================================================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id, Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         deleteTransactionUseCase.deleteByIdAndUserId(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -99,7 +100,7 @@ public class TransactionController {
     // =======================================================
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable UUID id, Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         Transaction tx = getTransactionUseCase.getByIdAndUserId(id, userId);
         return ResponseEntity.ok(mapToDTO(tx, userId));
     }
@@ -113,7 +114,7 @@ public class TransactionController {
             @Valid @RequestBody UpdateTransactionRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         UpdateTransactionUseCase.UpdateTransactionCommand command = new UpdateTransactionUseCase.UpdateTransactionCommand(
                 userId,

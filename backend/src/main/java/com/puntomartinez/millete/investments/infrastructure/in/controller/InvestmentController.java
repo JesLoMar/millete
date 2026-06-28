@@ -9,6 +9,9 @@ import com.puntomartinez.millete.investments.domain.ports.out.InvestmentReposito
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.InvestmentResponseDTO;
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.RegisterInvestmentRequestDTO;
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.UpdateInvestmentPriceRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +49,7 @@ public class InvestmentController {
             @Valid @RequestBody RegisterInvestmentRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         RegisterInvestmentCommand command = new RegisterInvestmentCommand(
                 userId,
@@ -68,7 +71,7 @@ public class InvestmentController {
     // =======================================================
     @GetMapping
     public ResponseEntity<List<InvestmentResponseDTO>> getAllInvestments(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         List<Investment> investments = listUseCase.findAllByUserId(userId)
                 .stream()
                 .filter(Investment::isActive)
@@ -88,7 +91,7 @@ public class InvestmentController {
             @Valid @RequestBody UpdateInvestmentPriceRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         Investment updatedInvestment = updatePriceUseCase.updatePrice(id, userId, request.newPrice());
 
@@ -100,13 +103,13 @@ public class InvestmentController {
     // =======================================================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvestment(@PathVariable UUID id, Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         Investment investment = investmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Inversión no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Inversión no encontrada"));
 
         if (!investment.getUserId().equals(userId)) {
-            throw new RuntimeException("No tienes permiso para eliminar esta inversión");
+            throw new ForbiddenOperationException("No tienes permiso para eliminar esta inversión");
         }
 
         investment.setActive(false);

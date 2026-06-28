@@ -1,0 +1,10 @@
+{
+  "errors": {
+    "default": "Erreur inattendue du serveur.",
+    "status_401": "Votre session a expiré. Veuillez vous reconnecter.",
+    "status_403": "Vous ne disposez pas des autorisations nécessaires pour cette section.",
+    "status_404": "La ressource demandée n'est pas disponible.",
+    "status_500": "Problème interne du serveur. Veuillez réessayer plus tard.",
+    "timeout": "La demande a mis trop de temps à répondre."
+  }
+}

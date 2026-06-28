@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 export function NewsList() {
   const { t } = useTranslation()
 
-  const newsItems = t('info.news.items', { returnObjects: true }) as Array<{
+  const newsItems = t('info:news.items', { returnObjects: true }) as Array<{
     tag?: string
     title: string
     description: string
@@ -14,10 +14,10 @@ export function NewsList() {
       <div className="w-[80%] max-w-2xl space-y-6 lg:space-y-10 px-4 sm:px-0">
         <div className="space-y-3">
           <h2 className="text-4xl sm:text-5xl font-serif text-white leading-tight">
-            {t('info.news.title')}
+            {t('info:news.title')}
           </h2>
           <p className="text-muted-foreground text-sm">
-            {t('info.news.subtitle')}
+            {t('info:news.subtitle')}
           </p>
         </div>
 

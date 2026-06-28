@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "add": "Add",
+    "accept": "Accept",
+    "welcome": "Successful login",
+    "reject": "Reject",
+    "close": "Close",
+    "search": "Search by name...",
+    "searchDesc": "Search by description...",
+    "back": "Back",
+    "continue": "Continue",
+    "create": "Create",
+    "update": "Update",
+    "assign": "Assign",
+    "invite": "Invite",
+    "refresh": "Refresh",
+    "export": "Export",
+    "import": "Import",
+    "send": "Send"
+  },
+  "status": {
+    "loading": "Loading...",
+    "loadingSession": "Loading session...",
+    "error": "Error",
+    "empty": "No data available",
+    "processing": "Processing..."
+  },
+  "entities": {
+    "dashboard": "Dashboard",
+    "transaction": "Transaction",
+    "transactions": "Transactions",
+    "category": "Category",
+    "categories": "Categories",
+    "investment": "Investment",
+    "investments": "Investments",
+    "groupGoal": "Group Goal",
+    "groupGoals": "Group Goals",
+    "savingsGoal": "Savings Goal",
+    "savingsGoals": "Savings Goals",
+    "user": "User",
+    "family": "Family"
+  },
+  "prompts": {
+    "deleteTitle": "Delete {{item}}",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "noData": "No data available",
+    "comingSoon": "Coming soon",
+    "optional": "optional"
+  },
+  "periods": {
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "types": {
+    "income": "Income",
+    "expense": "Expense",
+    "all": "All"
+  },
+  "errors": {
+    "default": "Unexpected error. Please try again.",
+    "noPermission": "You do not have permission to perform this action"
+  }
+}

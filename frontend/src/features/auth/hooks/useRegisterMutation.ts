@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import i18n from '@/lib/i18n';
 import type { ApiError } from '@/shared/types/api';
 import type { RegisterUserRequest, LoginRequest, TokenResponse } from '../types';
@@ -18,7 +18,7 @@ export const useRegisterMutation = () => {
 
       const identifier = data.username || data.email || "";
       if (!identifier) {
-        throw new Error(i18n.t('auth.errors.no_identifier'));
+        throw new Error(i18n.t('auth:errors.no_identifier'));
       }
 
       const loginData: LoginRequest = {
@@ -29,18 +29,18 @@ export const useRegisterMutation = () => {
       try {
         return await authService.login(loginData);
       } catch {
-        throw new Error(i18n.t('auth.errors.auto_login_failed'));
+        throw new Error(i18n.t('auth:errors.auto_login_failed'));
       }
     },
     onSuccess: async (data) => {
       await login(data.token);
       queryClient.clear();
       
-      notify.success(i18n.t('auth.alerts.register_success'));
+      notify.success(i18n.t('auth:alerts.register_success'));
       navigate('/dashboard', { replace: true });
     },
     onError: (error: ApiError) => {
-      const errorMessage = error.response?.data?.message || i18n.t('auth.errors.register_failed');
+      const errorMessage = error.response?.data?.message || i18n.t('auth:errors.register_failed');
       console.error('[registerCategory] Error:', errorMessage);
       notify.error(errorMessage);
     }

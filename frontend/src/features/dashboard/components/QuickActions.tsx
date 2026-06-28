@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import { PlusCircle, FolderPlus, FileUp, FileDown, Loader2 } from "lucide-react"
 
 interface QuickActionsProps {
@@ -29,28 +29,29 @@ export function QuickActions({
   isExporting = false,
   isImporting = false,
 }: QuickActionsProps) {
-  const { t } = useTranslation()
+  // Usamos el namespace dashboard y common
+  const { t } = useTranslation(['dashboard', 'common'])
   const isAnyLoading = isExporting || isImporting
 
   const allActions: Action[] = [
     {
       icon: PlusCircle,
-      labelKey: "dashboard.quickActions.addExpense",
-      ariaLabelKey: "dashboard.quickActions.addExpenseAria",
+      labelKey: "dashboard:quickActions.addExpense",
+      ariaLabelKey: "dashboard:quickActions.addExpenseAria",
       color: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
       onClick: onAddClick,
     },
     {
       icon: FolderPlus,
-      labelKey: "dashboard.quickActions.createCategory",
-      ariaLabelKey: "dashboard.quickActions.createCategoryAria",
+      labelKey: "dashboard:quickActions.createCategory",
+      ariaLabelKey: "dashboard:quickActions.createCategoryAria",
       color: "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white",
       onClick: onAddCategoryClick,
     },
     {
       icon: isImporting ? Loader2 : FileUp,
-      labelKey: isImporting ? "dashboard.quickActions.importing" : "dashboard.quickActions.importData",
-      ariaLabelKey: isImporting ? "dashboard.quickActions.importingAria" : "dashboard.quickActions.importDataAria",
+      labelKey: isImporting ? "dashboard:quickActions.importing" : "dashboard:quickActions.importData",
+      ariaLabelKey: isImporting ? "dashboard:quickActions.importingAria" : "dashboard:quickActions.importDataAria",
       color: "bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white",
       onClick: onImportClick,
       disabled: isAnyLoading,
@@ -58,8 +59,8 @@ export function QuickActions({
     },
     {
       icon: isExporting ? Loader2 : FileDown,
-      labelKey: isExporting ? "dashboard.quickActions.exporting" : "dashboard.quickActions.exportData",
-      ariaLabelKey: isExporting ? "dashboard.quickActions.exportingAria" : "dashboard.quickActions.exportDataAria",
+      labelKey: isExporting ? "dashboard:quickActions.exporting" : "dashboard:quickActions.exportData",
+      ariaLabelKey: isExporting ? "dashboard:quickActions.exportingAria" : "dashboard:quickActions.exportDataAria",
       color: "bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white",
       onClick: onExportClick,
       disabled: isAnyLoading,
@@ -70,17 +71,16 @@ export function QuickActions({
   const actions = allActions.filter((action) => action.onClick !== undefined)
 
   return (
-    <div 
-      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full"
-      role="group"
-      aria-label={t("dashboard.quickActions.groupLabel")}
+    <fieldset 
+      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full border-0 p-0 m-0"
+      aria-label={String(t('dashboard:quickActions.groupLabel'))}
     >
       {actions.map((action) => (
         <Button
           key={action.labelKey}
           onClick={action.onClick}
           disabled={action.disabled}
-          aria-label={t(action.ariaLabelKey)}
+          aria-label={String(t(action.ariaLabelKey as any))}
           className={`
             h-auto min-h-25 sm:min-h-28 w-full
             flex flex-col items-center justify-center gap-2 sm:gap-2.5
@@ -96,10 +96,10 @@ export function QuickActions({
           </div>
           
           <span className="font-medium text-[11px] sm:text-xs md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
-            {t(action.labelKey)}
+            {String(t(action.labelKey as any))}
           </span>
         </Button>
       ))}
-    </div>
+    </fieldset>
   )
 }

@@ -10,7 +10,7 @@ export const ProtectedRoute = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">{t("common.loadingSession")}</p>
+        <p className="text-muted-foreground">{t('common:status.loadingSession')}</p>
       </div>
     )
   }

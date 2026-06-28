@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleting": "Suppression...",
+    "add": "Ajouter",
+    "accept": "Accepter",
+    "welcome": "Connexion réussie",
+    "reject": "Refuser",
+    "close": "Fermer",
+    "search": "Rechercher par nom...",
+    "searchDesc": "Rechercher par description...",
+    "back": "Retour",
+    "continue": "Continuer",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "assign": "Assigner",
+    "invite": "Inviter",
+    "refresh": "Actualiser",
+    "export": "Exporter",
+    "import": "Importer",
+    "send": "Envoyer"
+  },
+  "status": {
+    "loading": "Chargement...",
+    "loadingSession": "Chargement de la session...",
+    "error": "Erreur",
+    "empty": "Aucune donnée disponible",
+    "processing": "Traitement..."
+  },
+  "entities": {
+    "dashboard": "Tableau de bord",
+    "transaction": "Transaction",
+    "transactions": "Transactions",
+    "category": "Catégorie",
+    "categories": "Catégories",
+    "investment": "Investissement",
+    "investments": "Investissements",
+    "groupGoal": "Objectif de groupe",
+    "groupGoals": "Objectifs de groupe",
+    "savingsGoal": "Objectif d'épargne",
+    "savingsGoals": "Objectifs d'épargne",
+    "user": "Utilisateur",
+    "family": "Famille"
+  },
+  "prompts": {
+    "deleteTitle": "Supprimer {{item}}",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer « {{name}} » ? Cette action est irréversible.",
+    "noData": "Aucune donnée disponible",
+    "comingSoon": "Bientôt disponible",
+    "optional": "optionnel"
+  },
+  "periods": {
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
+  },
+  "types": {
+    "income": "Revenu",
+    "expense": "Dépense",
+    "all": "Tous"
+  },
+  "errors": {
+    "default": "Erreur inattendue. Veuillez réessayer.",
+    "noPermission": "Vous n'avez pas l'autorisation d'effectuer cette action"
+  }
+}

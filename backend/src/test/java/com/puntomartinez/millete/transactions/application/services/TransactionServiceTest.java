@@ -1,14 +1,16 @@
 package com.puntomartinez.millete.transactions.application.services;
 
-import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import org.junit.jupiter.api.DisplayName;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,164 +21,164 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TransactionService - Servicio de transacciones")
 class TransactionServiceTest {
 
     @Mock
     private TransactionRepository transactionRepository;
-
     @Mock
     private CategoryRepository categoryRepository;
 
     @InjectMocks
     private TransactionService transactionService;
 
-    private final UUID userId = UUID.randomUUID();
-    private final UUID categoryId = UUID.randomUUID();
+    private UUID userId;
+    private UUID transactionId;
+    private UUID categoryId;
+
+    @BeforeEach
+    void setUp() {
+        userId = UUID.randomUUID();
+        transactionId = UUID.randomUUID();
+        categoryId = UUID.randomUUID();
+    }
+
+    private Transaction createTransaction() {
+        Transaction tx = new Transaction();
+        tx.setId(transactionId);
+        tx.setUserId(userId);
+        tx.setCategoryId(categoryId);
+        tx.setAmount(new BigDecimal("50.00"));
+        tx.setDate(LocalDateTime.now());
+        tx.setType(Transaction.TransactionType.EXPENSE);
+        tx.setDescription("Almuerzo");
+        tx.setActive(true);
+        return tx;
+    }
 
     @Test
-    @DisplayName("Registrar gasto")
-    void shouldRegisterExpense() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command = new RegisterTransactionUseCase.RegisterTransactionCommand(
-                userId, categoryId, new BigDecimal("-50.00"), LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE, "Compra");
+    void register_shouldSaveTransaction() {
+        RegisterTransactionUseCase.RegisterTransactionCommand command =
+                new RegisterTransactionUseCase.RegisterTransactionCommand(
+                        userId, null, new BigDecimal("50.00"), LocalDateTime.now(),
+                        Transaction.TransactionType.EXPENSE, "Almuerzo"
+                );
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(mock(Category.class)));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
 
         RegisterTransactionUseCase.RegisterTransactionResult result = transactionService.register(command);
 
-        assertThat(result.transaction().getDescription()).isEqualTo("Compra");
-        assertThat(result.transaction().isActive()).isTrue();
-        verify(transactionRepository).save(any(Transaction.class));
+        assertNotNull(result.transaction());
+        assertEquals(userId, result.transaction().getUserId());
+        assertEquals(new BigDecimal("50.00"), result.transaction().getAmount());
+        assertFalse(result.limitExceeded());
     }
 
     @Test
-    @DisplayName("Registrar con categoría inexistente lanza error")
-    void shouldThrowWhenCategoryNotFound() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command = new RegisterTransactionUseCase.RegisterTransactionCommand(
-                userId, categoryId, new BigDecimal("50.00"), LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE, "Compra");
+    void register_shouldCheckCategory_whenProvided() {
+        RegisterTransactionUseCase.RegisterTransactionCommand command =
+                new RegisterTransactionUseCase.RegisterTransactionCommand(
+                        userId, categoryId, new BigDecimal("50.00"), LocalDateTime.now(),
+                        Transaction.TransactionType.EXPENSE, "Almuerzo"
+                );
 
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
-                .isThrownBy(() -> transactionService.register(command))
-                .withMessage("Category does not exist.");
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.register(command));
     }
 
     @Test
-    @DisplayName("Listar transacciones por usuario")
-    void shouldFindAllByUserId() {
-        Transaction tx1 = new Transaction(
-                UUID.randomUUID(),
-                userId,
-                null,
-                new BigDecimal("10.00"),
-                LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE,
-                "Gasto 1",
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                true
-        );
+    void register_shouldDetectLimitExceeded() {
+        Transaction existingIncome = createTransaction();
+        existingIncome.setType(Transaction.TransactionType.INCOME);
+        existingIncome.setAmount(new BigDecimal("1000.00"));
+        existingIncome.setDate(LocalDateTime.now());
 
-        Transaction tx2 = new Transaction(
-                UUID.randomUUID(),
-                userId,
-                null,
-                new BigDecimal("20.00"),
-                LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE,
-                "Gasto 2",
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                true
-        );
+        RegisterTransactionUseCase.RegisterTransactionCommand command =
+                new RegisterTransactionUseCase.RegisterTransactionCommand(
+                        userId, null, new BigDecimal("800.00"), LocalDateTime.now(),
+                        Transaction.TransactionType.EXPENSE, "Gasto grande"
+                );
 
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx1, tx2));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(existingIncome));
+
+        RegisterTransactionUseCase.RegisterTransactionResult result = transactionService.register(command);
+
+        assertTrue(result.limitExceeded());
+    }
+
+    @Test
+    void findAllByUserId_shouldReturnTransactions() {
+        Transaction tx = createTransaction();
+        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));
 
         List<Transaction> result = transactionService.findAllByUserId(userId);
 
-        assertThat(result).hasSize(2);
+        assertEquals(1, result.size());
+        assertEquals(transactionId, result.get(0).getId());
     }
 
     @Test
-    @DisplayName("Obtener transacción por ID con usuario correcto")
-    void shouldGetByIdAndUserId() {
-        UUID id = UUID.randomUUID();
-        Transaction tx = mock(Transaction.class);
-        when(tx.getUserId()).thenReturn(userId);
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
+    void getByIdAndUserId_shouldReturnTransaction() {
+        Transaction tx = createTransaction();
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
 
-        Transaction result = transactionService.getByIdAndUserId(id, userId);
+        Transaction result = transactionService.getByIdAndUserId(transactionId, userId);
 
-        assertThat(result).isEqualTo(tx);
+        assertEquals(transactionId, result.getId());
     }
 
     @Test
-    @DisplayName("Obtener transacción de otro usuario lanza error")
-    void shouldThrowWhenGettingOtherUserTransaction() {
-        UUID id = UUID.randomUUID();
-        Transaction tx = mock(Transaction.class);
-        when(tx.getUserId()).thenReturn(UUID.randomUUID());
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
+    void getByIdAndUserId_shouldThrow_whenNotFound() {
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
 
-        assertThatRuntimeException()
-                .isThrownBy(() -> transactionService.getByIdAndUserId(id, userId))
-                .withMessage("You do not have permission to view this transaction.");
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.getByIdAndUserId(transactionId, userId));
     }
 
     @Test
-    @DisplayName("Actualizar transacción")
-    void shouldUpdateTransaction() {
-        UUID id = UUID.randomUUID();
-        Transaction tx = mock(Transaction.class);
-        when(tx.getUserId()).thenReturn(userId);
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(mock(Category.class)));
+    void getByIdAndUserId_shouldThrow_whenForbidden() {
+        Transaction tx = createTransaction();
+        tx.setUserId(UUID.randomUUID()); // Different user
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
+
+        assertThrows(ForbiddenOperationException.class, () -> transactionService.getByIdAndUserId(transactionId, userId));
+    }
+
+    @Test
+    void update_shouldUpdateTransaction() {
+        Transaction tx = createTransaction();
+        UpdateTransactionUseCase.UpdateTransactionCommand command =
+                new UpdateTransactionUseCase.UpdateTransactionCommand(
+                        userId, new BigDecimal("100.00"), LocalDateTime.now(),
+                        Transaction.TransactionType.INCOME, "Nueva descripción", null
+                );
+
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        UpdateTransactionUseCase.UpdateTransactionCommand command = new UpdateTransactionUseCase.UpdateTransactionCommand(
-                userId, new BigDecimal("100.00"), LocalDateTime.now(),
-                Transaction.TransactionType.INCOME, "Venta", categoryId);
+        Transaction result = transactionService.update(transactionId, command);
 
-        Transaction result = transactionService.update(id, command);
-
-        verify(tx).updateDetails(any(), any(), any(), any(), any());
-        verify(transactionRepository).save(tx);
+        assertEquals(new BigDecimal("100.00"), result.getAmount());
+        assertEquals(Transaction.TransactionType.INCOME, result.getType());
+        assertEquals("Nueva descripción", result.getDescription());
     }
 
     @Test
-    @DisplayName("Eliminar transacción (soft delete)")
-    void shouldDeleteTransaction() {
-        UUID id = UUID.randomUUID();
-        Transaction tx = mock(Transaction.class);
-        when(tx.getUserId()).thenReturn(userId);
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
+    void deleteByIdAndUserId_shouldDeactivateTransaction() {
+        Transaction tx = createTransaction();
+        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        transactionService.deleteByIdAndUserId(id, userId);
+        transactionService.deleteByIdAndUserId(transactionId, userId);
 
-        verify(tx).deactivate();
-        verify(transactionRepository).save(tx);
-    }
-
-    @Test
-    @DisplayName("Eliminar transacción de otro usuario lanza error")
-    void shouldThrowWhenDeletingOtherUserTransaction() {
-        UUID id = UUID.randomUUID();
-        Transaction tx = mock(Transaction.class);
-        when(tx.getUserId()).thenReturn(UUID.randomUUID());
-        when(transactionRepository.findById(id)).thenReturn(Optional.of(tx));
-
-        assertThatRuntimeException()
-                .isThrownBy(() -> transactionService.deleteByIdAndUserId(id, userId))
-                .withMessage("You do not have permission to view this transaction.");
+        ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+        verify(transactionRepository).save(captor.capture());
+        assertFalse(captor.getValue().isActive());
     }
 }

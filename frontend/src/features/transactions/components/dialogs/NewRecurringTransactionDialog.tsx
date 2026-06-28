@@ -1,9 +1,9 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { RefreshCcw, Loader2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
+import { Button } from "@/shared/components/core/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
 import {
   Dialog,
   DialogContent,
@@ -11,45 +11,66 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/core/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/core/select"
 import { CategorySelect } from "../CategorySelect"
 import { TypeToggle } from "../TypeToggle"
 import { FREQUENCY_TYPES } from "../../constants"
 import { useTransactionMutations } from "../../hooks/useTransactionMutation"
 import type { ApiError } from "@/shared/types/api"
 
+interface FormState {
+  description: string
+  category: string
+  amount: string
+  type: "INCOME" | "EXPENSE"
+  frequencyType: string
+  frequencyInterval: string
+  startDate: string
+  endDate: string
+  error: string | null
+}
+
 export function NewRecurringTransactionDialog() {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
   const { createRecurring, isCreating } = useTransactionMutations()
   const [open, setOpen] = useState(false)
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE")
-  const [frequencyType, setFrequencyType] = useState("")
-  const [frequencyInterval, setFrequencyInterval] = useState("1")
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const [form, setForm] = useState<FormState>({
+    description: "",
+    category: "",
+    amount: "",
+    type: "EXPENSE",
+    frequencyType: "",
+    frequencyInterval: "1",
+    startDate: "",
+    endDate: "",
+    error: null,
+  })
+
+  const updateForm = (updates: Partial<FormState>) => {
+    setForm(prev => ({ ...prev, ...updates }))
+  }
+
   const resetForm = () => {
-    setDescription("")
-    setCategory("")
-    setAmount("")
-    setType("EXPENSE")
-    setFrequencyType("")
-    setFrequencyInterval("1")
-    setStartDate("")
-    setEndDate("")
-    setError(null)
+    setForm({
+      description: "",
+      category: "",
+      amount: "",
+      type: "EXPENSE",
+      frequencyType: "",
+      frequencyInterval: "1",
+      startDate: "",
+      endDate: "",
+      error: null,
+    })
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -58,38 +79,38 @@ export function NewRecurringTransactionDialog() {
   }
 
   const handleSave = async () => {
-    if (!description || !category || !amount || !frequencyType || !startDate) return
-    setError(null)
+    if (!form.description || !form.category || !form.amount || !form.frequencyType || !form.startDate) return
+    updateForm({ error: null })
 
     try {
       const payload: Record<string, unknown> = {
-        categoryId: category,
-        amount: type === "EXPENSE" ? -Math.abs(Number(amount)) : Math.abs(Number(amount)),
-        type,
-        description: description.trim(),
-        frequencyType,
-        frequencyInterval: Number(frequencyInterval),
-        startDate,
+        categoryId: form.category,
+        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        type: form.type,
+        description: form.description.trim(),
+        frequencyType: form.frequencyType,
+        frequencyInterval: Number(form.frequencyInterval),
+        startDate: form.startDate,
       }
-      if (endDate) payload.endDate = endDate
+      if (form.endDate) payload.endDate = form.endDate
 
       await createRecurring.mutateAsync(payload)
       setOpen(false)
       resetForm()
     } catch (err) {
       const apiError = err as ApiError
-      setError(apiError?.response?.data?.message || t("transactions.createError"))
+      updateForm({ error: apiError?.response?.data?.message || t('transactions:createError') })
     }
   }
 
-  const isValid = description.trim() && category && amount && Number(amount) > 0 && frequencyType && startDate
+  const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
   const today = new Date().toISOString().split('T')[0]
 
   const frequencyUnit = 
-    frequencyType === "DAYS" ? t("transactions.recurring.days") :
-    frequencyType === "WEEKS" ? t("transactions.recurring.weeks") :
-    frequencyType === "MONTHS" ? t("transactions.recurring.months") :
-    t("transactions.recurring.years")
+    form.frequencyType === "DAYS" ? t('transactions:recurring.days') :
+    form.frequencyType === "WEEKS" ? t('transactions:recurring.weeks') :
+    form.frequencyType === "MONTHS" ? t('transactions:recurring.months') :
+    t('transactions:recurring.years')
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -97,11 +118,11 @@ export function NewRecurringTransactionDialog() {
         <Button 
           variant="outline" 
           className="gap-2 border-border h-9 sm:h-10 px-3 sm:px-4 font-semibold bg-card hover:bg-background transition-colors text-xs sm:text-sm"
-          aria-label={t("transactions.recurring.newTitle")}
+          aria-label={t('transactions:recurring.newTitle')}
         >
           <RefreshCcw size={15} aria-hidden="true" />
-          <span className="hidden xs:inline">{t("transactions.recurring.label")}</span>
-          <span className="xs:hidden">{t("transactions.recurring.shortLabel")}</span>
+          <span className="hidden xs:inline">{t('transactions:recurring.label')}</span>
+          <span className="xs:hidden">{t('transactions:recurring.shortLabel')}</span>
         </Button>
       </DialogTrigger>
 
@@ -115,21 +136,21 @@ export function NewRecurringTransactionDialog() {
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl font-semibold">
-              {t("transactions.recurring.newTitle")}
+              {t('transactions:recurring.newTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
               <Label htmlFor="recurring-description" className="text-sm font-semibold">
-                {t("transactions.description")}
+                {t('transactions:description')}
               </Label>
               <Input 
                 id="recurring-description"
                 ref={inputRef} 
-                placeholder={t("transactions.descriptionPlaceholder")} 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
+                placeholder={t('transactions:descriptionPlaceholder')} 
+                value={form.description} 
+                onChange={(e) => updateForm({ description: e.target.value })} 
                 disabled={isCreating} 
                 className="bg-background border-border text-base" 
               />
@@ -137,19 +158,19 @@ export function NewRecurringTransactionDialog() {
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("transactions.type")}</Label>
-                <TypeToggle value={type} onChange={setType} />
+                <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
+                <TypeToggle value={form.type} onChange={(type) => updateForm({ type })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="recurring-amount" className="text-sm font-semibold">
-                  {t("transactions.amount")}
+                  {t('transactions:amount')}
                 </Label>
                 <Input 
                   id="recurring-amount"
                   type="number" 
                   placeholder="0.00" 
-                  value={amount} 
-                  onChange={(e) => setAmount(e.target.value)} 
+                  value={form.amount} 
+                  onChange={(e) => updateForm({ amount: e.target.value })} 
                   disabled={isCreating} 
                   className="bg-background border-border text-base" 
                   min="0.01" 
@@ -158,17 +179,17 @@ export function NewRecurringTransactionDialog() {
               </div>
             </div>
 
-            <CategorySelect value={category} onValueChange={setCategory} />
+            <CategorySelect value={form.category} onValueChange={(category) => updateForm({ category })} />
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t("transactions.recurring.frequency")}</Label>
-                <Select value={frequencyType} onValueChange={setFrequencyType}>
+                <Label className="text-sm font-semibold">{t('transactions:recurring.frequency')}</Label>
+                <Select value={form.frequencyType} onValueChange={(frequencyType) => updateForm({ frequencyType })}>
                   <SelectTrigger 
                     className="bg-background border-border text-base"
-                    aria-label={t("transactions.recurring.selectFrequency")}
+                    aria-label={t('transactions:recurring.selectFrequency')}
                   >
-                    <SelectValue placeholder={t("transactions.recurring.selectFrequency")} />
+                    <SelectValue placeholder={t('transactions:recurring.selectFrequency')} />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border">
                     {FREQUENCY_TYPES.map((freq) => (
@@ -179,14 +200,14 @@ export function NewRecurringTransactionDialog() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="recurring-interval" className="text-sm font-semibold">
-                  {t("transactions.recurring.interval")}
+                  {t('transactions:recurring.interval')}
                 </Label>
                 <Input 
                   id="recurring-interval"
                   type="number" 
                   placeholder="1" 
-                  value={frequencyInterval} 
-                  onChange={(e) => setFrequencyInterval(e.target.value)} 
+                  value={form.frequencyInterval} 
+                  onChange={(e) => updateForm({ frequencyInterval: e.target.value })} 
                   disabled={isCreating} 
                   className="bg-background border-border text-base" 
                   min="1" 
@@ -197,13 +218,13 @@ export function NewRecurringTransactionDialog() {
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="recurring-start-date" className="text-sm font-semibold">
-                  {t("transactions.recurring.startDate")}
+                  {t('transactions:recurring.startDate')}
                 </Label>
                 <Input 
                   id="recurring-start-date"
                   type="date" 
-                  value={startDate} 
-                  onChange={(e) => setStartDate(e.target.value)} 
+                  value={form.startDate} 
+                  onChange={(e) => updateForm({ startDate: e.target.value })} 
                   disabled={isCreating} 
                   className="bg-background border-border text-base" 
                   min={today} 
@@ -211,42 +232,42 @@ export function NewRecurringTransactionDialog() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="recurring-end-date" className="text-sm font-semibold">
-                  {t("transactions.recurring.endDate")}
-                  <span className="text-xs text-muted-foreground ml-1">({t("auth.form.optional")})</span>
+                  {t('transactions:recurring.endDate')}
+                  <span className="text-xs text-muted-foreground ml-1">({t('auth:form.optional')})</span>
                 </Label>
                 <Input 
                   id="recurring-end-date"
                   type="date" 
-                  value={endDate} 
-                  onChange={(e) => setEndDate(e.target.value)} 
+                  value={form.endDate} 
+                  onChange={(e) => updateForm({ endDate: e.target.value })} 
                   disabled={isCreating} 
                   className="bg-background border-border text-base" 
-                  min={startDate || today} 
+                  min={form.startDate || today} 
                 />
               </div>
             </div>
 
-            {frequencyType && startDate && (
+            {form.frequencyType && form.startDate && (
               <div className="bg-accent/20 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground mb-1.5 flex items-center gap-1.5">
                   <RefreshCcw size={14} className="text-primary shrink-0" aria-hidden="true" />
-                  {t("transactions.recurring.summary")}
+                  {t('transactions:recurring.summary')}
                 </p>
                 <p className="leading-relaxed">
-                  {t("transactions.recurring.summaryText", {
-                    description: description || "...",
-                    amount: amount || "0",
-                    frequency: frequencyInterval,
+                  {t("transactions:recurring.summaryText", {
+                    description: form.description || "...",
+                    amount: form.amount || "0",
+                    frequency: form.frequencyInterval,
                     type: frequencyUnit,
-                    start: startDate || "...",
-                    end: endDate || t("transactions.recurring.indefinite"),
+                    start: form.startDate || "...",
+                    end: form.endDate || t('transactions:recurring.indefinite'),
                   })}
                 </p>
               </div>
             )}
 
-            {error && (
-              <p className="text-destructive text-sm text-center font-medium">{error}</p>
+            {form.error && (
+              <p className="text-destructive text-sm text-center font-medium">{form.error}</p>
             )}
           </div>
 
@@ -257,7 +278,7 @@ export function NewRecurringTransactionDialog() {
               disabled={isCreating} 
               className="border-border min-h-11"
             >
-              {t("common.cancel")}
+              {t('common:actions.cancel')}
             </Button>
             <Button 
               onClick={handleSave} 
@@ -267,10 +288,10 @@ export function NewRecurringTransactionDialog() {
               {isCreating ? (
                 <>
                   <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
-                  {t("common.saving")}
+                  {t('common:actions.saving')}
                 </>
               ) : (
-                t("transactions.add")
+                t('transactions:add')
               )}
             </Button>
           </DialogFooter>

@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Construction, X } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import { cn } from "@/lib/utils"
 import { getEnabledNavItems, getDisabledNavItems, type NavItem } from "@/shared/config/navigation"
 import { notify } from "@/shared/utils/notifications/notify"
@@ -12,8 +12,13 @@ interface SidebarProps {
   showDisabled?: boolean
 }
 
+function notifyComingSoon(featureName: string, messageTemplate: string) {
+  const finalMessage = messageTemplate.replace("{{feature}}", featureName);
+  notify.info(finalMessage);
+}
+
 export function Sidebar({ className, showDisabled = true }: SidebarProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['nav', 'common'])
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -31,15 +36,16 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   }, [isMobileOpen])
 
   useEffect(() => {
-    ;(window as any).__sidebarOpen = () => setIsMobileOpen(true)
-    return () => {
-      delete (window as any).__sidebarOpen
-    }
+    const handleOpen = () => setIsMobileOpen(true)
+    window.addEventListener('sidebar:open', handleOpen)
+    return () => window.removeEventListener('sidebar:open', handleOpen)
   }, [])
 
   const mainItems = getEnabledNavItems("main")
   const bottomItems = getEnabledNavItems("bottom")
   const disabledItems = showDisabled ? getDisabledNavItems() : []
+
+  const featureComingSoonTemplate = t('errors.featureComingSoon', { feature: "{{feature}}" })
 
   const handleNavigate = useCallback((path: string) => {
     navigate(path)
@@ -47,12 +53,9 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   }, [navigate])
 
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
-    notify.info(
-      t("sidebar.errors.featureComingSoon", { 
-        feature: t(itemLabelKey) 
-      })
-    )
-  }, [t])
+    const featureName = t(itemLabelKey as any)
+    notifyComingSoon(featureName, featureComingSoonTemplate)
+  }, [t, featureComingSoonTemplate])
 
   const isActive = (item: NavItem): boolean => {
     if (item.path === "/dashboard") {
@@ -63,7 +66,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <nav className="flex-1 p-4 overflow-y-auto" aria-label={t("sidebar.mainNav")}>
+      <nav className="flex-1 p-4 overflow-y-auto" aria-label={t('mainNav')}>
         <ul className="space-y-1">
           {mainItems.map((item) => {
             const active = isActive(item)
@@ -80,7 +83,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                   )}
                 >
                   <item.icon className={cn("size-5 transition-transform duration-200", active && "text-primary scale-105")} />
-                  <span>{t(item.labelKey)}</span>
+                  <span>{t(item.labelKey as any)}</span>
                 </Button>
               </li>
             )
@@ -90,7 +93,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
         {disabledItems.length > 0 && (
           <div className="mt-6 pt-6 border-t border-border/40">
             <p className="px-4 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">
-              {t("sidebar.comingSoon")}
+              {t('common:prompts.comingSoon')}
             </p>
             <ul className="space-y-1">
               {disabledItems.map((item) => (
@@ -101,7 +104,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground/40 hover:bg-accent/10 hover:text-muted-foreground/60 transition-colors"
                   >
                     <Construction className="size-5 shrink-0 text-muted-foreground/30" />
-                    <span className="truncate">{t(item.labelKey)}</span>
+                    <span className="truncate">{t(item.labelKey as any)}</span>
                   </Button>
                 </li>
               ))}
@@ -111,7 +114,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
       </nav>
 
       {bottomItems.length > 0 && (
-        <nav className="p-4 mt-auto border-t" aria-label={t("sidebar.bottomNav")}>
+        <nav className="p-4 mt-auto border-t" aria-label={t('bottomNav')}>
           <ul className="space-y-1">
             {bottomItems.map((item) => {
               const active = isActive(item)
@@ -128,7 +131,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     )}
                   >
                     <item.icon className="size-5" />
-                    <span>{t(item.labelKey)}</span>
+                    <span>{t(item.labelKey as any)}</span>
                   </Button>
                 </li>
               )
@@ -141,7 +144,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
 
   return (
     <>
-      {/* ============ OVERLAY OSCURO EN MÓVIL ============ */}
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
@@ -150,32 +152,27 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
         />
       )}
 
-      {/* ============ SIDEBAR ============ */}
       <aside
         className={cn(
-          // Estilos base
           "border-r bg-card/50 backdrop-blur-md flex flex-col select-none",
-
           "fixed inset-y-0 left-0 z-50 w-64",
           "transition-transform duration-300 ease-in-out",
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
-
           "md:static md:translate-x-0 md:z-auto",
           "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
-
           className
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-border md:hidden">
           <span className="font-semibold text-sm text-foreground">
-            {t("sidebar.mobileTitle")}
+            {t('mobileTitle')}
           </span>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileOpen(false)}
             className="size-8"
-            aria-label={t("sidebar.close")}
+            aria-label={t('close')}
           >
             <X size={18} />
           </Button>

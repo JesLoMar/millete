@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "deleting": "Excluindo...",
+    "add": "Adicionar",
+    "accept": "Aceitar",
+    "welcome": "Início de sessão bem-sucedido",
+    "reject": "Rejeitar",
+    "close": "Fechar",
+    "search": "Buscar por nome...",
+    "searchDesc": "Buscar por descrição...",
+    "back": "Voltar",
+    "continue": "Continuar",
+    "create": "Criar",
+    "update": "Atualizar",
+    "assign": "Atribuir",
+    "invite": "Convidar",
+    "refresh": "Atualizar",
+    "export": "Exportar",
+    "import": "Importar",
+    "send": "Enviar"
+  },
+  "status": {
+    "loading": "Carregando...",
+    "loadingSession": "Carregando sessão...",
+    "error": "Erro",
+    "empty": "Nenhum dado disponível",
+    "processing": "Processando..."
+  },
+  "entities": {
+    "dashboard": "Dashboard",
+    "transaction": "Transação",
+    "transactions": "Transações",
+    "category": "Categoria",
+    "categories": "Categorias",
+    "investment": "Investimento",
+    "investments": "Investimentos",
+    "groupGoal": "Meta de Grupo",
+    "groupGoals": "Metas de Grupo",
+    "savingsGoal": "Meta de Poupança",
+    "savingsGoals": "Metas de Poupança",
+    "user": "Usuário",
+    "family": "Família"
+  },
+  "prompts": {
+    "deleteTitle": "Excluir {{item}}",
+    "deleteConfirm": "Tem certeza de que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+    "noData": "Nenhum dado disponível",
+    "comingSoon": "Em breve",
+    "optional": "opcional"
+  },
+  "periods": {
+    "week": "Semana",
+    "month": "Mês",
+    "year": "Ano",
+    "today": "Hoje",
+    "yesterday": "Ontem"
+  },
+  "types": {
+    "income": "Receita",
+    "expense": "Despesa",
+    "all": "Todos"
+  },
+  "errors": {
+    "default": "Erro inesperado. Tente novamente.",
+    "noPermission": "Você não tem permissão para realizar esta ação"
+  }
+}

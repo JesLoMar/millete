@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
+    "add": "Hinzufügen",
+    "accept": "Akzeptieren",
+    "welcome": "Erfolgreiche Anmeldung",
+    "reject": "Ablehnen",
+    "close": "Schließen",
+    "search": "Nach Name suchen...",
+    "searchDesc": "Nach Beschreibung suchen...",
+    "back": "Zurück",
+    "continue": "Weiter",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "assign": "Zuweisen",
+    "invite": "Einladen",
+    "refresh": "Aktualisieren",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "send": "Senden"
+  },
+  "status": {
+    "loading": "Wird geladen...",
+    "loadingSession": "Sitzung wird geladen...",
+    "error": "Fehler",
+    "empty": "Keine Daten verfügbar",
+    "processing": "Wird verarbeitet..."
+  },
+  "entities": {
+    "dashboard": "Dashboard",
+    "transaction": "Transaktion",
+    "transactions": "Transaktionen",
+    "category": "Kategorie",
+    "categories": "Kategorien",
+    "investment": "Investition",
+    "investments": "Investitionen",
+    "groupGoal": "Gruppenziel",
+    "groupGoals": "Gruppenziele",
+    "savingsGoal": "Sparziel",
+    "savingsGoals": "Sparziele",
+    "user": "Benutzer",
+    "family": "Familie"
+  },
+  "prompts": {
+    "deleteTitle": "{{item}} löschen",
+    "deleteConfirm": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "noData": "Keine Daten verfügbar",
+    "comingSoon": "Demnächst",
+    "optional": "optional"
+  },
+  "periods": {
+    "week": "Woche",
+    "month": "Monat",
+    "year": "Jahr",
+    "today": "Heute",
+    "yesterday": "Gestern"
+  },
+  "types": {
+    "income": "Einnahme",
+    "expense": "Ausgabe",
+    "all": "Alle"
+  },
+  "errors": {
+    "default": "Unerwarteter Fehler. Versuchen Sie es erneut.",
+    "noPermission": "Sie haben keine Berechtigung, diese Aktion auszuführen"
+  }
+}

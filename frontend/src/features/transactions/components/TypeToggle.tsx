@@ -7,7 +7,7 @@ interface TypeToggleProps {
 }
 
 export function TypeToggle({ value, onChange }: TypeToggleProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
 
   return (
     <div className="flex rounded-lg border border-border overflow-hidden">
@@ -21,7 +21,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
             : "bg-background text-muted-foreground hover:text-foreground"
         )}
       >
-        {t("transactions.expense")}
+        {t('transactions:expense')}
       </button>
       <button
         type="button"
@@ -33,7 +33,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
             : "bg-background text-muted-foreground hover:text-foreground"
         )}
       >
-        {t("transactions.income")}
+        {t('transactions:income')}
       </button>
     </div>
   )

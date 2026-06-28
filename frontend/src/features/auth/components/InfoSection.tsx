@@ -7,7 +7,7 @@ export function InfoSection() {
       <div className="flex-1 flex items-center justify-center p-8 border-b border-border/40">
         <FirstSteps />
       </div>
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="whitespace-pre-line flex-1 flex items-center justify-center p-8">
         <NewsList />
       </div>
     </div>

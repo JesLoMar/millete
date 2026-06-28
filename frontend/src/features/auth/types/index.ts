@@ -4,8 +4,8 @@ export interface LoginRequest {
 }
 
 export interface RegisterUserRequest {
-  username?: string;
-  email?: string;
+  username: string;
+  email: string;
   password: string;
 }
 
@@ -14,10 +14,8 @@ export interface TokenResponse {
 }
 
 export interface UserTopnavResponse {
-  username?: string;
-  email?: string;
-  role?: string;
-  avatar?: string;
+  username: string;
+  email: string;
 }
 
 export interface ApiErrorResponse {

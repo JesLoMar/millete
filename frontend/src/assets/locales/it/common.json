@@ -1,0 +1,72 @@
+{
+  "actions": {
+    "save": "Salva",
+    "saving": "Salvataggio...",
+    "cancel": "Annulla",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "deleting": "Eliminazione...",
+    "add": "Aggiungi",
+    "accept": "Accetta",
+    "welcome": "Accesso effettuato con successo",
+    "reject": "Rifiuta",
+    "close": "Chiudi",
+    "search": "Cerca per nome...",
+    "searchDesc": "Cerca per descrizione...",
+    "back": "Indietro",
+    "continue": "Continua",
+    "create": "Crea",
+    "update": "Aggiorna",
+    "assign": "Assegna",
+    "invite": "Invita",
+    "refresh": "Aggiorna",
+    "export": "Esporta",
+    "import": "Importa",
+    "send": "Invia"
+  },
+  "status": {
+    "loading": "Caricamento...",
+    "loadingSession": "Caricamento sessione...",
+    "error": "Errore",
+    "empty": "Nessun dato disponibile",
+    "processing": "Elaborazione..."
+  },
+  "entities": {
+    "dashboard": "Dashboard",
+    "transaction": "Transazione",
+    "transactions": "Transazioni",
+    "category": "Categoria",
+    "categories": "Categorie",
+    "investment": "Investimento",
+    "investments": "Investimenti",
+    "groupGoal": "Obiettivo di gruppo",
+    "groupGoals": "Obiettivi di gruppo",
+    "savingsGoal": "Obiettivo di risparmio",
+    "savingsGoals": "Obiettivi di risparmio",
+    "user": "Utente",
+    "family": "Famiglia"
+  },
+  "prompts": {
+    "deleteTitle": "Elimina {{item}}",
+    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "noData": "Nessun dato disponibile",
+    "comingSoon": "Prossimamente",
+    "optional": "opzionale"
+  },
+  "periods": {
+    "week": "Settimana",
+    "month": "Mese",
+    "year": "Anno",
+    "today": "Oggi",
+    "yesterday": "Ieri"
+  },
+  "types": {
+    "income": "Entrata",
+    "expense": "Spesa",
+    "all": "Tutti"
+  },
+  "errors": {
+    "default": "Errore imprevisto. Riprova.",
+    "noPermission": "Non disponi dei permessi per eseguire questa azione"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "steps": {
+    "title": "Primeros pasos",
+    "subtitle": "Comienza a gestionar tus finanzas en menos de 5 minutos con nuestra guía rápida.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Crea tu cuenta",
+        "description": "Solo contraseña y usuario y/o correo"
+      },
+      {
+        "number": "02",
+        "title": "Crea tu primera categoría",
+        "description": "Define categorías personalizadas para organizar tus gastos (ej. Alimentación, Transporte, Ocio, Ingresos...)."
+      },
+      {
+        "number": "03",
+        "title": "Registra tus gastos",
+        "description": "Añade transacciones desde su sección o fácilmente desde el dashboard."
+      }
+    ]
+  },
+  "wiki": {
+    "link": "Consultar la wiki"
+  },
+  "news": {
+    "title": "Novedades recientes",
+    "subtitle": "Descubre las últimas mejoras añadidas a la plataforma.",
+    "items": [
+      {
+        "tag": "v0.1.0",
+        "title": "Actualización mayor",
+        "description": "- Nuevo sistema de notificaciones \n - Añadir perfil de usuario \n - Añadir metas de ahorro \n - Módulo Familias refactorizado y mejorado (ahora se llama Metas Grupales) \n - Integración con bot de Telegram \n - Invitaciones a Metas Grupales con notificaciones dentro de la web \n - Incrementadas las funcionalidades de exportación. Ahora soporta CSV y PDF. \n - Reducción del uso de dependencias externas. \n -  Mejoras en el sistema de traducción. "
+      }
+    ]
+  }
+}

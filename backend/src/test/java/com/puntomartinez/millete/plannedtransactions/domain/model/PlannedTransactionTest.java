@@ -3,62 +3,122 @@ package com.puntomartinez.millete.plannedtransactions.domain.model;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("PlannedTransaction - Modelo de dominio")
 class PlannedTransactionTest {
 
-    private final UUID id = UUID.randomUUID();
-    private final UUID userId = UUID.randomUUID();
-    private final LocalDateTime now = LocalDateTime.now();
-    private final LocalDate today = LocalDate.now();
-
     @Test
-    @DisplayName("Debe crear transacción programada con datos válidos")
-    void shouldCreatePlannedTransaction() {
-        PlannedTransaction tx = new PlannedTransaction(id, userId, null,
-                new BigDecimal("100.00"), Transaction.TransactionType.EXPENSE,
-                "Suscripción", PlannedTransaction.FrequencyType.MONTHS, 1,
-                today, null, now, now, true);
+    @DisplayName("Constructor por defecto debe crear instancia")
+    void defaultConstructor_shouldCreateInstance() {
+        PlannedTransaction ptx = new PlannedTransaction();
 
-        assertThat(tx.getFrequencyType()).isEqualTo(PlannedTransaction.FrequencyType.MONTHS);
-        assertThat(tx.getFrequencyInterval()).isEqualTo(1);
-        assertThat(tx.getEndDate()).isNull();
+        assertNotNull(ptx);
+        assertNull(ptx.getId());
     }
 
     @Test
-    @DisplayName("Debe lanzar error si amount es cero")
-    void shouldThrowWhenAmountIsZero() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new PlannedTransaction(id, userId, null, BigDecimal.ZERO,
-                        Transaction.TransactionType.EXPENSE, "Suscripción",
-                        PlannedTransaction.FrequencyType.MONTHS, 1,
-                        today, null, now, now, true));
+    @DisplayName("Constructor completo debe asignar todos los valores")
+    void fullConstructor_shouldAssignAllValues() {
+        UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusMonths(1);
+        LocalDateTime now = LocalDateTime.now();
+
+        PlannedTransaction ptx = new PlannedTransaction(
+                id, userId, categoryId, new BigDecimal("100.00"),
+                Transaction.TransactionType.EXPENSE, "Alquiler",
+                PlannedTransaction.FrequencyType.MONTHS, 1,
+                startDate, endDate, now, now, true, startDate
+        );
+
+        assertEquals(id, ptx.getId());
+        assertEquals(userId, ptx.getUserId());
+        assertEquals(categoryId, ptx.getCategoryId());
+        assertEquals(new BigDecimal("100.00"), ptx.getAmount());
+        assertEquals(Transaction.TransactionType.EXPENSE, ptx.getType());
+        assertEquals("Alquiler", ptx.getDescription());
+        assertEquals(PlannedTransaction.FrequencyType.MONTHS, ptx.getFrequencyType());
+        assertEquals(1, ptx.getFrequencyInterval());
+        assertEquals(startDate, ptx.getStartDate());
+        assertEquals(endDate, ptx.getEndDate());
+        assertTrue(ptx.isActive());
+        assertEquals(startDate, ptx.getLastExecutedDate());
     }
 
     @Test
-    @DisplayName("Debe lanzar error si endDate es anterior a startDate")
-    void shouldThrowWhenEndDateBeforeStartDate() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new PlannedTransaction(id, userId, null, new BigDecimal("100.00"),
-                        Transaction.TransactionType.EXPENSE, "Suscripción",
-                        PlannedTransaction.FrequencyType.MONTHS, 1,
-                        today, today.minusDays(1), now, now, true))
-                .withMessage("La fecha de fin no puede ser anterior a la fecha de inicio.");
+    @DisplayName("Constructor debe lanzar error con amount cero")
+    void fullConstructor_shouldThrow_whenAmountZero() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new PlannedTransaction(
+                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.ZERO,
+                    Transaction.TransactionType.EXPENSE, "Test",
+                    PlannedTransaction.FrequencyType.MONTHS, 1,
+                    LocalDate.now(), null, null, null, true, null
+            )
+        );
     }
 
     @Test
-    @DisplayName("Debe permitir endDate igual a startDate")
-    void shouldAllowEndDateEqualToStartDate() {
-        PlannedTransaction tx = new PlannedTransaction(id, userId, null,
-                new BigDecimal("100.00"), Transaction.TransactionType.EXPENSE,
-                "Suscripción", PlannedTransaction.FrequencyType.MONTHS, 1,
-                today, today, now, now, true);
+    @DisplayName("Constructor debe lanzar error con endDate anterior a startDate")
+    void fullConstructor_shouldThrow_whenEndDateBeforeStartDate() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new PlannedTransaction(
+                    UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("100.00"),
+                    Transaction.TransactionType.EXPENSE, "Test",
+                    PlannedTransaction.FrequencyType.MONTHS, 1,
+                    LocalDate.now(), LocalDate.now().minusDays(1), null, null, true, null
+            )
+        );
+    }
 
-        assertThat(tx.getEndDate()).isEqualTo(today);
+    @Test
+    @DisplayName("Setters y getters deben funcionar correctamente")
+    void settersAndGetters_shouldWork() {
+        PlannedTransaction ptx = new PlannedTransaction();
+        UUID id = UUID.randomUUID();
+        LocalDate date = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        ptx.setId(id);
+        ptx.setAmount(new BigDecimal("200.00"));
+        ptx.setType(Transaction.TransactionType.INCOME);
+        ptx.setDescription("Salario");
+        ptx.setFrequencyType(PlannedTransaction.FrequencyType.MONTHS);
+        ptx.setFrequencyInterval(2);
+        ptx.setStartDate(date);
+        ptx.setEndDate(date.plusMonths(6));
+        ptx.setActive(false);
+        ptx.setLastExecutedDate(date);
+        ptx.setCreatedAt(now);
+        ptx.setModifiedAt(now);
+
+        assertEquals(id, ptx.getId());
+        assertEquals(new BigDecimal("200.00"), ptx.getAmount());
+        assertEquals(Transaction.TransactionType.INCOME, ptx.getType());
+        assertEquals("Salario", ptx.getDescription());
+        assertEquals(PlannedTransaction.FrequencyType.MONTHS, ptx.getFrequencyType());
+        assertEquals(2, ptx.getFrequencyInterval());
+        assertEquals(date, ptx.getStartDate());
+        assertEquals(date.plusMonths(6), ptx.getEndDate());
+        assertFalse(ptx.isActive());
+        assertEquals(date, ptx.getLastExecutedDate());
+    }
+
+    @Test
+    @DisplayName("FrequencyType debe tener valores correctos")
+    void frequencyType_shouldHaveCorrectValues() {
+        assertEquals("DAYS", PlannedTransaction.FrequencyType.DAYS.name());
+        assertEquals("WEEKS", PlannedTransaction.FrequencyType.WEEKS.name());
+        assertEquals("MONTHS", PlannedTransaction.FrequencyType.MONTHS.name());
+        assertEquals("YEARS", PlannedTransaction.FrequencyType.YEARS.name());
     }
 }

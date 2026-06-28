@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import type { ChartConfig } from "@/shared/components/ui/chart"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/components/ui/chart"
-import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { DonutChart } from "@/shared/components/core/donut-chart"
+import { ChartTooltip } from "@/shared/components/core/chart-tooltip"
+import { useState } from "react"
 import type { CategoryData } from "../types"
 
 interface CategoryDonutProps {
@@ -11,19 +11,14 @@ interface CategoryDonutProps {
   title?: string
 }
 
-const chartConfig = {
-  value: {
-    label: "Porcentaje",
-  },
-} satisfies ChartConfig
-
 export function CategoryDonut({
   data: externalData,
   loading = false,
   title,
 }: CategoryDonutProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const chartData = externalData || []
+  const [activeItem, setActiveItem] = useState<{ label: string; value: string; color: string } | null>(null)
 
   if (loading) {
     return (
@@ -52,12 +47,12 @@ export function CategoryDonut({
       <Card className="col-span-1 md:col-span-4 border-subtle">
         <CardHeader>
           <CardTitle className="text-lg font-headline font-bold">
-            {title || t("dashboard.donut.title")}
+            {title || t('dashboard:donut.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="h-75 flex items-center justify-center">
           <p className="text-sm text-muted-foreground">
-            {t("dashboard.donut.empty")}
+            {t('dashboard:donut.empty')}
           </p>
         </CardContent>
       </Card>
@@ -68,60 +63,53 @@ export function CategoryDonut({
     <Card className="col-span-1 md:col-span-4 border-subtle">
       <CardHeader>
         <CardTitle className="text-lg font-headline font-bold">
-          {title || t("dashboard.donut.title")}
+          {title || t('dashboard:donut.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center pt-0">
-        <div className="w-full h-55">
-          <ChartContainer config={chartConfig} className="h-full w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value, name) => [`${value}%`, name]}
-                    />
-                  }
-                />
-                <Pie
-                  data={chartData}
-                  dataKey="value"
-                  nameKey="category"
-                  innerRadius={55}
-                  outerRadius={75}
-                  paddingAngle={3}
-                  stroke="none"
-                  cornerRadius={3}
-                >
-                  {chartData.map((entry) => (
-                    <Cell
-                      key={entry.category}
-                      fill={entry.color}
-                      className="hover:opacity-80 transition-opacity cursor-pointer"
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </div>
+        <ChartTooltip data={activeItem}>
+          <DonutChart
+            data={chartData.map((item) => ({
+              name: item.category,
+              value: item.value,
+              color: item.color,
+              percentage: item.value,
+            }))}
+            size={180}
+            thickness={24}
+            className="hover:cursor-pointer"
+            onSegmentHover={(item) =>
+              setActiveItem({ label: item.name, value: `${item.value}%`, color: item.color })
+            }
+            onSegmentLeave={() => setActiveItem(null)}
+          />
+        </ChartTooltip>
 
-        {/* Leyenda debajo del gráfico original */}
+        {/* Leyenda */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full mt-4">
           {chartData.map((item) => (
             <div
               key={item.category}
               className="flex items-center gap-2 group cursor-pointer"
-              title={`${item.category}: ${item.value}%`}
+              onMouseEnter={() =>
+                setActiveItem({ label: item.category, value: `${item.value}%`, color: item.color })
+              }
+              onMouseLeave={() => setActiveItem(null)}
             >
               <div
                 className="size-2.5 rounded-full shrink-0 group-hover:scale-125 transition-transform"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-[11px] text-muted-foreground truncate group-hover:text-foreground transition-colors">
+              <span
+                className="text-[11px] text-muted-foreground truncate group-hover:text-foreground transition-colors"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
                 {item.category}
               </span>
-              <span className="text-[11px] font-semibold ml-auto tabular-nums">
+              <span
+                className="text-[11px] font-semibold ml-auto tabular-nums"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
                 {item.value}%
               </span>
             </div>

@@ -82,7 +82,7 @@ export const InvestmentsPage = () => {
         onOpenChange={(open) => { if (!open) setDeletingInvestment(null) }}
         itemName={deletingInvestment?.assetName || ""}
         onConfirm={handleDelete}
-        title={t("investments.deleteTitle")}
+        title={t('investments:deleteTitle')}
         description={t("investments.deleteConfirmation", { name: deletingInvestment?.assetName || "" })}
       />
     </div>

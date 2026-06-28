@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Badge } from "@/shared/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
+import { Badge } from "@/shared/components/core/badge"
 import { ArrowDownRight, ArrowUpRight, ShoppingCart } from "lucide-react"
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "../constants"
 import { formatDate } from "../utils"
@@ -19,7 +19,7 @@ export function RecentTransactions({
   loading = false,
   limit = 5,
 }: RecentTransactionsProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['dashboard', 'common'])
   const navigate = useNavigate()
 
   const transactions = (externalData || []).slice(0, limit)
@@ -52,14 +52,15 @@ export function RecentTransactions({
     <Card className="col-span-1 md:col-span-7 border-subtle">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-headline font-bold">
-          {t("dashboard.transactions.title")}
+          {t('dashboard:transactions.title')}
         </CardTitle>
         {hasExternalData && (
           <button
+            type="button"
             onClick={() => navigate("/transactions")}
             className="text-sm text-primary hover:underline transition-colors"
           >
-            {t("dashboard.transactions.viewAll")}
+            {t('dashboard:transactions.viewAll')}
           </button>
         )}
       </CardHeader>
@@ -67,7 +68,7 @@ export function RecentTransactions({
         <div className="flex flex-col">
           {transactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm">
-              {t("dashboard.transactions.empty")}
+              {t('dashboard:transactions.empty')}
             </p>
           ) : (
             transactions.map((tx) => {
@@ -77,10 +78,11 @@ export function RecentTransactions({
               const isExpense = tx.type === "EXPENSE"
 
               return (
-                <div
+                <button
+                  type="button"
                   key={tx.id}
                   onClick={() => navigate(`/transactions?id=${tx.id}`)}
-                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer"
+                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer w-full text-left"
                 >
                   <div className={`p-3 rounded-full ${color}`}>
                     <Icon className="size-5" />
@@ -110,10 +112,10 @@ export function RecentTransactions({
                       variant="outline"
                       className={`mt-1 text-[10px] h-4 py-0 font-normal ${isExpense ? "opacity-60" : "text-emerald-500 border-emerald-500/30"}`}
                     >
-                      {isExpense ? t("dashboard.transactions.expense") : t("dashboard.transactions.income")}
+                      {isExpense ? t('dashboard:transactions.expense') : t('dashboard:transactions.income')}
                     </Badge>
                   </div>
-                </div>
+                </button>
               )
             })
           )}

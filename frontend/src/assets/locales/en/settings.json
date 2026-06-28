@@ -1,0 +1,24 @@
+{
+  "general": {
+    "title": "General Settings",
+    "description": "Personalize your experience"
+  },
+  "currency": {
+    "title": "Currency",
+    "description": "Select your preferred currency",
+    "placeholder": "Choose currency"
+  },
+  "telegram": {
+    "title": "Telegram Connection",
+    "description": "Manage your Telegram integration",
+    "connected": "Connected as {{username}}",
+    "since": "Since {{date}}",
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "loading": "Checking...",
+      "error": "Connection error"
+    },
+    "refresh": "$t(common:actions.refresh)"
+  }
+}

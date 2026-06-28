@@ -2,9 +2,9 @@ import { useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Search } from "lucide-react"
-import { Input } from "@/shared/components/ui/input"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
+import { Input } from "@/shared/components/core/input"
+import { Button } from "@/shared/components/core/button"
+import { Badge } from "@/shared/components/core/badge"
 import { cn } from "@/lib/utils"
 import { apiClient } from "@/shared/api/axiosClient"
 import { usePlannedTransactions, type PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
@@ -12,7 +12,11 @@ import { EditRecurringTransactionDialog } from "./dialogs/EditRecurringTransacti
 import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
 import { RecurringTransactionRow } from "./RecurringTransactionRow"
 import { TransactionSkeleton } from "./TransactionSkeleton"
+import { TransactionListPagination } from "./TransactionListPagination"
+import { usePagination } from "@/features/categories/hooks/usePagination"
 import { FILTERS, FILTER_LABELS, type Filter } from "../constants"
+
+const ITEMS_PER_PAGE = 10
 
 export function RecurringTransactionsList() {
   const { t } = useTranslation()
@@ -46,6 +50,18 @@ export function RecurringTransactionsList() {
     })
   }, [transactions, recurringFilter, searchTerm])
 
+  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
+    totalItems: filteredTransactions.length,
+    itemsPerPage: ITEMS_PER_PAGE,
+    initialPage: 1,
+  })
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    const end = start + ITEMS_PER_PAGE
+    return filteredTransactions.slice(start, end)
+  }, [filteredTransactions, currentPage])
+
   if (isLoading) return <TransactionSkeleton rows={5} />
 
   if (transactions.length === 0) return null
@@ -78,7 +94,7 @@ export function RecurringTransactionsList() {
         <div className="relative w-full sm:w-[320px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder={t("transactions.search")}
+            placeholder={t('transactions:search')}
             className="pl-10 bg-card border-border h-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -88,12 +104,12 @@ export function RecurringTransactionsList() {
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex flex-col">
-          {filteredTransactions.length === 0 ? (
+          {paginatedTransactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
-              {t("transactions.recurring.emptyFilter")}
+              {t('transactions:recurring.emptyFilter')}
             </p>
           ) : (
-            filteredTransactions.map((tx) => (
+            paginatedTransactions.map((tx) => (
               <RecurringTransactionRow
                 key={tx.id}
                 transaction={tx}
@@ -103,9 +119,20 @@ export function RecurringTransactionsList() {
             ))
           )}
         </div>
+
+        <TransactionListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
+          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)}
+          total={filteredTransactions.length}
+          onPrev={prevPage}
+          onNext={nextPage}
+        />
       </div>
 
       <EditRecurringTransactionDialog
+        key={editingTransaction?.id}
         transaction={editingTransaction}
         open={!!editingTransaction}
         onOpenChange={(open) => { if (!open) setEditingTransaction(null) }}
@@ -116,8 +143,8 @@ export function RecurringTransactionsList() {
         onOpenChange={(open) => { if (!open) setDeletingTransaction(null) }}
         itemName={deletingTransaction?.description || ""}
         onConfirm={handleDelete}
-        title={t("transactions.recurring.deleteTitle")}
-        description={t("transactions.recurring.deleteConfirmation", { name: deletingTransaction?.description || "" })}
+        title={t('transactions:recurring.deleteTitle')}
+        description={t('transactions:recurring.deleteConfirmation', { name: deletingTransaction?.description || "" })}
       />
     </div>
   )

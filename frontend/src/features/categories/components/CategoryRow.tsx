@@ -1,13 +1,15 @@
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
+import { ProgressBar } from "@/shared/components/core/progress-bar"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 import type { Category } from "../types"
 
 interface CategoryRowProps {
@@ -20,12 +22,13 @@ interface CategoryRowProps {
 }
 
 export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, onDelete }: CategoryRowProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['categories', 'common'])
   const isOverBudget = percentage >= 100
   const hasBudget = budgetLimit !== null && budgetLimit > 0
 
   return (
     <>
+      {/* ============ DESKTOP (≥640px): Fila de tabla ============ */}
       <div className="hidden sm:flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group">
         <div
           className="size-5 rounded-full shrink-0"
@@ -44,27 +47,26 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
                   {percentage.toFixed(0)}%
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-accent/20 rounded-full overflow-hidden">
-                <div
-                  className={cn("h-full transition-all duration-500", isOverBudget ? "bg-destructive" : "")}
-                  style={{
-                    width: `${Math.min(percentage, 100)}%`,
-                    backgroundColor: isOverBudget ? undefined : (category.color || "#3B82F6"),
-                  }}
-                />
-              </div>
+              <ProgressBar
+                value={percentage}
+                max={100}
+                color={isOverBudget ? undefined : category.color}
+                variant={isOverBudget ? "overbudget" : "default"}
+                size="sm"
+                ariaLabel={`${category.name}: ${percentage.toFixed(0)}%`}
+              />
             </div>
           ) : (
             <p className="text-xs text-muted-foreground italic">
-              {t("categories.noBudgetTooltip")}
+              {t('categories:noBudgetTooltip')}
             </p>
           )}
         </div>
 
         <div className="w-40 text-right text-sm text-muted-foreground tabular-nums">
           {hasBudget
-            ? `${spent.toLocaleString("es-ES")} € / ${budgetLimit!.toLocaleString("es-ES")} €`
-            : `${spent.toLocaleString("es-ES")} € / —`}
+            ? `${formatCurrency(spent)} / ${formatCurrency(budgetLimit!)}`
+            : `${formatCurrency(spent)} / —`}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -72,7 +74,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={t("categories.edit")}
+              aria-label={t('categories:edit')}
             >
               <MoreHorizontal size={16} aria-hidden="true" />
             </Button>
@@ -80,11 +82,11 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
           <DropdownMenuContent align="end" className="bg-card border-border">
             <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(category)}>
               <Edit2 className="mr-2 size-4" aria-hidden="true" />
-              {t("categories.edit")}
+              {t('categories:edit')}
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(category)}>
               <Trash2 className="mr-2 size-4" aria-hidden="true" />
-              {t("categories.delete")}
+              {t('categories:delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -104,7 +106,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 -mr-1"
-                aria-label={t("categories.edit")}
+                aria-label={t('categories:edit')}
               >
                 <MoreHorizontal size={15} aria-hidden="true" />
               </Button>
@@ -112,11 +114,11 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
             <DropdownMenuContent align="end" className="bg-card border-border">
               <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(category)}>
                 <Edit2 className="mr-2 size-4" aria-hidden="true" />
-                {t("categories.edit")}
+                {t('categories:edit')}
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(category)}>
                 <Trash2 className="mr-2 size-4" aria-hidden="true" />
-                {t("categories.delete")}
+                {t('categories:delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -125,15 +127,14 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
           <div className="flex-1 min-w-0">
             {hasBudget ? (
               <div className="space-y-1">
-                <div className="h-1.5 w-full bg-accent/20 rounded-full overflow-hidden">
-                  <div
-                    className={cn("h-full transition-all duration-500", isOverBudget ? "bg-destructive" : "")}
-                    style={{
-                      width: `${Math.min(percentage, 100)}%`,
-                      backgroundColor: isOverBudget ? undefined : (category.color || "#3B82F6"),
-                    }}
-                  />
-                </div>
+                <ProgressBar
+                  value={percentage}
+                  max={100}
+                  color={isOverBudget ? undefined : category.color}
+                  variant={isOverBudget ? "overbudget" : "default"}
+                  size="sm"
+                  ariaLabel={`${category.name}: ${percentage.toFixed(0)}%`}
+                />
                 <p className={cn(
                   "text-[11px] font-medium",
                   isOverBudget ? "text-destructive" : "text-muted-foreground"
@@ -143,14 +144,14 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
               </div>
             ) : (
               <p className="text-xs text-muted-foreground italic">
-                {t("categories.noBudgetTooltip")}
+                {t('categories:noBudgetTooltip')}
               </p>
             )}
           </div>
           <span className="text-xs text-muted-foreground tabular-nums shrink-0 text-right">
             {hasBudget
-              ? `${spent.toLocaleString("es-ES")} € / ${budgetLimit!.toLocaleString("es-ES")} €`
-              : `${spent.toLocaleString("es-ES")} € / —`}
+              ? `${formatCurrency(spent)} / ${formatCurrency(budgetLimit!)}`
+              : `${formatCurrency(spent)} / —`}
           </span>
         </div>
       </div>

@@ -1,6 +1,8 @@
 package com.puntomartinez.millete.users.domain.ports.in;
 
+import com.puntomartinez.millete.users.domain.model.User;
+
 public interface LoginUserUseCase {
-    String login(LoginUserCommand command);
+    User login(LoginUserCommand command);
     record LoginUserCommand(String identifier, String rawPassword) {}
 }

@@ -141,9 +141,9 @@ Metadatos y configuración de dependencias del proyecto.
 
 - **name:** `millete-front`.
 - **private:** true — no se publica en npm.
-- **version:** `0.0.1`.
+- **version:** `0.1.0`.
 - **type:** `module` — usa módulos ES.
-- **packageManager:** `pnpm@11.3.0` — fuerza el uso de pnpm.
+- **packageManager:** `pnpm@11.7.0` — fuerza el uso de pnpm.
 
 ### Engines
 
@@ -221,7 +221,7 @@ Configuración de ESLint con el nuevo formato plano (flat config).
 ### Ignorados globales
 
 - `dist/` y `node_modules/`.
-- 4 componentes de UI (badge, button, carousel, form) — generados por shadcn/ui.
+- Componentes de UI generados por shadcn/ui en `shared/components/core/`.
 
 ### Configuración para archivos TypeScript
 
@@ -274,6 +274,6 @@ Configuración de shadcn/ui para generación de componentes.
 |-------|------|-------------|
 | `components` | `@/shared/components` | Componentes compartidos |
 | `utils` | `@/lib/utils` | Función `cn` |
-| `ui` | `@/shared/components/ui` | Componentes de shadcn/ui |
+| `ui` | `@/shared/components/core` | Componentes de shadcn/ui |
 | `lib` | `@/lib` | Utilidades generales |
 | `hooks` | `@/shared/hooks` | Hooks compartidos |

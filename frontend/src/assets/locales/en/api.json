@@ -1,0 +1,10 @@
+{
+  "errors": {
+    "default": "Unexpected server error.",
+    "status_401": "Your session has expired. Please log in again.",
+    "status_403": "You do not have the required permissions for this section.",
+    "status_404": "The requested resource is not available.",
+    "status_500": "Internal server problem. Please try again later.",
+    "timeout": "The request took too long to respond."
+  }
+}

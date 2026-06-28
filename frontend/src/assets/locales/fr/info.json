@@ -1,0 +1,37 @@
+{
+  "steps": {
+    "title": "Premiers pas",
+    "subtitle": "Commencez à gérer vos finances en moins de 5 minutes grâce a notre guide rapide.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Créez votre compte",
+        "description": "Uniquement un mot de passe et un nom d'utilisateur et/ou un e-mail"
+      },
+      {
+        "number": "02",
+        "title": "Créez votre première catégorie",
+        "description": "Définissez des catégories personnalisées pour organiser vos dépenses (ex. Alimentation, Transport, Loisirs, Revenus...)."
+      },
+      {
+        "number": "03",
+        "title": "Enregistrez vos dépenses",
+        "description": "Ajoutez des transactions depuis leur section dédiée ou facilement depuis le tableau de bord."
+      }
+    ]
+  },
+  "wiki": {
+    "link": "Consulter le wiki"
+  },
+  "news": {
+    "title": "Nouveautés récentes",
+    "subtitle": "Découvrez les dernières améliorations apportées à la plateforme.",
+    "items": [
+      {
+        "tag": "v0.1.0",
+        "title": "Mise à jour majeure",
+        "description": "- Nouveau système de notifications \n - Ajouter un profil utilisateur \n - Ajouter des objectifs d'épargne \n - Module Objectifs de Groupe refactorisé et amélioré \n - Intégration avec le bot Telegram \n - Invitations aux Objectifs de Groupe avec notifications sur le site web \n - Fonctionnalités d'exportation accrues. Prend désormais en charge le CSV et le PDF. \n - Réduction de l'utilisation de dépendances externes. \n - Améliorations du système de traduction."
+      }
+    ]
+  }
+}

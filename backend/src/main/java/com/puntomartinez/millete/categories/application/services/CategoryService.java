@@ -9,9 +9,8 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCas
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import org.springframework.http.HttpStatus;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,23 +48,20 @@ public class CategoryService implements RegisterCategoryUseCase, UpdateCategoryU
     @Override
     public Category update(UUID id, UUID userId, UpdateCategoryCommand command) {
         Category category = categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
 
         category.updateDetails(command.nombre(), command.color(), command.budgetLimit());
         return categoryRepository.save(category);
     }
 
-    public Category findById(UUID id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+    public Category findByIdAndUserId(UUID id, UUID userId) {
+        return categoryRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
     }
 
     public void delete(UUID id, UUID userId) {
         Category category = categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
 
         category.deactivate();
         categoryRepository.save(category);

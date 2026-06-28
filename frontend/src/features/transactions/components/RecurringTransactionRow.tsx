@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, ArrowUpRight, ArrowDownLeft, Calendar, Repeat } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { cn } from "@/lib/utils"
 import type { PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
 import { formatDate, formatFrequency, calculateNextExecution } from "../utils"
@@ -62,17 +62,17 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                             variant="ghost"
                             size="icon"
                             className="size-8"
-                            aria-label={t("transactions.moreOptions")}
+                            aria-label={t('transactions:moreOptions')}
                         >
                             <MoreHorizontal size={16} aria-hidden="true" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-card border-border">
                         <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(tx)}>
-                            {t("transactions.edit")}
+                            {t('transactions:edit')}
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(tx)}>
-                            {t("transactions.delete")}
+                            {t('transactions:delete')}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -100,17 +100,17 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                                 variant="ghost"
                                 size="icon"
                                 className="size-8"
-                                aria-label={t("transactions.moreOptions")}
+                                aria-label={t('transactions:moreOptions')}
                             >
                                 <MoreHorizontal size={16} aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-card border-border">
                             <DropdownMenuItem className="cursor-pointer" onClick={() => onEdit(tx)}>
-                                {t("transactions.edit")}
+                                {t('transactions:edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(tx)}>
-                                {t("transactions.delete")}
+                                {t('transactions:delete')}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

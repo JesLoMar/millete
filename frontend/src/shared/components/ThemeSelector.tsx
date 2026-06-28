@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next"
 import { Palette, Check } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { useTheme } from "@/shared/hooks/useTheme"
 import { notify } from "@/shared/utils/notifications/notify"
 import type { Theme } from "@/shared/themes/palettes"
@@ -18,14 +18,14 @@ interface ThemeSelectorProps {
 }
 
 export function ThemeSelector({ className }: ThemeSelectorProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['nav', 'common'])
   const { theme, setTheme, availableThemes } = useTheme()
 
   const handleThemeChange = (selectedTheme: Theme) => {
     try {
       setTheme(selectedTheme)
     } catch (error) {
-      notify.error(t("theme.errors.themeChangeFailed"))
+      notify.error(t('nav:theme.errors.themeChangeFailed'))
     }
   }
 
@@ -39,14 +39,14 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
             "size-10 text-muted-foreground hover:text-foreground",
             className
           )}
-          aria-label={t("theme.selector")}
+          aria-label={t('nav:theme.selector')}
         >
           <Palette className="size-5" aria-hidden="true" />
-          <span className="sr-only">{t("theme.selector")}</span>
+          <span className="sr-only">{t('nav:theme.selector')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>{t("theme.palette")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('nav:theme.palette')}</DropdownMenuLabel>
         {availableThemes.map((t: Theme) => {
           const isSelected = theme.name === t.name
           return (

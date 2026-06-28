@@ -1,0 +1,14 @@
+{
+  "required": "Champ requis",
+  "invalid_email": "Le format de l'e-mail n'est pas valide",
+  "invalid_number": "Saisissez un nombre valide",
+  "min_length": "Doit contenir au moins {{min}} caractères",
+  "max_length": "Doit contenir au maximum {{max}} caractères",
+  "min_value": "La valeur minimale est {{min}}",
+  "max_value": "La valeur maximale est {{max}}",
+  "positive_number": "Doit être un nombre positif",
+  "invalid_url": "URL non valide",
+  "auth": {
+    "invalid_credentials": "Identifiants non valides. Veuillez réessayer."
+  }
+}

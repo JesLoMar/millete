@@ -4,6 +4,8 @@ import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.in.*;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +27,8 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
     @Override
     public RegisterTransactionResult register(RegisterTransactionCommand command) {
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Category does not exist."));
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category does not exist or does not belong to you."));
         }
 
         UUID newId = UUID.randomUUID();
@@ -103,11 +105,11 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
     @Override
     public Transaction getByIdAndUserId(UUID id, UUID userId) {
         Transaction transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Transaction not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found."));
 
         // Security check (Anti-IDOR)
         if (!transaction.getUserId().equals(userId)) {
-            throw new RuntimeException("You do not have permission to view this transaction.");
+            throw new ForbiddenOperationException("You do not have permission to view this transaction.");
         }
 
         return transaction;
@@ -122,8 +124,8 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
         Transaction transaction = this.getByIdAndUserId(id, command.userId());
 
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
-                    .orElseThrow(() -> new RuntimeException("Category does not exist."));
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category does not exist or does not belong to you."));
         }
 
         transaction.updateDetails(

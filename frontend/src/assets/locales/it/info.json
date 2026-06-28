@@ -1,0 +1,37 @@
+{
+  "steps": {
+    "title": "Primi passi",
+    "subtitle": "Inizia a gestire le tue finanze in meno di 5 minuti con la nostra guida rapida.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Crea il tuo account",
+        "description": "Solo password e nome utente e/o email"
+      },
+      {
+        "number": "02",
+        "title": "Crea la tua prima categoria",
+        "description": "Definisci categorie personalizzate per organizzare le tue spese (es. Alimentazione, Trasporti, Tempo libero, Entrate...)."
+      },
+      {
+        "number": "03",
+        "title": "Registra le tue spese",
+        "description": "Aggiungi transazioni dalla sezione dedicata o facilmente direttamente dalla dashboard."
+      }
+    ]
+  },
+  "wiki": {
+    "link": "Consulta la wiki"
+  },
+  "news": {
+    "title": "Ultime novità",
+    "subtitle": "Scopri i più recenti miglioramenti aggiunti alla piattaforma.",
+    "items": [
+      {
+        "tag": "v0.1.0",
+        "title": "Aggiornamento principale",
+        "description": "- Nuovo sistema di notifiche \n - Aggiungi profilo utente \n - Aggiungi obiettivi di risparmio \n - Modulo Obiettivi di Gruppo rifattorizzato e migliorato \n - Integrazione con il bot di Telegram \n - Inviti agli Obiettivi di Gruppo con notifiche all'interno del sito \n - Incrementate le funzionalità di esportazione. Ora supporta CSV e PDF. \n - Riduzione dell'uso di dipendenze esterne. \n - Miglioramenti al sistema di traduzione."
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@ package com.puntomartinez.millete.dashboard.infrastructure.in.controller;
 import com.puntomartinez.millete.dashboard.domain.ports.in.GetDashboardDataUseCase;
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.*;
 import lombok.RequiredArgsConstructor;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ public class DashboardController {
     private final GetDashboardDataUseCase getDashboardDataUseCase;
 
     private UUID getUserId(Authentication authentication) {
-        return UUID.fromString(authentication.getName());
+        return ((JwtUser) authentication.getPrincipal()).getId();
     }
 
     @GetMapping("/metrics")

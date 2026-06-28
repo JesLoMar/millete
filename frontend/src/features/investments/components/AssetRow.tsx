@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import { TrendingUp, TrendingDown, MoreHorizontal, Trash2 } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Button } from "@/shared/components/core/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu"
+} from "@/shared/components/core/dropdown-menu"
 import { UpdatePriceDialog } from "./UpdatePriceDialog"
 import { cn } from "@/lib/utils"
 import { TYPE_COLORS } from "../constants"
@@ -32,7 +32,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
           <div className="min-w-0">
             <p className="text-sm font-bold text-foreground truncate">{inv.assetName}</p>
             <p className="text-xs text-muted-foreground truncate">
-              {inv.quantity} {t("investments.shares")} • {t(`investments.types.${inv.type.toLowerCase()}`)}
+              {inv.quantity} {t('investments:shares')} • {t(`investments:types.${inv.type.toLowerCase()}`)}
             </p>
           </div>
         </div>
@@ -68,7 +68,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label={t("investments.assetOptions", { name: inv.assetName })}
+                aria-label={t("investments:assetOptions", { name: inv.assetName })}
               >
                 <MoreHorizontal size={16} aria-hidden="true" />
               </Button>
@@ -76,7 +76,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
             <DropdownMenuContent align="end" className="bg-card border-border">
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(inv)}>
                 <Trash2 className="mr-2 size-4" aria-hidden="true" />
-                {t("investments.delete")}
+                {t('investments:delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -91,7 +91,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-foreground truncate">{inv.assetName}</p>
             <p className="text-[11px] text-muted-foreground truncate">
-              {inv.quantity} {t("investments.shares")} • {t(`investments.types.${inv.type.toLowerCase()}`)}
+              {inv.quantity} {t('investments:shares')} • {t(`investments:types.${inv.type.toLowerCase()}`)}
             </p>
           </div>
           <DropdownMenu>
@@ -100,7 +100,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
                 variant="ghost"
                 size="icon"
                 className="size-7 shrink-0 -mr-1"
-                aria-label={t("investments.assetOptions", { name: inv.assetName })}
+                aria-label={t("investments:assetOptions", { name: inv.assetName })}
               >
                 <MoreHorizontal size={15} aria-hidden="true" />
               </Button>
@@ -108,7 +108,7 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
             <DropdownMenuContent align="end" className="bg-card border-border">
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => onDelete(inv)}>
                 <Trash2 className="mr-2 size-4" aria-hidden="true" />
-                {t("investments.delete")}
+                {t('investments:delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

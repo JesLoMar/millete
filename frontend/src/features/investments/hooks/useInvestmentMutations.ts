@@ -8,33 +8,28 @@ export const useInvestmentMutations = () => {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
 
-  const invalidateAll = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['investments'] }),
-      queryClient.invalidateQueries({ queryKey: ['investmentMetrics'] }),
-      queryClient.invalidateQueries({ queryKey: ['investmentEvolution'] }),
-      queryClient.invalidateQueries({ queryKey: ['investmentDistribution'] }),
-    ])
-  }
-
   const createInvestment = useMutation({
     mutationFn: (data: Record<string, unknown>) => {
       const sanitizedData = { ...data }
-      
-      if (typeof sanitizedData.purchaseDate === "string") {
-        sanitizedData.purchaseDate = sanitizedData.purchaseDate.includes("T")
-          ? sanitizedData.purchaseDate
-          : `${sanitizedData.purchaseDate}T00:00:00`
+
+      if (typeof sanitizedData.purchaseDate === 'string') {
+        const date = new Date(sanitizedData.purchaseDate as string)
+        sanitizedData.purchaseDate = date.toISOString()
       }
-      
-      return apiClient.post('investments', sanitizedData)
+
+      return apiClient.post('/investments', sanitizedData)
     },
     onSuccess: async () => {
-      await invalidateAll()
-      notify.success(t('investments.alerts.createSuccess'))
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['investments'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentEvolution'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentDistribution'] }),
+      ])
+      notify.success(t('investments:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.createError') || "Error al crear la inversión")
+      notify.error(err.response?.data?.message || t('investments:alerts.createError') || "Error al crear la inversión")
     },
   })
 
@@ -42,22 +37,32 @@ export const useInvestmentMutations = () => {
     mutationFn: ({ id, price }: { id: string; price: number }) =>
       apiClient.patch(`investments/${id}/price`, { newPrice: price }),
     onSuccess: async () => {
-      await invalidateAll()
-      notify.success(t('investments.alerts.updatePriceSuccess'))
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['investments'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentEvolution'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentDistribution'] }),
+      ])
+      notify.success(t('investments:alerts.updatePriceSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.updatePriceError') || "Error al actualizar el precio")
+      notify.error(err.response?.data?.message || t('investments:alerts.updatePriceError') || "Error al actualizar el precio")
     },
   })
 
   const deleteInvestment = useMutation({
     mutationFn: (id: string) => apiClient.delete(`investments/${id}`),
     onSuccess: async () => {
-      await invalidateAll()
-      notify.success(t('investments.alerts.deleteSuccess'))
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['investments'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentEvolution'] }),
+        queryClient.invalidateQueries({ queryKey: ['investmentDistribution'] }),
+      ])
+      notify.success(t('investments:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('investments.alerts.deleteError') || "Error al eliminar la inversión")
+      notify.error(err.response?.data?.message || t('investments:alerts.deleteError') || "Error al eliminar la inversión")
     },
   })
 

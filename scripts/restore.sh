@@ -7,7 +7,6 @@ echo "  Database Restoration"
 echo "==================================="
 echo ""
 
-# List last 10 backups
 echo "Available backups:"
 echo "------------------------------"
 ls -1t "${BACKUP_DIR}"/*.sql.gz 2>/dev/null | head -10 | nl
@@ -18,7 +17,6 @@ if [ -z "$(ls -A ${BACKUP_DIR}/*.sql.gz 2>/dev/null)" ]; then
     exit 1
 fi
 
-# Select backup
 echo -n "Enter backup number to restore (or 'q' to quit): "
 read SELECTION
 
@@ -26,6 +24,10 @@ if [ "$SELECTION" = "q" ]; then
     echo "Restoration cancelled"
     exit 0
 fi
+
+case "$SELECTION" in
+    ''|*[!0-9]*) echo "Invalid selection"; exit 1 ;;
+esac
 
 BACKUP_FILE=$(ls -1t "${BACKUP_DIR}"/*.sql.gz 2>/dev/null | sed -n "${SELECTION}p")
 
@@ -48,11 +50,9 @@ fi
 echo ""
 echo "Starting restoration..."
 
-# Drop and recreate database
 PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d postgres -c "DROP DATABASE IF EXISTS ${PGDATABASE};"
 PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d postgres -c "CREATE DATABASE ${PGDATABASE} OWNER ${PGUSER};"
 
-# Restore backup
 if gunzip -c "${BACKUP_FILE}" | PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -U "${PGUSER}" -d "${PGDATABASE}"; then
     echo ""
     echo "Restoration completed successfully"

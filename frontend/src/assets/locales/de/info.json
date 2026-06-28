@@ -1,0 +1,37 @@
+{
+  "steps": {
+    "title": "Erste Schritte",
+    "subtitle": "Beginnen Sie in weniger als 5 Minuten mit der Verwaltung Ihrer Finanzen mithilfe unserer Kurzanleitung.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Konto erstellen",
+        "description": "Nur Passwort und Benutzername und/oder E-Mail"
+      },
+      {
+        "number": "02",
+        "title": "Erste Kategorie erstellen",
+        "description": "Definieren Sie benutzerdefinierte Kategorien, um Ihre Ausgaben zu organisieren (z. B. Lebensmittel, Transport, Freizeit, Einnahmen...)."
+      },
+      {
+        "number": "03",
+        "title": "Ausgaben erfassen",
+        "description": "Fügen Sie Transaktionen über den entsprechenden Bereich oder ganz einfach direkt über das Dashboard hinzu."
+      }
+    ]
+  },
+  "wiki": {
+    "link": "Wiki konsultieren"
+  },
+  "news": {
+    "title": "Aktuelle Neuigkeiten",
+    "subtitle": "Entdecken Sie die neuesten Verbesserungen auf der Plattform.",
+    "items": [
+      {
+        "tag": "v0.1.0",
+        "title": "Großes Update",
+        "description": "- Neues Benachrichtigungssystem \n - Benutzerprofil hinzufügen \n - Sparziele hinzufügen \n - Gruppenziele-Modul überarbeitet und verbessert \n - Integration mit Telegram-Bot \n - Einladungen zu Gruppenzielen mit Benachrichtigungen innerhalb der Website \n - Erweiterte Exportfunktionen. Unterstützt jetzt CSV und PDF. \n - Reduzierung der Nutzung externer Abhängigkeiten. \n - Verbesserungen am Übersetzungssystem."
+      }
+    ]
+  }
+}

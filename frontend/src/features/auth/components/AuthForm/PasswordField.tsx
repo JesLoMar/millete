@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next"
 import type { UseFormRegister } from "react-hook-form"
 import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
 import { Eye, EyeOff } from "lucide-react"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
-import { Button } from "@/shared/components/ui/button"
+import { Input } from "@/shared/components/core/input"
+import { Label } from "@/shared/components/core/label"
+import { Button } from "@/shared/components/core/button"
 
 interface PasswordFieldProps {
   register: UseFormRegister<CombinedAuthFormData>
@@ -20,14 +20,14 @@ export function PasswordField({ register, disabled, mode }: PasswordFieldProps) 
   return (
     <div className="space-y-3">
       <Label htmlFor="password" className="text-lg text-secondary-foreground/70 ml-1">
-        {t("auth.form.fields.password.label")}
+        {t('auth:form.fields.password.label')}
       </Label>
       <div className="relative">
         <Input
           id="password"
           type={showPassword ? "text" : "password"}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
-          placeholder={t("auth.form.fields.password.placeholder")}
+          placeholder={t('auth:form.fields.password.placeholder')}
           disabled={disabled}
           className="bg-secondary/30 border-border/50 h-14 text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 pr-12 text-white"
           {...register("password", {
@@ -48,7 +48,7 @@ export function PasswordField({ register, disabled, mode }: PasswordFieldProps) 
       </div>
       {mode === "register" && (
         <p className="text-xs text-muted-foreground ml-1">
-          {t("auth.form.passwordHint")}
+          {t('auth:form.passwordHint')}
         </p>
       )}
     </div>

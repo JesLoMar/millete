@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.plannedtransactions.application.services.PlannedTransactionService;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
@@ -43,7 +44,7 @@ public class PlannedTransactionController {
             @Valid @RequestBody RegisterPlannedTransactionRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         RegisterPlannedTransactionCommand command = new RegisterPlannedTransactionCommand(
                 userId,
@@ -64,7 +65,7 @@ public class PlannedTransactionController {
 
     @GetMapping
     public ResponseEntity<List<PlannedTransactionResponseDTO>> getAll(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         List<PlannedTransaction> list = plannedTransactionService.findByUserId(userId);
 
         List<PlannedTransactionResponseDTO> response = list.stream()
@@ -90,7 +91,7 @@ public class PlannedTransactionController {
             @Valid @RequestBody UpdatePlannedTransactionRequestDTO request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         var command = new UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand(
                 userId,
@@ -113,7 +114,7 @@ public class PlannedTransactionController {
             @PathVariable UUID id,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         deleteUseCase.deleteByIdAndUserId(id, userId);
         return ResponseEntity.noContent().build();
     }

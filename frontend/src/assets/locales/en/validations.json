@@ -1,0 +1,14 @@
+{
+  "required": "Required field",
+  "invalid_email": "Invalid email format",
+  "invalid_number": "Enter a valid number",
+  "min_length": "Must be at least {{min}} characters",
+  "max_length": "Must be at most {{max}} characters",
+  "min_value": "Minimum value is {{min}}",
+  "max_value": "Maximum value is {{max}}",
+  "positive_number": "Must be a positive number",
+  "invalid_url": "Invalid URL",
+  "auth": {
+    "invalid_credentials": "Invalid credentials. Please try again."
+  }
+}

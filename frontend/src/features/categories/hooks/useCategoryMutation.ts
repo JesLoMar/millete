@@ -1,28 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/shared/api/axiosClient';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import type { ApiError } from '@/shared/types/api';
 import type { RegisterCategoryRequest, UpdateCategoryRequest } from '../types';
 
 export const useCategoryMutations = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['categories', 'common']);
   const queryClient = useQueryClient();
 
-  const invalidateCategoryQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['categories'] }),
-      queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-      queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-      queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-      queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-      queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-      queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-      queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-    ]);
-  };
-
-  const getErrorMessage = (error: unknown, defaultKey: "categories.createError" | "categories.updateError" | "categories.deleteError"): string => {
+  const getErrorMessage = (error: unknown, defaultKey: "categories:createError" | "categories:updateError" | "categories:deleteError"): string => {
     const apiError = error as ApiError;
     const backendMessage = apiError?.response?.data?.message;
     if (backendMessage && typeof backendMessage === 'string') {
@@ -41,11 +28,20 @@ export const useCategoryMutations = () => {
       return response.data;
     },
     onSuccess: async () => {
-      await invalidateCategoryQueries();
-      notify.success(t('categories.createSuccess'));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['categories'] }),
+        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
+        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
+        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
+      ]);
+      notify.success(t('categories:createSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.createError');
+      const message = getErrorMessage(error, 'categories:createError');
       console.error('[createCategory] Error:', message);
       notify.error(message);
     },
@@ -61,11 +57,20 @@ export const useCategoryMutations = () => {
       return response.data;
     },
     onSuccess: async () => {
-      await invalidateCategoryQueries();
-      notify.success(t('categories.updateSuccess'));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['categories'] }),
+        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
+        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
+        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
+      ]);
+      notify.success(t('categories:updateSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.updateError');
+      const message = getErrorMessage(error, 'categories:updateError');
       console.error('[updateCategory] Error:', message);
       notify.error(message);
     },
@@ -77,11 +82,20 @@ export const useCategoryMutations = () => {
       return id;
     },
     onSuccess: async () => {
-      await invalidateCategoryQueries();
-      notify.success(t('categories.deleteSuccess'));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['categories'] }),
+        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
+        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
+        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
+        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
+      ]);
+      notify.success(t('categories:deleteSuccess'));
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error, 'categories.deleteError');
+      const message = getErrorMessage(error, 'categories:deleteError');
       console.error('[deleteCategory] Error:', message);
       notify.error(message);
     }
@@ -94,6 +108,5 @@ export const useCategoryMutations = () => {
     isCreating: createCategory.isPending,
     isUpdating: updateCategory.isPending,
     isDeleting: deleteCategory.isPending,
-    invalidateQueries: invalidateCategoryQueries,
   };
 };

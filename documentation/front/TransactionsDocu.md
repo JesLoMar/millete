@@ -7,10 +7,16 @@
 - components/RecurringTransactionRow.tsx — Fila individual de transacción recurrente
 - components/RecurringTransactionsList.tsx — Lista de transacciones recurrentes con filtros
 - components/TransactionActions.tsx — Botones de acciones (nueva normal + nueva recurrente)
-- components/TransactionList.tsx — Lista paginada de transacciones con filtros
-- components/TransactionRow.tsx — Fila individual de transacción
+- components/TransactionList.tsx — Orquestador de la lista paginada (desktop/mobile/filtros/paginación)
+- components/TransactionListDesktop.tsx — Tabla de transacciones para escritorio
+- components/TransactionListMobile.tsx — Tarjetas de transacciones para móvil
+- components/TransactionListFilters.tsx — Filtros de tipo, búsqueda y ordenación
+- components/TransactionListPagination.tsx — Paginación de la lista
+- components/TransactionListSkeleton.tsx — Skeleton específico de la lista
+- components/TransactionRow.tsx — Fila individual de transacción (legacy)
 - components/TransactionSkeleton.tsx — Esqueleto de carga reutilizable
 - components/TransactionSummary.tsx — Tarjetas de métricas de transacciones
+- components/types.ts — Tipos locales del componente
 - components/dialogs/NewTransactionDialog.tsx — Diálogo de creación de transacción
 - components/dialogs/EditTransactionDialog.tsx — Diálogo de edición de transacción
 - components/dialogs/NewRecurringTransactionDialog.tsx — Diálogo de creación de transacción recurrente
@@ -431,12 +437,14 @@ Diálogo de edición de transacción. Siempre controlado: se abre desde Transact
 
 Mismos campos que NewTransactionDialog: descripción, tipo, importe y categoría.
 
-#### Flujo
+#### Flujo (v0.2.0)
 
-1. Al abrirse, los campos se inicializan con los valores de la transacción (usa key={transaction?.id ?? "new"} en Dialog para forzar reinicio al cambiar de transacción).
+1. El estado del formulario se inicializa directamente desde la prop `transaction` mediante `getInitialForm(transaction)`. El componente padre (`TransactionList`) fuerza el reset completo pasando `key={state.editingTransaction?.id}`.
 2. Al guardar, hace PUT /transactions/:id con description, categoryId, amount, type y date (mantiene la fecha original).
 3. Invalida 8 queries manualmente (transactions, transactionMetrics, dashboardMetrics, historyChart, categoryStats, budgets, recentTransactions, categoryExpenses).
 4. Cierra el diálogo.
+
+> **Nota v0.2.0:** Se eliminó el `useEffect` de pre-populado que sincronizaba estado con la prop. Ahora el estado se inicializa directamente y el padre fuerza el reset con `key`. Esto corrige el problema de "derived state copied into state" reportado por react-doctor.
 
 #### Validaciones
 
@@ -497,11 +505,14 @@ Diálogo de edición de transacción recurrente. Siempre controlado.
 
 Mismos campos que NewRecurringTransactionDialog. Los valores se inicializan desde la transacción al montar el componente (no usa useEffect, se inicializan directamente en useState con transaction?.description || "").
 
-#### Flujo
+#### Flujo (v0.2.0)
 
-1. Al guardar, llama a updateRecurring.mutateAsync con id y data (description, categoryId, amount, type, frequencyType, frequencyInterval, startDate, endDate).
-2. onSuccess de la mutación invalida 9 queries y muestra notificación.
-3. Cierra el diálogo.
+1. El estado del formulario se inicializa directamente desde la prop `transaction` mediante `getInitialForm(transaction)`. El componente padre (`RecurringTransactionsList`) fuerza el reset completo pasando `key={editingTransaction?.id}`.
+2. Al guardar, llama a updateRecurring.mutateAsync con id y data (description, categoryId, amount, type, frequencyType, frequencyInterval, startDate, endDate).
+3. onSuccess de la mutación invalida 9 queries y muestra notificación.
+4. Cierra el diálogo.
+
+> **Nota v0.2.0:** Se eliminó el `useEffect` de pre-populado que sincronizaba estado con la prop. Ahora el estado se inicializa directamente y el padre fuerza el reset con `key`. Esto corrige el problema de "derived state copied into state" reportado por react-doctor.
 
 #### Validaciones
 
@@ -547,6 +558,20 @@ Mismos campos que NewRecurringTransactionDialog. Los valores se inicializan desd
 - TransactionActions simplificado: solo orquesta los dos diálogos con sus Triggers, sin estado interno.
 - formatDate con i18n dinámico: usa i18n.language para formatear fechas en el idioma actual del usuario.
 - TransactionSummary con tipos internos: define interfaz TransactionMetrics local con 8 campos (4 valores + 4 tendencias). Query key incluye período para recargar al cambiar.
+
+---
+
+## Refactorización de TransactionList (v0.1.0)
+
+El componente `TransactionList.tsx` fue dividido en subcomponentes especializados para mejorar mantenibilidad y responsive:
+
+- **TransactionList.tsx:** orquesta el estado de filtros (tipo, búsqueda, ordenación), paginación y selección de vista desktop/mobile.
+- **TransactionListFilters.tsx:** contiene el buscador, selector de tipo (all/income/expense) y ordenación.
+- **TransactionListDesktop.tsx:** renderiza la tabla de transacciones para escritorio.
+- **TransactionListMobile.tsx:** renderiza tarjetas apilables para dispositivos móviles.
+- **TransactionListPagination.tsx:** control de páginas con botones anterior/siguiente e info de página actual.
+- **TransactionListSkeleton.tsx:** skeleton específico que coincide con el layout de la lista.
+- **components/types.ts:** tipos locales compartidos entre los subcomponentes.
 
 ---
 

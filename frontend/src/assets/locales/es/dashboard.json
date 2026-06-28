@@ -1,0 +1,149 @@
+{
+  "metrics": {
+    "balance": "Balance Total",
+    "income": "Ingresos del {{period}}",
+    "expenses": "Gastos del {{period}}",
+    "savings": "Ahorro Total",
+    "vsLastWeek": "vs. semana anterior",
+    "vsLastMonth": "vs. mes anterior",
+    "vsLastYear": "vs. año anterior",
+    "errors": {
+      "noDataAvailable": "No hay datos disponibles"
+    }
+  },
+  "header": {
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "days": {
+      "0": "domingo",
+      "1": "lunes",
+      "2": "martes",
+      "3": "miércoles",
+      "4": "jueves",
+      "5": "viernes",
+      "6": "sábado"
+    },
+    "months": {
+      "0": "enero",
+      "1": "febrero",
+      "2": "marzo",
+      "3": "abril",
+      "4": "mayo",
+      "5": "junio",
+      "6": "julio",
+      "7": "agosto",
+      "8": "septiembre",
+      "9": "octubre",
+      "10": "noviembre",
+      "11": "diciembre"
+    },
+    "separator": "•",
+    "dateFormat": "{{month}} {{year}}",
+    "week": "Semana {{week}}",
+    "period": {
+      "ariaLabel": "Seleccionar período de tiempo",
+      "week": "Sem",
+      "month": "Mes",
+      "year": "Año"
+    }
+  },
+  "chart": {
+    "title": "Histórico de Gastos",
+    "empty": "Sin gastos en este período",
+    "showingLast": "Últimos {{count}}",
+    "periodLabel": {
+      "week": "Últimos 7 días",
+      "month": "Últimas 5 semanas",
+      "year": "Últimos 12 meses"
+    },
+    "tooltip": {
+      "amount": "Gasto",
+      "percentage": "Porcentaje"
+    }
+  },
+  "donut": {
+    "title": "Gasto por Categoría",
+    "total": "Total",
+    "empty": "Sin gastos en este período"
+  },
+  "budget": {
+    "title": "Estado del Presupuesto",
+    "empty": "No hay presupuestos configurados",
+    "overLimit": "¡Límite superado!",
+    "remaining": "Te quedan {{amount}} €",
+    "exceededBy": "Excedido por {{amount}} €"
+  },
+  "transactions": {
+    "title": "Últimas Transacciones",
+    "viewAll": "Ver todas",
+    "empty": "No hay transacciones recientes",
+    "expense": "Gasto",
+    "income": "Ingreso",
+    "moreOptions": "Más opciones"
+  },
+  "goals": {
+    "title": "Metas de Ahorro Activas",
+    "empty": "No hay metas de ahorro configuradas",
+    "completed": "¡Completado!",
+    "remaining": "Faltan {{amount}} €"
+  },
+  "quickActions": {
+    "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
+    "createCategory": "$t(common:actions.create) $t(common:entities.category)",
+    "importData": "Importar datos",
+    "importing": "Importando...",
+    "exportData": "Exportar datos",
+    "exporting": "Exportando...",
+    "addExpenseAria": "Añadir nueva transacción",
+    "createCategoryAria": "Crear nueva categoría",
+    "importDataAria": "Importar datos desde archivo",
+    "importingAria": "Importando datos, espere",
+    "exportDataAria": "Exportar copia de seguridad",
+    "exportingAria": "Exportando datos, espere",
+    "groupLabel": "Acciones rápidas"
+  },
+  "importModal": {
+    "title": "Importar datos",
+    "description": "Arrastra un archivo JSON con tus transacciones",
+    "dropHere": "Suelta tu archivo aquí o haz clic para seleccionar",
+    "onlyJson": "Solo archivos .json",
+    "jsonOnly": "Solo se admiten archivos JSON",
+    "invalidJson": "El archivo JSON no es válido",
+    "importing": "Importando datos...",
+    "success": "Datos importados correctamente",
+    "importError": "Error al importar el archivo",
+    "close": "$t(common:actions.close)"
+  },
+  "import": {
+    "success": "Datos importados correctamente",
+    "errorGeneric": "Error al importar el archivo",
+    "errorProperty": "No tienes permiso para importar",
+    "errorFormat": "Formato de archivo inválido"
+  },
+  "export": {
+    "title": "Exportar datos",
+    "configTitle": "Configurar exportación",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Exporta todos tus datos de usuario",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "Todos los CSV en un solo archivo",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "Un archivo por sección",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Informe financiero estilado",
+    "entity": "Tipo de datos",
+    "selectEntity": "Seleccionar tipo...",
+    "period": "Período",
+    "period1m": "Último mes",
+    "period3m": "Últimos 3 meses",
+    "period6m": "Últimos 6 meses",
+    "period1y": "Último año",
+    "periodAll": "Todo",
+    "action": "Exportar",
+    "success": "Datos exportados correctamente",
+    "error": "Error al exportar los datos"
+  }
+}

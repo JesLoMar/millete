@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
-import { notify } from '@/shared/utils/notifications/notify';
+import { notify } from "@/shared/utils/notifications/notify";
 import type { ApiError } from '@/shared/types/api';
 import type { LoginRequest } from '../types';
 
@@ -42,7 +42,7 @@ export const useLoginMutation = () => {
     onSuccess: async (data) => {
       await login(data.token);
       queryClient.clear();
-      notify.success(t('common.accept'));
+      notify.success(t('common:actions.welcome'));
 
       const fromState = location.state?.from?.pathname
         ? location.state.from.pathname + (location.state.from.search || '') + (location.state.from.hash || '')
@@ -54,8 +54,8 @@ export const useLoginMutation = () => {
       navigate(safeRedirect || '/dashboard', { replace: true });
     },
     onError: (error: ApiError) => {
-      const errorMessage = error?.response?.data?.message || t('auth.errors.login_failed');
-      console.error(t('auth.alerts.login_error_title'), errorMessage);
+      const errorMessage = error?.response?.data?.message || t('auth:errors.login_failed');
+      console.error(t('auth:alerts.login_error_title'), errorMessage);
       notify.error(errorMessage);
     },
   });

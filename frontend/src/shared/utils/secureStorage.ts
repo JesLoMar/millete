@@ -1,83 +1,89 @@
 const STORAGE_PREFIX = 'ms_';
 
-function deriveFingerprint(): string {
-  const seed = [
-    navigator.userAgent,
-    screen.colorDepth,
-    screen.width,
-    screen.height,
-    navigator.language,
-    navigator.hardwareConcurrency,
-  ].join('|');
-
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function xorTransform(text: string, key: string): string {
-  let result = '';
-  for (let i = 0; i < text.length; i++) {
-    result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-  }
-  return result;
-}
-
 export const secureStorage = {
+  setItem(key: string, value: string): void {
+    try {
+      sessionStorage.setItem(`${STORAGE_PREFIX}${key}`, value);
+    } catch {
+      sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+    }
+  },
+
+  getItem(key: string): string | null {
+    try {
+      return sessionStorage.getItem(`${STORAGE_PREFIX}${key}`);
+    } catch {
+      sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+      return null;
+    }
+  },
+
+  removeItem(key: string): void {
+    sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+  },
+
   setToken(token: string): void {
     try {
-      const key = deriveFingerprint();
-      const payload = `${token}::${Date.now()}`;
-      const encrypted = btoa(xorTransform(payload, key));
-      localStorage.setItem(`${STORAGE_PREFIX}token`, encrypted);
+      sessionStorage.setItem(`${STORAGE_PREFIX}token`, token);
     } catch {
-      localStorage.removeItem(`${STORAGE_PREFIX}token`);
+      sessionStorage.removeItem(`${STORAGE_PREFIX}token`);
+    }
+
+    try {
+      const payload = token.split('.');
+      if (payload.length === 3 && payload[1]) {
+        const padded = payload[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padLen = 4 - (padded.length % 4);
+        const base64 = padLen !== 4 ? padded + '='.repeat(padLen) : padded;
+        const decoded = JSON.parse(atob(base64)) as Record<string, unknown>;
+        const sessionId = decoded.sessionId ?? decoded.sid ?? decoded.jti ?? decoded.sub;
+        if (typeof sessionId === 'string') {
+          this.setItem('sessionId', sessionId);
+        }
+      }
+    } catch {
+      // Silencioso: el token sigue siendo válido
     }
   },
 
   getToken(): string | null {
     try {
-      const encrypted = localStorage.getItem(`${STORAGE_PREFIX}token`);
-      if (!encrypted) return null;
-      const key = deriveFingerprint();
-      const decrypted = xorTransform(atob(encrypted), key);
-      const [token] = decrypted.split('::');
-      return token || null;
+      return sessionStorage.getItem(`${STORAGE_PREFIX}token`);
     } catch {
-      localStorage.removeItem(`${STORAGE_PREFIX}token`);
+      sessionStorage.removeItem(`${STORAGE_PREFIX}token`);
       return null;
     }
   },
 
   setUser(user: unknown): void {
     try {
-      const key = deriveFingerprint();
-      const encrypted = btoa(xorTransform(JSON.stringify(user), key));
-      localStorage.setItem(`${STORAGE_PREFIX}user`, encrypted);
+      sessionStorage.setItem(`${STORAGE_PREFIX}user`, JSON.stringify(user));
     } catch {
-      localStorage.removeItem(`${STORAGE_PREFIX}user`);
+      sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
     }
   },
 
   getUser<T>(): T | null {
     try {
-      const encrypted = localStorage.getItem(`${STORAGE_PREFIX}user`);
-      if (!encrypted) return null;
-      const key = deriveFingerprint();
-      const decrypted = xorTransform(atob(encrypted), key);
-      return JSON.parse(decrypted) as T;
+      const raw = sessionStorage.getItem(`${STORAGE_PREFIX}user`);
+      return raw ? (JSON.parse(raw) as T) : null;
     } catch {
-      localStorage.removeItem(`${STORAGE_PREFIX}user`);
+      sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
       return null;
     }
   },
 
+  setSessionId(sessionId: string): void {
+    this.setItem('sessionId', sessionId);
+  },
+
+  getSessionId(): string | null {
+    return this.getItem('sessionId');
+  },
+
   clear(): void {
-    localStorage.removeItem(`${STORAGE_PREFIX}token`);
-    localStorage.removeItem(`${STORAGE_PREFIX}user`);
+    sessionStorage.removeItem(`${STORAGE_PREFIX}token`);
+    sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
+    sessionStorage.removeItem(`${STORAGE_PREFIX}sessionId`);
   },
 };

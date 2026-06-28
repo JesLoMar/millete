@@ -1,0 +1,14 @@
+{
+  "required": "必須項目です",
+  "invalid_email": "メールアドレスの形式が正しくありません",
+  "invalid_number": "有効な数値を入力してください",
+  "min_length": "{{min}} 文字以上で入力してください",
+  "max_length": "{{max}} 文字以下で入力してください",
+  "min_value": "最小値は {{min}} です",
+  "max_value": "最大値は {{max}} です",
+  "positive_number": "正の数を入力してください",
+  "invalid_url": "無効なURLです",
+  "auth": {
+    "invalid_credentials": "認証情報が正しくありません。もう一度お試しください。"
+  }
+}
