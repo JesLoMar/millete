@@ -16,8 +16,6 @@
 
 **Millete** is a production-ready, self-hosted personal finance platform engineered to track income/expenses, manage automated recurring bills, monitor complex investment portfolios, and enable secure family-unit collaboration—all powered by a decoupled, high-performance architecture.
 
-**Live Production Environment:** https://www.millete.online
-
 ---
 
 ## Preview & Interface
@@ -82,6 +80,19 @@ end
 
 ---
 
+## Tech Stack
+
+### Backend & Infrastructure
+* **Core:** Java 25 (LTS) & Spring Boot 4.x Framework.
+* **Security:** Spring Security, Stateless JWT Architecture (12-hour expiration), BCrypt password hashing.
+* **Persistence & Migrations:** PostgreSQL, Hibernate ORM, **Flyway** (Evolutionary automated schema management).
+
+### Frontend
+* **Core & State:** React 19, TypeScript, Vite, **TanStack Query (React Query)** for server-state synchronization.
+* **UI/UX:** Tailwind CSS, **Shadcn/ui**, Radix UI primitives, Sonner notifications.
+
+---
+
 ## Quick Start
 
 Get Millete up and running locally in under 5 minutes using Docker Compose.
@@ -89,7 +100,7 @@ Get Millete up and running locally in under 5 minutes using Docker Compose.
 ### Prerequisites
 
 * [Docker](https://docs.docker.com/get-docker/) (version 24.0+)
-* [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0+)
+* [Docker Compose](https://docs.compose.com/install/) (version 2.0+)
 * [Git](https://git-scm.com/downloads)
 
 ### 1. Clone the Repository
@@ -152,7 +163,6 @@ Docker Compose will build and launch all four services:
 
 Open your browser and navigate to: http://localhost:3000
 
-
 The backend API is proxied through Nginx at `/api/v1`. You can register a new account directly from the login page.
 
 > **First Run Note:** If the database volume already existed from a previous deployment, the application user `millete_app` may not have been created automatically. Run this command once to create it:
@@ -212,15 +222,3 @@ sh manage.sh restore
 - Automated daily backups run at 2:00 AM with a 7-day retention policy.
 - All containers run as non-root users for security.
 - The external Docker volume `millete_postgres_data` persists data across container rebuilds and removals.
-
-
-## Tech Stack
-
-### Backend & Infrastructure
-* **Core:** Java 25 (LTS) & Spring Boot 4.x Framework.
-* **Security:** Spring Security, Stateless JWT Architecture (12-hour expiration), BCrypt password hashing.
-* **Persistence & Migrations:** PostgreSQL, Hibernate ORM, **Flyway** (Evolutionary automated schema management).
-
-### Frontend
-* **Core & State:** React 19, TypeScript, Vite, **TanStack Query (React Query)** for server-state synchronization.
-* **UI/UX:** Tailwind CSS, **Shadcn/ui**, Radix UI primitives, Sonner notifications.
