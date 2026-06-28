@@ -34,7 +34,7 @@ export const registerSchema = authFormFieldsSchema
       return emailRegex.test(data.emailRegistro);
     },
     {
-      message: "auth.forgotPassword.emailInvalid",
+      message: "validations:invalid_email",
       path: ["emailRegistro"],
     }
   );
