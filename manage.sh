@@ -72,12 +72,12 @@ case "$1" in
             echo "  Please run: 'sudo chown -R 1000:1000 backups' if backups fail to write."
         fi
         if [ -f "scripts/init-app-user.sh" ]; then
+            sed -i 's/\r$//' scripts/init-app-user.sh 2>/dev/null || true
             chmod +x scripts/init-app-user.sh
             echo "✔ Init script permissions set."
         else
             echo "⚠ Warning: scripts/init-app-user.sh not found."
         fi
-        # Fix restore script line endings
         if [ -f "scripts/restore.sh" ]; then
             sed -i 's/\r$//' scripts/restore.sh 2>/dev/null || true
             chmod +x scripts/restore.sh
