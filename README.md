@@ -8,6 +8,12 @@
   <img src="https://img.shields.io/badge/Architecture-Hexagonal_%2F_DDD-red?style=for-the-badge" alt="Hexagonal/DDD">
 </p>
 
+<p align="center">
+  <a href="https://www.millete.online" target="_blank">
+    <img src="https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20Millete%20Production-blueviolet?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Live Demo">
+  </a>
+</p>
+
 **Millete** is a production-ready, self-hosted personal finance platform engineered to track income/expenses, manage automated recurring bills, monitor complex investment portfolios, and enable secure family-unit collaboration—all powered by a decoupled, high-performance architecture.
 
 **Live Production Environment:** https://www.millete.online
