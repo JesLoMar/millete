@@ -24,7 +24,6 @@ export const NotificationItem = memo(function NotificationItem({ notification, o
   const isGoalInvitation = notification.type === 'GOAL_INVITATION';
   const isActionLoading = isAccepting || isRejecting;
 
-
   const invitationId = notification.metadata?.invitationId || notification.metadata?.id;
 
   const getIcon = () => {

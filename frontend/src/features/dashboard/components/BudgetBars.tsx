@@ -105,7 +105,6 @@ export function BudgetBars({
                   variant={isOverLimit ? "overbudget" : isNearLimit ? "warning" : "default"}
                   size="sm"
                 />
-
                 <p className={`text-xs text-right ${
                   isOverLimit
                     ? "text-destructive font-medium"

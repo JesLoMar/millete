@@ -66,7 +66,6 @@ export function useTheme() {
       "--surface": colors.surface,
       "--surface-hover": colors.surfaceHover,
       "--subtle": colors.subtle,
-
       "--sidebar": colors.card,
       "--sidebar-foreground": colors.foreground,
       "--sidebar-primary": colors.primary,
@@ -85,6 +84,6 @@ export function useTheme() {
     theme,
     setTheme,
     setThemeByName,
-    availableThemes: THEMES,
+    availableThemes: [MILLETE_THEME],
   }
 }

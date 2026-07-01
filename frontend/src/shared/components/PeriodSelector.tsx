@@ -39,11 +39,9 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
     })
   }, [activeIndex])
 
-
   useLayoutEffect(() => {
     measureSlider()
   }, [measureSlider])
-
 
   const measureRef = useRef(measureSlider)
   useLayoutEffect(() => {

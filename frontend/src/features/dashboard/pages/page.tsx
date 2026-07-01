@@ -125,7 +125,6 @@ export const DashboardPage = () => {
           }}
         >
           <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} />
-
           <m.div className="mb-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
             <QuickActions
               onImportClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'import' })}

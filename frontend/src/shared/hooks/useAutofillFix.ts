@@ -8,7 +8,6 @@ export function useAutofillFix() {
         const style = window.getComputedStyle(input)
         const bg = style.backgroundColor
 
-
         if (bg.includes("232") && bg.includes("240")) {
           input.style.setProperty("background-color", "#f0e0c0", "important")
           input.style.setProperty("-webkit-text-fill-color", "#3d2b1f", "important")
@@ -20,7 +19,6 @@ export function useAutofillFix() {
         }
       })
     }
-
 
     fix()
     const t1 = setTimeout(fix, 100)

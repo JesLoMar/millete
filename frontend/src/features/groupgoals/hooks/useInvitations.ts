@@ -13,7 +13,6 @@ export function useAcceptInvitation() {
       queryClient.refetchQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['group-goals'] });
 
-
       queryClient.setQueryData<Notification[]>(['notifications'], (old) => {
         if (!old) return old;
         return old.map((n) =>
@@ -36,7 +35,6 @@ export function useRejectInvitation() {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
       queryClient.refetchQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['group-goals'] });
-
 
       queryClient.setQueryData<Notification[]>(['notifications'], (old) => {
         if (!old) return old;

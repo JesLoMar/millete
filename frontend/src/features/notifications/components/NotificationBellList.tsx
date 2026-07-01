@@ -12,7 +12,6 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
   const { data: notifications, isLoading } = useNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
 
-
   const unreadNotifications = notifications?.filter((n) => !n.read) ?? [];
 
   if (isLoading) {
