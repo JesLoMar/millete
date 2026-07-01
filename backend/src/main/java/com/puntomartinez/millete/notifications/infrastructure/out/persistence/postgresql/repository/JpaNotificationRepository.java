@@ -13,4 +13,6 @@ public interface JpaNotificationRepository extends JpaRepository<NotificationEnt
     List<NotificationEntity> findByUserIdAndActiveTrueOrderByCreatedAtDesc(UUID userId);
 
     long countByUserIdAndActiveTrueAndReadFalse(UUID userId);
+
+    List<NotificationEntity> findByUserIdAndActiveTrueAndType(UUID userId, com.puntomartinez.millete.notifications.domain.model.NotificationType type);
 }

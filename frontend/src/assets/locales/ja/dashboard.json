@@ -112,6 +112,8 @@
     "onlyJson": ".jsonファイルのみ",
     "jsonOnly": "JSONファイルのみ対応しています",
     "invalidJson": "無効なJSONファイルです",
+    "invalidContent": "ファイルの内容が無効です",
+    "fileInput": "JSONファイルを選択",
     "importing": "データをインポート中...",
     "success": "データが正常にインポートされました",
     "importError": "ファイルのインポート中にエラーが発生しました",

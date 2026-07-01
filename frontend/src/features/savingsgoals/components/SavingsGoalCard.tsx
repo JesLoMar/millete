@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Calendar, Plus, Pencil, Trash2 } from "lucide-react"
 import type { SavingsGoal } from "../types"
@@ -10,7 +11,7 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
   const { t } = useTranslation()
   switch (priority) {
     case 'HIGH': return <Badge variant="destructive">{t('savingsGoals:priorities.HIGH')}</Badge>
-    case 'MEDIUM': return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500">{t('savingsGoals:priorities.MEDIUM')}</Badge>
+    case 'MEDIUM': return <Badge variant="secondary" className="bg-warning/10 text-warning">{t('savingsGoals:priorities.MEDIUM')}</Badge>
     default: return <Badge variant="outline">{t('savingsGoals:priorities.LOW')}</Badge>
   }
 }
@@ -27,7 +28,7 @@ interface Props {
   onDelete: (goal: SavingsGoal) => void
 }
 
-export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: Props) => {
+export const SavingsGoalCard = memo(({ goal, onAddContribution, onEdit, onDelete }: Props) => {
   const { t } = useTranslation()
   const progressPercentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
 
@@ -80,4 +81,4 @@ export const SavingsGoalCard = ({ goal, onAddContribution, onEdit, onDelete }: P
       </CardContent>
     </Card>
   )
-}
+});

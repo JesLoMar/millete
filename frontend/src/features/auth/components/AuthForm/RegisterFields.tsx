@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next"
 import type { UseFormRegister, FieldErrors } from "react-hook-form"
 import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
-import { Mail, User } from "lucide-react"
+import { Mail, User, AlertTriangle } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
+import { cn } from "@/lib/utils"
 
 interface RegisterFieldsProps {
   register: UseFormRegister<CombinedAuthFormData>
@@ -28,11 +29,15 @@ export function RegisterFields({ register, errors, disabled, hasIdentifier }: Re
           type="text"
           placeholder={t('auth:form.fields.username.placeholder')}
           disabled={disabled}
-          className="bg-secondary/30 border-border/50 h-12 text-base focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-4 text-white"
+          aria-invalid={errors.usernameRegistro ? "true" : "false"}
+          className={cn(
+            "bg-secondary/30 border-border/50 h-12 text-base focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-4 text-foreground",
+            errors.usernameRegistro && "animate-shake"
+          )}
           {...register("usernameRegistro")}
         />
         {errors.usernameRegistro?.message && (
-          <p className="text-red-400 text-xs ml-1">{t(errors.usernameRegistro.message)}</p>
+          <p className="text-crust text-xs ml-1">{t(errors.usernameRegistro.message)}</p>
         )}
       </div>
 
@@ -53,17 +58,21 @@ export function RegisterFields({ register, errors, disabled, hasIdentifier }: Re
           type="email"
           placeholder={t('auth:form.fields.placeholder.register')}
           disabled={disabled}
-          className="bg-secondary/30 border-border/50 h-12 text-base focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-4 text-white"
+          aria-invalid={errors.emailRegistro ? "true" : "false"}
+          className={cn(
+            "bg-secondary/30 border-border/50 h-12 text-base focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-4 text-foreground",
+            errors.emailRegistro && "animate-shake"
+          )}
           {...register("emailRegistro")}
         />
         {errors.emailRegistro?.message && (
-          <p className="text-red-400 text-xs ml-1">{t(errors.emailRegistro.message)}</p>
+          <p className="text-crust text-xs ml-1">{t(errors.emailRegistro.message)}</p>
         )}
       </div>
 
       {!hasIdentifier && !errors.emailRegistro && (
-        <p className="text-amber-400 text-xs ml-1 flex items-center gap-1">
-          <span>⚠️</span>
+        <p className="text-warning text-xs ml-1 flex items-center gap-1">
+          <AlertTriangle className="size-3.5" />
           {t('auth:form.registerHint')}
         </p>
       )}

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -98,7 +98,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border-border sm:max-w-106.25"
+        className="bg-card border-border sm:max-w-md"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -170,14 +170,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
               disabled={form.isSubmitting || !isValid} 
               className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
-              {form.isSubmitting ? (
-                <>
-                  <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
-                  {t('common:actions.saving')}
-                </>
-              ) : (
-                t('transactions:save')
-              )}
+              {form.isSubmitting ? <Spinner size={20} /> : t('transactions:save')}
             </Button>
           </DialogFooter>
         </div>

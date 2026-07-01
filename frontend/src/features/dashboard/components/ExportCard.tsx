@@ -41,7 +41,7 @@ export function ExportCard({
         {label}
       </span>
       {description && (
-        <span className="text-[10px] sm:text-xs text-muted-foreground text-center leading-tight">
+        <span className="text-xs sm:text-xs text-muted-foreground text-center leading-tight">
           {description}
         </span>
       )}

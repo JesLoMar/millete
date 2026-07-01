@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Plus, Loader2 } from "lucide-react"
+import { Plus } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -105,7 +106,7 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
       )}
 
       <DialogContent
-        className="bg-card border-border sm:max-w-106.25"
+        className="bg-card border-border sm:max-w-md"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -153,14 +154,14 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
 
             <CategorySelect value={form.category} onValueChange={(category) => updateForm({ category })} />
 
-            {form.error && <p className="text-red-400 text-sm text-center">{form.error}</p>}
+            {form.error && <p className="text-destructive text-sm text-center">{form.error}</p>}
           </div>
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isCreating} className="border-border">
               {t('common:actions.cancel')}
             </Button>
             <Button onClick={handleSave} disabled={isCreating || !isValid} className="bg-primary hover:bg-primary/90 px-6">
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('transactions:add')}
+              {isCreating ? <Spinner size={20} /> : t('transactions:add')}
             </Button>
           </DialogFooter>
         </div>

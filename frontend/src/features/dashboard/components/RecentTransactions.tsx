@@ -27,7 +27,7 @@ export function RecentTransactions({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-7 border-subtle">
+      <Card className="col-span-1 md:col-span-7 border">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-4 w-20 bg-muted rounded animate-pulse" />
@@ -49,9 +49,9 @@ export function RecentTransactions({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-7 border-subtle">
+    <Card className="col-span-1 md:col-span-7 border">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-headline font-bold">
+        <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:transactions.title')}
         </CardTitle>
         {hasExternalData && (
@@ -100,7 +100,7 @@ export function RecentTransactions({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-bold flex items-center gap-1 ${isExpense ? "text-foreground" : "text-emerald-500"}`}>
+                    <p className={`text-sm font-bold flex items-center gap-1 ${isExpense ? "text-foreground" : "text-primary"}`}>
                       {isExpense
                         ? <ArrowDownRight className="size-3.5" />
                         : <ArrowUpRight className="size-3.5" />
@@ -110,7 +110,7 @@ export function RecentTransactions({
                     </p>
                     <Badge
                       variant="outline"
-                      className={`mt-1 text-[10px] h-4 py-0 font-normal ${isExpense ? "opacity-60" : "text-emerald-500 border-emerald-500/30"}`}
+                      className={`mt-1 text-xs h-4 py-0 font-normal ${isExpense ? "opacity-60" : "text-primary border-primary/30"}`}
                     >
                       {isExpense ? t('dashboard:transactions.expense') : t('dashboard:transactions.income')}
                     </Badge>

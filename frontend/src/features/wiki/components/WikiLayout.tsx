@@ -47,7 +47,7 @@ export default function WikiLayout() {
 
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-background/50 backdrop-blur-sm md:hidden"
           onClick={closeSidebar}
           aria-hidden="true"
         />

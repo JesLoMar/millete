@@ -1,56 +1,70 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
-import { LoginPage } from '@/features/auth/pages/page';
+const LoginPage = lazy(() => import('@/features/auth/pages/page').then(m => ({ default: m.LoginPage })));
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
 import { PublicRoute } from '@/app/router/PublicRoute';
-import { DashboardPage } from './features/dashboard/pages/page';
-import { TransactionsPage } from '@/features/transactions/pages/page';
-import { CategoriesPage } from '@/features/categories/pages/page';
-import { InvestmentsPage } from '@/features/investments/pages/page';
-import { GroupGoalsPage } from '@/features/groupgoals/pages/page';
-import { JoinGroupGoalPage } from '@/features/groupgoals/pages/JoinGroupGoalPage';
 import { Toaster } from '@/shared/components/core/sonner';
-import WikiLayout from '@/features/wiki/components/WikiLayout';
-import WikiPage from '@/features/wiki/pages/page';
-import { ProfilePage } from '@/features/profile/pages/page';
-import { SavingsGoalsPage } from '@/features/savingsgoals/pages/page';
-import NotificationsPage from '@/features/notifications/pages/page';
+import { Spinner } from '@/shared/components/Spinner';
+
+// Carga perezosa de rutas no críticas para reducir el bundle inicial
+const DashboardPage = lazy(() => import('@/features/dashboard/pages/page').then(m => ({ default: m.DashboardPage })));
+const TransactionsPage = lazy(() => import('@/features/transactions/pages/page').then(m => ({ default: m.TransactionsPage })));
+const CategoriesPage = lazy(() => import('@/features/categories/pages/page').then(m => ({ default: m.CategoriesPage })));
+const InvestmentsPage = lazy(() => import('@/features/investments/pages/page').then(m => ({ default: m.InvestmentsPage })));
+const GroupGoalsPage = lazy(() => import('@/features/groupgoals/pages/page').then(m => ({ default: m.GroupGoalsPage })));
+const JoinGroupGoalPage = lazy(() => import('@/features/groupgoals/pages/JoinGroupGoalPage').then(m => ({ default: m.JoinGroupGoalPage })));
+const WikiLayout = lazy(() => import('@/features/wiki/components/WikiLayout'));
+const WikiPage = lazy(() => import('@/features/wiki/pages/page'));
+const ProfilePage = lazy(() => import('@/features/profile/pages/page').then(m => ({ default: m.ProfilePage })));
+const SavingsGoalsPage = lazy(() => import('@/features/savingsgoals/pages/page').then(m => ({ default: m.SavingsGoalsPage })));
+const NotificationsPage = lazy(() => import('@/features/notifications/pages/page'));
+
+function PageLoader() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <Spinner size={40} />
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* === RUTAS PÚBLICAS === */}
-          <Route element={<PublicRoute />}>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Route>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* === RUTAS PÚBLICAS === */}
+            <Route element={<PublicRoute />}>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Route>
 
-          {/* === WIKI === */}
-          <Route path="/wiki" element={<WikiLayout />}>
-            <Route index element={<WikiPage />} />
-            <Route path=":section" element={<WikiPage />} />
-          </Route>
+            {/* === WIKI === */}
+            <Route path="/wiki" element={<WikiLayout />}>
+              <Route index element={<WikiPage />} />
+              <Route path=":section" element={<WikiPage />} />
+            </Route>
 
-          {/* === RUTAS PRIVADAS === */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/join-group-goal" element={<JoinGroupGoalPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/investments" element={<InvestmentsPage />} />
-            <Route path="/group-goals" element={<GroupGoalsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/savings-goals" element={<SavingsGoalsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Route>
+            {/* === RUTAS PRIVADAS === */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/join-group-goal" element={<JoinGroupGoalPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/categories" element={<CategoriesPage />} />
+              <Route path="/investments" element={<InvestmentsPage />} />
+              <Route path="/group-goals" element={<GroupGoalsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/savings-goals" element={<SavingsGoalsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
 
-          {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}
-          <Route path="*" element={<ProtectedRoute />}>
-            <Route path="*" element={<DashboardPage />} />
-          </Route>
-        </Routes>
+            {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}
+            <Route path="*" element={<ProtectedRoute />}>
+              <Route path="*" element={<DashboardPage />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
       <Toaster />
     </AuthProvider>

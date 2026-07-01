@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { AlertTriangle } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import {
   Dialog,
@@ -33,7 +34,7 @@ export function ConfirmDeletionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border sm:max-w-106.25">
+      <DialogContent className="bg-card border-border sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto mb-4 bg-destructive/10 p-3 rounded-full w-fit">
             <AlertTriangle className="size-8 text-destructive" />
@@ -61,7 +62,7 @@ export function ConfirmDeletionDialog({
             variant="destructive"
             className="gap-2"
           >
-            {isDeleting ? t('common:actions.deleting') : t('common:actions.delete')}
+            {isDeleting ? <Spinner size={20} /> : t('common:actions.delete')}
           </Button>
         </DialogFooter>
       </DialogContent>

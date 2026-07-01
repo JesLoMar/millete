@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { RefreshCcw, Loader2 } from "lucide-react"
+import { RefreshCcw } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -285,14 +286,7 @@ export function NewRecurringTransactionDialog() {
               disabled={isCreating || !isValid} 
               className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
-              {isCreating ? (
-                <>
-                  <Loader2 size={16} className="animate-spin mr-2" aria-hidden="true" />
-                  {t('common:actions.saving')}
-                </>
-              ) : (
-                t('transactions:add')
-              )}
+              {isCreating ? <Spinner size={20} /> : t('transactions:add')}
             </Button>
           </DialogFooter>
         </div>

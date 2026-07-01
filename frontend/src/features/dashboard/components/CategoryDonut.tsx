@@ -22,7 +22,7 @@ export function CategoryDonut({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-4 border-subtle">
+      <Card className="col-span-1 md:col-span-4 border">
         <CardHeader>
           <div className="h-6 w-36 bg-muted rounded animate-pulse" />
         </CardHeader>
@@ -44,9 +44,9 @@ export function CategoryDonut({
 
   if (chartData.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-4 border-subtle">
+      <Card className="col-span-1 md:col-span-4 border">
         <CardHeader>
-          <CardTitle className="text-lg font-headline font-bold">
+          <CardTitle className="text-lg font-serif font-bold">
             {title || t('dashboard:donut.title')}
           </CardTitle>
         </CardHeader>
@@ -60,9 +60,9 @@ export function CategoryDonut({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-4 border-subtle">
+    <Card className="col-span-1 md:col-span-4 border">
       <CardHeader>
-        <CardTitle className="text-lg font-headline font-bold">
+        <CardTitle className="text-lg font-serif font-bold">
           {title || t('dashboard:donut.title')}
         </CardTitle>
       </CardHeader>
@@ -101,14 +101,12 @@ export function CategoryDonut({
                 style={{ backgroundColor: item.color }}
               />
               <span
-                className="text-[11px] text-muted-foreground truncate group-hover:text-foreground transition-colors"
-                style={{ fontFamily: "var(--font-sans)" }}
+                className="text-xs text-muted-foreground truncate group-hover:text-foreground transition-colors"
               >
                 {item.category}
               </span>
               <span
-                className="text-[11px] font-semibold ml-auto tabular-nums"
-                style={{ fontFamily: "var(--font-sans)" }}
+                className="text-xs font-semibold ml-auto tabular-nums"
               >
                 {item.value}%
               </span>

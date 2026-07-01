@@ -30,11 +30,11 @@ export function BudgetBars({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-5 border-subtle">
+      <Card className="col-span-1 md:col-span-5 border">
         <CardHeader>
           <div className="h-6 w-44 bg-muted rounded animate-pulse" />
         </CardHeader>
-        <CardContent className="min-h-85">
+        <CardContent className="min-h-96">
           <div className="space-y-4">
             {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
               <div key={`skeleton-${i}`} className="space-y-2">
@@ -54,13 +54,13 @@ export function BudgetBars({
 
   if (budgets.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-5 border-subtle">
+      <Card className="col-span-1 md:col-span-5 border">
         <CardHeader>
-          <CardTitle className="text-lg font-headline font-semibold">
+          <CardTitle className="text-lg font-serif font-semibold">
             {t('dashboard:budget.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="min-h-85 flex items-center justify-center">
+        <CardContent className="min-h-96 flex items-center justify-center">
           <p className="text-center text-muted-foreground text-sm">
             {t('dashboard:budget.empty')}
           </p>
@@ -70,13 +70,13 @@ export function BudgetBars({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-5 border-subtle">
+    <Card className="col-span-1 md:col-span-5 border">
       <CardHeader>
-        <CardTitle className="text-lg font-headline font-semibold">
+        <CardTitle className="text-lg font-serif font-semibold">
           {t('dashboard:budget.title')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="min-h-85 flex flex-col">
+      <CardContent className="min-h-96 flex flex-col">
         <div className="flex-1 space-y-4">
           {paginatedData.map((budget) => {
             const isPercentageValid = typeof budget.percentage === 'number' && !isNaN(budget.percentage) && isFinite(budget.percentage)
@@ -106,11 +106,11 @@ export function BudgetBars({
                   size="sm"
                 />
                 
-                <p className={`text-[10px] text-right ${
+                <p className={`text-xs text-right ${
                   isOverLimit
-                    ? "text-rose-400 font-medium"
+                    ? "text-destructive font-medium"
                     : isNearLimit
-                      ? "text-amber-400"
+                      ? "text-warning"
                       : "text-muted-foreground"
                 }`}>
                   {isOverLimit

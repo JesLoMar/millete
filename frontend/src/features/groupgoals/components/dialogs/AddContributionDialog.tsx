@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -73,7 +73,7 @@ export function AddContributionDialog({
             {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={!amount || Number(amount) <= 0 || isSaving} className="min-w-24">
-            {isSaving ? <Loader2 size={16} className="animate-spin" /> : t('groupGoals:save')}
+            {isSaving ? <Spinner size={20} /> : t('groupGoals:save')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useReducer } from "react"
+import { m } from "framer-motion"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { TopNav } from '@/shared/components/TopNav'
@@ -109,12 +110,23 @@ export const DashboardPage = () => {
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden pt-16">
         <TopNav />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+        <m.main
+          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.05 }
+            }
+          }}
+        >
           <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} />
           
-          <div className="mb-6">
+          <m.div className="mb-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
             <QuickActions
               onImportClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'import' })}
               onExportClick={handleExportClick}
@@ -123,9 +135,9 @@ export const DashboardPage = () => {
               isExporting={false}
               isImporting={ui.isImporting}
             />
-          </div>
+          </m.div>
 
-          <div className="min-h-30">
+          <m.div className="min-h-32" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
             <div className="grid grid-cols-1 min-[390px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full min-w-0">
               <FormattedMetricCard
                 title={t('dashboard:metrics.balance')}
@@ -141,7 +153,7 @@ export const DashboardPage = () => {
                 value={metrics.data?.income ?? 0}
                 trend={metrics.data?.incomeTrend ?? 0}
                 icon={TrendingUp}
-                color="bg-emerald-500/10 text-emerald-500"
+                color="bg-primary/10 text-primary"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
               />
@@ -150,7 +162,7 @@ export const DashboardPage = () => {
                 value={metrics.data?.expenses ?? 0}
                 trend={metrics.data?.expensesTrend ?? 0}
                 icon={TrendingDown}
-                color="bg-rose-500/10 text-rose-500"
+                color="bg-destructive/10 text-destructive"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
                 invertedTrend
@@ -160,30 +172,30 @@ export const DashboardPage = () => {
                 value={metrics.data?.savings ?? 0}
                 trend={metrics.data?.savingsTrend ?? 0}
                 icon={PiggyBank}
-                color="bg-amber-500/10 text-amber-500"
+                color="bg-warning/10 text-warning"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
               />
             </div>
-          </div>
+          </m.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-            <div className="lg:col-span-8 min-h-87.5">
+          <m.div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
+            <div className="lg:col-span-8 min-h-96">
               <HistoryChart period={period} data={history.data} loading={history.isLoading} />
             </div>
-            <div className="lg:col-span-4 min-h-87.5">
+            <div className="lg:col-span-4 min-h-96">
               <CategoryDonut data={categories.data} loading={categories.isLoading} />
             </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-            <div className="lg:col-span-5 min-h-100">
+          </m.div>
+          <m.div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
+            <div className="lg:col-span-5 min-h-96">
               <BudgetBars data={budgets.data} loading={budgets.isLoading} />
             </div>
-            <div className="lg:col-span-7 min-h-100">
+            <div className="lg:col-span-7 min-h-96">
               <RecentTransactions data={recentTransactions.data} loading={recentTransactions.isLoading} />
             </div>
-          </div>
-        </main>
+          </m.div>
+        </m.main>
       </div>
       <ImportModal 
         isOpen={ui.isImportOpen} 

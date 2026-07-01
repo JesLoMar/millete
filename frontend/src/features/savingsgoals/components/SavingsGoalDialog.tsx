@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Plus, Loader2, PiggyBank } from "lucide-react"
+import { Plus, PiggyBank } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -89,7 +90,7 @@ export function SavingsGoalDialog() {
       </DialogTrigger>
 
       <DialogContent
-        className="bg-card border-border sm:max-w-112.5"
+        className="bg-card border-border sm:max-w-md"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -184,7 +185,7 @@ export function SavingsGoalDialog() {
               disabled={isCreating || !isValid}
               className="bg-primary hover:bg-primary/90 px-6"
             >
-              {isCreating ? <Loader2 size={16} className="animate-spin" /> : t('savingsGoals:create')}
+              {isCreating ? <Spinner size={20} /> : t('savingsGoals:create')}
             </Button>
           </DialogFooter>
         </div>

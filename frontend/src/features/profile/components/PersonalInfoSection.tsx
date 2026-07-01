@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User } from 'lucide-react';
+import { Spinner } from "@/shared/components/Spinner";
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
 import { Button } from '@/shared/components/core/button';
@@ -95,10 +96,10 @@ export function PersonalInfoSection() {
           </div>
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={isPending}>
-              {t('personalInfo.save')}
+              {isPending ? <Spinner size={20} /> : t('personalInfo.save')}
             </Button>
             <Button variant="outline" onClick={cancelEditing} disabled={isPending}>
-              {t('personalInfo.cancel')}
+              {isPending ? <Spinner size={20} /> : t('personalInfo.cancel')}
             </Button>
           </div>
         </div>

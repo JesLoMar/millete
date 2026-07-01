@@ -62,11 +62,13 @@ export function SimpleBarChart({
 
                 {/* Barras */}
                 {data.map((item, i) => {
-                    const barHeight = (item.value / maxValue) * chartAreaHeight
+                    const isZero = item.value === 0
+                    const rawBarHeight = (item.value / maxValue) * chartAreaHeight
+                    const barHeight = isZero ? 2 : rawBarHeight
                     const xPercent = gapWidth + i * (barWidth + gapWidth)
                     const y = chartAreaHeight - barHeight
                     const formattedValue = formatValue(item.value)
-                    const showInnerLabel = barHeight >= minBarHeightForInnerLabel
+                    const showInnerLabel = !isZero && barHeight >= minBarHeightForInnerLabel
 
                     return (
                         <g key={item.label}>
@@ -97,7 +99,6 @@ export function SimpleBarChart({
                                     fill="white"
                                     fontSize={14}
                                     fontWeight={700}
-                                    fontFamily="var(--font-sans)"
                                     className="pointer-events-none"
                                 >
                                     {formattedValue}
@@ -105,7 +106,7 @@ export function SimpleBarChart({
                             )}
 
                             {/* Valor encima de la barra */}
-                            {!showInnerLabel && barHeight > 0 && (
+                            {!showInnerLabel && !isZero && barHeight > 0 && (
                                 <text
                                     x={`${xPercent + barWidth / 2}%`}
                                     y={y - 6}
@@ -113,7 +114,6 @@ export function SimpleBarChart({
                                     fill="hsl(var(--foreground))"
                                     fontSize={12}
                                     fontWeight={600}
-                                    fontFamily="var(--font-sans)"
                                     className="pointer-events-none"
                                 >
                                     {formattedValue}
@@ -129,7 +129,6 @@ export function SimpleBarChart({
                                     fill="hsl(var(--muted-foreground))"
                                     fontSize={13}
                                     fontWeight={500}
-                                    fontFamily="var(--font-sans)"
                                 >
                                     {item.label}
                                 </text>

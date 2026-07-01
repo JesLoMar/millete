@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { m } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
@@ -7,6 +8,7 @@ import { Button } from "@/shared/components/core/button"
 import { useCategories, type Category } from "@/shared/hooks/useCategories"
 import { useCategoryMutations } from "../hooks/useCategoryMutation"
 import { apiClient } from "@/shared/api/axiosClient"
+import { notify } from "@/shared/utils/notifications/notify"
 import { EditCategoryDialog } from "./EditCategoryDialog"
 import { ConfirmDeletionDialog } from "./ConfirmDeletionDialog"
 import { CategoryRow } from "./CategoryRow"
@@ -51,6 +53,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
       const response = await apiClient.get(`/dashboard/categories?period=${period}`)
       return response.data
     },
+    staleTime: 60_000,
   })
 
   const expensesMap = useMemo(() => {
@@ -79,6 +82,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
       await deleteCategory.mutateAsync(deletingCategory.id)
       setDeletingCategory(null)
     } catch {
+      notify.error('Error al eliminar la categoría')
     }
   }
 
@@ -114,25 +118,44 @@ export function CategoryTable({ period }: CategoryTableProps) {
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="flex flex-col">
+        <m.div
+          className="flex flex-col"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.04 }
+            }
+          }}
+        >
           {paginatedItems.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('categories:empty')}
             </p>
           ) : (
             paginatedItems.map((cat) => (
-              <CategoryRow
+              <m.div
                 key={cat.id}
-                category={cat}
-                spent={expensesMap[cat.name] || 0}
-                budgetLimit={getAdjustedBudgetLimit(cat.budgetLimit)}
-                percentage={getSpentPercentage(cat)}
-                onEdit={setEditingCategory}
-                onDelete={setDeletingCategory}
-              />
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <CategoryRow
+                  category={cat}
+                  spent={expensesMap[cat.name] || 0}
+                  budgetLimit={getAdjustedBudgetLimit(cat.budgetLimit)}
+                  percentage={getSpentPercentage(cat)}
+                  onEdit={setEditingCategory}
+                  onDelete={setDeletingCategory}
+                />
+              </m.div>
             ))
           )}
-        </div>
+        </m.div>
 
         {totalPages > 1 && (
           <div className="px-6 py-4 flex items-center justify-between border-t border-border bg-background/20">

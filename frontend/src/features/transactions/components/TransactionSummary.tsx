@@ -31,6 +31,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
       const response = await apiClient.get(`/transactions/metrics?period=${period}`)
       return response.data
     },
+    staleTime: 60_000,
   })
 
   const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
@@ -43,7 +44,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         value={metrics?.income ?? 0}
         trend={metrics?.incomeTrend ?? 0}
         icon={ArrowUpRight}
-        color="bg-emerald-500/10 text-emerald-500"
+        color="bg-primary/10 text-primary"
         periodLabel={periodLabel}
         loading={isLoading}
       />
@@ -52,7 +53,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         value={metrics?.expenses ?? 0}
         trend={metrics?.expensesTrend ?? 0}
         icon={ArrowDownLeft}
-        color="bg-rose-500/10 text-rose-500"
+        color="bg-destructive/10 text-destructive"
         periodLabel={periodLabel}
         loading={isLoading}
         invertedTrend
@@ -72,7 +73,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         format="number"
         trend={metrics?.countTrend ?? 0}
         icon={Activity}
-        color="bg-amber-500/10 text-amber-500"
+        color="bg-warning/10 text-warning"
         periodLabel={periodLabel}
         loading={isLoading}
       />

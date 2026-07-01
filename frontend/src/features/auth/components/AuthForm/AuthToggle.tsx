@@ -16,8 +16,8 @@ export function AuthToggle({ mode, onToggle }: AuthToggleProps) {
         className={cn(
           "px-8 py-3 text-sm font-bold uppercase tracking-widest rounded-xl transition-all",
           mode === "login"
-            ? "bg-primary text-white shadow-lg"
-            : "text-muted-foreground hover:text-white"
+            ? "bg-primary text-primary-foreground shadow-lg"
+            : "text-foreground hover:text-primary"
         )}
       >
         {t('auth:form.toggle.login')}
@@ -28,8 +28,8 @@ export function AuthToggle({ mode, onToggle }: AuthToggleProps) {
         className={cn(
           "px-8 py-3 text-sm font-bold uppercase tracking-widest rounded-xl transition-all",
           mode === "register"
-            ? "bg-primary text-white shadow-lg"
-            : "text-muted-foreground hover:text-white"
+            ? "bg-primary text-primary-foreground shadow-lg"
+            : "text-foreground hover:text-primary"
         )}
       >
         {t('auth:form.toggle.register')}

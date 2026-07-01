@@ -20,6 +20,7 @@ public class NotificationService implements
         CreateNotificationUseCase,
         GetNotificationsUseCase,
         MarkNotificationAsReadUseCase,
+        MarkNotificationAsActionedUseCase,
         DeleteNotificationUseCase {
 
     private final NotificationRepository notificationRepository;
@@ -65,6 +66,19 @@ public class NotificationService implements
         }
 
         notification.markAsRead();
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    public void markAsActioned(UUID userId, UUID notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
+
+        if (!notification.getUserId().equals(userId)) {
+            throw new ForbiddenOperationException("No tienes permiso para modificar esta notificación");
+        }
+
+        notification.markAsActioned();
         notificationRepository.save(notification);
     }
 

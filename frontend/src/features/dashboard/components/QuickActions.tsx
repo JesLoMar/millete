@@ -45,14 +45,14 @@ export function QuickActions({
       icon: FolderPlus,
       labelKey: "dashboard:quickActions.createCategory",
       ariaLabelKey: "dashboard:quickActions.createCategoryAria",
-      color: "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white",
+      color: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
       onClick: onAddCategoryClick,
     },
     {
       icon: isImporting ? Loader2 : FileUp,
       labelKey: isImporting ? "dashboard:quickActions.importing" : "dashboard:quickActions.importData",
       ariaLabelKey: isImporting ? "dashboard:quickActions.importingAria" : "dashboard:quickActions.importDataAria",
-      color: "bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white",
+      color: "bg-warning/10 text-warning group-hover:bg-warning group-hover:text-warning-foreground",
       onClick: onImportClick,
       disabled: isAnyLoading,
       isLoading: isImporting,
@@ -61,7 +61,7 @@ export function QuickActions({
       icon: isExporting ? Loader2 : FileDown,
       labelKey: isExporting ? "dashboard:quickActions.exporting" : "dashboard:quickActions.exportData",
       ariaLabelKey: isExporting ? "dashboard:quickActions.exportingAria" : "dashboard:quickActions.exportDataAria",
-      color: "bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white",
+      color: "bg-chart-5/10 text-chart-5 group-hover:bg-chart-5 group-hover:text-primary-foreground",
       onClick: onExportClick,
       disabled: isAnyLoading,
       isLoading: isExporting,
@@ -95,7 +95,7 @@ export function QuickActions({
             <action.icon className={`size-5 sm:size-5.5 ${action.isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </div>
           
-          <span className="font-medium text-[11px] sm:text-xs md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
+          <span className="font-medium text-xs sm:text-sm md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
             {String(t(action.labelKey as any))}
           </span>
         </Button>

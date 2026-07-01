@@ -78,7 +78,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                   className={cn(
                     "w-full justify-start gap-3 h-11 px-4 transition-all duration-200",
                     active
-                      ? "bg-accent/50 text-foreground font-medium border-l-2 border-primary rounded-l-none pl-3.5"
+                      ? "bg-accent/50 text-foreground font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
                   )}
                 >
@@ -146,7 +146,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     <>
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-background/50 backdrop-blur-sm md:hidden"
           onClick={() => setIsMobileOpen(false)}
           aria-hidden="true"
         />

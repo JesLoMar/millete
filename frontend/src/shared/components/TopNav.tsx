@@ -15,7 +15,7 @@ import { notify } from "@/shared/utils/notifications/notify"
 import { cn } from "@/lib/utils"
 import { LanguageSelector } from "./LanguageSelector"
 import { ThemeSelector } from "./ThemeSelector"
-// import { NotificationBell } from "@/features/notifications/components/NotificationBell"
+import { NotificationBell } from "@/features/notifications/components/NotificationBell"
 
 interface TopNavProps {
   className?: string
@@ -70,7 +70,7 @@ export function TopNav({ className }: TopNavProps) {
 
   return (
     <header className={cn(
-      "h-16 border-b bg-card/50 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-all",
+      "h-16 border-b bg-card/50 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between fixed top-0 left-0 w-full z-30 transition-all",
       className
     )}>
       <div className="flex items-center gap-2">
@@ -90,14 +90,12 @@ export function TopNav({ className }: TopNavProps) {
           className="flex items-center gap-2.5 select-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('goToDashboard')}
         >
-          <div className="bg-primary/10 p-0.5 rounded-xl text-primary border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center">
-            <img
-              src="/web-app-icon.png"
-              alt=""
-              className="size-9 sm:size-10 object-contain"
-              aria-hidden="true"
-            />
-          </div>
+          <img
+            src="/web-app-icon.webp"
+            alt=""
+            className="size-9 sm:size-10 object-contain drop-shadow-[0_2px_2px_rgba(192,96,24,0.25)] hover:rotate-[5deg] transition-transform duration-200"
+            aria-hidden="true"
+          />
           <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
             {t('mobileTitle')}
           </span>
@@ -107,7 +105,7 @@ export function TopNav({ className }: TopNavProps) {
       <div className="flex items-center gap-1">
         <LanguageSelector />
         <ThemeSelector />
-        {/* <NotificationBell /> */}
+        <NotificationBell />
         <div className="h-8 w-px bg-border/60 mx-1 sm:mx-2" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

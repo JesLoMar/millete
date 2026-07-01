@@ -9,6 +9,7 @@ export function useNotifications() {
   return useQuery<Notification[]>({
     queryKey: QUERY_KEY,
     queryFn: notificationsService.getAll,
+    staleTime: 60_000,
   });
 }
 
@@ -16,6 +17,7 @@ export function useUnreadNotificationsCount() {
   return useQuery<number>({
     queryKey: COUNT_QUERY_KEY,
     queryFn: notificationsService.getUnreadCount,
+    staleTime: 60_000,
   });
 }
 

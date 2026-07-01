@@ -15,7 +15,7 @@ export function FirstSteps() {
   return (
     <div className="w-full max-w-xl mx-auto space-y-6 lg:space-y-8 px-4 sm:px-0 py-4">
       <div className="space-y-3">
-        <h2 className="text-4xl sm:text-5xl font-serif text-white leading-tight">
+        <h2 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
           {t('info:steps.title')}
         </h2>
         <p className="text-muted-foreground text-base max-w-md">
@@ -26,11 +26,11 @@ export function FirstSteps() {
       <div className="space-y-6 lg:space-y-8 py-2">
         {steps?.map((step) => (
           <div key={step.number} className="flex gap-4 sm:gap-6 items-start group">
-            <div className="shrink-0 size-10 sm:size-12 rounded-full border-2 border-primary/50 flex items-center justify-center bg-primary/30 text-white font-mono text-xs sm:text-sm tracking-tighter font-bold shadow-[0_0_15px_rgba(var(--primary),0.2)]">
+            <div className="shrink-0 size-10 sm:size-12 rounded-full border-2 border-primary/50 flex items-center justify-center bg-primary/30 text-foreground font-mono text-xs sm:text-sm tracking-tighter font-bold">
               {step.number}
             </div>
             <div className="space-y-1.5 min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-primary transition-colors">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                 {step.title}
               </h3>
               <p className="text-sm text-secondary-foreground/70 leading-relaxed">

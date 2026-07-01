@@ -149,7 +149,7 @@ export const GroupGoalsPage = () => {
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden pt-16">
         <TopNav />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {!selectedGoalId ? (
@@ -190,6 +190,7 @@ export const GroupGoalsPage = () => {
         open={dialogs.isCreateOpen}
         onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isCreateOpen: open }))}
         onCreate={handleCreateGoal}
+        isCreating={mutations.createGoal.isPending}
       />
 
       <EditGoalNameDialog
@@ -198,6 +199,7 @@ export const GroupGoalsPage = () => {
         onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, editingGoal: null }))}
         currentName={actions.editingGoal?.name || ""}
         onSave={handleEditGoalName}
+        isSaving={false}
       />
 
       <ConfirmDeletionDialog
@@ -217,12 +219,14 @@ export const GroupGoalsPage = () => {
         currentMonthlyTarget={selectedGoal?.monthlyTarget || 0}
         currentDistributionMode={selectedGoal?.distributionMode || "EQUITATIVE"}
         onSave={handleUpdateGoal}
+        isSaving={mutations.updateGoal.isPending}
       />
 
       <InviteMemberDialog
         open={dialogs.isInviteOpen}
         onOpenChange={(open) => setDialogs((prev) => ({ ...prev, isInviteOpen: open }))}
         onInvite={handleInviteMember}
+        isInviting={mutations.inviteMember.isPending}
       />
 
       <EditMemberDialog
@@ -230,6 +234,7 @@ export const GroupGoalsPage = () => {
         open={!!actions.editMember}
         onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, editMember: null }))}
         onSave={handleEditMember}
+        isSaving={mutations.updateMember.isPending}
       />
 
       <ConfirmDeletionDialog

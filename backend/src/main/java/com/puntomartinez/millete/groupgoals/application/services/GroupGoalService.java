@@ -4,8 +4,11 @@ import com.puntomartinez.millete.groupgoals.domain.model.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.*;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
@@ -33,6 +36,8 @@ public class GroupGoalService implements
     private final GoalContributionRepository goalContributionRepository;
     private final UserRepository userRepository;
     private final CreateNotificationUseCase createNotificationUseCase;
+    private final MarkNotificationAsActionedUseCase markNotificationAsActionedUseCase;
+    private final NotificationRepository notificationRepository;
 
     public GroupGoalService(
             GoalUnitRepository goalUnitRepository,
@@ -40,13 +45,17 @@ public class GroupGoalService implements
             GoalInvitationRepository goalInvitationRepository,
             GoalContributionRepository goalContributionRepository,
             UserRepository userRepository,
-            CreateNotificationUseCase createNotificationUseCase) {
+            CreateNotificationUseCase createNotificationUseCase,
+            MarkNotificationAsActionedUseCase markNotificationAsActionedUseCase,
+            NotificationRepository notificationRepository) {
         this.goalUnitRepository = goalUnitRepository;
         this.goalMemberRepository = goalMemberRepository;
         this.goalInvitationRepository = goalInvitationRepository;
         this.goalContributionRepository = goalContributionRepository;
         this.userRepository = userRepository;
         this.createNotificationUseCase = createNotificationUseCase;
+        this.markNotificationAsActionedUseCase = markNotificationAsActionedUseCase;
+        this.notificationRepository = notificationRepository;
     }
 
     @Override
@@ -365,6 +374,7 @@ public class GroupGoalService implements
         goalMemberRepository.save(member);
         invitation.markAsAccepted();
         goalInvitationRepository.save(invitation);
+        markInvitationNotificationAsActioned(userId, invitationId);
         log.info("User {} accepted invitation to goal {}", userId, invitation.getGoalId());
         return invitation;
     }
@@ -383,7 +393,21 @@ public class GroupGoalService implements
 
         invitation.markAsRejected();
         goalInvitationRepository.save(invitation);
+        markInvitationNotificationAsActioned(userId, invitationId);
         log.info("User {} rejected invitation to goal {}", userId, invitation.getGoalId());
+    }
+
+    private void markInvitationNotificationAsActioned(UUID userId, UUID invitationId) {
+        List<Notification> notifications = notificationRepository.findActiveByUserIdAndTypeAndMetadataValue(
+                userId,
+                NotificationType.GOAL_INVITATION.name(),
+                "invitationId",
+                invitationId.toString()
+        );
+
+        for (Notification notification : notifications) {
+            markNotificationAsActionedUseCase.markAsActioned(userId, notification.getId());
+        }
     }
 
     @Override

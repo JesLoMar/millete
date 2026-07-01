@@ -82,7 +82,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="sm:max-w-120 bg-card border-border p-6 text-white rounded-2xl">
+      <DialogContent className="sm:max-w-lg bg-card border-border text-card-foreground rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">
             {t('dashboard:importModal.title')}
@@ -132,7 +132,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
             <button
               type="button"
               onClick={removeFile}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors mt-2 mb-4"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors mt-2 mb-4"
               aria-label={t('common:actions.delete')}
             >
               <X className="size-4" />
@@ -142,16 +142,16 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
         </div>
 
         {error && (
-          <p className="text-red-400 text-xs font-medium bg-red-500/10 p-2.5 rounded-lg border border-red-500/20 mb-4 animate-in fade-in-50">
+          <p className="text-destructive text-xs font-medium bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 mb-4 animate-in fade-in-50">
             {error}
           </p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button variant="outline" onClick={onClose} className="border-border hover:bg-secondary text-white">
+          <Button variant="outline" onClick={onClose} className="border-border hover:bg-secondary text-foreground">
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={!selectedFile} className="bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl px-5 transition-all">
+          <Button onClick={handleSubmit} disabled={!selectedFile} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl px-5 transition-all">
             <CheckCircle className="mr-2 size-4" />
             {t('common:actions.accept')}
           </Button>

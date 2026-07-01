@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
+import { Spinner } from "@/shared/components/Spinner"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
 import {
@@ -24,7 +25,8 @@ interface UpdateGoalDialogProps {
   onOpenChange: (open: boolean) => void
   currentMonthlyTarget: number
   currentDistributionMode: string
-  onSave: (monthlyTarget: number, distributionMode: string) => void
+  onSave: (monthlyTarget: number, distributionMode: string) => Promise<void>
+  isSaving?: boolean
 }
 
 export function UpdateGoalDialog({
@@ -33,6 +35,7 @@ export function UpdateGoalDialog({
   currentMonthlyTarget,
   currentDistributionMode,
   onSave,
+  isSaving = false,
 }: UpdateGoalDialogProps) {
   const { t } = useTranslation()
 
@@ -42,10 +45,10 @@ export function UpdateGoalDialog({
   const monthlyTarget = editedMonthlyTarget ?? (currentMonthlyTarget > 0 ? currentMonthlyTarget.toString() : "")
   const distributionMode = editedDistributionMode ?? currentDistributionMode
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const parsedGoal = parseFloat(monthlyTarget)
     if (parsedGoal > 0) {
-      onSave(parsedGoal, distributionMode)
+      await onSave(parsedGoal, distributionMode)
       onOpenChange(false)
     }
   }
@@ -55,7 +58,7 @@ export function UpdateGoalDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border-border sm:max-w-106.25"
+        className="bg-card border-border sm:max-w-md"
         aria-describedby="update-goal-description"
       >
         <div className="max-h-[85dvh] overflow-y-auto">
@@ -117,10 +120,10 @@ export function UpdateGoalDialog({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!isValid}
+              disabled={!isValid || isSaving}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 min-h-11"
             >
-              {t('groupGoals:save')}
+              {isSaving ? <Spinner size={20} /> : t('groupGoals:save')}
             </Button>
           </DialogFooter>
         </div>

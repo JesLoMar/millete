@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Loader2, CheckCircle } from "lucide-react"
+import { CheckCircle } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import {
   Dialog,
   DialogContent,
@@ -76,7 +77,7 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-120 bg-card border-border rounded-2xl">
+      <DialogContent className="sm:max-w-lg bg-card border-border rounded-lg">
         <div className="max-h-[85dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
@@ -159,10 +160,7 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 rounded-xl px-5 transition-all min-h-11"
               >
                 {isUpdating ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
-                    {t('common:actions.saving')}
-                  </>
+                  <Spinner size={20} />
                 ) : (
                   <>
                     <CheckCircle className="mr-2 size-4" aria-hidden="true" />

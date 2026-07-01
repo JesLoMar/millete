@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { MetricCard } from "@/shared/components/MetricCard"
 import { cn } from "@/lib/utils"
 import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat';
+import { useCountUp } from "@/shared/hooks/useCountUp"
 
 export interface FormattedMetricCardProps {
   title: string
@@ -38,9 +39,10 @@ export function FormattedMetricCard({
   const { t } = useTranslation(['dashboard', 'common'])
 
   const safeValue = isValidNumber(value) ? value : 0
+  const animatedValue = useCountUp(safeValue, { duration: 600 })
   const formattedValue = format === "currency"
-    ? formatCurrency(safeValue)
-    : formatNumber(safeValue)
+    ? formatCurrency(animatedValue)
+    : formatNumber(animatedValue)
 
   const formattedTrendValue = trendValue !== undefined
     ? formatCurrency(isValidNumber(trendValue) ? trendValue : 0)
@@ -49,7 +51,7 @@ export function FormattedMetricCard({
   const hasValidTrend = isValidNumber(trend)
   const isTrendUp = hasValidTrend && trend >= 0
   const isPositive = invertedTrend ? !isTrendUp : isTrendUp
-  const trendColor = isPositive ? "text-emerald-500" : "text-rose-500"
+  const trendColor = isPositive ? "text-primary" : "text-destructive"
 
   return (
     <MetricCard
@@ -72,13 +74,13 @@ export function FormattedMetricCard({
           </span>
 
           {formattedTrendValue && (
-            <span className="text-[11px] sm:text-xs text-muted-foreground truncate max-w-full">
+            <span className="text-xs text-muted-foreground truncate max-w-full">
               {formattedTrendValue}
             </span>
           )}
 
           {periodLabel && (
-            <span className="text-[11px] sm:text-xs text-muted-foreground/70 truncate max-w-full">
+            <span className="text-xs text-muted-foreground/70 truncate max-w-full">
               {periodLabel}
             </span>
           )}

@@ -397,12 +397,12 @@ public class DashboardService implements GetDashboardDataUseCase {
 
         for (int i = 0; i < 7; i++) {
             LocalDate day = weekStart.plusDays(i);
-            if (day.isAfter(today)) break;
-
             LocalDateTime dayStart = day.atStartOfDay();
             LocalDateTime dayEnd = day.atTime(23, 59, 59);
 
-            BigDecimal dayExpenses = transactionRepository.findByUserIdAndDateBetween(userId, dayStart, dayEnd).stream().filter(t -> t.getType() == TransactionType.EXPENSE).map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal dayExpenses = day.isAfter(today)
+                    ? BigDecimal.ZERO
+                    : transactionRepository.findByUserIdAndDateBetween(userId, dayStart, dayEnd).stream().filter(t -> t.getType() == TransactionType.EXPENSE).map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             labels.add(dayNames[i]);
             data.add(dayExpenses);
@@ -417,14 +417,15 @@ public class DashboardService implements GetDashboardDataUseCase {
 
         LocalDate today = LocalDate.now();
         LocalDate monthStart = today.withDayOfMonth(1);
+        LocalDate lastDayOfMonth = monthStart.with(TemporalAdjusters.lastDayOfMonth());
 
         int weekNumber = 1;
         LocalDate weekStart = monthStart;
 
-        while (weekStart.isBefore(today.plusDays(1)) && weekNumber <= 5) {
+        while (weekStart.isBefore(lastDayOfMonth.plusDays(1)) && weekNumber <= 5) {
             LocalDate weekEnd = weekStart.plusDays(6);
-            if (weekEnd.isAfter(today)) {
-                weekEnd = today;
+            if (weekEnd.isAfter(lastDayOfMonth)) {
+                weekEnd = lastDayOfMonth;
             }
 
             LocalDateTime startDateTime = weekStart.atStartOfDay();

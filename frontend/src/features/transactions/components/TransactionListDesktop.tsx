@@ -1,4 +1,6 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
+import { m } from "framer-motion"
 import { ArrowUpRight, ArrowDownLeft, MoreHorizontal, HelpCircle } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
 import { Badge } from "@/shared/components/core/badge"
@@ -18,7 +20,7 @@ interface TransactionListDesktopProps {
   onDelete: (tx: Transaction) => void
 }
 
-export function TransactionListDesktop({ transactions, onEdit, onDelete }: TransactionListDesktopProps) {
+export const TransactionListDesktop = memo(function TransactionListDesktop({ transactions, onEdit, onDelete }: TransactionListDesktopProps) {
   const { t } = useTranslation()
 
   return (
@@ -29,13 +31,16 @@ export function TransactionListDesktop({ transactions, onEdit, onDelete }: Trans
         const isOrphan = !tx.category || tx.category === "Sin categoría"
 
         return (
-          <div
+          <m.div
             key={tx.id}
             className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
           >
             <div className={cn(
               "p-2.5 rounded-full shrink-0",
-              isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+              isIncome ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
             )}>
               {isIncome ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
             </div>
@@ -50,7 +55,7 @@ export function TransactionListDesktop({ transactions, onEdit, onDelete }: Trans
                 </span>
                 <span className="size-1 rounded-full bg-border" />
                 {isOrphan ? (
-                  <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <HelpCircle size={12} aria-hidden="true" />
                     <span>{categoryName}</span>
                   </span>
@@ -72,7 +77,7 @@ export function TransactionListDesktop({ transactions, onEdit, onDelete }: Trans
             <div className="text-right shrink-0">
               <p className={cn(
                 "text-sm font-bold tabular-nums",
-                isIncome ? "text-emerald-500" : "text-foreground"
+                isIncome ? "text-primary" : "text-foreground"
               )}>
                 {isIncome ? "+" : "-"}
                 {Math.abs(tx.amount).toLocaleString("es-ES", {
@@ -108,9 +113,9 @@ export function TransactionListDesktop({ transactions, onEdit, onDelete }: Trans
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </m.div>
         )
       })}
     </div>
   )
-}
+});

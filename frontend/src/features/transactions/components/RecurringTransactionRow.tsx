@@ -26,7 +26,7 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
             <div className="hidden sm:flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group">
                 <div className={cn(
                     "p-2.5 rounded-full shrink-0",
-                    isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                    isIncome ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                 )}>
                     {isIncome ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                 </div>
@@ -44,14 +44,14 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                             </>
                         )}
                         <span className="size-1 rounded-full bg-border" />
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Repeat size={10} className="shrink-0" />
                             {calculateNextExecution(tx)}
                         </span>
                     </div>
                 </div>
                 <div className="text-right shrink-0">
-                    <p className={cn("text-sm font-bold tabular-nums", isIncome ? "text-emerald-500" : "text-foreground")}>
+                    <p className={cn("text-sm font-bold tabular-nums", isIncome ? "text-primary" : "text-foreground")}>
                         {isIncome ? "+" : "-"}
                         {Math.abs(tx.amount).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                     </p>
@@ -82,13 +82,13 @@ export function RecurringTransactionRow({ transaction: tx, onEdit, onDelete }: R
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "p-2 rounded-full shrink-0",
-                            isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                            isIncome ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                         )}>
                             {isIncome ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
                         </div>
                         <p className={cn(
                             "text-base font-bold tabular-nums",
-                            isIncome ? "text-emerald-500" : "text-foreground"
+                            isIncome ? "text-primary" : "text-foreground"
                         )}>
                             {isIncome ? "+" : "-"}
                             {Math.abs(tx.amount).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €

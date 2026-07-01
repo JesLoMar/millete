@@ -27,7 +27,7 @@ export const ToastContent = ({
 
   return (
     <div
-      className={`w-full max-w-sm pointer-events-auto flex items-center gap-4 p-5 rounded-4xl border backdrop-blur-md transition-all shadow-xl bg-card/90 dark:bg-surface/80 ${styles.borderColor}`}
+      className={`w-full max-w-sm pointer-events-auto flex items-center gap-4 p-5 rounded-4xl border backdrop-blur-md transition-all shadow-xl bg-card/90 ${styles.borderColor}`}
     >
       <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-md ${styles.iconBg} ${styles.iconShadow}`}>
         {styles.icon}

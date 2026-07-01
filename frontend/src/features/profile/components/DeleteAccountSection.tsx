@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
+import { Spinner } from "@/shared/components/Spinner";
 import {
   Dialog,
   DialogContent,
@@ -88,14 +89,14 @@ export function DeleteAccountSection() {
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClose} disabled={isPending}>
-              {t('common:actions.cancel')}
+              {isPending ? <Spinner size={20} /> : t('common:actions.cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={handleConfirm}
               disabled={!canSubmit || isPending}
             >
-              {isPending ? t('common:actions.deleting') : t('deleteAccount.confirm')}
+              {isPending ? <Spinner size={20} /> : t('deleteAccount.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

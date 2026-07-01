@@ -11,7 +11,8 @@ import enGroupGoals from "@/assets/locales/en/groupGoals.json";
 import enSavingsGoals from "@/assets/locales/en/savingsGoals.json";
 import enSettings from "@/assets/locales/en/settings.json";
 import enApi from "@/assets/locales/en/api.json";
-import enWiki from "@/assets/locales/en/wiki.json";
+import enNotifications from "@/assets/locales/en/notifications.json";
+import enUserProfile from "@/assets/locales/en/userProfile.json";
 import enInfo from "@/assets/locales/en/info.json";
 
 declare module "i18next" {
@@ -30,7 +31,8 @@ declare module "i18next" {
       "savingsGoals",
       "settings",
       "api",
-      "wiki",
+      "userProfile",
+      "notifications",
       "info"
     ];
     resources: {
@@ -46,6 +48,8 @@ declare module "i18next" {
       savingsGoals: typeof enSavingsGoals;
       settings: typeof enSettings;
       api: typeof enApi;
+      userProfile: typeof enUserProfile;
+      notifications: typeof enNotifications;
       wiki: typeof enWiki;
       info: typeof enInfo;
     };

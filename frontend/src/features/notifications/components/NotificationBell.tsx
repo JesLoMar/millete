@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/shared/components/core/dialog';
 import { useUnreadNotificationsCount } from '../hooks/useNotifications';
-import { NotificationList } from './NotificationList';
+import { NotificationBellList } from './NotificationBellList';
 
 export function NotificationBell() {
   const { t } = useTranslation('notifications');
@@ -37,7 +37,7 @@ export function NotificationBell() {
           <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto py-2">
-          <NotificationList />
+          <NotificationBellList onNavigate={() => setOpen(false)} />
         </div>
       </DialogContent>
     </Dialog>

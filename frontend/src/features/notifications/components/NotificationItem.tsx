@@ -1,7 +1,11 @@
+import { memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Trash2, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/components/core/button';
 import { cn } from '@/lib/utils';
+import { useAcceptInvitation, useRejectInvitation } from '@/features/groupgoals/hooks/useInvitations';
+import { notify } from '@/shared/utils/notifications/notify';
 import type { Notification } from '../types';
 
 interface NotificationItemProps {
@@ -10,8 +14,18 @@ interface NotificationItemProps {
   onDelete: (id: string) => void;
 }
 
-export function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
-  const { t } = useTranslation('notifications');
+export const NotificationItem = memo(function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
+  const { t } = useTranslation(['notifications', 'common', 'groupGoals']);
+  const navigate = useNavigate();
+
+  const { mutate: acceptInvitation, isPending: isAccepting } = useAcceptInvitation();
+  const { mutate: rejectInvitation, isPending: isRejecting } = useRejectInvitation();
+
+  const isGoalInvitation = notification.type === 'GOAL_INVITATION';
+  const isActionLoading = isAccepting || isRejecting;
+
+  // Extraer invitationId del metadata si es una invitación
+  const invitationId = notification.metadata?.invitationId || notification.metadata?.id;
 
   const getIcon = () => {
     switch (notification.type) {
@@ -23,6 +37,37 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
   };
 
   const Icon = getIcon();
+
+  const handleAccept = useCallback(() => {
+    if (!invitationId) return;
+    acceptInvitation(invitationId, {
+      onSuccess: () => {
+        notify.success(t('groupGoals:invitationAccepted'));
+        onMarkAsRead(notification.id);
+      },
+      onError: () => {
+        notify.error(t('groupGoals:invitationError'));
+      },
+    });
+  }, [invitationId, acceptInvitation, notification.id, onMarkAsRead, t]);
+
+  const handleReject = useCallback(() => {
+    if (!invitationId) return;
+    rejectInvitation(invitationId, {
+      onSuccess: () => {
+        onMarkAsRead(notification.id);
+      },
+      onError: () => {
+        notify.error(t('groupGoals:invitationError'));
+      },
+    });
+  }, [invitationId, rejectInvitation, notification.id, onMarkAsRead, t]);
+
+  const handleNavigate = useCallback(() => {
+    if (isGoalInvitation) {
+      navigate('/profile');
+    }
+  }, [isGoalInvitation, navigate]);
 
   return (
     <div
@@ -41,6 +86,37 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
         <p className="text-xs text-muted-foreground mt-2">
           {new Date(notification.createdAt).toLocaleString()}
         </p>
+
+        {/* Botones de acción para invitaciones pendientes */}
+        {isGoalInvitation && !notification.read && invitationId && (
+          <div className="flex items-center gap-2 mt-3">
+            <Button
+              size="sm"
+              className="h-8 text-xs"
+              onClick={handleAccept}
+              disabled={isActionLoading}
+            >
+              {t('common:actions.accept')}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              onClick={handleReject}
+              disabled={isActionLoading}
+            >
+              {t('common:actions.reject')}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-xs"
+              onClick={handleNavigate}
+            >
+              {t('common:actions.view')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 shrink-0">
@@ -50,7 +126,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
             size="icon"
             className="h-8 w-8"
             onClick={() => onMarkAsRead(notification.id)}
-            title={t('markAsRead')}
+            title={t('notifications:markAsRead')}
           >
             <Check className="h-4 w-4" />
           </Button>
@@ -60,11 +136,11 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
           size="icon"
           className="h-8 w-8 text-destructive hover:text-destructive"
           onClick={() => onDelete(notification.id)}
-          title={t('delete')}
+          title={t('notifications:delete')}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </div>
   );
-}
+});

@@ -31,12 +31,13 @@ export function DonutChart({
   const circumference = 2 * Math.PI * radius
   const center = size / 2
 
-  let accumulated = 0
-  const segments = data.map((item) => {
+  const segments = data.map((item, index) => {
     const percentage = item.percentage ?? item.value
     const length = (percentage / 100) * circumference
-    const offset = accumulated
-    accumulated += length
+    const offset = data.slice(0, index).reduce((sum, d) => {
+      const pct = d.percentage ?? d.value
+      return sum + (pct / 100) * circumference
+    }, 0)
     return { ...item, length, offset }
   })
 
@@ -73,7 +74,7 @@ export function DonutChart({
         ))}
       </svg>
       {centerContent && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ fontFamily: "var(--font-sans)" }}>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {centerContent}
         </div>
       )}

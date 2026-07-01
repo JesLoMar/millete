@@ -19,14 +19,6 @@ export const FREQUENCY_SINGULAR: Record<string, string> = {
   YEARS: "transactions:recurring.everyYear",
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Alimentación: "text-emerald-500 bg-emerald-500/10",
-  Hogar: "text-amber-500 bg-amber-500/10",
-  Transporte: "text-blue-500 bg-blue-500/10",
-  Suministros: "text-purple-500 bg-purple-500/10",
-  Ocio: "text-pink-500 bg-pink-500/10",
-}
-
 export const FILTERS = ["all", "income", "expense"] as const
 export type Filter = typeof FILTERS[number]
 

@@ -20,5 +20,3 @@ export interface RegisterTransactionRequest {
   description: string;
   date: string; // ISO 8601 Date
 }
-
-export type UpdateTransactionRequest = Partial<RegisterTransactionRequest>;

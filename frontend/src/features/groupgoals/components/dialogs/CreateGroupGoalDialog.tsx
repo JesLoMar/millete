@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
+import { Spinner } from "@/shared/components/Spinner"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
 import {
@@ -22,19 +23,20 @@ import {
 interface CreateGroupGoalDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreate: (name: string, monthlyTarget: number, distributionMode: string) => void
+  onCreate: (name: string, monthlyTarget: number, distributionMode: string) => Promise<void>
+  isCreating?: boolean
 }
 
-export function CreateGroupGoalDialog({ open, onOpenChange, onCreate }: CreateGroupGoalDialogProps) {
+export function CreateGroupGoalDialog({ open, onOpenChange, onCreate, isCreating = false }: CreateGroupGoalDialogProps) {
   const { t } = useTranslation()
   const [name, setName] = useState("")
   const [monthlyTarget, setMonthlyTarget] = useState(0)
   const [distributionMode, setDistributionMode] = useState("EQUITATIVE")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (name.trim() && monthlyTarget > 0) {
-      onCreate(name.trim(), monthlyTarget, distributionMode)
+      await onCreate(name.trim(), monthlyTarget, distributionMode)
       setName("")
       setMonthlyTarget(0)
       setDistributionMode("EQUITATIVE")
@@ -44,7 +46,7 @@ export function CreateGroupGoalDialog({ open, onOpenChange, onCreate }: CreateGr
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border-border sm:max-w-106.25"
+        className="bg-card border-border sm:max-w-md"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -93,8 +95,8 @@ export function CreateGroupGoalDialog({ open, onOpenChange, onCreate }: CreateGr
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleCreate} disabled={!name.trim() || monthlyTarget <= 0}>
-            {t('groupGoals:create')}
+          <Button onClick={handleCreate} disabled={!name.trim() || monthlyTarget <= 0 || isCreating}>
+            {isCreating ? <Spinner size={20} /> : t('groupGoals:create')}
           </Button>
         </DialogFooter>
       </DialogContent>

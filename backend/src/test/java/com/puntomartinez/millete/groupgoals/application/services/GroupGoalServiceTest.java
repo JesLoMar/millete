@@ -52,6 +52,12 @@ class GroupGoalServiceTest {
     @Mock
     private CreateNotificationUseCase createNotificationUseCase;
 
+    @Mock
+    private com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase markNotificationAsActionedUseCase;
+
+    @Mock
+    private com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository notificationRepository;
+
     @InjectMocks
     private GroupGoalService groupGoalService;
 
@@ -181,6 +187,8 @@ class GroupGoalServiceTest {
         when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.empty());
         when(goalMemberRepository.save(any(GoalMember.class))).thenAnswer(inv -> inv.getArgument(0));
         when(goalInvitationRepository.save(any(GoalInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(notificationRepository.findActiveByUserIdAndTypeAndMetadataValue(any(), any(), any(), any()))
+                .thenReturn(List.of());
 
         GoalInvitation result = groupGoalService.acceptInvitation(userId, invitationId);
 
@@ -225,6 +233,8 @@ class GroupGoalServiceTest {
         when(invitation.getStatus()).thenReturn(InvitationStatus.PENDING);
         when(goalInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
         when(goalInvitationRepository.save(any(GoalInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(notificationRepository.findActiveByUserIdAndTypeAndMetadataValue(any(), any(), any(), any()))
+                .thenReturn(List.of());
 
         groupGoalService.rejectInvitation(userId, invitationId);
 

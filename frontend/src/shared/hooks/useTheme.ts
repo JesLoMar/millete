@@ -1,17 +1,10 @@
 import { useState, useEffect, useCallback } from "react"
-import { THEMES, type Theme, type ThemeColors } from "@/shared/themes/palettes"
+import { MILLETE_THEME, type Theme, type ThemeColors } from "@/shared/themes/palettes"
+
 export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("theme-name")
-      if (stored) {
-        const found = THEMES.find((t: Theme) => t.name === stored)
-        if (found) return found
-      }
-    }
-    return THEMES[0]
-  })
-  // Aplicar todas las variables CSS al DOM
+  const [theme] = useState<Theme>(MILLETE_THEME)
+
+  // Aplicar todas las variables CSS al DOM (incluyendo sidebar)
   useEffect(() => {
     const root = document.documentElement
     const colors: ThemeColors = theme.colors
@@ -32,6 +25,8 @@ export function useTheme() {
       "--accent-foreground": colors.accentForeground,
       "--destructive": colors.destructive,
       "--destructive-foreground": colors.destructiveForeground,
+      "--warning": colors.warning,
+      "--warning-foreground": colors.warningForeground,
       "--border": colors.border,
       "--input": colors.input,
       "--ring": colors.ring,
@@ -43,26 +38,36 @@ export function useTheme() {
       "--surface": colors.surface,
       "--surface-hover": colors.surfaceHover,
       "--subtle": colors.subtle,
+      // Sidebar variables — dinámicas, derivadas del tema
+      "--sidebar": colors.card,
+      "--sidebar-foreground": colors.foreground,
+      "--sidebar-primary": colors.primary,
+      "--sidebar-primary-foreground": colors.primaryForeground,
+      "--sidebar-accent": colors.accent,
+      "--sidebar-accent-foreground": colors.accentForeground,
+      "--sidebar-border": colors.border,
+      "--sidebar-ring": colors.ring,
     }
     Object.entries(cssVars).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
-    // Siempre modo oscuro
-    root.classList.remove("light")
-    root.classList.add("dark")
-    localStorage.setItem("theme-name", theme.name)
+    // Mantener clase dark para compatibilidad con shadcn/ui (ya no aplicada)
+    // root.classList.remove("light")
+    // root.classList.add("dark")
   }, [theme])
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme)
+
+  // setTheme/setThemeByName mantenidos para compatibilidad de API (no-op)
+  const setTheme = useCallback(() => {
+    // Solo un tema disponible — no-op
   }, [])
-  const setThemeByName = useCallback((name: string) => {
-    const found = THEMES.find((t: Theme) => t.name === name)
-    if (found) setThemeState(found)
+  const setThemeByName = useCallback(() => {
+    // Solo un tema disponible — no-op
   }, [])
+
   return {
     theme,
     setTheme,
     setThemeByName,
-    availableThemes: THEMES,
+    availableThemes: [MILLETE_THEME],
   }
 }

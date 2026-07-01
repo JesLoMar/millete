@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { TrendingUp, TrendingDown, MoreHorizontal, Trash2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -17,7 +18,7 @@ interface AssetRowProps {
   onDelete: (investment: InvestmentResponse) => void
 }
 
-export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
+export const AssetRow = memo(function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
   const { t } = useTranslation()
   const trend = (inv.profitOrLoss ?? 0) >= 0 ? "up" : "down"
   const percentage = inv.roiPercentage ?? 0
@@ -47,16 +48,16 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
           <div className="w-30 sm:w-35 flex flex-col items-end">
             <p className={cn(
               "text-sm font-bold flex items-center gap-1 whitespace-nowrap",
-              trend === "up" ? "text-emerald-500" : "text-rose-500"
+              trend === "up" ? "text-primary" : "text-destructive"
             )}>
               {trend === "up" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               {inv.currentValue?.toLocaleString("es-ES", { minimumFractionDigits: 2 })} €
             </p>
             <span className={cn(
-              "text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 border whitespace-nowrap",
+              "text-xs font-bold px-2 py-0.5 rounded-full mt-1 border whitespace-nowrap",
               trend === "up"
-                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "bg-destructive/10 text-destructive border-destructive/20"
             )}>
               {percentage != null ? `${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%` : "—"}
             </span>
@@ -85,12 +86,12 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
 
       <div className="sm:hidden p-2.5 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-all">
         <div className="flex items-center gap-2 mb-1.5">
-          <div className={`size-6 rounded-lg flex items-center justify-center font-bold text-[10px] text-primary-foreground shrink-0 ${TYPE_COLORS[inv.type] || "bg-primary"}`}>
+          <div className={`size-6 rounded-lg flex items-center justify-center font-bold text-xs text-primary-foreground shrink-0 ${TYPE_COLORS[inv.type] || "bg-primary"}`}>
             {inv.ticker || inv.assetName.substring(0, 3).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-foreground truncate">{inv.assetName}</p>
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {inv.quantity} {t('investments:shares')} • {t(`investments:types.${inv.type.toLowerCase()}`)}
             </p>
           </div>
@@ -117,16 +118,16 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
         <div className="flex items-center justify-between mb-1.5">
           <p className={cn(
             "text-base font-bold flex items-center gap-1",
-            trend === "up" ? "text-emerald-500" : "text-rose-500"
+            trend === "up" ? "text-primary" : "text-destructive"
           )}>
             {trend === "up" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             {inv.currentValue?.toLocaleString("es-ES", { minimumFractionDigits: 0 })} €
           </p>
           <span className={cn(
-            "text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap ml-2",
+            "text-xs font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap ml-2",
             trend === "up"
-              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-              : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+              ? "bg-primary/10 text-primary border-primary/20"
+              : "bg-destructive/10 text-destructive border-destructive/20"
           )}>
             {percentage != null ? `${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%` : "—"}
           </span>
@@ -140,4 +141,4 @@ export function AssetRow({ investment: inv, onDelete }: AssetRowProps) {
       </div>
     </>
   )
-}
+});

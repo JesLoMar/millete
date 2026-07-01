@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { m } from "framer-motion"
 import { Search } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
 import { Button } from "@/shared/components/core/button"
@@ -33,7 +34,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
   return (
     <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <h2 className="text-lg sm:text-xl font-semibold text-foreground font-headline">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground font-serif">
           {t('investments:myAssets')}
         </h2>
         <div className="relative w-full sm:w-64">
@@ -74,17 +75,37 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
       </div>
 
       <div className="overflow-x-auto">
-        <div className="flex flex-col gap-1 sm:gap-2 min-w-100">
+        <m.div
+          className="flex flex-col gap-1 sm:gap-2 min-w-100"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.04 }
+            }
+          }}
+        >
           {filteredData.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('investments:noAssets')}
             </p>
           ) : (
             filteredData.map((inv) => (
-              <AssetRow key={inv.id} investment={inv} onDelete={onDelete} />
+              <m.div
+                key={inv.id}
+                variants={{
+                  hidden: { opacity: 0, x: -20 },
+                  visible: { opacity: 1, x: 0 }
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <AssetRow investment={inv} onDelete={onDelete} />
+              </m.div>
             ))
           )}
-        </div>
+        </m.div>
       </div>
     </div>
   )

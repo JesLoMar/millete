@@ -1,4 +1,6 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
+import { m } from "framer-motion"
 import { ArrowUpRight, ArrowDownLeft, MoreHorizontal, HelpCircle } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
 import { Badge } from "@/shared/components/core/badge"
@@ -18,7 +20,7 @@ interface TransactionListMobileProps {
   onDelete: (tx: Transaction) => void
 }
 
-export function TransactionListMobile({ transactions, onEdit, onDelete }: TransactionListMobileProps) {
+export const TransactionListMobile = memo(function TransactionListMobile({ transactions, onEdit, onDelete }: TransactionListMobileProps) {
   const { t } = useTranslation()
 
   return (
@@ -29,21 +31,24 @@ export function TransactionListMobile({ transactions, onEdit, onDelete }: Transa
         const isOrphan = !tx.category || tx.category === "Sin categoría"
 
         return (
-          <div
+          <m.div
             key={tx.id}
             className="p-4 hover:bg-accent/30 transition-colors"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "p-2 rounded-full shrink-0",
-                  isIncome ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                  isIncome ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                 )}>
                   {isIncome ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
                 </div>
                 <p className={cn(
                   "text-base font-bold tabular-nums",
-                  isIncome ? "text-emerald-500" : "text-foreground"
+                  isIncome ? "text-primary" : "text-foreground"
                 )}>
                   {isIncome ? "+" : "-"}
                   {Math.abs(tx.amount).toLocaleString("es-ES", {
@@ -90,7 +95,7 @@ export function TransactionListMobile({ transactions, onEdit, onDelete }: Transa
               </span>
               <span className="size-1 rounded-full bg-border hidden xs:inline-block" />
               {isOrphan ? (
-                <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <HelpCircle size={12} aria-hidden="true" />
                   <span>{categoryName}</span>
                 </span>
@@ -107,9 +112,9 @@ export function TransactionListMobile({ transactions, onEdit, onDelete }: Transa
                 </Badge>
               )}
             </div>
-          </div>
+          </m.div>
         )
       })}
     </div>
   )
-}
+});

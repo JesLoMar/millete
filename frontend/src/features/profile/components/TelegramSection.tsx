@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageCircle, ExternalLink } from 'lucide-react';
+import { Spinner } from "@/shared/components/Spinner";
 import { Button } from '@/shared/components/core/button';
 import { Badge } from '@/shared/components/core/badge';
 import { SettingsSection } from './SettingsSection';
@@ -48,7 +49,7 @@ export function TelegramSection() {
             onClick={() => setConfirmOpen(true)}
             disabled={isPending}
           >
-            {t('telegram.unlink')}
+            {isPending ? <Spinner size={16} /> : t('telegram.unlink')}
           </Button>
         </div>
       ) : (

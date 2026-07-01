@@ -56,7 +56,7 @@ export function GroupGoalSelector({
         <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto">
           <Users className="size-10 text-primary" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-semibold font-headline">{t('groupGoals:title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold font-serif">{t('groupGoals:title')}</h1>
         <p className="text-sm sm:text-base text-muted-foreground">{t('groupGoals:selectOrCreate')}</p>
       </div>
 
@@ -73,7 +73,7 @@ export function GroupGoalSelector({
           {goals.map((goal) => (
             <Card
               key={goal.id}
-              className="border-subtle hover:border-primary/50 transition-all cursor-pointer group"
+              className="border hover:border-primary/50 transition-all cursor-pointer group"
               role="button"
               tabIndex={0}
               onClick={() => onSelect(goal.id)}
@@ -90,7 +90,7 @@ export function GroupGoalSelector({
                   <div className="flex items-center gap-2">
                     <h3 className="text-base sm:text-lg font-semibold truncate">{goal.name}</h3>
                     {goal.isAdmin && (
-                      <Badge variant="outline" className="border-amber-500/30 text-amber-400 gap-1 text-xs shrink-0">
+                      <Badge variant="outline" className="border-warning/30 text-warning gap-1 text-xs shrink-0">
                         <Crown className="size-3" aria-hidden="true" />
                         {t('groupGoals:admin')}
                       </Badge>

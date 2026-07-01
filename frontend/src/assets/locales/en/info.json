@@ -28,6 +28,11 @@
     "subtitle": "Discover the latest improvements added to the platform.",
     "items": [
       {
+        "tag": "v0.1.1",
+        "title": "Optimization and Visual Improvements",
+        "description": "Design and implement custom color palette. Add visual feedback and micro-user experiences, reduce project size, and optimize loading on slow networks."
+      },
+      {
         "tag": "v0.1.0",
         "title": "Major update",
         "description": "- New notification system \n - Add user profile \n - Add savings goals \n - Group Goals module refactored and improved \n - Integration with Telegram bot \n - Invitations to Group Goals with in-app notifications \n - Increased export functionalities. Now supports CSV and PDF. \n - Reduced use of external dependencies. \n - Improvements to the translation system."

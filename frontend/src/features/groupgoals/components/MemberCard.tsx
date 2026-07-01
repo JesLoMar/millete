@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/shared/components/core/card"
 import { Button } from "@/shared/components/core/button"
@@ -25,7 +26,7 @@ interface MemberCardProps {
   onDelete: (memberId: string) => void
 }
 
-export function MemberCard({
+export const MemberCard = memo(function MemberCard({
   member,
   index,
   isAdmin,
@@ -48,7 +49,7 @@ export function MemberCard({
   }
 
   return (
-    <Card className="border-subtle group">
+    <Card className="border group">
       <CardContent className="p-4 sm:p-6 relative">
         {isAdmin && (
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
@@ -79,10 +80,10 @@ export function MemberCard({
         <div className="flex items-center gap-2 mb-2 pr-8">
           <h3 className="font-semibold text-sm sm:text-base truncate">{member.name}</h3>
           {member.role === "ADMIN" && (
-            <Crown className="size-3 text-amber-400 shrink-0" aria-label={t('groupGoals:admin')} />
+            <Crown className="size-3 text-warning shrink-0" aria-label={t('groupGoals:admin')} />
           )}
         </div>
-        <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
+        <p className="text-xs sm:text-xs text-muted-foreground uppercase tracking-widest mb-3 sm:mb-4">
           {member.role === "ADMIN" ? t('groupGoals:admin') : t('groupGoals:member')}
         </p>
 
@@ -139,4 +140,4 @@ export function MemberCard({
       </CardContent>
     </Card>
   )
-}
+});

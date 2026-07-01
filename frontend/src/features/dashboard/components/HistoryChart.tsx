@@ -34,7 +34,7 @@ export function HistoryChart({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-8 border-subtle">
+      <Card className="col-span-1 md:col-span-8 border">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-6 w-32 bg-muted rounded-full animate-pulse" />
@@ -48,9 +48,9 @@ export function HistoryChart({
 
   if (displayData.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-8 border-subtle">
+      <Card className="col-span-1 md:col-span-8 border">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
-          <CardTitle className="text-lg font-headline font-bold">
+          <CardTitle className="text-lg font-serif font-bold">
             {t('dashboard:chart.title')}
           </CardTitle>
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full">
@@ -67,22 +67,22 @@ export function HistoryChart({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-8 border-subtle">
+    <Card className="col-span-1 md:col-span-8 border">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg font-headline font-bold">
+        <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:chart.title')}
         </CardTitle>
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full">
           <span>{t(`dashboard:chart.periodLabel.${period}`)}</span>
           {isTruncated && (
-            <span className="text-amber-400">
+            <span className="text-warning">
               {t('dashboard:chart.showingLast', { count: MAX_BARS })}
             </span>
           )}
         </div>
       </CardHeader>
       <CardContent className="h-75 w-full pt-2">
-        <ChartTooltip data={tooltip}>
+        <ChartTooltip data={tooltip} className="w-full">
           <SimpleBarChart
             data={barData}
             height={260}

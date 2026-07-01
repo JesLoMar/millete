@@ -1,19 +1,21 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import type { UseFormRegister } from "react-hook-form"
+import type { UseFormRegister, FieldErrors } from "react-hook-form"
 import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
 import { Eye, EyeOff } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
 import { Button } from "@/shared/components/core/button"
+import { cn } from "@/lib/utils"
 
 interface PasswordFieldProps {
   register: UseFormRegister<CombinedAuthFormData>
   disabled: boolean
   mode: "login" | "register"
+  errors: FieldErrors<CombinedAuthFormData>
 }
 
-export function PasswordField({ register, disabled, mode }: PasswordFieldProps) {
+export function PasswordField({ register, disabled, mode, errors }: PasswordFieldProps) {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
@@ -29,7 +31,11 @@ export function PasswordField({ register, disabled, mode }: PasswordFieldProps) 
           autoComplete={mode === "login" ? "current-password" : "new-password"}
           placeholder={t('auth:form.fields.password.placeholder')}
           disabled={disabled}
-          className="bg-secondary/30 border-border/50 h-14 text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 pr-12 text-white"
+          aria-invalid={errors.password ? "true" : "false"}
+          className={cn(
+            "bg-secondary/30 border-border/50 h-14 text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 pr-12 text-foreground",
+            errors.password && "animate-shake"
+          )}
           {...register("password", {
             required: true,
             minLength: mode === "register" ? 8 : undefined,

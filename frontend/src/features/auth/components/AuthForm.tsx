@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { useTranslation, Trans } from "react-i18next"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowRight } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { useLoginMutation } from "../hooks/useAuthMutations"
 import { useRegisterMutation } from "../hooks/useRegisterMutation"
@@ -20,9 +21,13 @@ import {
 } from "@/features/auth/schemas/auth.schema"
 import type { RegisterUserRequest } from "../types"
 
+import { useAutofillFix } from "@/shared/hooks/useAutofillFix"
+
 export function AuthForm() {
   const [mode, setMode] = useState<"login" | "register">("login")
   const { t } = useTranslation(['auth', 'common'])
+
+  useAutofillFix()
 
   const currentSchema = mode === "login" ? loginSchema : registerSchema
 
@@ -94,15 +99,15 @@ export function AuthForm() {
             <LoginFields register={register} disabled={isPending} errors={errors} />
           )}
 
-          <PasswordField register={register} disabled={isPending} mode={mode} />
+          <PasswordField register={register} disabled={isPending} mode={mode} errors={errors} />
 
           {isLoginError && mode === "login" && (
-            <p className="text-red-400 text-sm font-medium">
+            <p className="text-destructive text-sm font-medium">
               {t('auth:errors.invalidCredentials')}
             </p>
           )}
           {isRegisterError && mode === "register" && (
-            <p className="text-red-400 text-sm font-medium">
+            <p className="text-destructive text-sm font-medium">
               {t('auth:errors.registerFailed')}
             </p>
           )}
@@ -112,12 +117,14 @@ export function AuthForm() {
             disabled={isPending || !isValid}
             className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg font-bold rounded-xl transition-all group mt-4 cursor-pointer"
           >
-            {isPending
-              ? t('auth:submit.loading')
-              : mode === "login"
-                ? t('auth:submit.default')
-                : t('auth:submit.register')}
-            <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
+            {isPending ? (
+              <Spinner size={24} className="mx-auto" />
+            ) : (
+              <>
+                {mode === "login" ? t('auth:submit.default') : t('auth:submit.register')}
+                <ArrowRight className="ml-2 size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
           </Button>
         </form>
       </div>

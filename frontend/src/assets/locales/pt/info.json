@@ -28,6 +28,11 @@
     "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
     "items": [
       {
+        "tag": "v0.1.1",
+        "title": "Otimização e melhorias visuais",
+        "description": "Design e implementação de paleta de cores própria. Adição de feedback visual e microexperiências do usuário, redução do peso do projeto e otimização de carregamento em redes lentas."
+      },
+      {
         "tag": "v0.1.0",
         "title": "Atualização principal",
         "description": "- Novo sistema de notificações \n - Adicionar perfil de usuário \n - Adicionar metas de poupança \n - Módulo de Metas de Grupo refatorado e melhorado \n - Integração com o bot do Telegram \n - Convites para Metas de Grupo com notificações dentro do site \n - Aumento das funcionalidades de exportação. Agora suporta CSV e PDF. \n - Redução do uso de dependências externas. \n - Melhorias no sistema de tradução."

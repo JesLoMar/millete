@@ -112,6 +112,8 @@
     "onlyJson": "Solo file .json",
     "jsonOnly": "Sono supportati solo i file JSON",
     "invalidJson": "Il file JSON non è valido",
+    "invalidContent": "Il contenuto del file non è valido",
+    "fileInput": "Seleziona file JSON",
     "importing": "Importazione dati...",
     "success": "Dati importati correttamente",
     "importError": "Errore durante l'importazione del file",

@@ -23,7 +23,7 @@ export function MetricCard({
 }: MetricCardProps) {
   if (loading) {
     return (
-      <Card className={cn("overflow-hidden border-subtle", className)}>
+      <Card className={cn("overflow-hidden border", className)}>
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="h-4 w-24 sm:w-28 bg-muted rounded animate-pulse" />
@@ -42,12 +42,12 @@ export function MetricCard({
   }
 
   return (
-    <Card className={cn("overflow-hidden border-subtle transition-all duration-300 hover:border-primary/50 w-full min-w-0", className)}>
+    <Card className={cn("overflow-hidden border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/50 w-full min-w-0", className)}>
       <CardContent className="p-4 sm:p-6 flex flex-col justify-between h-full w-full min-w-0">
         
         {/* PARTE SUPERIOR: Título e Icono */}
         <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4 w-full min-w-0">
-          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate flex-1 min-w-0">
+          <p className="text-xs sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate flex-1 min-w-0">
             {title}
           </p>
           <div className={cn("p-1.5 sm:p-2 rounded-lg shrink-0 flex items-center justify-center", color)}>

@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-const passwordSchema = z.string().min(8, "auth.form.passwordHint");
+const passwordSchema = z.string().min(8, { message: "validations:min_length" });
 
 const authFormFieldsSchema = z.object({
   identifier: z.string().optional(),
@@ -14,7 +14,7 @@ export type CombinedAuthFormData = z.infer<typeof authFormFieldsSchema>;
 export const loginSchema = authFormFieldsSchema.refine(
   (data) => !!data.identifier?.trim(),
   {
-    message: "auth.form.error.invalidCredentials",
+    message: "validations:required",
     path: ["identifier"],
   }
 );

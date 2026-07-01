@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
+import { Spinner } from "@/shared/components/Spinner"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
 import {
@@ -15,21 +16,22 @@ import {
 interface InviteMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onInvite: (identifier: string) => void
+  onInvite: (identifier: string) => Promise<void>
+  isInviting?: boolean
 }
 
-export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMemberDialogProps) {
+export function InviteMemberDialog({ open, onOpenChange, onInvite, isInviting = false }: InviteMemberDialogProps) {
   const { t } = useTranslation()
   const [identifier, setIdentifier] = useState("")
   const [error, setError] = useState<string | null>(null)
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     const trimmed = identifier.trim()
     if (!trimmed) {
       setError(t('groupGoals:invalidIdentifier'))
       return
     }
-    onInvite(trimmed)
+    await onInvite(trimmed)
     setIdentifier("")
     setError(null)
     onOpenChange(false)
@@ -45,7 +47,7 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-card border-border sm:max-w-106.25">
+      <DialogContent className="bg-card border-border sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('groupGoals:inviteTitle')}</DialogTitle>
           <DialogDescription>
@@ -67,7 +69,7 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
               className="bg-background border-border"
             />
             {error && (
-              <p className="text-red-400 text-xs">{error}</p>
+              <p className="text-destructive text-xs">{error}</p>
             )}
           </div>
         </div>
@@ -75,8 +77,8 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite }: InviteMembe
           <Button variant="outline" onClick={() => handleOpenChange(false)} className="border-border">
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleInvite} disabled={!identifier.trim()}>
-            {t('groupGoals:sendInvitation')}
+          <Button onClick={handleInvite} disabled={!identifier.trim() || isInviting}>
+            {isInviting ? <Spinner size={20} /> : t('groupGoals:sendInvitation')}
           </Button>
         </DialogFooter>
       </DialogContent>

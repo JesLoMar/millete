@@ -30,7 +30,7 @@ export const JoinGroupGoalPage = () => {
   if (!invitationId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full border-subtle">
+        <Card className="max-w-md w-full border">
           <CardContent className="p-8 text-center space-y-6">
             <div className="bg-destructive/10 p-4 rounded-full w-fit mx-auto">
               <XCircle className="size-12 text-destructive" />
@@ -81,7 +81,7 @@ export const JoinGroupGoalPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="max-w-md w-full border-subtle">
+      <Card className="max-w-md w-full border">
         <CardContent className="p-8 text-center space-y-6">
           {status === "ready" && (
             <>
@@ -112,8 +112,8 @@ export const JoinGroupGoalPage = () => {
 
           {status === "success" && (
             <>
-              <div className="bg-emerald-500/10 p-4 rounded-full w-fit mx-auto">
-                <CheckCircle className="size-12 text-emerald-500" />
+              <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto">
+                <CheckCircle className="size-12 text-primary" />
               </div>
               <h2 className="text-xl font-semibold">{t('groupGoals:welcome')}</h2>
               <p className="text-muted-foreground">{message}</p>

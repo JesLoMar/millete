@@ -8,6 +8,7 @@ export const useSavingsGoals = () => {
   return useQuery({
     queryKey: ["savings-goals"],
     queryFn: savingsGoalsService.getAll,
+    staleTime: 60_000,
   });
 };
 

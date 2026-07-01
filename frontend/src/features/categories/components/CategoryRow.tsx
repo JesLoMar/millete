@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
@@ -21,7 +22,7 @@ interface CategoryRowProps {
   onDelete: (category: Category) => void
 }
 
-export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, onDelete }: CategoryRowProps) {
+export const CategoryRow = memo(function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, onDelete }: CategoryRowProps) {
   const { t } = useTranslation(['categories', 'common'])
   const isOverBudget = percentage >= 100
   const hasBudget = budgetLimit !== null && budgetLimit > 0
@@ -32,7 +33,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
       <div className="hidden sm:flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group">
         <div
           className="size-5 rounded-full shrink-0"
-          style={{ backgroundColor: category.color || "#3B82F6" }}
+          style={{ backgroundColor: category.color || "#4A6FA5" }}
         />
 
         <div className="w-32 min-w-0">
@@ -42,7 +43,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
         <div className="flex-1 min-w-0 px-2">
           {hasBudget ? (
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] font-medium">
+              <div className="flex justify-between text-xs font-medium">
                 <span className={cn(isOverBudget ? "text-destructive" : "text-muted-foreground")}>
                   {percentage.toFixed(0)}%
                 </span>
@@ -97,7 +98,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
         <div className="flex items-center gap-2.5 mb-2">
           <div
             className="size-4 rounded-full shrink-0"
-            style={{ backgroundColor: category.color || "#3B82F6" }}
+            style={{ backgroundColor: category.color || "#4A6FA5" }}
           />
           <p className="text-sm font-semibold truncate flex-1 min-w-0">{category.name}</p>
           <DropdownMenu>
@@ -136,7 +137,7 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
                   ariaLabel={`${category.name}: ${percentage.toFixed(0)}%`}
                 />
                 <p className={cn(
-                  "text-[11px] font-medium",
+                  "text-xs font-medium",
                   isOverBudget ? "text-destructive" : "text-muted-foreground"
                 )}>
                   {percentage.toFixed(0)}%
@@ -157,4 +158,4 @@ export function CategoryRow({ category, spent, budgetLimit, percentage, onEdit, 
       </div>
     </>
   )
-}
+});

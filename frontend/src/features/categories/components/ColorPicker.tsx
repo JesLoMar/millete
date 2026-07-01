@@ -9,7 +9,7 @@ interface ColorPickerProps {
 
 export function ColorPicker({ value, onChange, disabled = false }: ColorPickerProps) {
   return (
-    <div className="grid grid-cols-8 gap-2">
+    <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-1">
       {CATEGORY_COLORS.map((c) => {
         const isSelected = value === c
 

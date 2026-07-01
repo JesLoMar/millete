@@ -1,5 +1,4 @@
-// src/shared/components/core/chart-tooltip.tsx
-import { useRef, useState, type ReactNode } from "react"
+import { type ReactNode } from "react"
 import { cn } from "./utils"
 
 interface TooltipData {
@@ -15,34 +14,11 @@ interface ChartTooltipProps {
 }
 
 export function ChartTooltip({ children, data, className }: ChartTooltipProps) {
-  const [open, setOpen] = useState(false)
-  const triggerRef = useRef<HTMLDivElement>(null)
-  const popoverRef = useRef<HTMLDivElement>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prevDataRef = useRef(data)
-
-  if (data !== prevDataRef.current) {
-    prevDataRef.current = data
-    if (data) {
-      setOpen(true)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => setOpen(false), 2000)
-    } else {
-      setOpen(false)
-      if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  if (!data) return <>{children}</>
-
   return (
-    <div ref={triggerRef} className="relative">
+    <div className={cn("relative", className)}>
       {children}
-      {open && (
+      {data && (
         <div
-          ref={popoverRef}
-          popover="auto"
           className={cn(
             "absolute z-50 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
             "animate-in fade-in-0 zoom-in-95",

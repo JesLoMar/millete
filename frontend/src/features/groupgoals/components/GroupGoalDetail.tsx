@@ -61,7 +61,7 @@ export function GroupGoalDetail({
             <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold font-headline truncate">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold font-serif truncate">
               {goal.name}
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
@@ -87,7 +87,7 @@ export function GroupGoalDetail({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-        <Card className="lg:col-span-9 border-subtle">
+        <Card className="lg:col-span-9 border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base sm:text-lg">{t('groupGoals:goalProgress')}</CardTitle>
           </CardHeader>
@@ -95,7 +95,7 @@ export function GroupGoalDetail({
             <div className="flex flex-col xs:flex-row xs:items-end justify-between gap-2 mb-4">
               <div className="min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t('groupGoals:collected')}</p>
-                <p className="text-2xl sm:text-3xl font-headline truncate">
+                <p className="text-2xl sm:text-3xl font-serif truncate">
                   {totalContributed.toLocaleString()} €
                   <span className="text-sm text-muted-foreground"> / {(goal.monthlyTarget ?? 0).toLocaleString()} €</span>
                 </p>
@@ -186,7 +186,7 @@ export function GroupGoalDetail({
       </div>
 
       <div>
-        <h2 className="text-lg sm:text-xl font-headline mb-3 sm:mb-4">{t('groupGoals:memberDetails')}</h2>
+        <h2 className="text-lg sm:text-xl font-serif mb-3 sm:mb-4">{t('groupGoals:memberDetails')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {contributions.map((member, index) => (
             <MemberCard

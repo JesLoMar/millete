@@ -25,11 +25,11 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
 
   if (isLoading) {
     return (
-      <Card className="border-subtle">
+      <Card className="border">
         <CardHeader>
           <div className="h-6 w-44 bg-muted rounded animate-pulse" />
         </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-100">
+        <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-96">
           <div className="relative size-32 sm:size-40 shrink-0">
             <div className="size-full rounded-full bg-muted/20 animate-pulse" />
           </div>
@@ -50,13 +50,13 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
   }
 
   return (
-    <Card className="border-subtle">
+    <Card className="border">
       <CardHeader>
-        <CardTitle className="text-lg font-headline font-bold">
+        <CardTitle className="text-lg font-serif font-bold">
           {t('investments:distribution')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-100">
+      <CardContent className="flex flex-col items-center justify-center gap-4 pt-0 min-h-96">
         <ChartTooltip data={tooltip}>
           <DonutChart
             data={chartData.map((item) => ({
@@ -68,7 +68,7 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
             size={180}
             thickness={28}
             centerContent={
-              <div className="text-center pointer-events-none" style={{ fontFamily: "var(--font-sans)" }}>
+              <div className="text-center pointer-events-none">
                 <div className="text-lg font-bold tabular-nums">
                   {formatCurrency(totalValue, i18n.language)} €
                 </div>
@@ -104,18 +104,17 @@ export function DistributionChart({ data, isLoading }: DistributionChartProps) {
             >
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <span className="size-2 sm:size-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-muted-foreground truncate" style={{ fontFamily: "var(--font-sans)" }}>
+                <span className="text-muted-foreground truncate">
                   {item.name}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0">
                 <span
-                  className="text-muted-foreground text-[10px] sm:text-xs tabular-nums hidden xs:inline"
-                  style={{ fontFamily: "var(--font-sans)" }}
+                  className="text-muted-foreground text-xs sm:text-xs tabular-nums hidden xs:inline"
                 >
                   ({item.value.toLocaleString(i18n.language)} €)
                 </span>
-                <span className="text-foreground tabular-nums text-xs sm:text-sm" style={{ fontFamily: "var(--font-sans)" }}>
+                <span className="text-foreground tabular-nums text-xs sm:text-sm">
                   {item.percentage.toLocaleString(i18n.language)}%
                 </span>
               </div>

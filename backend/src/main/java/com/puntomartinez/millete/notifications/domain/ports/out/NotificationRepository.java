@@ -15,4 +15,6 @@ public interface NotificationRepository {
     List<Notification> findActiveByUserIdOrderByCreatedAtDesc(UUID userId);
 
     long countUnreadByUserId(UUID userId);
+
+    List<Notification> findActiveByUserIdAndTypeAndMetadataValue(UUID userId, String type, String metadataKey, String metadataValue);
 }

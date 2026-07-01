@@ -22,5 +22,6 @@ export function usePlannedTransactions() {
       const response = await apiClient.get('/planned-transactions')
       return response.data
     },
+    staleTime: 60_000,
   })
 }

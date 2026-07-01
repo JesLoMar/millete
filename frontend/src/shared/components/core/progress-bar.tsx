@@ -1,6 +1,8 @@
+import { m, useReducedMotion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface ProgressSegment {
+  id?: string | number
   value: number
   className?: string
   label?: string
@@ -29,8 +31,8 @@ const sizeClasses = {
 
 const variantClasses = {
   default: "",
-  overbudget: "bg-rose-500",
-  warning: "bg-amber-500",
+  overbudget: "bg-destructive",
+  warning: "bg-accent",
 }
 
 export function ProgressBar({
@@ -43,11 +45,9 @@ export function ProgressBar({
   className,
   barClassName,
   ariaLabel,
-  ariaValueNow,
-  ariaValueMin = 0,
-  ariaValueMax = 100,
 }: ProgressBarProps) {
-  const percentage = value !== undefined ? Math.min((value / max) * 100, 100) : undefined
+  const shouldReduceMotion = useReducedMotion()
+  const percentage = value !== undefined ? Math.min((value / max) * 100, 100) : 0
 
   if (segments && segments.length > 0) {
     return (
@@ -60,14 +60,16 @@ export function ProgressBar({
         aria-label={ariaLabel}
       >
         {segments.map((segment, i) => (
-          <div
-            key={i}
+          <m.div
+            key={segment.id ?? segment.label ?? i}
             className={cn(
-              "h-full transition-all duration-700",
+              "h-full",
               segment.className,
               barClassName
             )}
-            style={{ width: `${segment.value}%` }}
+            initial={{ width: 0 }}
+            animate={{ width: `${segment.value}%` }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
             title={segment.label}
             aria-label={segment.label}
           />
@@ -77,26 +79,37 @@ export function ProgressBar({
   }
 
   return (
-    <progress
-      value={value ?? 0}
-      max={max}
-      className={cn(
-        sizeClasses[size],
-        "w-full bg-secondary rounded-full overflow-hidden",
-        className
-      )}
-    >
-      <div
+    <div className={cn("relative w-full", sizeClasses[size], className)}>
+      {/* Barra de progreso nativa para accesibilidad */}
+      <progress
+        value={value ?? 0}
+        max={max}
+        aria-label={ariaLabel}
         className={cn(
-          "h-full transition-all duration-700 rounded-full",
-          variant !== "default" && variantClasses[variant],
-          barClassName
+          "absolute inset-0 h-full w-full appearance-none rounded-full bg-transparent",
+          "[&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-secondary",
+          "[&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-transparent",
+          "[&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-transparent"
         )}
-        style={{
-          width: `${percentage ?? 0}%`,
-          ...(color && variant === "default" ? { backgroundColor: color } : {}),
-        }}
       />
-    </progress>
+
+      {/* Capa visual animada que respeta prefers-reduced-motion vía MotionConfig */}
+      <div className="absolute inset-0 h-full w-full rounded-full overflow-hidden pointer-events-none">
+        <m.div
+          className={cn(
+            "h-full rounded-full",
+            variant === "default" && !color && "bg-primary",
+            variant !== "default" && variantClasses[variant],
+            barClassName
+          )}
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          style={{
+            ...(color && variant === "default" ? { backgroundColor: color } : {}),
+          }}
+        />
+      </div>
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Loader2, AlertTriangle } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
+import { Spinner } from "@/shared/components/Spinner"
 import { Button } from "@/shared/components/core/button"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
@@ -64,7 +65,7 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="bg-card border-border sm:max-w-95"
+        className="bg-card border-border sm:max-w-sm"
         onOpenAutoFocus={(e) => {
           e.preventDefault()
           inputRef.current?.focus()
@@ -110,9 +111,7 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
             variant={needsConfirmation ? "destructive" : "default"}
             className="w-full font-semibold transition-colors"
           >
-            {isUpdating ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : needsConfirmation ? (
+            {isUpdating ? <Spinner size={20} /> : needsConfirmation ? (
               t('investments:confirmUpdate')
             ) : (
               t('investments:updateNow')

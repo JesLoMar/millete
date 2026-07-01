@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react';
+import { Spinner } from "@/shared/components/Spinner";
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/components/core/button';
 import {
@@ -69,7 +70,7 @@ export function NotificationsTable() {
                       disabled={isAccepting || isRejecting}
                       title={t('notifications.accept')}
                     >
-                      <Check className="h-4 w-4 text-emerald-600" />
+                      {isAccepting ? <Spinner size={16} /> : <Check className="h-4 w-4 text-primary" />}
                     </Button>
                     <Button
                       size="sm"
@@ -79,7 +80,7 @@ export function NotificationsTable() {
                       disabled={isAccepting || isRejecting}
                       title={t('notifications.reject')}
                     >
-                      <X className="h-4 w-4 text-destructive" />
+                      {isRejecting ? <Spinner size={16} /> : <X className="h-4 w-4 text-destructive" />}
                     </Button>
                   </div>
                 </TableCell>

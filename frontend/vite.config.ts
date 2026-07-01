@@ -33,7 +33,72 @@ export default defineConfig(({ mode }) => {
       },
       target: 'es2020',
       sourcemap: false,
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 200,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react-router') || id.includes('@remix-run')) {
+                return 'router';
+              }
+              if (
+                id.includes('i18next') ||
+                id.includes('react-i18next') ||
+                id.includes('i18next-browser-languagedetector') ||
+                id.includes('i18next-resources-to-backend')
+              ) {
+                return 'i18n';
+              }
+              if (
+                id.includes('react-hook-form') ||
+                id.includes('zod') ||
+                id.includes('@hookform')
+              ) {
+                return 'forms';
+              }
+              if (
+                id.includes('@tanstack') ||
+                id.includes('axios')
+              ) {
+                return 'data';
+              }
+              if (
+                id.includes('framer-motion') ||
+                id.includes('motion-dom') ||
+                id.includes('motion-utils')
+              ) {
+                return 'motion';
+              }
+              if (id.includes('lucide-react')) {
+                return 'icons';
+              }
+              if (id.includes('sonner')) {
+                return 'notifications';
+              }
+              if (id.includes('clsx') || id.includes('tailwind-merge')) {
+                return 'utils';
+              }
+              if (
+                id.includes('@radix-ui') ||
+                id.includes('@floating-ui') ||
+                id.includes('class-variance-authority')
+              ) {
+                return 'ui';
+              }
+              if (
+                id.includes('react') ||
+                id.includes('scheduler') ||
+                id.includes('use-sync-external-store')
+              ) {
+                return 'vendor';
+              }
+            }
+          },
+        },
+      },
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query', 'axios'],
     },
     define: {
       __APP_VERSION__: JSON.stringify(process.env.npm_package_version),

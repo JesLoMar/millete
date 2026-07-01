@@ -14,7 +14,7 @@ export function ContributionHistory({ contributions, onAddClick }: ContributionH
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-4">
-        <h2 className="text-lg sm:text-xl font-headline">
+        <h2 className="text-lg sm:text-xl font-serif">
           {t('groupGoals:contributionsHistory')}
         </h2>
         <Button onClick={onAddClick} className="gap-1.5 sm:gap-2 shrink-0 text-sm" size="sm">
@@ -53,7 +53,7 @@ export function ContributionHistory({ contributions, onAddClick }: ContributionH
                     {c.name || t('groupGoals:member')}
                   </span>
 
-                  <span className="font-bold text-sm sm:text-base text-emerald-500 text-right whitespace-nowrap tabular-nums">
+                  <span className="font-bold text-sm sm:text-base text-primary text-right whitespace-nowrap tabular-nums">
                     +{c.amount.toLocaleString()} €
                   </span>
 

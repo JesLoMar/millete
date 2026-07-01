@@ -37,7 +37,7 @@ export function DistributionCard({
   const isValid = variant.endsWith("valid") || variant.endsWith("equitative")
 
   return (
-    <Card className="border-subtle bg-primary/5 relative overflow-hidden">
+    <Card className="border bg-primary/5 relative overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center justify-between gap-2">
           <span className="truncate">{t('groupGoals:distributionMode')}</span>
@@ -70,8 +70,8 @@ export function DistributionCard({
         {isCustomMode && (
           <div className={`flex items-start gap-2 p-2 sm:p-3 rounded-lg border text-xs transition-colors ${
             isValid
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+              ? "bg-primary/10 border-primary/20 text-primary"
+              : "bg-warning/10 border-warning/20 text-warning"
           }`}>
             {isValid ? (
               <CheckCircle2 className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />

@@ -11,6 +11,7 @@ import { TransactionListDesktop } from "./TransactionListDesktop"
 import { TransactionListMobile } from "./TransactionListMobile"
 import { TransactionListPagination } from "./TransactionListPagination"
 import { TransactionListSkeleton } from "./TransactionListSkeleton"
+import { type Filter } from "../constants"
 import type { Transaction } from "./types"
 
 interface TransactionListProps {
@@ -18,22 +19,96 @@ interface TransactionListProps {
 }
 
 interface ListState {
-  filter: "all" | "income" | "expense"
-  searchTerm: string
   editingTransaction: Transaction | null
   deletingTransaction: Transaction | null
   isDeleting: boolean
 }
 
+interface SearchableTransactionListProps {
+  transactions: Transaction[]
+  onEdit: (tx: Transaction) => void
+  onDelete: (tx: Transaction) => void
+}
+
 const ITEMS_PER_PAGE = 10
+
+function SearchableTransactionList({ transactions, onEdit, onDelete }: SearchableTransactionListProps) {
+  const { t } = useTranslation()
+  const [filter, setFilter] = useState<Filter>("all")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const filteredData = useMemo(() => {
+    return transactions.filter((tx) => {
+      const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "income" && tx.type === "INCOME") ||
+        (filter === "expense" && tx.type === "EXPENSE")
+      return matchesSearch && matchesFilter
+    })
+  }, [transactions, filter, searchTerm])
+
+  const { currentPage, totalPages, goToPage, nextPage, prevPage } = usePagination({
+    totalItems: filteredData.length,
+    itemsPerPage: ITEMS_PER_PAGE,
+    initialPage: 1,
+  })
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    const end = start + ITEMS_PER_PAGE
+    return filteredData.slice(start, end)
+  }, [filteredData, currentPage])
+
+  return (
+    <div className="space-y-4">
+      <TransactionListFilters
+        filter={filter}
+        searchTerm={searchTerm}
+        totalCount={filteredData.length}
+        onFilterChange={setFilter}
+        onSearchChange={setSearchTerm}
+      />
+
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        {paginatedData.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            {t('transactions:empty')}
+          </p>
+        ) : (
+          <>
+            <TransactionListDesktop
+              transactions={paginatedData}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+            <TransactionListMobile
+              transactions={paginatedData}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </>
+        )}
+
+        <TransactionListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
+          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)}
+          total={filteredData.length}
+          onPrev={prevPage}
+          onNext={nextPage}
+        />
+      </div>
+    </div>
+  )
+}
 
 export function TransactionList({ period: _period }: TransactionListProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
   const [state, setState] = useState<ListState>({
-    filter: "all",
-    searchTerm: "",
     editingTransaction: null,
     deletingTransaction: null,
     isDeleting: false,
@@ -66,29 +141,6 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     },
   })
 
-  const filteredData = useMemo(() => {
-    return transactions.filter((tx) => {
-      const matchesSearch = tx.description.toLowerCase().includes(state.searchTerm.toLowerCase())
-      const matchesFilter =
-        state.filter === "all" ||
-        (state.filter === "income" && tx.type === "INCOME") ||
-        (state.filter === "expense" && tx.type === "EXPENSE")
-      return matchesSearch && matchesFilter
-    })
-  }, [transactions, state.filter, state.searchTerm])
-
-  const { currentPage, totalPages, goToPage, nextPage, prevPage } = usePagination({
-    totalItems: filteredData.length,
-    itemsPerPage: ITEMS_PER_PAGE,
-    initialPage: 1,
-  })
-
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    const end = start + ITEMS_PER_PAGE
-    return filteredData.slice(start, end)
-  }, [filteredData, currentPage])
-
   const handleDeleteConfirm = async () => {
     if (!state.deletingTransaction) return
 
@@ -112,44 +164,11 @@ export function TransactionList({ period: _period }: TransactionListProps) {
 
   return (
     <div className="space-y-4">
-      <TransactionListFilters
-        filter={state.filter}
-        searchTerm={state.searchTerm}
-        totalCount={filteredData.length}
-        onFilterChange={(filter) => updateState({ filter })}
-        onSearchChange={(searchTerm) => updateState({ searchTerm })}
+      <SearchableTransactionList
+        transactions={transactions}
+        onEdit={(tx) => updateState({ editingTransaction: tx })}
+        onDelete={(tx) => updateState({ deletingTransaction: tx })}
       />
-
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {paginatedData.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12 text-sm">
-            {t('transactions:empty')}
-          </p>
-        ) : (
-          <>
-            <TransactionListDesktop
-              transactions={paginatedData}
-              onEdit={(tx) => updateState({ editingTransaction: tx })}
-              onDelete={(tx) => updateState({ deletingTransaction: tx })}
-            />
-            <TransactionListMobile
-              transactions={paginatedData}
-              onEdit={(tx) => updateState({ editingTransaction: tx })}
-              onDelete={(tx) => updateState({ deletingTransaction: tx })}
-            />
-          </>
-        )}
-
-        <TransactionListPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
-          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)}
-          total={filteredData.length}
-          onPrev={prevPage}
-          onNext={nextPage}
-        />
-      </div>
 
       <EditTransactionDialog
         key={state.editingTransaction?.id}

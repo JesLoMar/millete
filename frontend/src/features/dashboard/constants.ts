@@ -21,12 +21,12 @@ export const CHART_COLORS = [
 ]
 
 export const BUDGET_COLORS = [
-  "bg-emerald-500",
-  "bg-blue-500",
-  "bg-pink-500",
-  "bg-amber-500",
-  "bg-purple-500",
-  "bg-cyan-500",
+  "bg-chart-2",
+  "bg-chart-4",
+  "bg-chart-5",
+  "bg-chart-3",
+  "bg-chart-5",
+  "bg-chart-4",
 ]
 
 // ─── Categorías ───────────────────────────────────────────
@@ -38,13 +38,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Ocio: ShoppingCart,
 }
 
-export const CATEGORY_COLORS: Record<string, string> = {
-  Alimentación: "text-emerald-500 bg-emerald-500/10",
-  Hogar: "text-amber-500 bg-amber-500/10",
-  Transporte: "text-blue-500 bg-blue-500/10",
-  Suministros: "text-purple-500 bg-purple-500/10",
-  Ocio: "text-pink-500 bg-pink-500/10",
-}
+export { CATEGORY_COLORS } from "@/shared/constants/categoryColors"
 
 // ─── Exportación ──────────────────────────────────────────
 export type ExportFormat = "json" | "zip" | "csv" | "pdf"
@@ -72,7 +66,7 @@ export const EXPORT_FORMATS: ExportFormatOption[] = [
     icon: FolderArchive,
     labelKey: "export.formatZIP",
     descKey: "export.formatZIPDesc",
-    color: "bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white",
+    color: "bg-warning/10 text-warning group-hover:bg-warning group-hover:text-warning-foreground",
     needsConfig: false,
   },
   {
@@ -80,7 +74,7 @@ export const EXPORT_FORMATS: ExportFormatOption[] = [
     icon: FileSpreadsheet,
     labelKey: "export.formatCSV",
     descKey: "export.formatCSVDesc",
-    color: "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white",
+    color: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
     needsConfig: true,
   },
   {
@@ -88,7 +82,7 @@ export const EXPORT_FORMATS: ExportFormatOption[] = [
     icon: FileText,
     labelKey: "export.formatPDF",
     descKey: "export.formatPDFDesc",
-    color: "bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white",
+    color: "bg-destructive/10 text-destructive group-hover:bg-destructive group-hover:text-destructive-foreground",
     needsConfig: true,
   },
 ]

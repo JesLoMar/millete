@@ -24,7 +24,7 @@ export function EvolutionChart({ data: response, isLoading }: EvolutionChartProp
 
   if (isLoading) {
     return (
-      <Card className="border-subtle h-95">
+      <Card className="border h-95">
         <CardContent className="h-full flex items-center justify-center">
           <div className="h-full w-full bg-muted/20 rounded animate-pulse" />
         </CardContent>
@@ -33,12 +33,11 @@ export function EvolutionChart({ data: response, isLoading }: EvolutionChartProp
   }
 
   return (
-    <Card className="border-subtle h-95">
+    <Card className="border h-95">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-headline font-bold">{t('investments:evolution')}</CardTitle>
+        <CardTitle className="text-lg font-serif font-bold">{t('investments:evolution')}</CardTitle>
         <span
           className="text-xs text-muted-foreground bg-accent/30 px-3 py-1 rounded-full"
-          style={{ fontFamily: "var(--font-sans)" }}
         >
           {t("investments:lastMonths", { count: barData.length })}
         </span>

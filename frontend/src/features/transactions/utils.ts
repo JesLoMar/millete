@@ -1,7 +1,6 @@
 import type { PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
 import { FREQUENCY_LABELS, FREQUENCY_SINGULAR } from "./constants"
 import i18n from '@/lib/i18n';
-export { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat.ts';
 
 export function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(i18n.language, {

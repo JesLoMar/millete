@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
+import { Spinner } from "@/shared/components/Spinner"
 import { Input } from "@/shared/components/core/input"
 import { Label } from "@/shared/components/core/label"
 import {
@@ -23,10 +24,11 @@ interface EditMemberDialogProps {
   member: GoalMember | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (memberId: string, role: string, salary: number, customPercentage?: number) => void
+  onSave: (memberId: string, role: string, salary: number, customPercentage?: number) => Promise<void>
+  isSaving?: boolean
 }
 
-export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMemberDialogProps) {
+export function EditMemberDialog({ member, open, onOpenChange, onSave, isSaving = false }: EditMemberDialogProps) {
   const { t } = useTranslation()
   const [role, setRole] = useState<string>(member?.role || "MEMBER")
   const [salary, setSalary] = useState(member?.salary?.toString() || "")
@@ -34,9 +36,9 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
     member?.customPercentage?.toString() || ""
   )
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (member) {
-      onSave(
+      await onSave(
         member.id,
         role,
         Number(salary) || 0,
@@ -47,7 +49,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} key={member?.id ?? "new"}>
-      <DialogContent className="bg-card border-border sm:max-w-106.25">
+      <DialogContent className="bg-card border-border sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('groupGoals:editMember')}</DialogTitle>
         </DialogHeader>
@@ -107,7 +109,9 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave }: EditMem
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleSave}>{t('groupGoals:save')}</Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Spinner size={20} /> : t('groupGoals:save')}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

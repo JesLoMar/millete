@@ -109,7 +109,7 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
                     key={entity.value}
                     icon={EXPORT_FORMATS[2].icon}
                     label={t(`common:${entity.labelKey}`)}
-                    color="bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white"
+                    color="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
                     onClick={() => handleConfigSelect(entity.value)}
                     disabled={isExporting}
                   />
@@ -124,7 +124,7 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
                     key={period.value}
                     icon={EXPORT_FORMATS[3].icon}
                     label={t(period.labelKey)}
-                    color="bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white"
+                    color="bg-destructive/10 text-destructive group-hover:bg-destructive group-hover:text-primary-foreground"
                     onClick={() => handleConfigSelect(period.value)}
                     disabled={isExporting}
                   />

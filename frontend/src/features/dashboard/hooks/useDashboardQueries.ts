@@ -15,8 +15,7 @@ import type {
 } from "../types"
 
 function mapHistoryToChart(response: HistoryResponse): ChartDataPoint[] {
-  const hasData = response.data.some((val) => val != null && val !== 0);
-  if (!response.labels.length || !hasData) {
+  if (!response.labels.length) {
     return [];
   }
   return response.labels.map((label, i) => ({
