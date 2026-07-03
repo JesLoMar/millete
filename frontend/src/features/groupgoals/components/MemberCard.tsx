@@ -42,9 +42,9 @@ export const MemberCard = memo(function MemberCard({
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="size-8 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   aria-label={t("groupGoals:memberOptions", { name: member.name })}
                 >

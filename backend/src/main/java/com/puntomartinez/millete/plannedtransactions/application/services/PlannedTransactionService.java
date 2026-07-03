@@ -41,10 +41,7 @@ public class PlannedTransactionService implements
         this.registerTransactionUseCase = registerTransactionUseCase;
     }
 
-    // =======================================================
-    // REGISTRAR PLANTILLA
-    // =======================================================
-    
+
     @Override
     public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
         if (command.categoryId() != null) {
@@ -75,9 +72,6 @@ public class PlannedTransactionService implements
         return plannedTransactionRepository.save(newPlannedTransaction);
     }
 
-    // =======================================================
-    // PROCESAR PLANTILLAS (Catch-up Mode)
-    // =======================================================
 
     @Override
     @Transactional
@@ -113,9 +107,6 @@ public class PlannedTransactionService implements
         }
     }
 
-    // =======================================================
-    // ACTUALIZAR PLANTILLA
-    // =======================================================
 
     @Override
     public PlannedTransaction update(UUID id, UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand command) {
@@ -152,9 +143,6 @@ public class PlannedTransactionService implements
         return plannedTransactionRepository.save(tx);
     }
 
-    // =======================================================
-    // ELIMINAR PLANTILLA (SOFT DELETE)
-    // =======================================================
 
     @Override
     public void deleteByIdAndUserId(UUID id, UUID userId) {
@@ -176,9 +164,6 @@ public class PlannedTransactionService implements
                 .toList();
     }
 
-    // =======================================================
-    // LÓGICA DE RECURRENCIA
-    // =======================================================
 
     private LocalDate getNextPendingExecutionDate(PlannedTransaction template, LocalDate today) {
         LocalDate start = template.getStartDate();

@@ -32,7 +32,7 @@ public class DataImportController {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         log.info("Solicitud de importación para usuario: {}", userId);
 
-        // ─── Validación: archivo no vacío ──────────────────
+
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(
@@ -42,7 +42,7 @@ public class DataImportController {
                     ));
         }
 
-        // ─── Validación: tipo de archivo ───────────────────
+
         String originalFilename = file.getOriginalFilename();
         if (originalFilename != null && !originalFilename.toLowerCase().endsWith(".json")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -54,7 +54,7 @@ public class DataImportController {
         }
 
         try {
-            // ─── Delegar al servicio ───────────────────────
+
             String summary = dataImportService.importUserData(file, userId);
 
             return ResponseEntity.ok(Map.of(
@@ -63,7 +63,7 @@ public class DataImportController {
             ));
 
         } catch (RuntimeException e) {
-            // ─── Error de formato/versión/BD ───────────────
+
             log.error("Error en importación: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(

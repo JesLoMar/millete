@@ -24,7 +24,7 @@ export const NotificationItem = memo(function NotificationItem({ notification, o
   const isGoalInvitation = notification.type === 'GOAL_INVITATION';
   const isActionLoading = isAccepting || isRejecting;
 
-  // Extraer invitationId del metadata si es una invitación
+
   const invitationId = notification.metadata?.invitationId || notification.metadata?.id;
 
   const getIcon = () => {
@@ -97,7 +97,7 @@ export const NotificationItem = memo(function NotificationItem({ notification, o
           {new Date(notification.createdAt).toLocaleString()}
         </p>
 
-        {/* Botones de acción para invitaciones pendientes */}
+        {}
         {isGoalInvitation && !notification.read && invitationId && (
           <div className="flex items-center gap-2 mt-3">
             <Button

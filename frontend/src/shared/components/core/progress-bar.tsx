@@ -79,7 +79,7 @@ export function ProgressBar({
 
   return (
     <div className={cn("relative w-full", sizeClasses[size], className)}>
-      {/* Barra de progreso nativa para accesibilidad */}
+      {}
       <progress
         value={value ?? 0}
         max={max}
@@ -92,7 +92,7 @@ export function ProgressBar({
         )}
       />
 
-      {/* Capa visual animada que respeta prefers-reduced-motion vía MotionConfig */}
+      {}
       <div className="absolute inset-0 h-full w-full rounded-full overflow-hidden pointer-events-none">
         <m.div
           className={cn(

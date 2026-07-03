@@ -64,7 +64,7 @@ export function TopNav({ className }: TopNavProps) {
   }, [logout, t])
 
   const handleOpenSidebar = useCallback(() => {
-    // Abrir sidebar mediante evento personalizado interno
+
     window.dispatchEvent(new CustomEvent('sidebar:open'))
   }, [])
 

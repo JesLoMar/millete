@@ -114,7 +114,7 @@ class CategoryServiceTest {
         UpdateCategoryCommand command = new UpdateCategoryCommand(
                 "Hogar", "#00FF00", null);
 
-        // Otro usuario intenta actualizar
+
         when(categoryRepository.findByIdAndUserId(id, otherUserId))
                 .thenReturn(Optional.empty());
 
@@ -122,7 +122,7 @@ class CategoryServiceTest {
                 .isThrownBy(() -> categoryService.update(id, otherUserId, command))
                 .withMessageContaining("Categoría no encontrada");
 
-        // Verificar que nunca se llamó a save (no se modificó nada)
+
         verify(categoryRepository, never()).save(any());
     }
 
@@ -163,7 +163,7 @@ class CategoryServiceTest {
         when(ownerTx.getUserId()).thenReturn(userId);
 
         Transaction otherTx = mock(Transaction.class);
-        when(otherTx.getUserId()).thenReturn(otherUserId); // Transacción de otro usuario
+        when(otherTx.getUserId()).thenReturn(otherUserId);
 
         when(categoryRepository.findByIdAndUserId(id, userId))
                 .thenReturn(Optional.of(existing));
@@ -172,12 +172,12 @@ class CategoryServiceTest {
 
         categoryService.delete(id, userId);
 
-        // Solo la transacción del propietario se modifica
+
         verify(ownerTx).setCategoryId(null);
         verify(ownerTx).setModifiedAt(any());
         verify(transactionRepository).save(ownerTx);
 
-        // La transacción del otro usuario NO se toca
+
         verify(otherTx, never()).setCategoryId(any());
         verify(otherTx, never()).setModifiedAt(any());
         verify(transactionRepository, never()).save(otherTx);
@@ -199,7 +199,7 @@ class CategoryServiceTest {
     void shouldThrowWhenDeletingCategoryOfOtherUser() {
         UUID id = UUID.randomUUID();
 
-        // Otro usuario intenta eliminar
+
         when(categoryRepository.findByIdAndUserId(id, otherUserId))
                 .thenReturn(Optional.empty());
 
@@ -211,7 +211,6 @@ class CategoryServiceTest {
         verify(categoryRepository, never()).save(any());
     }
 
-    // Métodos helper
 
     private Category createCategory(UUID userId, String name) {
         return new Category(userId, name, "#FF0000", BigDecimal.ZERO);

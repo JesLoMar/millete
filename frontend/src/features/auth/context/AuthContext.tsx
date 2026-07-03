@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useState, useEffect, useCallback, use, useMemo, useEffectEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/shared/api/axiosClient';
@@ -42,12 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // ─── LOGOUT (usado por init, interceptor 401, y LogoutListener) ───
+
   const logout = useCallback(async () => {
     try {
       await apiClient.post('/auth/logout');
     } catch {
-      // Ignorar errores de red en logout
+
     } finally {
       setUser(null);
       setSessionId(null);
@@ -56,10 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [queryClient]);
 
-  // Effect Event: siempre ve el logout más reciente sin ser dependencia reactiva
+
   const onLogout = useEffectEvent(logout);
 
-  // ─── INICIALIZACIÓN ──────────────────────────────────────────
+
   useEffect(() => {
     const initAuth = async () => {
       const storedUser = secureStorage.getUser<User>();
@@ -73,8 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         secureStorage.setUser(current.user);
         secureStorage.setSessionId(current.sessionId);
       } else if (storedUser) {
-        // La cookie ya no es válida, pero mantenemos el usuario en memoria
-        // hasta que el siguiente request 401 fuerce el logout.
+
+
         setUser(storedUser);
         setSessionId(storedSessionId);
       }
@@ -84,13 +84,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initAuth();
 
-    // Escuchar evento de logout forzado desde el interceptor de Axios
+
     const handleForcedLogout = () => onLogout();
     window.addEventListener('auth:logout', handleForcedLogout);
     return () => window.removeEventListener('auth:logout', handleForcedLogout);
   }, [fetchCurrentUser]);
 
-  // ─── LOGIN ASÍNCRONO ─────────────────────────────────────────
+
   const login = useCallback(
     async (userData?: User): Promise<void> => {
       if (userData) {

@@ -1,4 +1,4 @@
-// ─── Dashboard Types (Unificados) ─────────────────────────
+
 
 export interface ChartDataPoint {
   label: string

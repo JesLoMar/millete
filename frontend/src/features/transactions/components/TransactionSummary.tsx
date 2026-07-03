@@ -5,7 +5,6 @@ import { apiClient } from "@/shared/api/axiosClient"
 import type { PeriodFilter } from "@/shared/components/Header"
 import { FormattedMetricCard } from "@/shared/components/FormattedMetricCard"
 
-// ─── Types ────────────────────────────────────────────────
 interface TransactionMetrics {
   income: number
   expenses: number
@@ -21,7 +20,6 @@ interface TransactionSummaryProps {
   period: PeriodFilter
 }
 
-// ─── Component ────────────────────────────────────────────
 export function TransactionSummary({ period }: TransactionSummaryProps) {
   const { t } = useTranslation(['dashboard', 'transactions', 'common'])
 

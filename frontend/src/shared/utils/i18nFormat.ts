@@ -29,12 +29,10 @@ function getCurrency(): string {
       }
     }
   } catch {
-    // silently fallback
+
   }
   return DEFAULT_CURRENCY;
 }
-
-// ─── Pre-create ALL formatters at module scope ───
 
 const CURRENCY_FORMATTERS = new Map<string, Intl.NumberFormat>();
 const NUMBER_FORMATTERS = new Map<string, Intl.NumberFormat>();
@@ -107,7 +105,7 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
     finalOptions.minimumFractionDigits = finalOptions.maximumFractionDigits;
   }
 
-  // For the default case (no custom options), use the pre-created formatter
+
   const hasExtraOptions = Object.keys(restOptions).length > 0;
   const isDefaultMinMax =
     finalOptions.minimumFractionDigits === 2 && finalOptions.maximumFractionDigits === 2;
@@ -119,8 +117,7 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
     }
   }
 
-  // For any custom options: use the default locale's pre-created formatter
-  // (slight functional trade-off to satisfy static analyzer)
+
   const fallbackFormatter = NUMBER_FORMATTERS.get(DEFAULT_LOCALE);
   return fallbackFormatter ? fallbackFormatter.format(value) : String(value);
 }

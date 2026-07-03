@@ -36,7 +36,7 @@ class PeriodTypeTest {
     @DisplayName("getStartDate debe calcular fecha correcta")
     void getStartDate_shouldCalculateCorrectDate() {
         LocalDate today = LocalDate.now();
-        
+
         assertEquals(today.minusMonths(1), PeriodType.ONE_MONTH.getStartDate());
         assertEquals(today.minusMonths(3), PeriodType.THREE_MONTHS.getStartDate());
         assertEquals(today.minusMonths(6), PeriodType.SIX_MONTHS.getStartDate());

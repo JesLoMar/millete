@@ -13,7 +13,7 @@ public class TransactionScheduler {
         this.processUseCase = processUseCase;
     }
 
-    // Se ejecuta todos los días a las 00:01 AM
+
     @Scheduled(cron = "0 1 0 * * ?")
     public void runDailyTransactions() {
         processUseCase.processScheduledTasks();

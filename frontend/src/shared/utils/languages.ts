@@ -17,7 +17,6 @@ const LANGUAGE_MAP: Record<SupportedLanguageCode, Omit<Language, "code">> = {
   ja: { nativeName: "日本語", englishName: "Japanese", flag: "🇯🇵" },
 }
 
-// Pre-create Intl.DisplayNames for known locales at module scope
 const precreatedDisplayNames: Record<SupportedLanguageCode, Intl.DisplayNames> = {
   es: new Intl.DisplayNames(["es"], { type: "language" }),
   en: new Intl.DisplayNames(["en"], { type: "language" }),
@@ -62,7 +61,7 @@ export function getLanguageFromCode(code: string): Language {
       ...mapped,
     }
   }
-  
+
   return {
     code,
     nativeName: getNativeNameFromCode(code),

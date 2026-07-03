@@ -8,7 +8,6 @@ import {
   PiggyBank
 } from "lucide-react"
 
-// ─── Types ────────────────────────────────────────────────
 export interface NavItem {
   id: string
   icon: LucideIcon
@@ -20,7 +19,7 @@ export interface NavItem {
 }
 
 const NAVIGATION_REGISTRY: NavItem[] = [
-  // ─── Main Navigation ───────────────────────────────────
+
   {
     id: "dashboard",
     icon: LayoutDashboard,
@@ -77,7 +76,6 @@ const NAVIGATION_REGISTRY: NavItem[] = [
   }
 ]
 
-// ─── Helpers ──────────────────────────────────────────────
 export function getEnabledNavItems(section: "main" | "bottom"): NavItem[] {
   return NAVIGATION_REGISTRY
     .filter(item => item.section === section && item.enabled)

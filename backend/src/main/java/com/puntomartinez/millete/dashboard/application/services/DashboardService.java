@@ -35,9 +35,7 @@ public class DashboardService implements GetDashboardDataUseCase {
 
     private static final String[] CHART_COLORS = {"hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"};
 
-    // =====================================================
-    // 1. MÉTRICAS DEL DASHBOARD
-    // =====================================================
+
     @Override
     public DashboardMetricsResponseDTO getMetrics(UUID userId, String period) {
         LocalDateTime[] currentRange = getDateRange(period);
@@ -58,9 +56,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new DashboardMetricsResponseDTO(currentBalance, currentIncome, currentExpenses, currentIncome.subtract(currentExpenses), calculateTrend(currentBalance, previousBalance), calculateTrend(currentIncome, previousIncome), calculateTrend(currentExpenses, previousExpenses), calculateTrend(currentIncome.subtract(currentExpenses), previousIncome.subtract(previousExpenses)));
     }
 
-    // =====================================================
-    // 2. HISTÓRICO DE GASTOS
-    // =====================================================
+
     @Override
     public DashboardHistoryResponseDTO getHistory(UUID userId, String period) {
         return switch (period.toLowerCase()) {
@@ -71,9 +67,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         };
     }
 
-    // =====================================================
-    // 3. GASTOS POR CATEGORÍA
-    // =====================================================
+
     @Override
     public DashboardCategoriesResponseDTO getCategories(UUID userId, String period) {
         LocalDateTime[] range = getDateRange(period);
@@ -95,7 +89,7 @@ public class DashboardService implements GetDashboardDataUseCase {
 
         List<CategoryExpenseItemResponseDTO> categoryItems = new ArrayList<>();
 
-        // Procesar categorías con ID
+
         for (Map.Entry<UUID, List<Transaction>> entry : byCategory.entrySet()) {
             UUID categoryId = entry.getKey();
             BigDecimal amount = entry.getValue().stream().map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -106,12 +100,12 @@ public class DashboardService implements GetDashboardDataUseCase {
             categoryItems.add(new CategoryExpenseItemResponseDTO(categoryName, amount, percentage, entry.getValue().size()));
         }
 
-        // Procesar transacciones huérfanas (sin categoría)
+
         if (!orphanTransactions.isEmpty()) {
             BigDecimal orphanAmount = orphanTransactions.stream().map(t -> t.getAmount().abs()).reduce(BigDecimal.ZERO, BigDecimal::add);
             double orphanPercentage = calculatePercentage(orphanAmount, totalExpenses);
 
-            // Combinar con "Sin categoría" existente o crear nuevo
+
             Optional<CategoryExpenseItemResponseDTO> existingOrphan = categoryItems.stream().filter(item -> "Sin categoría".equals(item.name())).findFirst();
 
             if (existingOrphan.isPresent()) {
@@ -132,9 +126,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new DashboardCategoriesResponseDTO(totalExpenses, groupSmallCategories(categoryItems, totalExpenses));
     }
 
-    // =====================================================
-    // 4. PRESUPUESTOS
-    // =====================================================
+
     @Override
     public DashboardBudgetsResponseDTO getBudgets(UUID userId, String period) {
         LocalDateTime[] range = getDateRange(period);
@@ -157,9 +149,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new DashboardBudgetsResponseDTO(period, budgetItems);
     }
 
-    // =====================================================
-    // 5. TRANSACCIONES RECIENTES
-    // =====================================================
+
     @Override
     public DashboardTransactionsResponseDTO getRecentTransactions(UUID userId, int limit) {
         List<Transaction> recentTransactions = transactionRepository.findRecentByUserId(userId, limit);
@@ -179,31 +169,27 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new DashboardTransactionsResponseDTO(transactionDTOs);
     }
 
-    // =====================================================
-// 6. METAS DE AHORRO (DATOS REALES)
-// =====================================================
+
     @Override
     public DashboardGoalsResponseDTO getSavingsGoals(UUID userId) {
         List<SavingsGoal> goals = savingsGoalRepository.findAllByUserId(userId);
 
         List<SavingsGoalResponseDTO> goalDTOs = goals.stream().filter(goal -> "ACTIVE".equals(goal.getStatus()) || "PAUSED".equals(goal.getStatus())).sorted((a, b) -> {
-            // Primero por estado: ACTIVE antes que PAUSED
+
             if (!a.getStatus().equals(b.getStatus())) {
                 return "ACTIVE".equals(a.getStatus()) ? -1 : 1;
             }
-            // Luego por prioridad: HIGH > MEDIUM > LOW
+
             int priorityCompare = comparePriority(b.getPriority(), a.getPriority());
             if (priorityCompare != 0) return priorityCompare;
-            // Finalmente por fecha de creación descendente
+
             return b.getCreatedAt().compareTo(a.getCreatedAt());
         }).map(goal -> new SavingsGoalResponseDTO(goal.getId(), goal.getName(), goal.getCurrentAmount(), goal.getTargetAmount(), calculatePercentage(goal.getCurrentAmount(), goal.getTargetAmount()), mapPriorityToIcon(goal.getPriority()), goal.getDeadline())).toList();
 
         return new DashboardGoalsResponseDTO(goalDTOs);
     }
 
-    // =====================================================
-    // 7. MÉTRICAS DE INVERSIONES
-    // =====================================================
+
     @Override
     public InvestmentMetricsResponseDTO getInvestmentMetrics(UUID userId, String period) {
         List<Investment> currentInvestments = investmentRepository.findAllByUserId(userId).stream().filter(Investment::isActive).toList();
@@ -223,9 +209,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new InvestmentMetricsResponseDTO(currentValue, currentReturn, BigDecimal.ZERO, calculateTrend(currentValue, investedCapital), returnTrend, 0.0);
     }
 
-    // =====================================================
-    // 8. EVOLUCIÓN DEL PATRIMONIO
-    // =====================================================
+
     @Override
     public InvestmentEvolutionResponseDTO getInvestmentEvolution(UUID userId, String period) {
         return switch (period.toLowerCase()) {
@@ -292,9 +276,7 @@ public class DashboardService implements GetDashboardDataUseCase {
         return total;
     }
 
-    // =====================================================
-    // 9. DISTRIBUCIÓN DE CARTERA
-    // =====================================================
+
     @Override
     public InvestmentDistributionResponseDTO getInvestmentDistribution(UUID userId, String period) {
         List<Investment> investments = investmentRepository.findAllByUserId(userId).stream().filter(Investment::isActive).toList();
@@ -321,9 +303,6 @@ public class DashboardService implements GetDashboardDataUseCase {
         return new InvestmentDistributionResponseDTO(totalValue, distribution);
     }
 
-    // =====================================================
-    // MÉTODOS PRIVADOS AUXILIARES
-    // =====================================================
 
     private LocalDateTime[] getDateRange(String period) {
         LocalDateTime now = LocalDateTime.now();

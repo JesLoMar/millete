@@ -41,9 +41,7 @@ public class InvestmentController {
         this.investmentRepository = investmentRepository;
     }
 
-    // =======================================================
-    // POST: REGISTRAR UNA NUEVA INVERSIÓN
-    // =======================================================
+
     @PostMapping
     public ResponseEntity<InvestmentResponseDTO> registerInvestment(
             @Valid @RequestBody RegisterInvestmentRequestDTO request,
@@ -66,9 +64,7 @@ public class InvestmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(savedInvestment));
     }
 
-    // =======================================================
-    // GET: LISTAR INVERSIONES DEL USUARIO
-    // =======================================================
+
     @GetMapping
     public ResponseEntity<List<InvestmentResponseDTO>> getAllInvestments(Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -82,9 +78,7 @@ public class InvestmentController {
         return ResponseEntity.ok(responseList);
     }
 
-    // =======================================================
-    // PATCH: ACTUALIZAR EL PRECIO DE MERCADO DE UN ACTIVO
-    // =======================================================
+
     @PatchMapping("/{id}/price")
     public ResponseEntity<InvestmentResponseDTO> updateInvestmentPrice(
             @PathVariable UUID id,
@@ -98,9 +92,7 @@ public class InvestmentController {
         return ResponseEntity.ok(mapToDTO(updatedInvestment));
     }
 
-    // =======================================================
-    // DELETE: SOFT DELETE DE UNA INVERSIÓN
-    // =======================================================
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteInvestment(@PathVariable UUID id, Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -119,9 +111,7 @@ public class InvestmentController {
         return ResponseEntity.noContent().build();
     }
 
-    // =======================================================
-    // MÉTODOS AUXILIARES
-    // =======================================================
+
     private InvestmentResponseDTO mapToDTO(Investment inv) {
         return new InvestmentResponseDTO(
                 inv.getId(),

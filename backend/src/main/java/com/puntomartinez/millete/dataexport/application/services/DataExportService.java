@@ -79,7 +79,7 @@ public class DataExportService {
     public UserDataSnapshot exportAllUserData(UUID userId) {
         log.info("Exportando datos para usuario: {}", userId);
 
-        // Recolectar datos de Group Goals del usuario
+
         List<GoalMember> userGoalMembers = goalMemberRepository.findByUserId(userId);
         Set<UUID> userGoalIds = new HashSet<>();
         for (GoalMember gm : userGoalMembers) {

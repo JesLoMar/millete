@@ -11,7 +11,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-// ─── Gráficos ─────────────────────────────────────────────
 export const CHART_COLORS = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
@@ -29,7 +28,6 @@ export const BUDGET_COLORS = [
   "bg-chart-4",
 ]
 
-// ─── Categorías ───────────────────────────────────────────
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Alimentación: Utensils,
   Hogar: Home,
@@ -40,7 +38,6 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
 
 export { CATEGORY_COLORS } from "@/shared/constants/categoryColors"
 
-// ─── Exportación ──────────────────────────────────────────
 export type ExportFormat = "json" | "zip" | "csv" | "pdf"
 
 export interface ExportFormatOption {

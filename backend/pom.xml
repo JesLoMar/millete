@@ -18,7 +18,7 @@
 
     <properties>
         <java.version>25</java.version>
-        
+
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.40</lombok.version>
         <jjwt.version>0.12.6</jjwt.version>
@@ -148,21 +148,21 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <parameters>true</parameters> 
+                    <parameters>true</parameters>
                     <annotationProcessorPaths>
-                        <!-- 1. LOMBOK PRIMERO: Procesa los mètodos implícitos -->
+
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-                        <!-- 2. BINDING INTERMEDIO: Permite que MapStruct entienda a Lombok -->
+
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
                             <version>0.2.0</version>
                         </path>
-                        <!-- 3. MAPSTRUCT AL FINAL: Genera el mapeado limpio final -->
+
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>

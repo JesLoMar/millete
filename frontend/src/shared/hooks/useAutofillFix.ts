@@ -1,10 +1,5 @@
 import { useEffect } from "react"
 
-/**
- * Chrome/Edge aplica un fondo azul fijo al autofill que no se puede
- * sobreescribir con CSS puro. Este hook detecta el autofill vía
- * getComputedStyle y aplica el color correcto de la paleta Millete.
- */
 export function useAutofillFix() {
   useEffect(() => {
     const fix = () => {
@@ -13,8 +8,7 @@ export function useAutofillFix() {
         const style = window.getComputedStyle(input)
         const bg = style.backgroundColor
 
-        // Chrome autofill usa ~rgb(232, 240, 254) (azul claro)
-        // Si detectamos ese tono azulado, forzamos el fondo crema Millete
+
         if (bg.includes("232") && bg.includes("240")) {
           input.style.setProperty("background-color", "#f0e0c0", "important")
           input.style.setProperty("-webkit-text-fill-color", "#3d2b1f", "important")
@@ -27,7 +21,7 @@ export function useAutofillFix() {
       })
     }
 
-    // Revisar inmediatamente y después de un delay (autofill es async)
+
     fix()
     const t1 = setTimeout(fix, 100)
     const t2 = setTimeout(fix, 500)

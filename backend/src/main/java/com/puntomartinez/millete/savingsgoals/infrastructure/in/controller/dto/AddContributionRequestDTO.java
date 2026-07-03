@@ -10,7 +10,7 @@ public class AddContributionRequestDTO {
     @DecimalMin(value = "0.01", message = "La contribución debe ser mayor que cero.")
     private BigDecimal amount;
 
-    // Getters y Setters
+
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
 }

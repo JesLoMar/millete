@@ -19,11 +19,11 @@ interface AddContributionDialogProps {
   isSaving?: boolean
 }
 
-export function AddContributionDialog({ 
-  open, 
-  onOpenChange, 
-  onSave, 
-  isSaving = false 
+export function AddContributionDialog({
+  open,
+  onOpenChange,
+  onSave,
+  isSaving = false
 }: AddContributionDialogProps) {
   const { t } = useTranslation()
   const [amount, setAmount] = useState("")

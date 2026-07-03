@@ -14,7 +14,7 @@ interface DashboardHeaderProps {
   hidePeriodSelector?: boolean
 }
 
-type GreetingKey = 
+type GreetingKey =
   | "dashboard:header.greeting.morning"
   | "dashboard:header.greeting.afternoon"
   | "dashboard:header.greeting.evening"

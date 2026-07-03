@@ -181,7 +181,7 @@ public class GroupGoalService implements
                 .filter(m -> m.getGoalId().equals(goalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
 
-        // Proteger el último administrador
+
         if (request.getRole() != null && request.getRole().equals("MEMBER") && member.isAdmin()) {
             long activeAdmins = goalMemberRepository.findByGoalId(goalId).stream()
                     .filter(GoalMember::isActive)
@@ -260,7 +260,7 @@ public class GroupGoalService implements
                 .filter(m -> m.getGoalId().equals(goalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
 
-        // Proteger el último administrador
+
         if (member.isAdmin()) {
             long activeAdmins = goalMemberRepository.findByGoalId(goalId).stream()
                     .filter(GoalMember::isActive)

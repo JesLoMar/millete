@@ -39,12 +39,12 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
     })
   }, [activeIndex])
 
-  // Medir inmediatamente después del render (antes de pintar) para evitar flash
+
   useLayoutEffect(() => {
     measureSlider()
   }, [measureSlider])
 
-  // Ref estable para el handler de resize: la suscripción nunca se re-registra
+
   const measureRef = useRef(measureSlider)
   useLayoutEffect(() => {
     measureRef.current = measureSlider
@@ -65,7 +65,7 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
       )}
       aria-label={t('header.period.ariaLabel')}
     >
-      {/* Slider animado que se desplaza físicamente */}
+      {}
       <m.div
         className="absolute top-1 bottom-1 rounded-lg bg-primary shadow-sm z-0"
         animate={{

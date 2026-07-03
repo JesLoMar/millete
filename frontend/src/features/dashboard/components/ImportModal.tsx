@@ -97,8 +97,8 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`my-5 border-2 border-dashed rounded-xl flex flex-col items-center transition-all w-full ${
-            dragOver 
-              ? "border-primary bg-primary/5 scale-[0.99]" 
+            dragOver
+              ? "border-primary bg-primary/5 scale-[0.99]"
               : "border-border/60 hover:border-primary/50 hover:bg-secondary/10"
           }`}
         >
@@ -127,7 +127,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
               </div>
             )}
           </button>
-          
+
           {fileName && (
             <button
               type="button"

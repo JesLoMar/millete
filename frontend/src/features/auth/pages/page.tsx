@@ -22,11 +22,11 @@ export const LoginPage = () => {
   }
 
   return (
-    <main 
+    <main
       className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background relative overflow-x-hidden select-none"
       aria-label="Página de inicio de sesión"
     >
-      <section 
+      <section
         className="w-full flex items-start justify-center p-6 sm:p-12 md:p-16 relative z-10 min-w-0"
         aria-label="Formulario de autenticación"
       >
@@ -35,7 +35,7 @@ export const LoginPage = () => {
         </div>
       </section>
 
-      <section 
+      <section
         className="hidden lg:flex w-full min-w-0 relative z-10"
         aria-label="Información y novedades"
       >

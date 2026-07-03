@@ -35,7 +35,7 @@ export const useRegisterMutation = () => {
     onSuccess: async () => {
       await login();
       queryClient.clear();
-      
+
       notify.success(i18n.t('auth:alerts.register_success'));
       navigate('/dashboard', { replace: true });
     },

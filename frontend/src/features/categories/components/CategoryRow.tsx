@@ -29,7 +29,7 @@ export const CategoryRow = memo(function CategoryRow({ category, spent, budgetLi
 
   return (
     <>
-      {/* ============ DESKTOP (≥640px): Fila de tabla ============ */}
+      {}
       <div className="hidden sm:flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group">
         <div
           className="size-5 rounded-full shrink-0"
@@ -93,7 +93,7 @@ export const CategoryRow = memo(function CategoryRow({ category, spent, budgetLi
         </DropdownMenu>
       </div>
 
-      {/* ============ MÓVIL (<640px): Tarjeta compacta ============ */}
+      {}
       <div className="sm:hidden p-3 border-b last:border-0 hover:bg-accent/30 transition-colors">
         <div className="flex items-center gap-2.5 mb-2">
           <div

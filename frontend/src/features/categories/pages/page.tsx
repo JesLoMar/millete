@@ -26,8 +26,8 @@ export const CategoriesPage = () => {
                             hidePeriodSelector
                         />
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                            <PeriodSelector 
-                                period={period} 
+                            <PeriodSelector
+                                period={period}
                                 onPeriodChange={handlePeriodChange}
                                 className="w-full sm:flex-none"
                             />

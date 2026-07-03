@@ -3,7 +3,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 export const Toaster = () => {
   return (
     <>
-      {/* Desktop: abajo derecha */}
+      {}
       <div className="hidden sm:block">
         <SonnerToaster
           position="bottom-right"
@@ -20,7 +20,7 @@ export const Toaster = () => {
           }}
         />
       </div>
-      {/* Móvil: arriba centrado */}
+      {}
       <div className="sm:hidden">
         <SonnerToaster
           position="top-center"

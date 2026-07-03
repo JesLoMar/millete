@@ -44,7 +44,7 @@ export function DonutChart({
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        {/* Anillo de fondo (hueco vacío) */}
+        {}
         <circle
           cx={center}
           cy={center}
@@ -55,7 +55,7 @@ export function DonutChart({
           className="opacity-30"
         />
 
-        {/* Segmentos */}
+        {}
         {segments.map((segment) => (
           <circle
             key={segment.name}

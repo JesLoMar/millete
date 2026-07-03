@@ -76,7 +76,7 @@ export default function WikiLayout() {
               <X size={18} />
             </Button>
           </div>
-          {/* Contenido del sidebar con scroll */}
+          {}
           <div className="h-full overflow-y-auto p-4 md:p-0">
             <WikiSidebar onNavigate={closeSidebar} />
           </div>

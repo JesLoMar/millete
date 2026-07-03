@@ -37,9 +37,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
         Long windowStart = windowStartPerIp.get(clientIp);
         if (windowStart == null || now - windowStart > WINDOW_MS) {
-            // Expired or new window
+
             if (attemptsPerIp.size() >= MAX_IPS) {
-                // Under memory pressure: evict oldest entries
+
                 evictExpiredEntries(now);
             }
             windowStartPerIp.put(clientIp, now);

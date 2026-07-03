@@ -105,9 +105,9 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
         </div>
 
         <DialogFooter>
-          <Button 
-            onClick={handleUpdate} 
-            disabled={isUpdating || isSamePrice || targetPrice <= 0} 
+          <Button
+            onClick={handleUpdate}
+            disabled={isUpdating || isSamePrice || targetPrice <= 0}
             variant={needsConfirmation ? "destructive" : "default"}
             className="w-full font-semibold transition-colors"
           >

@@ -20,7 +20,7 @@ export function BudgetBars({
 }: BudgetBarsProps) {
   const { t } = useTranslation(['dashboard', 'common'])
   const [currentPage, setCurrentPage] = useState(1)
-  
+
   const budgets = externalData || []
   const totalPages = Math.ceil(budgets.length / ITEMS_PER_PAGE)
   const paginatedData = budgets.slice(
@@ -98,14 +98,14 @@ export function BudgetBars({
                     {formatCurrency(budget.limit)}
                   </span>
                 </div>
-                
+
                 <ProgressBar
                   value={percentage}
                   max={100}
                   variant={isOverLimit ? "overbudget" : isNearLimit ? "warning" : "default"}
                   size="sm"
                 />
-                
+
                 <p className={`text-xs text-right ${
                   isOverLimit
                     ? "text-destructive font-medium"

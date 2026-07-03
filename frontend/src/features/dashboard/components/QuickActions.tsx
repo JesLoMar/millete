@@ -29,7 +29,7 @@ export function QuickActions({
   isExporting = false,
   isImporting = false,
 }: QuickActionsProps) {
-  // Usamos el namespace dashboard y common
+
   const { t } = useTranslation(['dashboard', 'common'])
   const isAnyLoading = isExporting || isImporting
 
@@ -71,7 +71,7 @@ export function QuickActions({
   const actions = allActions.filter((action) => action.onClick !== undefined)
 
   return (
-    <fieldset 
+    <fieldset
       className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full border-0 p-0 m-0"
       aria-label={String(t('dashboard:quickActions.groupLabel'))}
     >
@@ -94,7 +94,7 @@ export function QuickActions({
           <div className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 shrink-0 ${action.color}`}>
             <action.icon className={`size-5 sm:size-5.5 ${action.isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </div>
-          
+
           <span className="font-medium text-xs sm:text-sm md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
             {String(t(action.labelKey))}
           </span>

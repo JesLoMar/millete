@@ -11,7 +11,7 @@ export function usePagination({ totalItems, itemsPerPage = 10, initialPage = 1 }
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / itemsPerPage)), [totalItems, itemsPerPage])
 
-  // Clamp the visible page when totalItems changes so users never see an empty page.
+
   const effectivePage = Math.min(currentPage, totalPages)
 
   const paginatedRange = useMemo(() => {

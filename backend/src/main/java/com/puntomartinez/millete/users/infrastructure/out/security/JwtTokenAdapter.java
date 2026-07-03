@@ -67,7 +67,7 @@ public class JwtTokenAdapter implements TokenProvider {
     }
     @Override
     public String extractUserId(String token) {
-        // Lee el token con nuestra clave secreta y extrae el "subject" (el ID)
+
         return Jwts.parser()
                 .verifyWith(key)
                 .build()

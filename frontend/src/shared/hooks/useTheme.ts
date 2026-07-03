@@ -10,7 +10,7 @@ function getInitialTheme(): Theme {
     const found = THEMES.find((t) => t.name === saved)
     if (found) return found
   }
-  // Detectar preferencia del sistema (opcional)
+
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
   if (prefersDark) return DARK_MILLETE_THEME
   return MILLETE_THEME
@@ -32,7 +32,7 @@ export function useTheme() {
     [setTheme]
   )
 
-  // Aplicar todas las variables CSS al DOM (incluyendo sidebar)
+
   useEffect(() => {
     const root = document.documentElement
     const colors: ThemeColors = theme.colors
@@ -66,7 +66,7 @@ export function useTheme() {
       "--surface": colors.surface,
       "--surface-hover": colors.surfaceHover,
       "--subtle": colors.subtle,
-      // Sidebar variables — dinámicas, derivadas del tema
+
       "--sidebar": colors.card,
       "--sidebar-foreground": colors.foreground,
       "--sidebar-primary": colors.primary,

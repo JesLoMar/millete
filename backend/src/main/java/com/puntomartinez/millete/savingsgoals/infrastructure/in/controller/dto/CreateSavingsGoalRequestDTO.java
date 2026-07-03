@@ -26,7 +26,7 @@ public class CreateSavingsGoalRequestDTO {
     @Size(max = 500, message = "El link no puede exceder 500 caracteres.")
     private String link;
 
-    // Getters y Setters
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

@@ -49,7 +49,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave, isSaving 
     }
   }
 
-  // Total dinámico: reemplaza el porcentaje original del miembro por el valor actual del input
+
   const dynamicTotal = useMemo(() => {
     const original = member?.customPercentage || 0
     const current = Number(customPercentage) || 0

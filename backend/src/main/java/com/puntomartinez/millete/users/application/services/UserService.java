@@ -34,9 +34,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         this.accountLockService = accountLockService;
     }
 
-    // ==========================================
-    // CASO DE USO: REGISTRAR USUARIO
-    // ==========================================
+
     @Override
     public User register(RegisterUserCommand command) {
         boolean hasUsername = command.username() != null && !command.username().isBlank();
@@ -65,15 +63,13 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         return userRepository.save(newUser);
     }
 
-    // ==========================================
-    // CASO DE USO: LOGIN
-    // ==========================================
+
     @Override
     public User login(LoginUserCommand command) {
         User user = userRepository.findByIdentifier(command.identifier())
                 .orElseThrow(() -> new AuthenticationFailedException("Credenciales inválidas"));
 
-        // 2. Control preliminar de bloqueo: ¿Este usuario tiene la sesión web temporalmente bloqueada?
+
         accountLockService.checkLockStatus(user.getId());
         if (!passwordHasher.matches(command.rawPassword(), user.getPassword())) {
             accountLockService.handleFailedLogin(user.getId());
@@ -84,9 +80,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         return user;
     }
 
-    // ==========================================
-    // RECUPERAR USUARIO POR ID
-    // ==========================================
+
     @Override
     public User getUserById(UUID id) {
         return userRepository.findById(id)
@@ -97,7 +91,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        // Verificar que el chatId no esté ya vinculado a otro usuario
+
         userRepository.findByTelegramChatId(chatId).ifPresent(existing -> {
             if (!existing.getId().equals(userId)) {
                 throw new ResourceAlreadyExistsException("Este Telegram ya está vinculado a otra cuenta");

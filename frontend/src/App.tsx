@@ -7,7 +7,6 @@ import { PublicRoute } from '@/app/router/PublicRoute';
 import { Toaster } from '@/shared/components/core/sonner';
 import { Spinner } from '@/shared/components/Spinner';
 
-// Carga perezosa de rutas no críticas para reducir el bundle inicial
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/page').then(m => ({ default: m.DashboardPage })));
 const TransactionsPage = lazy(() => import('@/features/transactions/pages/page').then(m => ({ default: m.TransactionsPage })));
 const CategoriesPage = lazy(() => import('@/features/categories/pages/page').then(m => ({ default: m.CategoriesPage })));
@@ -34,19 +33,19 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* === RUTAS PÚBLICAS === */}
+            {}
             <Route element={<PublicRoute />}>
               <Route path="/" element={<LoginPage />} />
               <Route path="/login" element={<LoginPage />} />
             </Route>
 
-            {/* === WIKI === */}
+            {}
             <Route path="/wiki" element={<WikiLayout />}>
               <Route index element={<WikiPage />} />
               <Route path=":section" element={<WikiPage />} />
             </Route>
 
-            {/* === RUTAS PRIVADAS === */}
+            {}
             <Route element={<ProtectedRoute />}>
               <Route path="/join-group-goal" element={<JoinGroupGoalPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -59,7 +58,7 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
             </Route>
 
-            {/* Ruta 404 - Redirige a dashboard si autenticado, sino a login */}
+            {}
             <Route path="*" element={<ProtectedRoute />}>
               <Route path="*" element={<DashboardPage />} />
             </Route>

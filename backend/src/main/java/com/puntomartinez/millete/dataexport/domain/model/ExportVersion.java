@@ -6,7 +6,7 @@ public record ExportVersion(int major, int minor, int patch) implements Comparab
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$");
 
-    // Incrementar cuando cambie el esquema de exportación
+
     public static final ExportVersion CURRENT = new ExportVersion(0, 1, 0);
 
     public static ExportVersion fromString(String version) {
@@ -27,12 +27,12 @@ public record ExportVersion(int major, int minor, int patch) implements Comparab
         );
     }
 
-    // Mismo MAJOR = compatible (puede necesitar migración)
+
     public boolean isCompatibleWith(ExportVersion other) {
         return this.major == other.major;
     }
 
-    // ¿Esta versión es más antigua que target?
+
     public boolean needsMigration(ExportVersion target) {
         return this.compareTo(target) < 0;
     }

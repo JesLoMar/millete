@@ -85,7 +85,7 @@ export function CategoryDonut({
           />
         </ChartTooltip>
 
-        {/* Leyenda */}
+        {}
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full mt-4">
           {chartData.map((item) => (
             <div

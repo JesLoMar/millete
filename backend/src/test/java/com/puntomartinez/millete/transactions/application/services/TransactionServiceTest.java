@@ -144,7 +144,7 @@ class TransactionServiceTest {
     @Test
     void getByIdAndUserId_shouldThrow_whenForbidden() {
         Transaction tx = createTransaction();
-        tx.setUserId(UUID.randomUUID()); // Different user
+        tx.setUserId(UUID.randomUUID());
         when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
 
         assertThrows(ForbiddenOperationException.class, () -> transactionService.getByIdAndUserId(transactionId, userId));

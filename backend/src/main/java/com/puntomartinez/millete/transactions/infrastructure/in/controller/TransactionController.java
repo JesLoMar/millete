@@ -34,9 +34,7 @@ public class TransactionController {
 
     private final CategoryRepository categoryRepository;
 
-    // =======================================================
-    // GET: MÉTRICAS DE TRANSACCIONES (NUEVO)
-    // =======================================================
+
     @GetMapping("/metrics")
     public ResponseEntity<TransactionMetricsResponseDTO> getMetrics(
             @RequestParam(defaultValue = "month") String period,
@@ -46,24 +44,20 @@ public class TransactionController {
         return ResponseEntity.ok(transactionMetricsUseCase.getMetrics(command));
     }
 
-    // =======================================================
-    // GET: LISTAR TODOS LOS MOVIMIENTOS
-    // =======================================================
+
     @GetMapping
     public ResponseEntity<List<TransactionResponseDTO>> listTransactions(Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         List<TransactionResponseDTO> transactions = listTransactionsUseCase.findAllByUserId(userId)
                 .stream()
-                .map(tx -> mapToDTO(tx, userId))  // ✅ Pasamos userId para resolver categoría
+                .map(tx -> mapToDTO(tx, userId))
                 .toList();
 
         return ResponseEntity.ok(transactions);
     }
 
-    // =======================================================
-    // POST: REGISTRAR UN NUEVO MOVIMIENTO
-    // =======================================================
+
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> registerTransaction(
             @Valid @RequestBody RegisterTransactionRequestDTO request,
@@ -85,9 +79,7 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(result.transaction(), userId));
     }
 
-    // =======================================================
-    // DELETE: ANULAR UN MOVIMIENTO
-    // =======================================================
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id, Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -95,9 +87,7 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    // =======================================================
-    // GET: OBTENER UN MOVIMIENTO ESPECÍFICO POR ID
-    // =======================================================
+
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable UUID id, Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -105,9 +95,7 @@ public class TransactionController {
         return ResponseEntity.ok(mapToDTO(tx, userId));
     }
 
-    // =======================================================
-    // PUT: ACTUALIZAR UN MOVIMIENTO
-    // =======================================================
+
     @PutMapping("/{id}")
     public ResponseEntity<TransactionResponseDTO> updateTransaction(
             @PathVariable UUID id,
@@ -129,9 +117,6 @@ public class TransactionController {
         return ResponseEntity.ok(mapToDTO(updatedTransaction, userId));
     }
 
-    // =======================================================
-    // MÉTODOS AUXILIARES
-    // =======================================================
 
     private record CategoryInfo(String name, String color) {}
 

@@ -107,7 +107,7 @@ export function NewRecurringTransactionDialog() {
   const isValid = form.description.trim() && form.category && form.amount && Number(form.amount) > 0 && form.frequencyType && form.startDate
   const today = new Date().toISOString().split('T')[0]
 
-  const frequencyUnit = 
+  const frequencyUnit =
     form.frequencyType === "DAYS" ? t('transactions:recurring.days') :
     form.frequencyType === "WEEKS" ? t('transactions:recurring.weeks') :
     form.frequencyType === "MONTHS" ? t('transactions:recurring.months') :
@@ -116,8 +116,8 @@ export function NewRecurringTransactionDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="gap-2 border-border h-9 sm:h-10 px-3 sm:px-4 font-semibold bg-card hover:bg-background transition-colors text-xs sm:text-sm"
           aria-label={t('transactions:recurring.newTitle')}
         >
@@ -146,14 +146,14 @@ export function NewRecurringTransactionDialog() {
               <Label htmlFor="recurring-description" className="text-sm font-semibold">
                 {t('transactions:description')}
               </Label>
-              <Input 
+              <Input
                 id="recurring-description"
-                ref={inputRef} 
-                placeholder={t('transactions:descriptionPlaceholder')} 
-                value={form.description} 
-                onChange={(e) => updateForm({ description: e.target.value })} 
-                disabled={isCreating} 
-                className="bg-background border-border text-base" 
+                ref={inputRef}
+                placeholder={t('transactions:descriptionPlaceholder')}
+                value={form.description}
+                onChange={(e) => updateForm({ description: e.target.value })}
+                disabled={isCreating}
+                className="bg-background border-border text-base"
               />
             </div>
 
@@ -166,16 +166,16 @@ export function NewRecurringTransactionDialog() {
                 <Label htmlFor="recurring-amount" className="text-sm font-semibold">
                   {t('transactions:amount')}
                 </Label>
-                <Input 
+                <Input
                   id="recurring-amount"
-                  type="number" 
-                  placeholder="0.00" 
-                  value={form.amount} 
-                  onChange={(e) => updateForm({ amount: e.target.value })} 
-                  disabled={isCreating} 
-                  className="bg-background border-border text-base" 
-                  min="0.01" 
-                  step="0.01" 
+                  type="number"
+                  placeholder="0.00"
+                  value={form.amount}
+                  onChange={(e) => updateForm({ amount: e.target.value })}
+                  disabled={isCreating}
+                  className="bg-background border-border text-base"
+                  min="0.01"
+                  step="0.01"
                 />
               </div>
             </div>
@@ -186,7 +186,7 @@ export function NewRecurringTransactionDialog() {
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">{t('transactions:recurring.frequency')}</Label>
                 <Select value={form.frequencyType} onValueChange={(frequencyType) => updateForm({ frequencyType })}>
-                  <SelectTrigger 
+                  <SelectTrigger
                     className="bg-background border-border text-base"
                     aria-label={t('transactions:recurring.selectFrequency')}
                   >
@@ -203,15 +203,15 @@ export function NewRecurringTransactionDialog() {
                 <Label htmlFor="recurring-interval" className="text-sm font-semibold">
                   {t('transactions:recurring.interval')}
                 </Label>
-                <Input 
+                <Input
                   id="recurring-interval"
-                  type="number" 
-                  placeholder="1" 
-                  value={form.frequencyInterval} 
-                  onChange={(e) => updateForm({ frequencyInterval: e.target.value })} 
-                  disabled={isCreating} 
-                  className="bg-background border-border text-base" 
-                  min="1" 
+                  type="number"
+                  placeholder="1"
+                  value={form.frequencyInterval}
+                  onChange={(e) => updateForm({ frequencyInterval: e.target.value })}
+                  disabled={isCreating}
+                  className="bg-background border-border text-base"
+                  min="1"
                 />
               </div>
             </div>
@@ -221,14 +221,14 @@ export function NewRecurringTransactionDialog() {
                 <Label htmlFor="recurring-start-date" className="text-sm font-semibold">
                   {t('transactions:recurring.startDate')}
                 </Label>
-                <Input 
+                <Input
                   id="recurring-start-date"
-                  type="date" 
-                  value={form.startDate} 
-                  onChange={(e) => updateForm({ startDate: e.target.value })} 
-                  disabled={isCreating} 
-                  className="bg-background border-border text-base" 
-                  min={today} 
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => updateForm({ startDate: e.target.value })}
+                  disabled={isCreating}
+                  className="bg-background border-border text-base"
+                  min={today}
                 />
               </div>
               <div className="space-y-2">
@@ -236,14 +236,14 @@ export function NewRecurringTransactionDialog() {
                   {t('transactions:recurring.endDate')}
                   <span className="text-xs text-muted-foreground ml-1">({t('auth:form.optional')})</span>
                 </Label>
-                <Input 
+                <Input
                   id="recurring-end-date"
-                  type="date" 
-                  value={form.endDate} 
-                  onChange={(e) => updateForm({ endDate: e.target.value })} 
-                  disabled={isCreating} 
-                  className="bg-background border-border text-base" 
-                  min={form.startDate || today} 
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => updateForm({ endDate: e.target.value })}
+                  disabled={isCreating}
+                  className="bg-background border-border text-base"
+                  min={form.startDate || today}
                 />
               </div>
             </div>
@@ -273,17 +273,17 @@ export function NewRecurringTransactionDialog() {
           </div>
 
           <DialogFooter className="gap-2 sm:gap-3 pt-2 pb-1 sticky bottom-0 bg-card">
-            <Button 
-              variant="outline" 
-              onClick={() => setOpen(false)} 
-              disabled={isCreating} 
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isCreating}
               className="border-border min-h-11"
             >
               {t('common:actions.cancel')}
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={isCreating || !isValid} 
+            <Button
+              onClick={handleSave}
+              disabled={isCreating || !isValid}
               className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
               {isCreating ? <Spinner size={20} /> : t('transactions:add')}

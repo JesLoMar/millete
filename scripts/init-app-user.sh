@@ -1,12 +1,6 @@
-#!/bin/bash
+
 set -e
 
-# =============================================
-# APPLICATION USER CREATION WITH MINIMAL PRIVILEGES
-# This script runs automatically during PostgreSQL initialization
-# =============================================
-
-# Use DATABASE_PASSWORD if APP_DB_PASSWORD is not defined
 APP_PASSWORD="${APP_DB_PASSWORD:-$DATABASE_PASSWORD}"
 
 if [ -z "$APP_PASSWORD" ]; then
@@ -36,9 +30,9 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO millete_app;
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO millete_app;
 
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public
         GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO millete_app;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public
         GRANT USAGE, SELECT ON SEQUENCES TO millete_app;
 EOSQL
 

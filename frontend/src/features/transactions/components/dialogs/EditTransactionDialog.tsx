@@ -157,17 +157,17 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
           </div>
 
           <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)} 
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
               disabled={form.isSubmitting}
               className="border-border"
             >
               {t('common:actions.cancel')}
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={form.isSubmitting || !isValid} 
+            <Button
+              onClick={handleSave}
+              disabled={form.isSubmitting || !isValid}
               className="bg-primary hover:bg-primary/90 px-6 min-h-11"
             >
               {form.isSubmitting ? <Spinner size={20} /> : t('transactions:save')}

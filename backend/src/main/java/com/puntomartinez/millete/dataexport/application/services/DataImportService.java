@@ -86,7 +86,7 @@ public class DataImportService {
 
             snapshot = validateAndMigrate(snapshot);
 
-            // ─── Sanitización: sobrescribir todos los userId del snapshot ───
+
             sanitizeSnapshot(snapshot, loggedInUserId);
 
             Map<UUID, UUID> categoryIdMap = new HashMap<>();
@@ -100,7 +100,7 @@ public class DataImportService {
             totalImported += importUserPreferences(snapshot, loggedInUserId);
             totalImported += importGroupGoals(snapshot, loggedInUserId, goalIdMap);
 
-            // ─── Verificación post-importación ───
+
             verifyImportedTransactions(loggedInUserId, categoryIdMap);
 
             String summary = String.format(
@@ -118,7 +118,6 @@ public class DataImportService {
         }
     }
 
-    // ─── Validación de versión y migración ────────────────
 
     private UserDataSnapshot validateAndMigrate(UserDataSnapshot snapshot) {
         ExportVersion fileVersion = ExportVersion.fromString(snapshot.metadata().version());
@@ -138,7 +137,6 @@ public class DataImportService {
         return snapshot;
     }
 
-    // ─── Sanitización: forzar userId del destino ────────────────
 
     private void sanitizeSnapshot(UserDataSnapshot snapshot, UUID loggedInUserId) {
         if (snapshot.categories() != null) {
@@ -182,14 +180,13 @@ public class DataImportService {
         log.debug("Snapshot sanitizado con userId destino: {}", loggedInUserId);
     }
 
-    // ─── Importación por entidad ────────────────────────
 
     private int importCategories(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
         if (snapshot.categories() == null || snapshot.categories().isEmpty()) {
             return 0;
         }
 
-        // Obtener categorías existentes del usuario para evitar duplicados
+
         Map<String, Category> existingByName = new HashMap<>();
         for (Category existing : categoryRepository.findByIdUsuario(loggedInUserId)) {
             if (existing.isActive()) {
@@ -199,7 +196,7 @@ public class DataImportService {
 
         int count = 0;
         for (Category cat : snapshot.categories()) {
-            // Saltar categorías inactivas del snapshot
+
             if (!cat.isActive()) {
                 log.debug("Categoría inactiva omitida: {}", cat.getName());
                 continue;
@@ -207,9 +204,9 @@ public class DataImportService {
 
             String nameLower = cat.getName().toLowerCase();
             Category existing = existingByName.get(nameLower);
-            
+
             if (existing != null) {
-                // Reutilizar categoría existente: actualizar y mapear el ID antiguo al existente
+
                 existing.setColor(cat.getColor());
                 existing.setBudgetLimit(cat.getBudgetLimit());
                 existing.setModifiedAt(java.time.LocalDateTime.now());
@@ -217,7 +214,7 @@ public class DataImportService {
                 categoryIdMap.put(cat.getId(), existing.getId());
                 log.debug("Categoría reutilizada: {} -> {}", cat.getName(), existing.getId());
             } else {
-                // Crear nueva categoría con UUID nuevo (nunca reutilizar el del snapshot)
+
                 UUID newId = UUID.randomUUID();
                 categoryIdMap.put(cat.getId(), newId);
                 Category safeCat = new Category(
@@ -240,7 +237,7 @@ public class DataImportService {
 
         int count = 0;
         for (Transaction tx : snapshot.transactions()) {
-            // Saltar transacciones inactivas del snapshot
+
             if (!tx.isActive()) {
                 continue;
             }
@@ -273,7 +270,7 @@ public class DataImportService {
 
         int count = 0;
         for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
-            // Saltar transacciones recurrentes inactivas del snapshot
+
             if (!ptx.isActive()) {
                 continue;
             }
@@ -307,7 +304,7 @@ public class DataImportService {
 
         int count = 0;
         for (Investment inv : snapshot.investments()) {
-            // Saltar inversiones inactivas del snapshot
+
             if (!inv.isActive()) {
                 continue;
             }
@@ -355,7 +352,7 @@ public class DataImportService {
         }
 
         UserPreferences prefs = snapshot.userPreferences();
-        // Si ya existen preferencias para este usuario, las actualizamos
+
         UserPreferences existing = userPreferencesRepository.findByUserId(loggedInUserId).orElse(null);
         if (existing != null) {
             existing.setPreferencesJson(prefs.getPreferencesJson());
@@ -381,7 +378,7 @@ public class DataImportService {
 
         int count = 0;
 
-        // ─── 1. Importar GoalUnits (regenerar UUIDs) ───
+
         for (GoalUnit goalUnit : snapshot.goalUnits()) {
             if (!goalUnit.isActive()) {
                 continue;
@@ -399,14 +396,14 @@ public class DataImportService {
             safeGoalUnit.setCreatedAt(goalUnit.getCreatedAt());
             safeGoalUnit.setModifiedAt(goalUnit.getModifiedAt());
             safeGoalUnit.setActive(goalUnit.isActive());
-            safeGoalUnit.setMembers(null); // Se reconstruyen después
+            safeGoalUnit.setMembers(null);
 
             goalUnitRepository.save(safeGoalUnit);
             count++;
         }
         log.debug("GoalUnits importadas: {}", count);
 
-        // ─── 2. Importar GoalMembers (mapear goalId) ───
+
         int memberCount = 0;
         if (snapshot.goalMembers() != null) {
             for (GoalMember gm : snapshot.goalMembers()) {
@@ -440,7 +437,7 @@ public class DataImportService {
         log.debug("GoalMembers importados: {}", memberCount);
         count += memberCount;
 
-        // ─── 3. Importar GoalContributions (mapear goalId) ───
+
         int contributionCount = 0;
         if (snapshot.goalContributions() != null) {
             for (GoalContribution gc : snapshot.goalContributions()) {
@@ -475,10 +472,9 @@ public class DataImportService {
         return count;
     }
 
-    // ─── Verificación post-importación ────────────────────────
 
     private void verifyImportedTransactions(UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
-        // Verificar que todas las transacciones importadas del usuario tengan categoría resoluble
+
         var allTransactions = transactionRepository.findAllByUserId(loggedInUserId);
         int orphanCount = 0;
         for (Transaction tx : allTransactions) {

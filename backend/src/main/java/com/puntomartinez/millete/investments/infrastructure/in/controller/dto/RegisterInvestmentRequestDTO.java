@@ -13,7 +13,7 @@ public record RegisterInvestmentRequestDTO(
         @NotBlank(message = "El nombre del activo es obligatorio")
         String assetName,
 
-        String ticker, // Opcional (ej: BTC, AAPL)
+        String ticker,
 
         @NotNull(message = "La cantidad es obligatoria")
         @Positive(message = "La cantidad debe ser mayor a cero")

@@ -16,7 +16,7 @@ public class UserPostgresAdapter implements UserRepository {
     private final JpaUserRepository jpaUserRepository;
     private final UserEntityMapper mapper;
 
-    // Inyección de dependencias
+
     public UserPostgresAdapter(JpaUserRepository jpaUserRepository, UserEntityMapper mapper) {
         this.jpaUserRepository = jpaUserRepository;
         this.mapper = mapper;
@@ -24,20 +24,20 @@ public class UserPostgresAdapter implements UserRepository {
 
     @Override
     public User save(User user) {
-        // 1. Traducimos al idioma de base de datos
+
         UserEntity entity = mapper.toEntity(user);
 
-        // 2. Guardamos (Hibernate hace el INSERT)
+
         UserEntity savedEntity = jpaUserRepository.save(entity);
 
-        // 3. Devolvemos el modelo de dominio puro
+
         return mapper.toDomain(savedEntity);
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
         return jpaUserRepository.findByEmail(email)
-                .map(mapper::toDomain); // Si lo encuentra, lo mapea a Dominio
+                .map(mapper::toDomain);
     }
 
     @Override

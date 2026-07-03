@@ -150,7 +150,7 @@ class DashboardServiceTest {
     @DisplayName("Obtener transacciones recientes")
     void shouldGetRecentTransactions() {
         Transaction tx = createTransaction(Transaction.TransactionType.EXPENSE, "-50.00");
-        // Estos stubs adicionales SÍ se usan en el método getRecentTransactions
+
         when(tx.getDescription()).thenReturn("Compra");
         when(tx.getCategoryId()).thenReturn(UUID.randomUUID());
 

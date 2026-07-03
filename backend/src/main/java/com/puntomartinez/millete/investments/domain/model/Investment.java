@@ -56,9 +56,6 @@ public class Investment {
         this.active = active;
     }
 
-    // =======================================================
-    // MÉTODOS DE NEGOCIO
-    // =======================================================
 
     public BigDecimal getInvestedCapital() {
         return quantity.multiply(purchasePrice);
@@ -80,9 +77,6 @@ public class Investment {
         return profit.divide(invested, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
     }
 
-    // =======================================================
-    // MÉTODOS DE ACTUALIZACIÓN DE ESTADO
-    // =======================================================
 
     public void updateCurrentPrice(BigDecimal newPrice) {
         if (newPrice != null && newPrice.compareTo(BigDecimal.ZERO) >= 0) {

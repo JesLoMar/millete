@@ -15,7 +15,7 @@ import java.util.UUID;
 @Setter
 public class Transaction {
 
-    // Atributos privados
+
     private UUID id;
     private UUID userId;
     private UUID categoryId;
@@ -24,23 +24,23 @@ public class Transaction {
     private TransactionType type;
     private String description;
 
-    // Campos de auditoría
+
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
 
-    // Enum para el tipo de transacción
+
     public enum TransactionType {
         INCOME,
         EXPENSE
     }
 
-    // Constructor: El "Guardia de Seguridad" del negocio
+
     public Transaction(UUID id, UUID userId, UUID categoryId, BigDecimal amount,
                        LocalDateTime date, TransactionType type, String description,
                        LocalDateTime createdAt, LocalDateTime modifiedAt, boolean active) {
 
-        // REGLAS DE NEGOCIO (Validaciones puras en Java)
+
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor que cero.");
         }
@@ -58,17 +58,17 @@ public class Transaction {
     }
 
     public void updateDetails(BigDecimal amount, LocalDateTime date, TransactionType type, String description, UUID categoryId) {
-        // Regla de negocio inquebrantable
+
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor que cero.");
         }
-        // Actualizamos todos los campos permitidos
+
         this.amount = amount;
         this.date = date;
         this.type = type;
         this.description = description;
         this.categoryId = categoryId;
-        // Rastro de auditoría
+
         this.modifiedAt = LocalDateTime.now();
     }
 

@@ -75,7 +75,7 @@ export const DashboardPage = () => {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      
+
       await apiClient.post('/data/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         skipGlobalErrorNotify: true
@@ -87,7 +87,7 @@ export const DashboardPage = () => {
     } catch (err) {
       const error = err as { response?: { status?: number; data?: { message?: string } } }
       let errorMessage = t('dashboard:import.errorGeneric') || 'Error al importar el archivo'
-      
+
       if (error?.response?.status === 403) {
         errorMessage = error.response.data?.message || t('dashboard:import.errorProperty') || 'No tienes permiso para importar'
       } else if (error?.response?.status === 400) {
@@ -125,7 +125,7 @@ export const DashboardPage = () => {
           }}
         >
           <Header onPeriodChange={handlePeriodChange} defaultPeriod={period} />
-          
+
           <m.div className="mb-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
             <QuickActions
               onImportClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'import' })}
@@ -197,9 +197,9 @@ export const DashboardPage = () => {
           </m.div>
         </m.main>
       </div>
-      <ImportModal 
-        isOpen={ui.isImportOpen} 
-        onClose={() => dispatch({ type: 'CLOSE_MODAL', modal: 'import' })} 
+      <ImportModal
+        isOpen={ui.isImportOpen}
+        onClose={() => dispatch({ type: 'CLOSE_MODAL', modal: 'import' })}
         onImport={handleImport}
       />
       <ExportModal

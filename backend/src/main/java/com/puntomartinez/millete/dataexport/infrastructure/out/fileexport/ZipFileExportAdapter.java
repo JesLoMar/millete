@@ -14,15 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-
 @Component("zipFileExportAdapter")
 public class ZipFileExportAdapter implements FileExportPort {
 
-    /**
-     * Caracteres que, al aparecer al inicio de una celda CSV, pueden ser
-     * interpretados como fórmulas por Excel/LibreOffice/Google Sheets.
-     * Anteponer una comilla simple (' ) fuerza el tratamiento como texto plano.
-     */
+
     private static final String FORMULA_PREFIXES = "=+-@\t\r";
 
     @Override
@@ -213,14 +208,7 @@ public class ZipFileExportAdapter implements FileExportPort {
         }
     }
 
-    /**
-     * Sanitiza un campo de texto para prevenir la inyección de fórmulas en CSV.
-     * Si el valor comienza por uno de los caracteres que activan fórmulas (=, +, -, @, tab, CR),
-     * se le antepone una comilla simple para forzar su interpretación como texto.
-     *
-     * @param value valor de texto a sanitizar
-     * @return el valor sanitizado, o el mismo valor si no requiere protección
-     */
+
     private String sanitizeCsvField(String value) {
         if (value == null || value.isBlank()) {
             return value;

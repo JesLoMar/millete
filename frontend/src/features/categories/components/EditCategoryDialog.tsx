@@ -131,10 +131,10 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
               <Label className="text-sm font-medium text-foreground/80">
                 {t('categories:colorLabel')}
               </Label>
-              <ColorPicker 
-                value={color} 
-                onChange={setColor} 
-                disabled={isUpdating} 
+              <ColorPicker
+                value={color}
+                onChange={setColor}
+                disabled={isUpdating}
               />
             </div>
 

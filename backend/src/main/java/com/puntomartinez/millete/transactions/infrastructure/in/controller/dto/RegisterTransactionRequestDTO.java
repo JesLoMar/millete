@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record RegisterTransactionRequestDTO(
-        UUID categoryId, // Puede ser nulo si no le asigna etiqueta
+        UUID categoryId,
 
         @NotNull(message = "La cantidad es obligatoria")
         @Positive(message = "La cantidad debe ser mayor que cero")

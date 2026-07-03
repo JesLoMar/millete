@@ -171,7 +171,7 @@ class UserServiceTest {
         when(user.getId()).thenReturn(defaultUserId);
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.of(user));
 
-        // Simulamos que handleFailedLogin lanza AccountLockedException (5º fallo)
+
         doThrow(new AccountLockedException(LocalDateTime.now().plusMinutes(15), 15))
                 .when(accountLockService).handleFailedLogin(defaultUserId);
 

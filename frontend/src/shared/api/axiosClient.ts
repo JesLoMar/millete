@@ -20,15 +20,11 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
-// ─── INTERCEPTOR DE REQUEST ────────────────────────────────────
-// El JWT viaja automáticamente en la cookie HttpOnly gracias a
-// withCredentials: true. No se añade manualmente ningún header.
 apiClient.interceptors.request.use(
   (config) => config,
   (error) => Promise.reject(error),
 );
 
-// ─── INTERCEPTOR DE RESPONSE ───────────────────────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -36,13 +32,13 @@ apiClient.interceptors.response.use(
     const message = error.response?.data?.message || '';
 
     if (status === 401) {
-      // Logout silencioso: limpiar storage y recargar para evitar bucles
+
       secureStorage.clear();
       window.location.href = '/login';
       return Promise.reject(error);
     }
 
-    // ─── Notificación global de errores ────────────────────────
+
     if (!error.config?.skipGlobalErrorNotify) {
       const errorMessage =
         message || error.response?.data?.error || error.message || i18n.t('api:errors.default');

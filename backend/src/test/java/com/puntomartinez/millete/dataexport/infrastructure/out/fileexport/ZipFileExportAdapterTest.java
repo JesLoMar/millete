@@ -141,8 +141,7 @@ class ZipFileExportAdapterTest {
                         .lines()
                         .collect(Collectors.joining("\n"));
 
-                // Verify that no cell starts with a formula prefix (without the sanitizing quote)
-                // The sanitized values start with ', so we check that the raw formula prefix at start of line/cell doesn't exist
+
                 String[] lines = content.split("\n");
                 for (String line : lines) {
                     String[] cells = line.split(",");
@@ -160,7 +159,7 @@ class ZipFileExportAdapterTest {
                                 && !trimmed.equals("current_amount") && !trimmed.equals("progress")
                                 && !trimmed.equals("deadline") && !trimmed.equals("priority")
                                 && !trimmed.equals("status") && !trimmed.equals("link")) {
-                            // Check that if the cell starts with a formula prefix, it is preceded by '
+
                             if (trimmed.startsWith("=") || trimmed.startsWith("+") || trimmed.startsWith("-")
                                     || trimmed.startsWith("@")) {
                                 assertTrue(trimmed.startsWith("'"), entry.getName() + " contiene fórmula sin sanitizar: " + trimmed);

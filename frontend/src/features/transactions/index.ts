@@ -14,9 +14,9 @@ export interface TransactionResponse {
 }
 
 export interface RegisterTransactionRequest {
-  categoryId: string; // UUID
+  categoryId: string;
   amount: number;
   type: TransactionType;
   description: string;
-  date: string; // ISO 8601 Date
+  date: string;
 }

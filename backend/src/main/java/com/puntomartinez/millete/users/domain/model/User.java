@@ -23,7 +23,7 @@ public class User {
                 LocalDateTime createdAt, LocalDateTime modifiedAt,
                 boolean active, boolean anonymized) {
 
-        // 1. NUEVA VALIDACIÓN HÍBRIDA: Verificamos qué datos nos llegan
+
         boolean hasUsername = username != null && !username.isBlank();
         boolean hasEmail = email != null && !email.isBlank();
 
@@ -31,7 +31,7 @@ public class User {
             throw new IllegalArgumentException("El usuario debe tener al menos un email o un nombre de usuario");
         }
 
-        // 2. Mantenemos tu validación de contraseña (si la tenías)
+
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("La contraseña es obligatoria");
         }
@@ -46,9 +46,6 @@ public class User {
         this.anonymized = anonymized;
     }
 
-    // ==========================================
-    // LÓGICA DE NEGOCIO Y SEGURIDAD
-    // ==========================================
 
     public void anonymize() {
         this.username = "user_" + this.id.toString().substring(0, 8);

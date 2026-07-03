@@ -14,7 +14,7 @@ public record InvestmentResponseDTO(
         BigDecimal purchasePrice,
         BigDecimal currentPrice,
 
-        // Campos Mágicos (Calculados por el Dominio)
+
         BigDecimal investedCapital,
         BigDecimal currentValue,
         BigDecimal profitOrLoss,

@@ -40,7 +40,7 @@ public class SavingsGoalResponseDTO {
         this.active = active;
     }
 
-    // Getters y Setters
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

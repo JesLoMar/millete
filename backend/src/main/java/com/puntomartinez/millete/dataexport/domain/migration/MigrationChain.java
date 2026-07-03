@@ -29,7 +29,7 @@ public class MigrationChain {
         ExportVersion currentVersion = ExportVersion.fromString(snapshot.metadata().version());
         UserDataSnapshot result = snapshot;
 
-        // Si no hay migraciones, verificar que la versión coincide
+
         if (migrations.isEmpty()) {
             if (!currentVersion.equals(ExportVersion.CURRENT)) {
                 System.out.println("Aviso: archivo v" + currentVersion
@@ -41,7 +41,7 @@ public class MigrationChain {
         System.out.println("Migrando desde v" + currentVersion);
 
         for (DataMigration migration : migrations) {
-            // Solo aplicar migraciones posteriores a la versión del archivo
+
             if (currentVersion.compareTo(migration.fromVersion()) >= 0
                     && currentVersion.compareTo(migration.toVersion()) < 0) {
 
@@ -69,7 +69,7 @@ public class MigrationChain {
             return;
         }
 
-        // Verificar que no hay huecos entre migraciones
+
         for (int i = 0; i < migrations.size() - 1; i++) {
             ExportVersion currentTo = migrations.get(i).toVersion();
             ExportVersion nextFrom = migrations.get(i + 1).fromVersion();
@@ -81,7 +81,7 @@ public class MigrationChain {
             }
         }
 
-        // Verificar que la última migración llega a la versión actual
+
         ExportVersion lastTo = migrations.get(migrations.size() - 1).toVersion();
         if (!lastTo.equals(ExportVersion.CURRENT)) {
             throw new IllegalStateException(

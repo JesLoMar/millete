@@ -26,7 +26,7 @@ export const GroupGoalsPage = () => {
 
   const [internalSelectedGoalId, setInternalSelectedGoalId] = useState<string | null>(null)
 
-  // Derivar selectedGoalId de la URL (?goalId=xxx) o del estado interno
+
   const selectedGoalId = useMemo(() => {
     return searchParams.get('goalId') || internalSelectedGoalId
   }, [searchParams, internalSelectedGoalId])
@@ -64,13 +64,13 @@ export const GroupGoalsPage = () => {
   const { goals, isLoading: isLoadingList, selectedGoal } = useGroupGoalQueries(selectedGoalId)
   const mutations = useGroupGoalMutations(selectedGoalId)
 
-  // Calcular totalCustomPercentage directamente desde el backend
+
   const totalCustomPercentage = useMemo(() => {
     if (!selectedGoal) return 0
     return selectedGoal.members.reduce((sum, m) => sum + (m.customPercentage || 0), 0)
   }, [selectedGoal])
 
-  // 2º - Luego contributionMembers que usa totalCustomPercentage
+
   const contributionMembers: ContributionMember[] = useMemo(() => {
     if (!selectedGoal) return []
     return calculateContributions(selectedGoal, totalCustomPercentage)

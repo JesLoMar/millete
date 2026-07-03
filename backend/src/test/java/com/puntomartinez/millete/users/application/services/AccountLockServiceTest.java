@@ -92,7 +92,7 @@ class AccountLockServiceTest {
     @DisplayName("checkLockStatus - bloqueo expirado realiza desbloqueo perezoso y guarda")
     void checkLockStatusShouldUnlockWhenBlockExpired() {
         session.setLoginAttempts(5);
-        session.setBlockedUntil(LocalDateTime.now().minusMinutes(5)); // Ya expiró
+        session.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
 
         when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
                 .thenReturn(Collections.singletonList(session));
@@ -100,7 +100,7 @@ class AccountLockServiceTest {
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
 
-        // Verificar que se hizo el desbloqueo perezoso
+
         assertThat(session.getLoginAttempts()).isZero();
         assertThat(session.getBlockedUntil()).isNull();
 
@@ -110,8 +110,8 @@ class AccountLockServiceTest {
     @Test
     @DisplayName("handleFailedLogin - delega en SessionPersistenceService y no lanza si no está bloqueado")
     void handleFailedLoginShouldDelegateAndNotThrowWhenNotBlocked() {
-        session.setLoginAttempts(3); // 4º intento, no alcanza límite
-        session.registerFailedAttempt(5, 15); // Simulamos 4º fallo
+        session.setLoginAttempts(3);
+        session.registerFailedAttempt(5, 15);
 
         when(sessionPersistenceService.persistFailedAttempt(userId)).thenReturn(session);
 

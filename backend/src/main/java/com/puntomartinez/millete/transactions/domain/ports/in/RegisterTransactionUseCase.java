@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface RegisterTransactionUseCase {
 
-    // Ahora devolvemos nuestro nuevo Record de resultado
+
     RegisterTransactionResult register(RegisterTransactionCommand command);
 
     record RegisterTransactionCommand(

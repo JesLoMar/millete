@@ -34,7 +34,7 @@ public class DataExportController {
 
         UserDataSnapshot snapshot = dataExportService.exportAllUserData(userId);
 
-        // Headers para forzar la descarga como archivo físico
+
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=millete_export.json");

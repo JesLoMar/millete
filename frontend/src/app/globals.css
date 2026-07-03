@@ -1,4 +1,4 @@
-/* Reglas globales para respetar prefers-reduced-motion */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
