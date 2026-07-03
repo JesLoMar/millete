@@ -64,10 +64,20 @@ export const NotificationItem = memo(function NotificationItem({ notification, o
   }, [invitationId, rejectInvitation, notification.id, onMarkAsRead, t]);
 
   const handleNavigate = useCallback(() => {
-    if (isGoalInvitation) {
+    navigate('/profile?section=notifications');
+  }, [navigate]);
+    if (isGoalInvitation && notification.metadata?.goalId) {
+      navigate(`/group-goals?goalId=${notification.metadata.goalId}`);
+    } else if (isGoalInvitation) {
+      navigate('/profile?section=notifications');
+    }
+  }, [isGoalInvitation, notification.metadata?.goalId, navigate]);
+    if (isGoalInvitation && notification.metadata?.goalId) {
+      navigate(`/group-goals?goalId=${notification.metadata.goalId}`);
+    } else if (isGoalInvitation) {
       navigate('/profile');
     }
-  }, [isGoalInvitation, navigate]);
+  }, [isGoalInvitation, notification.metadata?.goalId, navigate]);
 
   return (
     <div

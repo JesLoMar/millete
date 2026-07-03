@@ -2,7 +2,6 @@ import type { GroupGoalDetail, ContributionMember } from "./types"
 
 export function calculateContributions(
   selectedGoal: GroupGoalDetail,
-  customPercentages: Record<string, number>,
   totalCustomPercentage: number
 ): ContributionMember[] {
   const { members, monthlyTarget, distributionMode } = selectedGoal
@@ -23,7 +22,7 @@ export function calculateContributions(
     members.forEach((m) => {
       expectedMap[m.userId] =
         totalCustomPercentage > 0
-          ? ((customPercentages[m.userId] || 0) / 100) * monthlyTarget
+          ? ((m.customPercentage || 0) / 100) * monthlyTarget
           : 0
     })
   } else if (distributionMode === "EQUITATIVE" && members.length > 0) {

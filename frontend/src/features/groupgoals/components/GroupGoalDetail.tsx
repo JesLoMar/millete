@@ -14,8 +14,6 @@ interface GroupGoalDetailProps {
   contributions: ContributionMember[]
   totalContributed: number
   percentageCompleted: number
-  customPercentages: Record<string, number>
-  onCustomPercentageChange: (member: ContributionMember, percentage: number) => void
   totalCustomPercentage: number
   onBack: () => void
   onInviteClick: () => void
@@ -31,8 +29,6 @@ export function GroupGoalDetail({
   contributions,
   totalContributed,
   percentageCompleted,
-  customPercentages,
-  onCustomPercentageChange,
   totalCustomPercentage,
   onBack,
   onInviteClick,
@@ -196,8 +192,7 @@ export function GroupGoalDetail({
               index={index}
               isAdmin={isAdmin}
               isCustomMode={isCustomMode}
-              customPercentage={customPercentages[member.userId] ?? member.customPercentage ?? 0}
-              onCustomPercentageChange={onCustomPercentageChange}
+              customPercentage={member.customPercentage ?? 0}
               onEdit={onEditMember}
               onDelete={onDeleteMember}
             />

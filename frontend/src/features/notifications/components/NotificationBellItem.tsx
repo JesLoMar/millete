@@ -30,7 +30,7 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
   const handleClick = useCallback(() => {
     onNavigate();
     if (notification.type === 'GOAL_INVITATION') {
-      navigate('/profile');
+      navigate('/profile?section=notifications');
     } else {
       navigate('/notifications');
     }

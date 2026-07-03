@@ -36,7 +36,7 @@ export function DistributionCard({
 
   const isAdmin = variant.startsWith("admin")
   const isCustomMode = variant.includes("custom")
-  const isValid = variant.endsWith("valid") || variant.endsWith("equitative")
+  const isValid = !isCustomMode || (totalCustomPercentage !== undefined && Math.abs(totalCustomPercentage - 100) <= 0.01)
 
   return (
     <Card className="border bg-primary/5 relative overflow-hidden">

@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { TopNav } from '@/shared/components/TopNav';
 import { Sidebar } from '@/shared/components/Sidebar';
 import { PersonalInfoSection } from '../components/PersonalInfoSection';
@@ -10,6 +12,15 @@ import { NotificationsTable } from '../components/NotificationsTable';
 
 export const ProfilePage = () => {
   const { t } = useTranslation('userProfile');
+  const [searchParams] = useSearchParams();
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section === 'notifications' && notificationsRef.current) {
+      notificationsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [searchParams]);
 
   return (
     <div className="flex h-screen">
@@ -22,7 +33,9 @@ export const ProfilePage = () => {
             <PersonalInfoSection />
             <ChangePasswordSection />
             <TelegramSection />
-            <NotificationsTable />
+            <div ref={notificationsRef} id="notifications-section">
+              <NotificationsTable />
+            </div>
             <SessionsSection />
             <DeleteAccountSection />
           </div>

@@ -383,16 +383,21 @@ public class GroupGoalService implements
                     if (m.isActive()) throw new ResourceAlreadyExistsException("You are already a member of this goal");
                 });
 
-        GoalMember member = new GoalMember();
-        member.setId(UUID.randomUUID());
-        member.setGoalId(invitation.getGoalId());
-        member.setUserId(userId);
-        member.setRole(GoalRole.MEMBER);
-        member.setSalary(BigDecimal.ZERO);
-        member.setJoinedAt(LocalDateTime.now());
-        member.setCreatedAt(LocalDateTime.now());
-        member.setModifiedAt(LocalDateTime.now());
+        GoalMember member = goalMemberRepository.findByGoalIdAndUserId(invitation.getGoalId(), userId)
+                .orElseGet(() -> {
+                    GoalMember newMember = new GoalMember();
+                    newMember.setId(UUID.randomUUID());
+                    newMember.setGoalId(invitation.getGoalId());
+                    newMember.setUserId(userId);
+                    newMember.setRole(GoalRole.MEMBER);
+                    newMember.setSalary(BigDecimal.ZERO);
+                    newMember.setCreatedAt(LocalDateTime.now());
+                    return newMember;
+                });
+
         member.setActive(true);
+        member.setJoinedAt(LocalDateTime.now());
+        member.setModifiedAt(LocalDateTime.now());
 
         goalMemberRepository.save(member);
         invitation.markAsAccepted();

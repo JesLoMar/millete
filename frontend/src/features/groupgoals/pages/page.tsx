@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react"
+import { useSearchParams } from "react-router-dom"
 import { TopNav } from "@/shared/components/TopNav"
 import { Sidebar } from "@/shared/components/Sidebar"
 import { GroupGoalSelector } from "@/features/groupgoals/components/GroupGoalSelector"
@@ -21,8 +22,31 @@ import type { ApiError } from "@/shared/types/api"
 
 export const GroupGoalsPage = () => {
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null)
+  const [internalSelectedGoalId, setInternalSelectedGoalId] = useState<string | null>(null)
+
+  // Derivar selectedGoalId de la URL (?goalId=xxx) o del estado interno
+  const selectedGoalId = useMemo(() => {
+    return searchParams.get('goalId') || internalSelectedGoalId
+  }, [searchParams, internalSelectedGoalId])
+
+  const setSelectedGoalId = useCallback((id: string | null) => {
+    setInternalSelectedGoalId(id)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (id) {
+          next.set('goalId', id)
+        } else {
+          next.delete('goalId')
+        }
+        return next
+      },
+      { replace: true }
+    )
+  }, [setSearchParams])
+
   const [dialogs, setDialogs] = useState({
     isCreateOpen: false,
     isInviteOpen: false,
@@ -36,21 +60,21 @@ export const GroupGoalsPage = () => {
     deleteMemberId: null as string | null,
     deletingMemberName: "",
   })
-  const [customPercentages, setCustomPercentages] = useState<Record<string, number>>({})
 
   const { goals, isLoading: isLoadingList, selectedGoal } = useGroupGoalQueries(selectedGoalId)
   const mutations = useGroupGoalMutations(selectedGoalId)
 
-  // 1º - Calcular totalCustomPercentage PRIMERO
+  // Calcular totalCustomPercentage directamente desde el backend
   const totalCustomPercentage = useMemo(() => {
-    return Object.values(customPercentages).reduce((sum, p) => sum + p, 0)
-  }, [customPercentages])
+    if (!selectedGoal) return 0
+    return selectedGoal.members.reduce((sum, m) => sum + (m.customPercentage || 0), 0)
+  }, [selectedGoal])
 
   // 2º - Luego contributionMembers que usa totalCustomPercentage
   const contributionMembers: ContributionMember[] = useMemo(() => {
     if (!selectedGoal) return []
-    return calculateContributions(selectedGoal, customPercentages, totalCustomPercentage)
-  }, [selectedGoal, customPercentages, totalCustomPercentage])
+    return calculateContributions(selectedGoal, totalCustomPercentage)
+  }, [selectedGoal, totalCustomPercentage])
 
   const totalContributed = contributionMembers.reduce((sum, m) => sum + m.contributed, 0)
   const percentageCompleted = selectedGoal
@@ -58,6 +82,12 @@ export const GroupGoalsPage = () => {
       ? (totalContributed / selectedGoal.monthlyTarget) * 100
       : 0
     : 0
+
+  const isEditingLastAdmin = useMemo(() => {
+    if (!actions.editMember || actions.editMember.role !== 'ADMIN' || !selectedGoal) return false
+    const adminCount = selectedGoal.members.filter(m => m.role === 'ADMIN').length
+    return adminCount <= 1
+  }, [actions.editMember, selectedGoal])
 
   const handleCreateGoal = async (name: string, monthlyTarget: number, distributionMode: string) => {
     await mutations.createGoal.mutateAsync({ name, monthlyTarget, distributionMode })
@@ -134,13 +164,6 @@ export const GroupGoalsPage = () => {
     setDialogs((prev) => ({ ...prev, isAddContributionOpen: false }))
   }
 
-  const handleCustomPercentageChange = useCallback(
-    (member: ContributionMember, percentage: number) => {
-      setCustomPercentages((prev) => ({ ...prev, [member.userId]: percentage }))
-    },
-    []
-  )
-
   const handleModeChange = (mode: string) => {
     if (!selectedGoalId) return
     mutations.updateGoal.mutate({ goalId: selectedGoalId, distributionMode: mode })
@@ -167,8 +190,6 @@ export const GroupGoalsPage = () => {
               contributions={contributionMembers}
               totalContributed={totalContributed}
               percentageCompleted={percentageCompleted}
-              customPercentages={customPercentages}
-              onCustomPercentageChange={handleCustomPercentageChange}
               totalCustomPercentage={totalCustomPercentage}
               onBack={() => setSelectedGoalId(null)}
               onInviteClick={() => setDialogs((prev) => ({ ...prev, isInviteOpen: true }))}
@@ -230,11 +251,14 @@ export const GroupGoalsPage = () => {
       />
 
       <EditMemberDialog
+        key={actions.editMember?.id ?? "edit-member"}
         member={actions.editMember}
         open={!!actions.editMember}
         onOpenChange={(open) => !open && setActions((prev) => ({ ...prev, editMember: null }))}
         onSave={handleEditMember}
         isSaving={mutations.updateMember.isPending}
+        isLastAdmin={isEditingLastAdmin}
+        totalCustomPercentage={totalCustomPercentage}
       />
 
       <ConfirmDeletionDialog

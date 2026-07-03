@@ -2,7 +2,6 @@ import { memo } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/shared/components/core/card"
 import { Button } from "@/shared/components/core/button"
-import { Input } from "@/shared/components/core/input"
 import { ProgressBar } from "@/shared/components/core/progress-bar"
 import { Crown, MoreHorizontal, Edit2, Trash2 } from "lucide-react"
 import {
@@ -21,7 +20,6 @@ interface MemberCardProps {
   isAdmin: boolean
   isCustomMode: boolean
   customPercentage: number
-  onCustomPercentageChange: (member: ContributionMember, percentage: number) => void
   onEdit: (member: ContributionMember) => void
   onDelete: (memberId: string) => void
 }
@@ -32,21 +30,10 @@ export const MemberCard = memo(function MemberCard({
   isAdmin,
   isCustomMode,
   customPercentage,
-  onCustomPercentageChange,
   onEdit,
   onDelete,
 }: MemberCardProps) {
   const { t } = useTranslation()
-  const percentageInputId = `member-percentage-${member.id}`
-
-  const handlePercentageBlur = () => {
-    onCustomPercentageChange(member, customPercentage)
-  }
-
-  const handlePercentageChange = (value: number) => {
-    const clamped = Math.max(0, Math.min(100, value))
-    onCustomPercentageChange(member, clamped)
-  }
 
   return (
     <Card className="border group">
@@ -87,28 +74,7 @@ export const MemberCard = memo(function MemberCard({
           {member.role === "ADMIN" ? t('groupGoals:admin') : t('groupGoals:member')}
         </p>
 
-        {isCustomMode && isAdmin && (
-          <div className="mb-3 sm:mb-4">
-            <label htmlFor={percentageInputId} className="text-xs text-muted-foreground">
-              {t('groupGoals:customPercentage')}
-            </label>
-            <div className="flex items-center gap-2 mt-1">
-              <Input
-                id={percentageInputId}
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={customPercentage}
-                onChange={(e) => handlePercentageChange(Number(e.target.value))}
-                onBlur={handlePercentageBlur}
-                className="h-8 w-20 bg-background border-border text-sm"
-              />
-              <span className="text-sm text-muted-foreground">%</span>
-            </div>
-          </div>
-        )}
-        {isCustomMode && !isAdmin && (
+        {isCustomMode && (
           <div className="mb-3 sm:mb-4">
             <span className="text-xs text-muted-foreground">{t('groupGoals:customPercentage')}</span>
             <p className="text-sm font-medium mt-1">{customPercentage}%</p>

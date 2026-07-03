@@ -82,7 +82,7 @@ export function AuthForm() {
         </p>
       </div>
 
-      <AuthToggle mode={mode} onChange={handleModeChange} />
+      <AuthToggle mode={mode} onToggle={handleModeChange} />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6" noValidate>
         {mode === "login" ? (
@@ -101,13 +101,13 @@ export function AuthForm() {
           type="submit"
           disabled={isPending || !isValid}
           className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-primary hover:bg-primary/90 transition-all duration-200"
-          aria-label={mode === "login" ? t('auth:login.submit') : t('auth:register.submit')}
+          aria-label={mode === "login" ? t('auth:submit.default') : t('auth:submit.register')}
         >
           {isPending ? (
             <Spinner size={24} />
           ) : (
             <>
-              {mode === "login" ? t('auth:login.submit') : t('auth:register.submit')}
+              {mode === "login" ? t('auth:submit.default') : t('auth:submit.register')}
               <ArrowRight className="ml-2 size-5" aria-hidden="true" />
             </>
           )}
@@ -116,8 +116,8 @@ export function AuthForm() {
         {(isLoginError || isRegisterError) && (
           <p className="text-destructive text-sm text-center" role="alert">
             {mode === "login"
-              ? t('auth:login.error')
-              : t('auth:register.error')}
+              ? t('auth:errors.login_failed')
+              : t('auth:errors.register_failed')}
           </p>
         )}
       </form>

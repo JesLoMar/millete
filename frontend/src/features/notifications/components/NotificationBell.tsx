@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/core/dialog';
+import { useQueryClient } from '@tanstack/react-query';
 import { useUnreadNotificationsCount } from '../hooks/useNotifications';
 import { NotificationBellList } from './NotificationBellList';
 
@@ -15,14 +16,22 @@ export function NotificationBell() {
   const { t } = useTranslation('notifications');
   const [open, setOpen] = useState(false);
   const { data: count = 0 } = useUnreadNotificationsCount();
+  const queryClient = useQueryClient();
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      queryClient.setQueryData(['notifications', 'unread-count'], 0);
+    }
+    setOpen(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <Button
         variant="ghost"
         size="icon"
         className="relative"
-        onClick={() => setOpen(true)}
+        onClick={() => handleOpenChange(true)}
         aria-label={t('title')}
       >
         <Bell className="h-5 w-5" />
