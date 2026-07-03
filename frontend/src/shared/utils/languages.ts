@@ -71,7 +71,7 @@ export function getLanguageFromCode(code: string): Language {
   }
 }
 
-export function getSupportedLanguages(): Language[] {
+function getSupportedLanguages(): Language[] {
   return (Object.keys(LANGUAGE_MAP) as SupportedLanguageCode[]).map((code) => ({
     code,
     ...LANGUAGE_MAP[code],

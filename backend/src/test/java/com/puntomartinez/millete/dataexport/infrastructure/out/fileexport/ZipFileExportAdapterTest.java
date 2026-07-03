@@ -141,11 +141,33 @@ class ZipFileExportAdapterTest {
                         .lines()
                         .collect(Collectors.joining("\n"));
 
-                assertFalse(content.contains("=MALICIOUS()"), entry.getName() + " contiene fórmula sin sanitizar");
-                assertFalse(content.contains("+123456789"), entry.getName() + " contiene fórmula sin sanitizar");
-                assertFalse(content.contains("-EVIL"), entry.getName() + " contiene fórmula sin sanitizar");
-                assertFalse(content.contains("@TYPE"), entry.getName() + " contiene fórmula sin sanitizar");
-                assertFalse(content.contains("=CMD|' /C calc'!A0"), entry.getName() + " contiene fórmula sin sanitizar");
+                // Verify that no cell starts with a formula prefix (without the sanitizing quote)
+                // The sanitized values start with ', so we check that the raw formula prefix at start of line/cell doesn't exist
+                String[] lines = content.split("\n");
+                for (String line : lines) {
+                    String[] cells = line.split(",");
+                    for (String cell : cells) {
+                        String trimmed = cell.trim();
+                        if (!trimmed.isEmpty() && !trimmed.equals("name") && !trimmed.equals("budget_limit")
+                                && !trimmed.equals("category_name") && !trimmed.equals("amount")
+                                && !trimmed.equals("date") && !trimmed.equals("type") && !trimmed.equals("description")
+                                && !trimmed.equals("frequency_type") && !trimmed.equals("frequency_interval")
+                                && !trimmed.equals("start_date") && !trimmed.equals("end_date")
+                                && !trimmed.equals("last_executed_date") && !trimmed.equals("asset_name")
+                                && !trimmed.equals("ticker") && !trimmed.equals("quantity")
+                                && !trimmed.equals("purchase_price") && !trimmed.equals("current_price")
+                                && !trimmed.equals("purchase_date") && !trimmed.equals("target_amount")
+                                && !trimmed.equals("current_amount") && !trimmed.equals("progress")
+                                && !trimmed.equals("deadline") && !trimmed.equals("priority")
+                                && !trimmed.equals("status") && !trimmed.equals("link")) {
+                            // Check that if the cell starts with a formula prefix, it is preceded by '
+                            if (trimmed.startsWith("=") || trimmed.startsWith("+") || trimmed.startsWith("-")
+                                    || trimmed.startsWith("@")) {
+                                assertTrue(trimmed.startsWith("'"), entry.getName() + " contiene fórmula sin sanitizar: " + trimmed);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

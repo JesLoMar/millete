@@ -181,6 +181,7 @@ export function GroupGoalDetail({
                   : "member-equitative"
             }
             onModeChange={onModeChange}
+            totalCustomPercentage={totalCustomPercentage}
           />
         </div>
       </div>

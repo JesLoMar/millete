@@ -367,6 +367,56 @@ class GroupGoalServiceTest {
     }
 
     @Test
+    @DisplayName("No permite degradar al último administrador")
+    void shouldThrowWhenDemotingLastAdmin() {
+        UUID memberId = UUID.randomUUID();
+        GoalMember requester = mock(GoalMember.class);
+        when(requester.isAdmin()).thenReturn(true);
+        GoalMember member = mock(GoalMember.class);
+        when(member.getGoalId()).thenReturn(goalId);
+        when(member.isAdmin()).thenReturn(true);
+        when(member.isActive()).thenReturn(true);
+
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(requester));
+        when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
+        when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(member));
+
+        UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
+        request.setRole("MEMBER");
+
+        assertThatExceptionOfType(ForbiddenOperationException.class)
+                .isThrownBy(() -> groupGoalService.updateMember(goalId, memberId, userId, request))
+                .withMessage("No puedes dejar la meta grupal sin administradores.");
+    }
+
+    @Test
+    @DisplayName("Permite degradar a un admin si hay más de uno")
+    void shouldAllowDemotingAdminWhenMultipleAdmins() {
+        UUID memberId = UUID.randomUUID();
+        GoalMember requester = mock(GoalMember.class);
+        when(requester.isAdmin()).thenReturn(true);
+        GoalMember member = mock(GoalMember.class);
+        when(member.getGoalId()).thenReturn(goalId);
+        when(member.isAdmin()).thenReturn(true);
+        when(member.isActive()).thenReturn(true);
+        GoalMember otherAdmin = mock(GoalMember.class);
+        when(otherAdmin.isAdmin()).thenReturn(true);
+        when(otherAdmin.isActive()).thenReturn(true);
+
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(requester));
+        when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
+        when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(member, otherAdmin));
+
+        UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
+        request.setRole("MEMBER");
+
+        groupGoalService.updateMember(goalId, memberId, userId, request);
+
+        verify(member).setRole(GoalRole.MEMBER);
+        verify(goalMemberRepository).save(member);
+    }
+
+    @Test
     @DisplayName("Actualizar meta")
     void shouldUpdateGoal() {
         GoalMember requester = mock(GoalMember.class);
@@ -403,6 +453,25 @@ class GroupGoalServiceTest {
 
         verify(member).setActive(false);
         verify(goalMemberRepository).save(member);
+    }
+
+    @Test
+    @DisplayName("No permite eliminar al último administrador")
+    void shouldThrowWhenDeletingLastAdmin() {
+        UUID memberId = UUID.randomUUID();
+        GoalMember requester = mock(GoalMember.class);
+        when(requester.isAdmin()).thenReturn(true);
+        GoalMember member = mock(GoalMember.class);
+        when(member.getGoalId()).thenReturn(goalId);
+        when(member.isAdmin()).thenReturn(true);
+
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(requester));
+        when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
+        when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(member));
+
+        assertThatExceptionOfType(ForbiddenOperationException.class)
+                .isThrownBy(() -> groupGoalService.deleteMember(goalId, memberId, userId))
+                .withMessage("No puedes dejar la meta grupal sin administradores.");
     }
 
     @Test

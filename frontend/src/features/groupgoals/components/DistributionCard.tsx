@@ -22,6 +22,7 @@ interface DistributionCardProps {
   variant: DistributionVariant
   onModeChange: (mode: string) => void
   isChangingMode?: boolean
+  totalCustomPercentage?: number
 }
 
 export function DistributionCard({
@@ -29,6 +30,7 @@ export function DistributionCard({
   variant,
   onModeChange,
   isChangingMode = false,
+  totalCustomPercentage,
 }: DistributionCardProps) {
   const { t } = useTranslation()
 
@@ -78,7 +80,11 @@ export function DistributionCard({
             ) : (
               <AlertCircle className="size-3.5 sm:size-4 shrink-0 mt-0.5" aria-hidden="true" />
             )}
-            <span>{isValid ? t('groupGoals:customPercentageOk') : t('groupGoals:customPercentageHint')}</span>
+            <span>
+              {isValid
+                ? t('groupGoals:customPercentageOk')
+                : t('groupGoals:customPercentageHint', { total: totalCustomPercentage?.toFixed(2) ?? '0.00' })}
+            </span>
           </div>
         )}
       </CardContent>

@@ -78,6 +78,7 @@
   "customPercentage": "Porcentaje Personalizado",
   "customPercentageHint": "Los porcentajes suman {{total}}%. Deben sumar 100%.",
   "customPercentageOk": "Los porcentajes suman correctamente 100%.",
+  "cannotRemoveLastAdmin": "No puedes dejar la meta grupal sin administradores.",
   "invitationFrom": "Invitación de {{sender}} para unirse a {{goal}}",
   "invalidToken": "Invitación no válida",
   "invitationAccepted": "¡Te has unido a la meta grupal correctamente!",

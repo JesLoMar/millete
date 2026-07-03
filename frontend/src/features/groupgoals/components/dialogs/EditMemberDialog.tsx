@@ -26,9 +26,10 @@ interface EditMemberDialogProps {
   onOpenChange: (open: boolean) => void
   onSave: (memberId: string, role: string, salary: number, customPercentage?: number) => Promise<void>
   isSaving?: boolean
+  totalCustomPercentage?: number
 }
 
-export function EditMemberDialog({ member, open, onOpenChange, onSave, isSaving = false }: EditMemberDialogProps) {
+export function EditMemberDialog({ member, open, onOpenChange, onSave, isSaving = false, totalCustomPercentage }: EditMemberDialogProps) {
   const { t } = useTranslation()
   const [role, setRole] = useState<string>(member?.role || "MEMBER")
   const [salary, setSalary] = useState(member?.salary?.toString() || "")
@@ -101,7 +102,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onSave, isSaving 
               placeholder="0"
             />
             <p className="text-xs text-muted-foreground">
-              {t('groupGoals:customPercentageHint')}
+              {t('groupGoals:customPercentageHint', { total: totalCustomPercentage?.toFixed(2) ?? '0.00' })}
             </p>
           </div>
         </div>

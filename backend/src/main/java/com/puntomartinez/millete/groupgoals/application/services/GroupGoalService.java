@@ -181,6 +181,17 @@ public class GroupGoalService implements
                 .filter(m -> m.getGoalId().equals(goalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
 
+        // Proteger el último administrador
+        if (request.getRole() != null && request.getRole().equals("MEMBER") && member.isAdmin()) {
+            long activeAdmins = goalMemberRepository.findByGoalId(goalId).stream()
+                    .filter(GoalMember::isActive)
+                    .filter(GoalMember::isAdmin)
+                    .count();
+            if (activeAdmins <= 1) {
+                throw new ForbiddenOperationException("No puedes dejar la meta grupal sin administradores.");
+            }
+        }
+
         if (request.getRole() != null) member.setRole(GoalRole.valueOf(request.getRole()));
         if (request.getSalary() != null) member.setSalary(request.getSalary());
         if (request.getCustomPercentage() != null) member.setCustomPercentage(request.getCustomPercentage());
@@ -248,6 +259,18 @@ public class GroupGoalService implements
         GoalMember member = goalMemberRepository.findById(memberId)
                 .filter(m -> m.getGoalId().equals(goalId))
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
+
+        // Proteger el último administrador
+        if (member.isAdmin()) {
+            long activeAdmins = goalMemberRepository.findByGoalId(goalId).stream()
+                    .filter(GoalMember::isActive)
+                    .filter(GoalMember::isAdmin)
+                    .count();
+            if (activeAdmins <= 1) {
+                throw new ForbiddenOperationException("No puedes dejar la meta grupal sin administradores.");
+            }
+        }
+
         member.setActive(false);
         member.setModifiedAt(LocalDateTime.now());
         goalMemberRepository.save(member);

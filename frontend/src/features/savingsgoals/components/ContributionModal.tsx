@@ -29,7 +29,7 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} key={goal?.id}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("savingsGoals.addFunds", { name: goal?.name })}</DialogTitle>
+          <DialogTitle>{t("savingsGoals:addFunds", { name: goal?.name })}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-4">
           <div className="space-y-2">

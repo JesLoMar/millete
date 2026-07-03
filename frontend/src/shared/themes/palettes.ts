@@ -100,7 +100,7 @@ export const MILLETE_THEME: Theme = {
   },
 }
 
-export const MILLETE_DARK_THEME: Theme = {
+const MILLETE_DARK_THEME: Theme = {
   name: "D-Millete",
   label: "Dark Millete",
   icon: "🍞",
@@ -159,4 +159,4 @@ export const MILLETE_DARK_THEME: Theme = {
 }
 
 /** Array exportado para compatibilidad (un solo tema). */
-export const THEMES: Theme[] = [MILLETE_THEME, MILLETE_DARK_THEME]
+const THEMES: Theme[] = [MILLETE_THEME, MILLETE_DARK_THEME]
