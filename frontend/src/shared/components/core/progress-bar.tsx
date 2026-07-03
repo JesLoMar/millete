@@ -1,4 +1,4 @@
-import { m, useReducedMotion } from "framer-motion"
+import { m } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface ProgressSegment {
@@ -46,7 +46,6 @@ export function ProgressBar({
   barClassName,
   ariaLabel,
 }: ProgressBarProps) {
-  const shouldReduceMotion = useReducedMotion()
   const percentage = value !== undefined ? Math.min((value / max) * 100, 100) : 0
 
   if (segments && segments.length > 0) {

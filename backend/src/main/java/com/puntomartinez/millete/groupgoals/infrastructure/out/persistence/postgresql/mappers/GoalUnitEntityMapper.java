@@ -6,12 +6,13 @@ import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postg
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface GoalUnitEntityMapper {
 
     @Mapping(target = "distributionMode", expression = "java(mapDistributionModeToString(domain.getDistributionMode()))")
     GoalUnitEntity toEntity(GoalUnit domain);
 
+    @Mapping(target = "members", expression = "java(new java.util.ArrayList<>())")
     @Mapping(target = "distributionMode", expression = "java(mapStringToDistributionMode(entity.getDistributionMode()))")
     GoalUnit toDomain(GoalUnitEntity entity);
 

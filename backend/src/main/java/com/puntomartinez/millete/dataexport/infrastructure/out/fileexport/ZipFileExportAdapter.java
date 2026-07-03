@@ -10,12 +10,20 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
 @Component("zipFileExportAdapter")
 public class ZipFileExportAdapter implements FileExportPort {
+
+    /**
+     * Caracteres que, al aparecer al inicio de una celda CSV, pueden ser
+     * interpretados como fórmulas por Excel/LibreOffice/Google Sheets.
+     * Anteponer una comilla simple (' ) fuerza el tratamiento como texto plano.
+     */
+    private static final String FORMULA_PREFIXES = "=+-@\t\r";
 
     @Override
     public byte[] generateZip(ExportData data) {
@@ -26,31 +34,56 @@ public class ZipFileExportAdapter implements FileExportPort {
             writeCsvToZip(zos, "categories.csv",
                     new String[]{"name", "budget_limit"},
                     data.categories(),
-                    (csv, row) -> csv.printRecord(row.name(), row.budgetLimit()));
+                    (csv, row) -> csv.printRecord(sanitizeCsvField(row.name()), row.budgetLimit()));
 
             writeCsvToZip(zos, "transactions.csv",
                     new String[]{"category_name", "amount", "date", "type", "description"},
                     data.transactions(),
-                    (csv, row) -> csv.printRecord(row.categoryName(), row.amount(), row.date(), row.type(), row.description()));
+                    (csv, row) -> csv.printRecord(
+                            sanitizeCsvField(row.categoryName()),
+                            row.amount(),
+                            row.date(),
+                            sanitizeCsvField(row.type()),
+                            sanitizeCsvField(row.description())));
 
             writeCsvToZip(zos, "planned_transactions.csv",
                     new String[]{"category_name", "amount", "type", "description", "frequency_type", "frequency_interval", "start_date", "end_date", "last_executed_date"},
                     data.plannedTransactions(),
-                    (csv, row) -> csv.printRecord(row.categoryName(), row.amount(), row.type(), row.description(),
-                            row.frequencyType(), row.frequencyInterval(), row.startDate(),
-                            row.endDate(), row.lastExecutedDate()));
+                    (csv, row) -> csv.printRecord(
+                            sanitizeCsvField(row.categoryName()),
+                            row.amount(),
+                            sanitizeCsvField(row.type()),
+                            sanitizeCsvField(row.description()),
+                            sanitizeCsvField(row.frequencyType()),
+                            row.frequencyInterval(),
+                            row.startDate(),
+                            row.endDate(),
+                            row.lastExecutedDate()));
 
             writeCsvToZip(zos, "investments.csv",
                     new String[]{"asset_name", "ticker", "quantity", "purchase_price", "current_price", "type", "purchase_date"},
                     data.investments(),
-                    (csv, row) -> csv.printRecord(row.assetName(), row.ticker(), row.quantity(),
-                            row.purchasePrice(), row.currentPrice(), row.type(), row.purchaseDate()));
+                    (csv, row) -> csv.printRecord(
+                            sanitizeCsvField(row.assetName()),
+                            sanitizeCsvField(row.ticker()),
+                            row.quantity(),
+                            row.purchasePrice(),
+                            row.currentPrice(),
+                            sanitizeCsvField(row.type()),
+                            row.purchaseDate()));
 
             writeCsvToZip(zos, "savings_goals.csv",
                     new String[]{"name", "target_amount", "current_amount", "progress", "deadline", "priority", "status", "link"},
                     data.savingsGoals(),
-                    (csv, row) -> csv.printRecord(row.name(), row.targetAmount(), row.currentAmount(),
-                            row.progress(), row.deadline(), row.priority(), row.status(), row.link()));
+                    (csv, row) -> csv.printRecord(
+                            sanitizeCsvField(row.name()),
+                            row.targetAmount(),
+                            row.currentAmount(),
+                            row.progress(),
+                            row.deadline(),
+                            sanitizeCsvField(row.priority()),
+                            sanitizeCsvField(row.status()),
+                            sanitizeCsvField(row.link())));
 
             zos.finish();
             return baos.toByteArray();
@@ -75,7 +108,7 @@ public class ZipFileExportAdapter implements FileExportPort {
         zos.putNextEntry(new ZipEntry(fileName));
 
         ByteArrayOutputStream csvBaos = new ByteArrayOutputStream();
-        try (OutputStreamWriter osw = new OutputStreamWriter(csvBaos);
+        try (OutputStreamWriter osw = new OutputStreamWriter(csvBaos, StandardCharsets.UTF_8);
              CSVPrinter csv = new CSVPrinter(osw, CSVFormat.DEFAULT.withHeader(headers))) {
 
             if (rows != null) {
@@ -94,7 +127,7 @@ public class ZipFileExportAdapter implements FileExportPort {
     public byte[] generateCsv(ExportData data, String entityType) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(baos);
+        try (OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8);
              CSVPrinter csv = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
 
             switch (entityType.toLowerCase()) {
@@ -102,7 +135,7 @@ public class ZipFileExportAdapter implements FileExportPort {
                     csv.printRecord("name", "budget_limit");
                     if (data.categories() != null) {
                         for (var row : data.categories()) {
-                            csv.printRecord(row.name(), row.budgetLimit());
+                            csv.printRecord(sanitizeCsvField(row.name()), row.budgetLimit());
                         }
                     }
                 }
@@ -110,7 +143,12 @@ public class ZipFileExportAdapter implements FileExportPort {
                     csv.printRecord("category_name", "amount", "date", "type", "description");
                     if (data.transactions() != null) {
                         for (var row : data.transactions()) {
-                            csv.printRecord(row.categoryName(), row.amount(), row.date(), row.type(), row.description());
+                            csv.printRecord(
+                                    sanitizeCsvField(row.categoryName()),
+                                    row.amount(),
+                                    row.date(),
+                                    sanitizeCsvField(row.type()),
+                                    sanitizeCsvField(row.description()));
                         }
                     }
                 }
@@ -118,9 +156,16 @@ public class ZipFileExportAdapter implements FileExportPort {
                     csv.printRecord("category_name", "amount", "type", "description", "frequency_type", "frequency_interval", "start_date", "end_date", "last_executed_date");
                     if (data.plannedTransactions() != null) {
                         for (var row : data.plannedTransactions()) {
-                            csv.printRecord(row.categoryName(), row.amount(), row.type(), row.description(),
-                                    row.frequencyType(), row.frequencyInterval(), row.startDate(),
-                                    row.endDate(), row.lastExecutedDate());
+                            csv.printRecord(
+                                    sanitizeCsvField(row.categoryName()),
+                                    row.amount(),
+                                    sanitizeCsvField(row.type()),
+                                    sanitizeCsvField(row.description()),
+                                    sanitizeCsvField(row.frequencyType()),
+                                    row.frequencyInterval(),
+                                    row.startDate(),
+                                    row.endDate(),
+                                    row.lastExecutedDate());
                         }
                     }
                 }
@@ -128,8 +173,14 @@ public class ZipFileExportAdapter implements FileExportPort {
                     csv.printRecord("asset_name", "ticker", "quantity", "purchase_price", "current_price", "type", "purchase_date");
                     if (data.investments() != null) {
                         for (var row : data.investments()) {
-                            csv.printRecord(row.assetName(), row.ticker(), row.quantity(),
-                                    row.purchasePrice(), row.currentPrice(), row.type(), row.purchaseDate());
+                            csv.printRecord(
+                                    sanitizeCsvField(row.assetName()),
+                                    sanitizeCsvField(row.ticker()),
+                                    row.quantity(),
+                                    row.purchasePrice(),
+                                    row.currentPrice(),
+                                    sanitizeCsvField(row.type()),
+                                    row.purchaseDate());
                         }
                     }
                 }
@@ -138,8 +189,15 @@ public class ZipFileExportAdapter implements FileExportPort {
                     csv.printRecord("name", "target_amount", "current_amount", "progress", "deadline", "priority", "status", "link");
                     if (data.savingsGoals() != null) {
                         for (var row : data.savingsGoals()) {
-                            csv.printRecord(row.name(), row.targetAmount(), row.currentAmount(),
-                                    row.progress(), row.deadline(), row.priority(), row.status(), row.link());
+                            csv.printRecord(
+                                    sanitizeCsvField(row.name()),
+                                    row.targetAmount(),
+                                    row.currentAmount(),
+                                    row.progress(),
+                                    row.deadline(),
+                                    sanitizeCsvField(row.priority()),
+                                    sanitizeCsvField(row.status()),
+                                    sanitizeCsvField(row.link()));
                         }
                     }
                 }
@@ -153,5 +211,24 @@ public class ZipFileExportAdapter implements FileExportPort {
         } catch (IOException e) {
             throw new RuntimeException("Error generando CSV para " + entityType, e);
         }
+    }
+
+    /**
+     * Sanitiza un campo de texto para prevenir la inyección de fórmulas en CSV.
+     * Si el valor comienza por uno de los caracteres que activan fórmulas (=, +, -, @, tab, CR),
+     * se le antepone una comilla simple para forzar su interpretación como texto.
+     *
+     * @param value valor de texto a sanitizar
+     * @return el valor sanitizado, o el mismo valor si no requiere protección
+     */
+    private String sanitizeCsvField(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+        char first = value.charAt(0);
+        if (FORMULA_PREFIXES.indexOf(first) >= 0) {
+            return "'" + value;
+        }
+        return value;
     }
 }

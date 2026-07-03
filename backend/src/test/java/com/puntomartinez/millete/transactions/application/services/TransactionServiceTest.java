@@ -181,4 +181,26 @@ class TransactionServiceTest {
         verify(transactionRepository).save(captor.capture());
         assertFalse(captor.getValue().isActive());
     }
+
+    @Test
+    void register_shouldRejectNegativeAmount() {
+        RegisterTransactionUseCase.RegisterTransactionCommand command =
+                new RegisterTransactionUseCase.RegisterTransactionCommand(
+                        userId, null, new BigDecimal("-50.00"), LocalDateTime.now(),
+                        Transaction.TransactionType.EXPENSE, "Gasto malicioso"
+                );
+
+        assertThrows(IllegalArgumentException.class, () -> transactionService.register(command));
+    }
+
+    @Test
+    void register_shouldRejectZeroAmount() {
+        RegisterTransactionUseCase.RegisterTransactionCommand command =
+                new RegisterTransactionUseCase.RegisterTransactionCommand(
+                        userId, null, BigDecimal.ZERO, LocalDateTime.now(),
+                        Transaction.TransactionType.INCOME, "Ingreso inválido"
+                );
+
+        assertThrows(IllegalArgumentException.class, () -> transactionService.register(command));
+    }
 }

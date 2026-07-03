@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useEffect, useCallback, use, useMemo } from 'react';
+import { createContext, useState, useEffect, useCallback, use, useMemo, useEffectEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/shared/api/axiosClient';
 import { secureStorage } from '@/shared/utils/secureStorage';
@@ -11,23 +11,36 @@ interface User {
 }
 
 interface AuthContextType {
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   user: User | null;
   sessionId: string | null;
-  login: (token: string, userData?: User) => Promise<void>;
+  login: (userData?: User) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient();
+
+  const fetchCurrentUser = useCallback(async (): Promise<{ user: User; sessionId: string } | null> => {
+    try {
+      const response = await apiClient.get('/auth/me/topnav', { skipGlobalErrorNotify: true });
+      const userData = response.data;
+      const formattedUser: User = {
+        name: userData.username || userData.email?.split('@')[0] || 'Usuario',
+        email: userData.email || '',
+      };
+      const currentSessionId = userData.sessionId ?? '';
+      return { user: formattedUser, sessionId: currentSessionId };
+    } catch {
+      return null;
+    }
+  }, []);
 
   // ─── LOGOUT (usado por init, interceptor 401, y LogoutListener) ───
   const logout = useCallback(async () => {
@@ -36,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       // Ignorar errores de red en logout
     } finally {
-      setToken(null);
       setUser(null);
       setSessionId(null);
       secureStorage.clear();
@@ -44,33 +56,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [queryClient]);
 
+  // Effect Event: siempre ve el logout más reciente sin ser dependencia reactiva
+  const onLogout = useEffectEvent(logout);
+
   // ─── INICIALIZACIÓN ──────────────────────────────────────────
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = secureStorage.getToken();
       const storedUser = secureStorage.getUser<User>();
+      const storedSessionId = secureStorage.getSessionId();
 
-      if (storedToken) {
-        setToken(storedToken);
-        setSessionId(secureStorage.getSessionId());
+      const current = await fetchCurrentUser();
 
-        if (!storedUser) {
-          try {
-            const response = await apiClient.get('/auth/me/topnav');
-            const userData = response.data;
-            const formattedUser: User = {
-              name: userData.username || userData.email?.split('@')[0] || 'Usuario',
-              email: userData.email || '',
-            };
-            setUser(formattedUser);
-            secureStorage.setUser(formattedUser);
-          } catch {
-            // Token inválido → limpieza total
-            await logout();
-          }
-        } else {
-          setUser(storedUser);
-        }
+      if (current) {
+        setUser(current.user);
+        setSessionId(current.sessionId);
+        secureStorage.setUser(current.user);
+        secureStorage.setSessionId(current.sessionId);
+      } else if (storedUser) {
+        // La cookie ya no es válida, pero mantenemos el usuario en memoria
+        // hasta que el siguiente request 401 fuerce el logout.
+        setUser(storedUser);
+        setSessionId(storedSessionId);
       }
 
       setIsLoading(false);
@@ -79,49 +85,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
 
     // Escuchar evento de logout forzado desde el interceptor de Axios
-    const handleForcedLogout = () => logout();
+    const handleForcedLogout = () => onLogout();
     window.addEventListener('auth:logout', handleForcedLogout);
     return () => window.removeEventListener('auth:logout', handleForcedLogout);
-  }, [logout]);
+  }, [fetchCurrentUser]);
 
   // ─── LOGIN ASÍNCRONO ─────────────────────────────────────────
   const login = useCallback(
-    async (newToken: string, userData?: User): Promise<void> => {
-      setToken(newToken);
-      secureStorage.setToken(newToken);
-      setSessionId(secureStorage.getSessionId());
-
+    async (userData?: User): Promise<void> => {
       if (userData) {
         setUser(userData);
         secureStorage.setUser(userData);
+      }
+
+      const current = await fetchCurrentUser();
+      if (current) {
+        setUser(current.user);
+        setSessionId(current.sessionId);
+        secureStorage.setUser(current.user);
+        secureStorage.setSessionId(current.sessionId);
       } else {
-        try {
-          const response = await apiClient.get('/auth/me/topnav');
-          const data = response.data;
-          const fetchedUser: User = {
-            name: data.username || data.email?.split('@')[0] || 'Usuario',
-            email: data.email || '',
-          };
-          setUser(fetchedUser);
-          secureStorage.setUser(fetchedUser);
-        } catch {
-          await logout();
-          throw new Error('Fallo al obtener perfil tras login');
-        }
+        await logout();
+        throw new Error('Fallo al obtener perfil tras login');
       }
     },
-    [logout],
+    [fetchCurrentUser, logout],
   );
 
   const value = useMemo(() => ({
-    token,
-    isAuthenticated: !!token,
+    isAuthenticated: !!user,
     isLoading,
     user,
     sessionId,
     login,
     logout,
-  }), [token, isLoading, user, sessionId, login, logout]);
+  }), [isLoading, user, sessionId, login, logout]);
 
   return (
     <AuthContext.Provider value={value}>

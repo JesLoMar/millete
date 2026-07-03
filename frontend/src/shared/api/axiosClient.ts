@@ -17,18 +17,14 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000,
+  withCredentials: true,
 });
 
 // ─── INTERCEPTOR DE REQUEST ────────────────────────────────────
+// El JWT viaja automáticamente en la cookie HttpOnly gracias a
+// withCredentials: true. No se añade manualmente ningún header.
 apiClient.interceptors.request.use(
-  (config) => {
-    const isPublic = config.url === '/auth/register' || config.url === '/auth/login';
-    const token = secureStorage.getToken();
-    if (token && config.headers && !isPublic) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
+  (config) => config,
   (error) => Promise.reject(error),
 );
 

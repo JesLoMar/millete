@@ -5,14 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { notify } from "@/shared/utils/notifications/notify";
 import i18n from '@/lib/i18n';
 import type { ApiError } from '@/shared/types/api';
-import type { RegisterUserRequest, LoginRequest, TokenResponse } from '../types';
+import type { RegisterUserRequest, LoginRequest, LoginResponse } from '../types';
 
 export const useRegisterMutation = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const queryClient = useQueryClient();
 
-  return useMutation<TokenResponse, ApiError, RegisterUserRequest>({
+  return useMutation<LoginResponse, ApiError, RegisterUserRequest>({
     mutationFn: async (data: RegisterUserRequest) => {
       await authService.register(data);
 
@@ -32,8 +32,8 @@ export const useRegisterMutation = () => {
         throw new Error(i18n.t('auth:errors.auto_login_failed'));
       }
     },
-    onSuccess: async (data) => {
-      await login(data.token);
+    onSuccess: async () => {
+      await login();
       queryClient.clear();
       
       notify.success(i18n.t('auth:alerts.register_success'));

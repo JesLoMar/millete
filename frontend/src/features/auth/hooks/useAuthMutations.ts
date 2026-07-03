@@ -39,8 +39,8 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
-    onSuccess: async (data) => {
-      await login(data.token);
+    onSuccess: async () => {
+      await login();
       queryClient.clear();
       notify.success(t('common:actions.welcome'));
 

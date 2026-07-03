@@ -53,7 +53,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   }, [navigate])
 
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
-    const featureName = t(itemLabelKey as any)
+    const featureName = t(itemLabelKey)
     notifyComingSoon(featureName, featureComingSoonTemplate)
   }, [t, featureComingSoonTemplate])
 
@@ -83,7 +83,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                   )}
                 >
                   <item.icon className={cn("size-5 transition-transform duration-200", active && "text-primary scale-105")} />
-                  <span>{t(item.labelKey as any)}</span>
+                  <span>{t(item.labelKey)}</span>
                 </Button>
               </li>
             )
@@ -104,7 +104,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     className="w-full justify-start gap-3 h-11 px-4 text-muted-foreground/40 hover:bg-accent/10 hover:text-muted-foreground/60 transition-colors"
                   >
                     <Construction className="size-5 shrink-0 text-muted-foreground/30" />
-                    <span className="truncate">{t(item.labelKey as any)}</span>
+                    <span className="truncate">{t(item.labelKey)}</span>
                   </Button>
                 </li>
               ))}
@@ -131,7 +131,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                     )}
                   >
                     <item.icon className="size-5" />
-                    <span>{t(item.labelKey as any)}</span>
+                    <span>{t(item.labelKey)}</span>
                   </Button>
                 </li>
               )

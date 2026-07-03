@@ -48,7 +48,7 @@ function SearchableTransactionList({ transactions, onEdit, onDelete }: Searchabl
     })
   }, [transactions, filter, searchTerm])
 
-  const { currentPage, totalPages, goToPage, nextPage, prevPage } = usePagination({
+  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
     totalItems: filteredData.length,
     itemsPerPage: ITEMS_PER_PAGE,
     initialPage: 1,

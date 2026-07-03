@@ -42,6 +42,12 @@ app:
 jwt:
   secret: U3VwZXJTZWNy5XRfSldUX0tleV9Gb3JfVGVzdGluZ187MDI2X01pbGxldGUK
   expiration: 43200000
+  cookie-name: ms_token
+  cookie-secure: false          # true en producción (requiere HTTPS)
+  cookie-http-only: true
+  cookie-same-site: Strict
+  cookie-path: /
+  cookie-max-age: 43200         # 12 horas en segundos
 
 logging:
   level:

@@ -71,7 +71,7 @@ export function EditTransactionDialog({ transaction, open, onOpenChange }: EditT
       await apiClient.put(`/transactions/${transaction.id}`, {
         description: form.description.trim(),
         categoryId: form.category || null,
-        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        amount: Math.abs(Number(form.amount)),
         type: form.type,
         date: transaction.date,
       })

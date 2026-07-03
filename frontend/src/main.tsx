@@ -8,7 +8,16 @@ import './lib/i18n';
 
 const MotionProvider = lazy(() => import('@/shared/components/MotionProvider').then(m => ({ default: m.MotionProvider })));
 
-function Root() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+export function Root() {
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={null}>
@@ -20,19 +29,11 @@ function Root() {
   );
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-    },
-  },
-});
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <Root />
-  </React.StrictMode>
-);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <Root />
+    </React.StrictMode>
+  );
+}

@@ -1,13 +1,5 @@
 import type { GroupGoalDetail, ContributionMember } from "./types"
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
-}
-
 export function calculateContributions(
   selectedGoal: GroupGoalDetail,
   customPercentages: Record<string, number>,

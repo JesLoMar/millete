@@ -24,7 +24,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
   const handleThemeChange = (selectedTheme: Theme) => {
     try {
       setTheme(selectedTheme)
-    } catch (error) {
+    } catch {
       notify.error(t('nav:theme.errors.themeChangeFailed'))
     }
   }

@@ -76,7 +76,7 @@ export function NewTransactionDialog({ open: controlledOpen, onOpenChange: contr
       await createTransaction.mutateAsync({
         description: form.description.trim(),
         categoryId: form.category,
-        amount: form.type === "EXPENSE" ? -Math.abs(Number(form.amount)) : Math.abs(Number(form.amount)),
+        amount: Math.abs(Number(form.amount)),
         type: form.type,
         date: new Date().toISOString().split('.')[0],
       })

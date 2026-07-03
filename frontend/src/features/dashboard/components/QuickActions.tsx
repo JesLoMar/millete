@@ -80,7 +80,7 @@ export function QuickActions({
           key={action.labelKey}
           onClick={action.onClick}
           disabled={action.disabled}
-          aria-label={String(t(action.ariaLabelKey as any))}
+          aria-label={String(t(action.ariaLabelKey))}
           className={`
             h-auto min-h-25 sm:min-h-28 w-full
             flex flex-col items-center justify-center gap-2 sm:gap-2.5
@@ -96,7 +96,7 @@ export function QuickActions({
           </div>
           
           <span className="font-medium text-xs sm:text-sm md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
-            {String(t(action.labelKey as any))}
+            {String(t(action.labelKey))}
           </span>
         </Button>
       ))}

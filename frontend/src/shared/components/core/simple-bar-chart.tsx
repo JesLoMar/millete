@@ -24,7 +24,6 @@ export function SimpleBarChart({
     barColor = "hsl(var(--chart-1))",
     showGrid = true,
     showLabels = true,
-    labelAngle = 0,
     formatValue = (v) => v.toString(),
     className,
     onBarHover,

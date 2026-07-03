@@ -41,8 +41,8 @@ public class Transaction {
                        LocalDateTime createdAt, LocalDateTime modifiedAt, boolean active) {
 
         // REGLAS DE NEGOCIO (Validaciones puras en Java)
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
-            throw new IllegalArgumentException("La cantidad no puede ser cero.");
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que cero.");
         }
 
         this.id = id;
@@ -59,8 +59,8 @@ public class Transaction {
 
     public void updateDetails(BigDecimal amount, LocalDateTime date, TransactionType type, String description, UUID categoryId) {
         // Regla de negocio inquebrantable
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
-            throw new IllegalArgumentException("La cantidad no puede ser cero.");
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que cero.");
         }
         // Actualizamos todos los campos permitidos
         this.amount = amount;

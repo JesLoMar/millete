@@ -27,7 +27,7 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
   const handleChangeLanguage = useCallback(async (langCode: string) => {
     try {
       await i18n.changeLanguage(langCode)
-    } catch (error) {
+    } catch {
       notify.error(t('nav:errors.languageChangeFailed'))
     }
   }, [i18n, t])
