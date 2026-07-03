@@ -48,7 +48,7 @@ export function NotificationsTable() {
           <TableHeader>
             <TableRow>
               <TableHead>{t('notifications.message')}</TableHead>
-              <TableHead className="w-[180px] text-right">{t('notifications.actions')}</TableHead>
+              <TableHead className="w-45 text-right">{t('notifications.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

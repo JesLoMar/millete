@@ -8,7 +8,8 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-6 space-y-6">
-        <Header title={t('title')} hidePeriodSelector />
+        <Header hidePeriodSelector />
+        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
         <NotificationList />
       </div>
     </div>

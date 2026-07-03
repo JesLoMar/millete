@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation, Trans } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowRight } from "lucide-react"
 import { Spinner } from "@/shared/components/Spinner"
@@ -62,8 +62,8 @@ export function AuthForm() {
     } else {
       const registerData: RegisterUserRequest = {
         password: data.password,
-        email: data.emailRegistro?.trim() || undefined,
-        username: data.usernameRegistro?.trim() || undefined,
+        email: data.emailRegistro?.trim() || "",
+        username: data.usernameRegistro?.trim() || "",
       }
       registerMutate(registerData)
     }
@@ -74,9 +74,9 @@ export function AuthForm() {
       <AuthHeader />
 
       <div className="space-y-3 sm:space-y-4">
-        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
-          <Trans i18nKey="auth:greeting" />
-        </h1>
+        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight"
+          dangerouslySetInnerHTML={{ __html: t('auth:greeting') }}
+        />
         <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
           {t('auth:subtitle')}
         </p>
@@ -86,16 +86,17 @@ export function AuthForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6" noValidate>
         {mode === "login" ? (
-          <LoginFields register={register} errors={errors} />
+          <LoginFields register={register} errors={errors} disabled={isPending} />
         ) : (
           <RegisterFields
             register={register}
             errors={errors}
             hasIdentifier={hasIdentifier}
+            disabled={isPending}
           />
         )}
 
-        <PasswordField register={register} errors={errors} />
+        <PasswordField register={register} errors={errors} disabled={isPending} mode={mode} />
 
         <Button
           type="submit"
@@ -122,7 +123,7 @@ export function AuthForm() {
         )}
       </form>
 
-      <AuthFooter mode={mode} />
+      <AuthFooter />
     </div>
   )
 }

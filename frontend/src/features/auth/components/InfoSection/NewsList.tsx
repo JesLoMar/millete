@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 export function NewsList() {
   const { t } = useTranslation()
 
-  const newsItems = t('info:news.items', { returnObjects: true }) as Array<{
+  const newsItems = t('info:news.items', { returnObjects: true }) as unknown as Array<{
     tag?: string
     title: string
     description: string

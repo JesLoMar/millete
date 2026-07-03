@@ -5,7 +5,7 @@ interface SpinnerProps {
   size?: number
 }
 
-export function Spinner({ className, size = 20 }: SpinnerProps) {
+export function Spinner({ className, size = 64 }: SpinnerProps) {
   return (
     <img
       src="/web-app-icon.webp"

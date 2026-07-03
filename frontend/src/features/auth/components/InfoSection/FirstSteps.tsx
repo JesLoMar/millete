@@ -6,7 +6,7 @@ export function FirstSteps() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const steps = t('info:steps.items', { returnObjects: true }) as Array<{
+  const steps = t('info:steps.items', { returnObjects: true }) as unknown as Array<{
     number: string
     title: string
     description: string

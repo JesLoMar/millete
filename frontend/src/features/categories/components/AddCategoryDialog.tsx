@@ -99,8 +99,9 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('categories:name')}</Label>
+              <Label htmlFor="category-name" className="text-sm font-semibold">{t('categories:name')}</Label>
               <Input
+                id="category-name"
                 ref={inputRef}
                 placeholder={t('categories:namePlaceholder')}
                 value={form.name}
@@ -111,13 +112,16 @@ export function AddCategoryDialog({ open: controlledOpen, onOpenChange: controll
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('categories:color')}</Label>
-              <ColorPicker value={form.color} onChange={(v) => setForm((prev) => ({ ...prev, color: v }))} />
+              <Label htmlFor="category-color" className="text-sm font-semibold">{t('categories:color')}</Label>
+              <div id="category-color">
+                <ColorPicker value={form.color} onChange={(v) => setForm((prev) => ({ ...prev, color: v }))} />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('categories:budget')}</Label>
+              <Label htmlFor="category-budget" className="text-sm font-semibold">{t('categories:budget')}</Label>
               <Input
+                id="category-budget"
                 type="number"
                 placeholder="0.00"
                 value={form.budgetLimit}

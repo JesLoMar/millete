@@ -7,10 +7,6 @@ import { PublicRoute } from '@/app/router/PublicRoute';
 import { Toaster } from '@/shared/components/core/sonner';
 import { Spinner } from '@/shared/components/Spinner';
 
-<<<<<<< HEAD
-=======
-// Carga perezosa de rutas no críticas para reducir el bundle inicial
->>>>>>> 4934bd6 (feature: consultar merge (#8))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/page').then(m => ({ default: m.DashboardPage })));
 const TransactionsPage = lazy(() => import('@/features/transactions/pages/page').then(m => ({ default: m.TransactionsPage })));
 const CategoriesPage = lazy(() => import('@/features/categories/pages/page').then(m => ({ default: m.CategoriesPage })));
