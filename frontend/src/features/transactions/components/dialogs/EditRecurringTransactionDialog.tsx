@@ -142,13 +142,13 @@ export function EditRecurringTransactionDialog({
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('transactions:type')}</Label>
+                <Label htmlFor="edit-recurring-type" className="text-sm font-semibold">{t('transactions:type')}</Label>
                 <Select
                   value={form.type}
                   onValueChange={(value: "INCOME" | "EXPENSE") => updateForm({ type: value })}
                   disabled={form.isSubmitting}
                 >
-                  <SelectTrigger className="bg-background border-border">
+                  <SelectTrigger id="edit-recurring-type" className="bg-background border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -176,13 +176,13 @@ export function EditRecurringTransactionDialog({
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('transactions:frequency')}</Label>
+                <Label htmlFor="edit-recurring-frequency" className="text-sm font-semibold">{t('transactions:frequency')}</Label>
                 <Select
                   value={form.frequencyType}
                   onValueChange={(value) => updateForm({ frequencyType: value })}
                   disabled={form.isSubmitting}
                 >
-                  <SelectTrigger className="bg-background border-border">
+                  <SelectTrigger id="edit-recurring-frequency" className="bg-background border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
