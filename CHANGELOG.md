@@ -5,6 +5,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.1.2] - 2026-07-04
+
+### Security
+- **Transaction sign vulnerability:** Enforced positive-only amounts on the backend (`@Positive` validation) and frontend (`Math.abs()`), with domain-level rejection of non-positive values.
+- **CSV formula injection:** Sanitized exported CSV values by prepending a single quote (`'`) to cells beginning with formula-triggering characters (`=`, `+`, `-`, `@`, `\t`, `\r`).
+- **JWT secure cookies:** Migrated JWT storage from `sessionStorage` to `HttpOnly` secure cookies (`ms_token`), with `SameSite=Strict` and full backend cookie parsing support.
+
+### Added
+- **fficial dark theme palette:** Implemented three complete theme variants:
+  - **Dark Millete** 🌙 — warm bakery-at-dusk aesthetic (`#1A1208` base, `#3DAD8A` primary).
+  - **Rosé Millete** 🌸 — elegant rose/white financial theme (`#FFF5F5` base, `#A03060` primary).
+  - **Ember Millete** 🔥 — intense fire/black premium theme (`#080606` base, `#E63946` primary).
+  - Full `localStorage` persistence and `prefers-color-scheme` detection via `useTheme.ts`.
+- **Notification deep-linking:** Clicking a goal invitation notification now navigates directly to `/profile?section=notifications` and auto-scrolls to the `NotificationsTable`.
+- **Notification badge dismissal:** Unread notification badge is now hidden locally when the notification dialog opens, without waiting for a backend round-trip.
+
+### Fixed
+- **Last admin protection:** Backend now forbids demoting or deleting the sole remaining admin of a group goal (`ForbiddenOperationException`). Frontend `EditMemberDialog` disables the MEMBER role option with a warning when `isLastAdmin=true`.
+- **Group goal percentage accuracy:** Removed the desynced local `customPercentages` React state. `totalCustomPercentage` is now computed directly from `selectedGoal.members` backend data, so the `DistributionCard` and `EditMemberDialog` hints always show the real sum.
+- **Translation key fix:** Changed `savingsGoals.addFunds` to the correct cross-namespace syntax `savingsGoals:addFunds` in `ContributionModal.tsx`.
+- **Mobile investment menu:** Fixed the `AssetList` mobile layout so the three-dot menu and percentage badge are visible without horizontal scrolling (`min-w-100` → `min-w-0`, corrected Tailwind width classes).
+- **Re-invitation after member deletion:** Fixed `acceptInvitation` in `GroupGoalService` to reactivate a soft-deleted member record instead of attempting a duplicate insert that violated the `uq_goal_user` constraint.
+- **Dynamic percentage preview in edit modal:** The `EditMemberDialog` now shows a live projected total percentage (`dynamicTotal`) as the user edits the custom percentage field, with real-time valid/invalid color feedback.
+
+---
+
 ## [0.1.1] - 2026-06-28
 
 ### Performance

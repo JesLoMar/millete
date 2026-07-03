@@ -76,7 +76,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
 
       <div className="overflow-x-auto">
         <m.div
-          className="flex flex-col gap-1 sm:gap-2 min-w-100"
+          className="flex flex-col gap-1 sm:gap-2 min-w-0"
           initial="hidden"
           animate="visible"
           variants={{

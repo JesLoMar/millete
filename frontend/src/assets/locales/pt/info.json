@@ -28,6 +28,11 @@
     "subtitle": "Descubra as últimas melhorias adicionadas à plataforma.",
     "items": [
       {
+        "tag": "v0.1.2",
+        "title": "Corrigir lógica, UI e vulnerabilidades",
+        "description": "Corrige bugs e comportamentos indesejados nas metas grupais, melhora a interface e traz pequenas melhorias na UX.\nExtra: +3 novos temas."
+      },
+      {
         "tag": "v0.1.1",
         "title": "Otimização e melhorias visuais",
         "description": "Design e implementação de paleta de cores própria. Adição de feedback visual e microexperiências do usuário, redução do peso do projeto e otimização de carregamento em redes lentas."

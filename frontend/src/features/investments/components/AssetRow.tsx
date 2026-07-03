@@ -45,7 +45,7 @@ export const AssetRow = memo(function AssetRow({ investment: inv, onDelete }: As
             currentPrice={inv.currentPrice}
           />
 
-          <div className="w-30 sm:w-35 flex flex-col items-end">
+          <div className="w-28 sm:w-36 flex flex-col items-end">
             <p className={cn(
               "text-sm font-bold flex items-center gap-1 whitespace-nowrap",
               trend === "up" ? "text-primary" : "text-destructive"
