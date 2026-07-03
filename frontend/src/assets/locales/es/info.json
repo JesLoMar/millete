@@ -31,11 +31,6 @@
         "tag": "v0.1.1",
         "title": "Optimización y mejoras visuales",
         "description": "Diseñar e implementar paleta de colores propia. Añadir feedback visual y micro-experiencias de usuario, reducción del peso del proyecto y optimización de carga en redes lentas."
-      },
-      {
-        "tag": "v0.1.0",
-        "title": "Actualización mayor",
-        "description": "- Nuevo sistema de notificaciones \n - Añadir perfil de usuario \n - Añadir metas de ahorro \n - Módulo Familias refactorizado y mejorado (ahora se llama Metas Grupales) \n - Integración con bot de Telegram \n - Invitaciones a Metas Grupales con notificaciones dentro de la web \n - Incrementadas las funcionalidades de exportación. Ahora soporta CSV y PDF. \n - Reducción del uso de dependencias externas. \n -  Mejoras en el sistema de traducción. "
       }
     ]
   }

@@ -31,11 +31,6 @@
         "tag": "v0.1.1",
         "title": "Ottimizzazione e miglioramenti visivi",
         "description": "Progettare e implementare una tavolozza di colori personalizzata. Aggiungere feedback visivi e micro-esperienze utente, ridurre il peso del progetto e ottimizzare il caricamento su reti lente."
-      },
-      {
-        "tag": "v0.1.0",
-        "title": "Aggiornamento principale",
-        "description": "- Nuovo sistema di notifiche \n - Aggiungi profilo utente \n - Aggiungi obiettivi di risparmio \n - Modulo Obiettivi di Gruppo rifattorizzato e migliorato \n - Integrazione con il bot di Telegram \n - Inviti agli Obiettivi di Gruppo con notifiche all'interno del sito \n - Incrementate le funzionalità di esportazione. Ora supporta CSV e PDF. \n - Riduzione dell'uso di dipendenze esterne. \n - Miglioramenti al sistema di traduzione."
       }
     ]
   }

@@ -1,8 +1,36 @@
 import { useState, useEffect, useCallback } from "react"
-import { MILLETE_THEME, type Theme, type ThemeColors } from "@/shared/themes/palettes"
+import { MILLETE_THEME, DARK_MILLETE_THEME, THEMES, type Theme, type ThemeColors } from "@/shared/themes/palettes"
+
+const THEME_STORAGE_KEY = "millete-theme"
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return MILLETE_THEME
+  const saved = localStorage.getItem(THEME_STORAGE_KEY)
+  if (saved) {
+    const found = THEMES.find((t) => t.name === saved)
+    if (found) return found
+  }
+  // Detectar preferencia del sistema (opcional)
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+  if (prefersDark) return DARK_MILLETE_THEME
+  return MILLETE_THEME
+}
 
 export function useTheme() {
-  const [theme] = useState<Theme>(MILLETE_THEME)
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
+
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t)
+    localStorage.setItem(THEME_STORAGE_KEY, t.name)
+  }, [])
+
+  const setThemeByName = useCallback(
+    (name: string) => {
+      const found = THEMES.find((t) => t.name === name)
+      if (found) setTheme(found)
+    },
+    [setTheme]
+  )
 
   // Aplicar todas las variables CSS al DOM (incluyendo sidebar)
   useEffect(() => {
@@ -51,23 +79,12 @@ export function useTheme() {
     Object.entries(cssVars).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
-    // Mantener clase dark para compatibilidad con shadcn/ui (ya no aplicada)
-    // root.classList.remove("light")
-    // root.classList.add("dark")
   }, [theme])
-
-  // setTheme/setThemeByName mantenidos para compatibilidad de API (no-op)
-  const setTheme = useCallback(() => {
-    // Solo un tema disponible — no-op
-  }, [])
-  const setThemeByName = useCallback(() => {
-    // Solo un tema disponible — no-op
-  }, [])
 
   return {
     theme,
     setTheme,
     setThemeByName,
-    availableThemes: [MILLETE_THEME],
+    availableThemes: THEMES,
   }
 }

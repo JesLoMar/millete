@@ -78,7 +78,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-/api/v1}
-        VITE_APP_VERSION: ${VITE_APP_VERSION:-0.1.0}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-0.1.2}
     container_name: millete-frontend
     restart: unless-stopped
     ports:

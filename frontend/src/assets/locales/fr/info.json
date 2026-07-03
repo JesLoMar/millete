@@ -31,11 +31,6 @@
         "tag": "v0.1.1",
         "title": "Optimisation et améliorations visuelles",
         "description": "Concevoir et implémenter une palette de couleurs propre. Ajouter des retours visuels et des micro-expériences utilisateur, réduire le poids du projet et optimiser le chargement sur les réseaux lents."
-      },
-      {
-        "tag": "v0.1.0",
-        "title": "Mise à jour majeure",
-        "description": "- Nouveau système de notifications \n - Ajouter un profil utilisateur \n - Ajouter des objectifs d'épargne \n - Module Objectifs de Groupe refactorisé et amélioré \n - Intégration avec le bot Telegram \n - Invitations aux Objectifs de Groupe avec notifications sur le site web \n - Fonctionnalités d'exportation accrues. Prend désormais en charge le CSV et le PDF. \n - Réduction de l'utilisation de dépendances externes. \n - Améliorations du système de traduction."
       }
     ]
   }
