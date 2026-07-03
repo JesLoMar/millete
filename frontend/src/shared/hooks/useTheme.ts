@@ -84,6 +84,6 @@ export function useTheme() {
     theme,
     setTheme,
     setThemeByName,
-    availableThemes: [MILLETE_THEME],
+    availableThemes: THEMES,
   }
 }
