@@ -5,6 +5,9 @@ import com.puntomartinez.millete.investments.domain.ports.out.InvestmentReposito
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.InvestmentEntity;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.InvestmentEntityMapper;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.SpringDataInvestmentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,5 +41,19 @@ public class InvestmentPostgresAdapter implements InvestmentRepository {
         return repository.findAllByUserId(userId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<Investment> findAllByUserId(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<InvestmentEntity> result = repository.findAllByUserIdAndActiveTrue(userId, pageable);
+        return result.getContent().stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByUserIdAndActiveTrue(UUID userId) {
+        return repository.countByUserIdAndActiveTrue(userId);
     }
 }

@@ -174,8 +174,8 @@ Cuando un usuario es invitado a un Group Goal, el backend crea una notificación
 ## hooks/useNotifications, useAcceptInvitation, useRejectInvitation
 
 - **useNotifications:** reexportado desde `@/features/notifications/hooks/useNotifications`. Query key `['notifications']`.
-- **useAcceptInvitation:** `POST /goals/invitations/:id/accept`. Invalida `['notifications']` y `['group-goals']`.
-- **useRejectInvitation:** `POST /goals/invitations/:id/reject`. Invalida `['notifications']` y `['group-goals']`.
+- **useAcceptInvitation:** `POST /group-goals/invitations/:token/accept`. Invalida `['notifications']` y `['group-goals']`.
+- **useRejectInvitation:** `POST /group-goals/invitations/:token/reject`. Invalida `['notifications']` y `['group-goals']`.
 
 ---
 

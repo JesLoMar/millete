@@ -6,14 +6,14 @@
 - **axiosClient.ts** — Cliente HTTP con interceptores de autenticación y errores
 
 ### components/
-- **FormattedMetricCard.tsx** — Tarjeta de métrica con formato automático (moneda/número) y tendencia
 - **Header.tsx** — Cabecera con saludo dinámico, fecha y selector de período opcional
 - **LanguageSelector.tsx** — Selector de idioma con dropdown
-- **MetricCard.tsx** — Tarjeta de métrica base con skeleton de carga
 - **PeriodSelector.tsx** — Selector de período semana/mes/año
 - **Sidebar.tsx** — Barra lateral de navegación con items activos/deshabilitados
 - **ThemeSelector.tsx** — Selector de tema visual con paletas
-- **TopNav.tsx** — Barra superior con logo, idioma, tema, notificaciones y menú de usuario
+- **TopNav.tsx** — Barra superior con logo, idioma, tema y menú de usuario
+
+> **Nota:** MetricCard y FormattedMetricCard viven en `features/dashboard/components/`, no en shared.
 
 ### components/core/
 Componentes primitivos de UI generados por shadcn/ui o adaptados al proyecto:
@@ -43,7 +43,7 @@ Componentes primitivos de UI generados por shadcn/ui o adaptados al proyecto:
 - **useTheme.ts** — Gestión de temas con variables CSS y persistencia
 
 ### themes/
-- **palettes.ts** — Definición de 4 temas (default, ocean, forest, sunset) con 28 variables CSS cada uno
+- **palettes.ts** — Definición de 4 temas (millete, dark-millete, rose-millete, ember-millete) con 28+ variables CSS cada uno
 
 ### types/
 - **api.ts** — Interfaz ApiError
@@ -93,7 +93,7 @@ Barra de navegación superior. Común a todas las páginas.
 ### Estructura
 
 - **Logo:** icono Wallet2 con fondo primary/10 y nombre de la app. Clic redirige a `/dashboard`.
-- **Controles:** LanguageSelector + ThemeSelector + NotificationBell.
+- **Controles:** LanguageSelector + ThemeSelector.
 - **Menú de usuario:** DropdownMenu con nombre/email del usuario.
   - `getUserDisplay`: función que determina qué mostrar:
     - Si hay name y email: name como primary, email como secondary.
@@ -101,10 +101,6 @@ Barra de navegación superior. Común a todas las páginas.
     - Si solo hay email: parte local como primary, email completo como secondary.
     - Si no hay nada: "Invitado" como primary.
   - Opciones: Perfil (navega a `/profile`) y Cerrar sesión (ejecuta logout con notificación).
-
-### NotificationBell (v0.2.0)
-
-Botón de campana con badge de contador de notificaciones no leídas. Al pulsar, abre un `Dialog` con el título "Notificaciones" y renderiza `NotificationList` dentro. El badge muestra el número de no leídas (máximo "99+"). Usa `useUnreadNotificationsCount` (query key `['notifications', 'unread-count']`).
 
 ### Hooks utilizados
 
@@ -117,6 +113,8 @@ Botón de campana con badge de contador de notificaciones no leídas. Al pulsar,
 - Altura fija 64px (`h-16`), sticky en top con z-40.
 - Fondo `bg-card/50` con `backdrop-blur-md`.
 
+> **Nota:** El componente `NotificationBell` vive en `features/notifications/components/` y se importa en el layout, no en TopNav directamente.
+
 ---
 
 ## components/Sidebar.tsx
@@ -126,10 +124,11 @@ Barra lateral de navegación. Común a todas las páginas.
 ### Props
 
 - **className?:** clases adicionales.
+- **showDisabled?:** muestra items deshabilitados (default true).
 
 ### Estructura
 
-- **Navegación principal:** items de `getEnabledNavItems("main")` ordenados. Cada item muestra icono y texto traducido. El item activo tiene indicador visual: borde izquierdo primary, fondo accent/50, icono con scale-105 y color primary.
+- **Navegación principal:** items de `getEnabledNavItems("main")` ordenados. Cada item muestra icono y texto traducido. El item activo usa `variant="secondary"` con fondo `accent/50`, texto `foreground` e icono con `scale-105` y `text-primary`.
 - **Items deshabilitados:** sección "Próximamente" con icono Construction, opacidad reducida y cursor pointer que muestra notificación info al hacer clic.
 
 ### Detección de item activo
@@ -138,7 +137,7 @@ Función `isActive`: para `/dashboard` compara exacta, para el resto usa `starts
 
 ### Menú móvil
 
-En pantallas móviles, el sidebar está oculto por defecto (`-translate-x-full`). Se abre mediante el evento personalizado `sidebar:open` (disparado desde el botón de hamburguesa en `TopNav`). El componente escucha este evento con `addEventListener` y cierra al hacer clic fuera o en el botón de cierre.
+En pantallas móviles, el sidebar está oculto por defecto (`-translate-x-full`). Se abre mediante el evento personalizado `sidebar:open` (disparado desde el botón de hamburguesa en `TopNav`). El componente escucha este evento con `addEventListener` y cierra al hacer clic fuera o en el botón de cierre. El cuerpo pierde scroll cuando el sidebar está abierto (`overflow: hidden`).
 
 ### Hooks utilizados
 
@@ -147,7 +146,7 @@ En pantallas móviles, el sidebar está oculto por defecto (`-translate-x-full`)
 
 ### Dimensiones
 
-- Ancho fijo 256px (`w-64`), altura `calc(100vh - 4rem)`, sticky en top-16.
+- Ancho fijo 256px (`w-64`), altura `calc(100vh - 4rem)`, sticky en top-16 en escritorio. En móvil es fixed a pantalla completa.
 
 ---
 
@@ -200,55 +199,6 @@ Tres botones en grupo con `role="group"` y `aria-label`. El botón activo tiene 
 ### Tipo exportado
 
 `PeriodFilter = "week" | "month" | "year"` (re-exportado por Header.tsx).
-
----
-
-## components/MetricCard.tsx
-
-Tarjeta de métrica base con soporte para skeleton de carga.
-
-### Props
-
-- **title:** título de la métrica.
-- **value:** valor (string o number).
-- **icon:** componente LucideIcon.
-- **color:** clases Tailwind para el contenedor del icono.
-- **loading?:** muestra skeleton (default false).
-- **children?:** contenido adicional bajo el valor.
-- **className?:** clases adicionales.
-
-### Estados
-
-- **Carga:** placeholder con 4 barras animadas (título, icono, valor, tendencia).
-- **Normal:** título uppercase con tracking-wider, icono en contenedor coloreado, valor en texto grande (3xl) con `tabular-nums`, y children opcional.
-
----
-
-## components/FormattedMetricCard.tsx
-
-Extiende MetricCard con formato automático de moneda/número y visualización de tendencia.
-
-### Props
-
-- **title:** título.
-- **value:** number.
-- **format?:** "currency" (default) o "number".
-- **trend:** porcentaje de tendencia.
-- **trendValue?:** valor opcional de tendencia formateado.
-- **icon:** LucideIcon.
-- **color:** clases Tailwind.
-- **periodLabel?:** texto del período para el tooltip.
-- **loading?:** skeleton.
-- **invertedTrend?:** invierte colores de tendencia (gastos: tendencia negativa es buena).
-- **className?:** clases adicionales.
-
-### Funcionalidad
-
-- `isValidNumber`: filtra NaN e Infinity.
-- `formattedValue`: usa `formatCurrency` o `formatNumber` de i18nFormat.
-- `trendColor`: verde para positivo (o negativo si invertedTrend), rosa para negativo.
-- Icono de tendencia: ArrowUpRight para subida, ArrowDownRight para bajada.
-- Si no hay tendencia válida: texto "Sin datos disponibles".
 
 ---
 
@@ -365,43 +315,39 @@ Hook de gestión de temas visuales con persistencia en localStorage.
 
 ### Estado inicial
 
-Lee `theme-name` de localStorage. Si existe y coincide con un tema de `THEMES`, lo usa. Si no, usa THEMES[0] (default).
+Lee `millete-theme` de localStorage. Si existe y coincide con un tema de `THEMES`, lo usa. Si no, usa `MILLETE_THEME`. Detecta preferencia del sistema (`prefers-color-scheme: dark`) para elegir entre `MILLETE_THEME` y `DARK_MILLETE_THEME`.
 
 ### Efecto
 
-Al cambiar `theme`, aplica 28 variables CSS al `:root`:
-- --background, --foreground, --card, --card-foreground, --popover, --popover-foreground
-- --primary, --primary-foreground, --secondary, --secondary-foreground
-- --muted, --muted-foreground, --accent, --accent-foreground
-- --destructive, --destructive-foreground, --border, --input, --ring
-- --chart-1 a --chart-5
-- --surface, --surface-hover, --subtle
+Al cambiar `theme`, aplica 36 variables CSS al `:root`:
+- 28 variables semánticas (background, primary, accent, destructive, warning, etc.)
+- 8 variables de sidebar (sidebar, sidebar-foreground, sidebar-primary, etc.)
 
-Fuerza modo oscuro (`classList.add("dark")`, `classList.remove("light")`). Guarda nombre del tema en localStorage.
+Guarda nombre del tema en localStorage (`millete-theme`). No añade ni quita clases `.dark` o `.light` en `<html>`.
 
 ### API
 
 - `theme`: tema actual.
 - `setTheme(theme)`: cambia a un tema específico.
 - `setThemeByName(name)`: cambia por nombre.
-- `availableThemes`: array THEMES.
+- `availableThemes`: array THEMES (4 temas).
 
 ---
 
 ## themes/palettes.ts
 
-Define 4 temas visuales, cada uno con 28 valores HSL.
+Define 4 temas visuales, cada uno con 28+ valores HSL.
 
 ### Temas
 
-1. **default** (Azul Profesional 💼): tonos azules, primary `217.2 91.2% 59.8%`.
-2. **ocean** (Océano Sereno 🌊): tonos cian, primary `187 85% 50%`.
-3. **forest** (Bosque Fresco 🌿): tonos verdes, primary `142 60% 50%`.
-4. **sunset** (Atardecer Cálido 🌅): tonos naranjas, primary `25 90% 60%`.
+1. **millete** (🍞): tonos crema/verde panadería, primary `162.0 48.1% 20.4%`.
+2. **dark-millete** (🌙): modo oscuro con tonos verdes.
+3. **rose-millete** (🌸): tonos rosas.
+4. **ember-millete** (🔥): tonos rojos oscuros.
 
 ### Interfaces
 
-- **ThemeColors:** 28 propiedades HSL.
+- **ThemeColors:** 28+ propiedades HSL (incluye warning y warning-foreground).
 - **Theme:** name, label, icon, colors.
 
 ---
@@ -514,10 +460,10 @@ Sistema de notificaciones toast basado en Sonner con 4 variantes visuales.
 
 | Tipo | Icono | Color icono | Duración default | Borde |
 |------|-------|-------------|------------------|-------|
-| success | CircleCheck | emerald | 4000ms | emerald |
-| error | AlertTriangle | destructive | 6000ms | destructive |
-| info | Info | primary | 4000ms | primary |
-| warning | AlertCircle | amber | 5000ms | amber |
+| success | CircleCheck | text-success | 4000ms | border-success |
+| error | AlertTriangle | text-destructive | 6000ms | border-destructive |
+| info | Info | text-primary | 4000ms | border-primary |
+| warning | AlertCircle | text-warning | 5000ms | border-warning |
 
 ### ToastContent
 
@@ -549,7 +495,7 @@ Cada método llama a `toast.custom()` con el componente ToastContent y duración
 - **Interceptor 401 con evento global:** emite `auth:logout` en window para que AuthContext ejecute limpieza sin dependencia circular.
 - **Sistema de notificaciones unificado:** 4 variantes (success, error, info, warning) con estilos consistentes.
 - **Formateo i18n de moneda/números:** `formatCurrency` y `formatNumber` usan `Intl.NumberFormat` con locale detectado de i18next.
-- **Temas dinámicos con 28 variables CSS:** 4 paletas completas aplicadas mediante `useTheme` con persistencia en localStorage. Fuerza modo oscuro.
+- **Temas dinámicos con 36 variables CSS:** 4 paletas completas aplicadas mediante `useTheme` con persistencia en localStorage. Sin `next-themes` ni clases `.dark`.
 - **Navigation registry centralizado:** items de navegación con enabled/disabled, orden y sección.
 - **Greeting dinámico en Header:** saludo según hora del día (mañana/tarde/noche) con fecha formateada y número de semana.
 - **MetricCard con skeleton:** placeholder animado que coincide con la estructura real de la tarjeta.

@@ -38,7 +38,7 @@ Centraliza las 5 queries del dashboard: metrics, history, categories, budgets y 
 ### Funciones de importación/exportación
 
 - handleImport: recibe un File, lo envía como FormData a POST /data/import con header Content-Type: multipart/form-data y opción skipGlobalErrorNotify: true para evitar notificaciones duplicadas. Maneja errores 403 (propiedad), 400 (formato) y genéricos con notify.error. Al finalizar ejecuta queryClient.invalidateQueries() para refrescar todos los datos y cierra el modal.
-- handleExport: GET /data/export con responseType: 'blob'. Crea un blob JSON, genera un enlace temporal con window.URL.createObjectURL, lo descarga como familybudget_export.json y lo limpia con revokeObjectURL. Maneja errores con notify.error.
+- handleExport: usa `useExport` para descargar datos en 4 formatos (JSON, ZIP, CSV, PDF) según la selección del usuario. Crea un blob, genera un enlace temporal con `window.URL.createObjectURL`, lo descarga y lo limpia con `revokeObjectURL`. Maneja errores con `notify.error`.
 
 ### Layout
 

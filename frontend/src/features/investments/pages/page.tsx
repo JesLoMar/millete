@@ -17,13 +17,14 @@ import type { InvestmentResponse } from "../types"
 export const InvestmentsPage = () => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<PeriodFilter>("month")
+  const [page, setPage] = useState(0)
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentResponse | null>(null)
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
     setPeriod(newPeriod)
   }, [])
 
-  const { investments, metrics, evolution, distribution } = useInvestmentQueries(period)
+  const { investments, metrics, evolution, distribution } = useInvestmentQueries(period, page)
   const { deleteInvestment } = useInvestmentMutations()
 
   const handleDelete = async () => {
@@ -36,6 +37,10 @@ export const InvestmentsPage = () => {
       console.error("Error al eliminar inversión:", err)
     }
   }
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage)
+  }, [])
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -70,8 +75,11 @@ export const InvestmentsPage = () => {
           </div>
 
           <AssetList
-            investments={investments.data || []}
+            investments={investments.data?.content || []}
             isLoading={investments.isLoading}
+            currentPage={investments.data?.currentPage ?? 0}
+            totalPages={investments.data?.totalPages ?? 1}
+            onPageChange={handlePageChange}
             onDelete={setDeletingInvestment}
           />
         </main>

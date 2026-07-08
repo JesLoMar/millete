@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useCallback } from "react"
 
 interface UsePaginationProps {
   totalItems: number
@@ -9,10 +9,16 @@ interface UsePaginationProps {
 export function usePagination({ totalItems, itemsPerPage = 10, initialPage = 1 }: UsePaginationProps) {
   const [currentPage, setCurrentPage] = useState(initialPage)
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(totalItems / itemsPerPage)), [totalItems, itemsPerPage])
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(totalItems / itemsPerPage)),
+    [totalItems, itemsPerPage]
+  )
 
-
-  const effectivePage = Math.min(currentPage, totalPages)
+  // Clamp currentPage to valid range whenever totalPages changes
+  const effectivePage = useMemo(
+    () => Math.min(currentPage, totalPages),
+    [currentPage, totalPages]
+  )
 
   const paginatedRange = useMemo(() => {
     const start = (effectivePage - 1) * itemsPerPage
@@ -20,13 +26,21 @@ export function usePagination({ totalItems, itemsPerPage = 10, initialPage = 1 }
     return { start, end }
   }, [effectivePage, itemsPerPage])
 
-  const goToPage = (page: number) => {
+  const goToPage = useCallback((page: number) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)))
-  }
+  }, [totalPages])
 
-  const nextPage = () => goToPage(currentPage + 1)
-  const prevPage = () => goToPage(currentPage - 1)
-  const resetPage = () => setCurrentPage(1)
+  const nextPage = useCallback(() => {
+    setCurrentPage(Math.min(effectivePage + 1, totalPages))
+  }, [effectivePage, totalPages])
+
+  const prevPage = useCallback(() => {
+    setCurrentPage(Math.max(1, effectivePage - 1))
+  }, [effectivePage])
+
+  const resetPage = useCallback(() => {
+    setCurrentPage(1)
+  }, [])
 
   return {
     currentPage: effectivePage,

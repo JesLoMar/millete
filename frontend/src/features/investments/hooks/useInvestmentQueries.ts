@@ -3,12 +3,22 @@ import { apiClient } from "@/shared/api/axiosClient"
 import type { PeriodFilter } from "@/shared/components/PeriodSelector"
 import type { InvestmentResponse, InvestmentMetricsData, EvolutionResponse, DistributionResponse } from "../types"
 
-export function useInvestmentQueries(period: PeriodFilter) {
-  const { data: investmentsData, isLoading: investmentsIsLoading } = useQuery<InvestmentResponse[]>({
-    queryKey: ['investments'],
+export interface PaginatedInvestmentsResponse {
+  content: InvestmentResponse[]
+  currentPage: number
+  totalPages: number
+  totalElements: number
+  size: number
+  first: boolean
+  last: boolean
+}
+
+export function useInvestmentQueries(period: PeriodFilter, page: number = 0, size: number = 10) {
+  const { data: investmentsData, isLoading: investmentsIsLoading } = useQuery<PaginatedInvestmentsResponse>({
+    queryKey: ['investments', page, size],
     queryFn: async () => {
-      const response = await apiClient.get('investments')
-      return response.data.filter((inv: InvestmentResponse) => inv.active !== false)
+      const response = await apiClient.get(`investments?page=${page}&size=${size}`)
+      return response.data
     },
     retry: 1,
     staleTime: 30_000,

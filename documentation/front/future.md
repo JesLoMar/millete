@@ -62,7 +62,7 @@ Gracias a la arquitectura basada en features de Millete, el núcleo lógico se p
 1. HTML a Componentes Nativos: Sustituir etiquetas HTML comunes como div, p, o span por los componentes correspondientes de React Native como View y Text.
 2. Enrutado: Cambiar react-router-dom por Expo Router (enrutado nativo basado en archivos, organizando las vistas bajo la carpeta app/).
 3. Librería de Componentes: Eliminar Radix UI. Implementar Gluestack UI o NativeWind v4 para poder seguir utilizando clases de Tailwind adaptadas al entorno móvil.
-4. Gráficos: Reemplazar recharts (dependiente del DOM web) por una solución móvil de alto rendimiento como Victory Native o Gifted Charts para los componentes CategoryDonut.tsx y HistoryChart.tsx.
+4. Gráficos: Reemplazar los componentes de gráficos web (simple-bar-chart, donut-chart) por una solución móvil de alto rendimiento como Victory Native o Gifted Charts para los componentes CategoryDonut.tsx y HistoryChart.tsx.
 
 ---
 

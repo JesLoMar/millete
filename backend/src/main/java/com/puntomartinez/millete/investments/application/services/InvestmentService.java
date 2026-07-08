@@ -53,6 +53,16 @@ public class InvestmentService implements RegisterInvestmentUseCase, ListInvestm
         return investmentRepository.findAllByUserId(userId);
     }
 
+    @Override
+    public List<Investment> findAllByUserId(UUID userId, int page, int size) {
+        return investmentRepository.findAllByUserId(userId, page, size);
+    }
+
+    @Override
+    public long countActiveByUserId(UUID userId) {
+        return investmentRepository.countByUserIdAndActiveTrue(userId);
+    }
+
 
     @Override
     public Investment updatePrice(UUID id, UUID userId, BigDecimal newPrice) {

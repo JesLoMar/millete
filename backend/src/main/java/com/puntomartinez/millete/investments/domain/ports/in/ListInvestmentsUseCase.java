@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface ListInvestmentsUseCase {
     List<Investment> findAllByUserId(UUID userId);
+    List<Investment> findAllByUserId(UUID userId, int page, int size);
+    long countActiveByUserId(UUID userId);
 }

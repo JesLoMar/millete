@@ -1,6 +1,7 @@
 import { AuthForm } from '@/features/auth/components/AuthForm';
 import { InfoSection } from '@/features/auth/components/InfoSection';
 import { BackgroundDecoration } from '@/features/auth/components/BackgroundDecoration';
+import { BillConfetti } from '@/features/auth/components/BillConfetti';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,7 @@ export const LoginPage = () => {
       </section>
 
       <BackgroundDecoration />
+      <BillConfetti maxBills={120} billsPerScroll={40} enabled={!isLoading} />
     </main>
   );
 };

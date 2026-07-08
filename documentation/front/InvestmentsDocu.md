@@ -71,8 +71,10 @@ Define todos los contratos de datos:
 
 Constantes compartidas entre componentes:
 
-- TYPE_COLORS: mapeo de tipo de inversión a clase Tailwind de fondo (STOCK → bg-blue-500, CRYPTO → bg-amber-500, FUND → bg-emerald-500, REAL_ESTATE → bg-rose-500, OTHER → bg-slate-500).
+- TYPE_COLORS: mapeo de tipo de inversión a clase Tailwind de fondo (STOCK → bg-chart-4, CRYPTO → bg-chart-3, FUND → bg-chart-2, REAL_ESTATE → bg-destructive, OTHER → bg-muted-foreground).
 - INVESTMENT_TYPES: array de 5 objetos con value, labelKey (clave i18n), icon (LucideIcon: BarChart3, Bitcoin, Wallet, Building2, HelpCircle) y color (clase Tailwind de texto). Usado en NewInvestmentDialog y filtros de AssetList.
+
+> **Nota:** `InvestmentAssetType` en `types/index.ts` solo define 4 valores (`STOCK` | `CRYPTO` | `REAL_ESTATE` | `OTHER`) sin incluir `FUND`, mientras que `INVESTMENT_TYPES` y `TYPE_COLORS` sí lo incluyen. Esto es una inconsistencia conocida en el código.
 
 ---
 
@@ -386,4 +388,4 @@ Diálogo para actualizar el precio de mercado de un activo. Se abre desde el bot
 ## Mejoras implementadas (v0.0.3)
 
 - Menú contextual siempre visible: el botón de tres puntos (MoreHorizontal) en AssetRow eliminó las clases opacity-0 group-hover:opacity-100 y ahora es siempre visible en todas las vistas. Esto estandariza la navegación con Categories y Transactions, garantizando accesibilidad en dispositivos táctiles y tablets.
-- Modal de confirmación al eliminar con textos contextuales: ConfirmDeletionDialog recibe props title y description personalizadas para inversiones (investments.deleteTitle y investments.deleteConfirmation), mostrando un texto que indica que se eliminará todo el historial asociado. Se añadieron las claves i18n investments.deleteTitle e investments.deleteConfirmation en los 6 idiomas.
+- Modal de confirmación al eliminar con textos contextuales: ConfirmDeletionDialog recibe props title y description personalizadas para inversiones (investments.deleteTitle y investments.deleteConfirmation), mostrando un texto que indica que se eliminará todo el historial asociado. Se añadieron las claves i18n investments.deleteTitle e investments.deleteConfirmation en los 7 idiomas.

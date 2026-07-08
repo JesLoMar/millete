@@ -1,92 +1,140 @@
 {
+  "index": {
+    "title": "Guida all'uso",
+    "description": "Seleziona una sezione nel menu laterale per visualizzarne il contenuto."
+  },
   "sections": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Il pannello principale in cui visualizzate lo stato delle vostre finanze e accedete alle funzioni chiave.",
+      "description": "Il pannello principale in cui visualizzi lo stato complessivo delle tue finanze, gli indicatori chiave e accedi alle funzionalità più utilizzate.",
       "topics": [
         {
           "title": "Azioni rapide",
-          "content": "Dalla Dashboard avete accesso diretto alle azioni rapide per:\n\n- Aggiungi transazione: Consente di aggiungere entrate o spese al saldo del conto. Devono essere categorizzate.\n\n- Crea categoria: Consente di creare nuove categorie per organizzare le transazioni. È possibile assegnare loro un budget.\n\n- Importa dati: Consente di importare i dati dell'utente da una versione precedente a quella attuale.\n\n- Esporta dati: Consente di esportare i dati per una successiva importazione."
+          "content": "Dalla Dashboard hai a disposizione quattro pulsanti d'azione diretta:\n\n- Aggiungi transazione: Registra immediatamente un entrata o una uscita puntuale. Devi indicare descrizione, tipo, importo e categoria.\n\n- Crea categoria: Definisci una nuova categoria per classificare i tuoi movimenti. Puoi assegnarle un colore e un budget mensile.\n\n- Importa dati: Carica un file JSON precedentemente esportato per ripristinare o migrare le tue informazioni.\n\n- Esporta dati: Scarica le tue informazioni in diversi formati: JSON (completo), ZIP (compresso), CSV (per tipo di entità) o PDF (report per periodo)."
         },
         {
           "title": "Metriche principali",
-          "content": "Nella parte immediatamente inferiore alla sezione precedente troverete quattro schede con il vostro saldo totale, entrate, spese e saldo disponibile. Ciascuna mostra la tendenza rispetto al periodo precedente con una percentuale in verde o in rosso.\n\nUtilizzate il selettore del periodo (settimana, mese, anno) per modificare l'intervallo di tempo."
+          "content": "Subito sotto le azioni rapide troverai quattro schede che riassumono la tua situazione finanziaria:\n\n- Bilancio: La differenza tra i tuoi entrata e uscite nel periodo selezionato.\n- Entrate: Totale delle entrate di denaro, con andamento rispetto al periodo precedente.\n- Uscite: Totale delle uscite, anch'esso con indicatore di tendenza.\n- Risparmio: Il denaro libero disponibile dopo aver coperto le spese.\n\nUsa il selettore del periodo (settimana, mese, anno) per cambiare l'intervallo di tempo. Le tendenze sono mostrate in verde (favorevole) o rosso (sfavorevole)."
         },
         {
-          "title": "Pannelli informativi",
-          "content": "Sotto le metriche principali troverete pannelli con grafici e informazioni riassuntive delle vostre spese e dei vostri budget.\n\n- Storico delle spese: Mostra un grafico a barre con l'evoluzione delle spese nel tempo.\n\n- Spese per categoria: Mostra un grafico di tipo donut con il totale speso in ciascuna categoria durante il periodo selezionato.\n\n- Budget: Se avete categorie con un budget configurato, vedrete una barra che indica quanto avete speso rispetto al budget stesso."
+          "title": "Grafici e budget",
+          "content": "Nella parte inferiore della Dashboard visualizzi tre pannelli informativi:\n\n- Storico delle spese: Grafico a barre che mostra l'evoluzione delle tue spese nel tempo. Se ci sono più di 12 periodi, vengono mostrati solo gli ultimi con un avviso.\n\n- Spese per categoria: Grafico a ciambella con la distribuzione percentuale di quanto speso in ciascuna categoria durante il periodo attivo.\n\n- Budget: Barre di avanzamento che indicano quanto hai consumato del budget assegnato a ogni categoria. In verde se sotto l'80%, ambra se ti avvicini al limite, e rosso se lo hai superato."
         }
       ]
     },
     "transactions": {
       "title": "Transazioni",
-      "description": "Il modulo in cui registrate e gestite tutti i vostri movimenti finanziari, sia che si tratti di operazioni singole o automatizzate.",
+      "description": "Il modulo in cui registri, modifichi e organizzi tutti i tuoi movimenti finanziari, sia puntuali che ricorrenti.",
       "topics": [
         {
-          "title": "Registra transazione",
-          "content": "Per aggiungere un movimento singolo, fate clic sul pulsante '+ Nuova transazione'. Si aprirà un modulo in cui dovrete indicare:\n\n- Descrizione: Un nome o un concetto identificativo (es. Spesa settimanale da Lidl).\n- Tipo: Consente di classificare l'operazione come 'Spesa' o 'Entrata'.\n- Quantità (€): L'importo esatto dell'operazione.\n- Categoria: Consente di assegnare il movimento a una categoria esistente tramite un menu a discesa."
+          "title": "Registrare una transazione",
+          "content": "Clicca su '+ Nuova transazione' per aprire il modulo di creazione. Devi completare:\n\n- Descrizione: Un nome identificativo (es. 'Spesa settimanale da Lidl').\n- Tipo: Seleziona se è una Spesa o un'Entrata.\n- Importo (€): La quantità esatta dell'operazione.\n- Categoria: Obbligatoria nella creazione. Assegna la transazione a una delle tue categorie esistenti.\n\nLa transazione viene salvata con la data attuale e viene immediatamente riflessa nella Dashboard."
         },
         {
-          "title": "Nuova transazione ricorrente",
-          "content": "Se avete pagamenti o incassi fissi, potete automatizzarli tramite il pulsante 'Ricorrenti'. Questo modulo include i campi di base di una transazione normale, aggiungendo opzioni di pianificazione:\n\n- Frequenza e intervallo: Consente di configurare ogni quanto tempo si ripeterà l'operazione.\n- Data di inizio: Definisce il giorno esatto in cui il sistema inizierà a registrare automaticamente il movimento.\n- Data di fine (opzionale): Stabilisce un limite temporale affinché la transazione smetta di ripetersi."
+          "title": "Transazioni ricorrenti",
+          "content": "Per automatizzare pagamenti o incassi periodici, usa il pulsante 'Transazione ricorrente'. Oltre ai campi base, devi configurare:\n\n- Frequenza: Giorni, settimane, mesi o anni.\n- Intervallo: Ogni quante unità di frequenza si ripete (es. ogni 2 settimane).\n- Data di inizio: Il giorno in cui inizia l'automazione.\n- Data di fine (opzionale): Se la ricorrenza ha un termine limitato.\n\nIl sistema calcola automaticamente la prossima esecuzione stimata e la mostra nell'elenco delle ricorrenti."
         },
         {
-          "title": "Filtraggio e ricerca",
-          "content": "Il sistema include strumenti per individuare rapidamente i vostri record:\n\n- Schede rapide: Pulsanti per filtrare la lista mostrando 'Tutti', solo 'Entrate' o solo 'Spese'. Include un contatore con il totale delle operazioni trovate.\n- Barra di ricerca: Una barra di testo ('Cerca per descrizione...') che vi consente di trovare un movimento specifico digitando le parole chiave del suo concetto."
+          "title": "Cercare, filtrare e organizzare",
+          "content": "L'elenco delle transazioni include strumenti di ricerca e filtraggio:\n\n- Schede rapide: Filtra tra Tutte, Entrate o Spese. Mostra un contatore con il totale dei risultati.\n- Barra di ricerca: Digita parole chiave della descrizione per localizzare transazioni specifiche.\n- Paginazione: Se hai molte transazioni, ne vengono mostrate 10 per pagina con controlli di navigazione.\n\nOgni transazione mostra un badge con il colore reale della sua categoria. Se una transazione rimane senza categoria (orfana), viene indicato con un'icona di aiuto in ambra."
+        },
+        {
+          "title": "Modificare ed eliminare",
+          "content": "Ogni transazione ha un menu a tre punti (sempre visibile) con due opzioni:\n\n- Modifica: Permette di modificare descrizione, tipo, importo e categoria. Durante la modifica, la categoria può essere lasciata vuota (a differenza della creazione).\n- Elimina: Apre una finestra di conferma. Una volta eliminata, la transazione scompare dall'elenco e le metriche della Dashboard vengono aggiornate automaticamente."
         }
       ]
     },
     "categories": {
       "title": "Categorie",
-      "description": "Il modulo progettato per classificare i vostri movimenti finanziari e stabilire limiti di spesa mensili per mantenere i vostri budget sotto controllo.",
+      "description": "Organizza le tue spese in categorie personalizzate e controlla i tuoi budget mensili.",
       "topics": [
         {
-          "title": "Crea nuova categoria",
-          "content": "Per inserire una nuova classificazione, fate clic sul pulsante '+ Nuova categoria'. Si aprirà un modulo fluttuante con i seguenti campi obbligatori:\n\n- Nome: Il termine identificativo della categoria (es. Alimentazione, Trasporti, Tempo libero).\n- Colore: Un selettore visivo o un campo di testo per assegnare un colore personalizzato in formato esadecimale (es. #FF5733), che ne faciliterà l'identificazione visiva nei grafici.\n- Budget mensile (€): Il limite massimo di denaro che pianificate di spendere in questa categoria nel corso del mese."
+          "title": "Creare una categoria",
+          "content": "Premi '+ Aggiungi categoria' per aprire il modulo di creazione. Hai bisogno di:\n\n- Nome: L'identificativo della categoria (es. Alimentazione, Trasporti, Tempo libero).\n- Colore: Seleziona un colore tra 32 opzioni disponibili nel selettore visivo. Questo colore viene usato in tutti i grafici e nei badge delle transazioni.\n- Budget mensile (opzionale): Il limite massimo che pianifichi di spendere. Se non indicato, la categoria viene creata senza controllo di budget."
         },
         {
-          "title": "Pannello di gestione e visualizzazione",
-          "content": "Nella schermata principale del modulo vedrete una griglia con tutte le vostre categorie attive. Ogni scheda vi mostra chiaramente:\n\n- Il nome della categoria e il suo colore distintivo associato.\n- Il budget mensile assegnato (o l'indicazione corrispondente se è stata configurata senza limite di budget).\n- I pulsanti di azione rapida per gestire l'elemento in tempo reale."
+          "title": "Tabella delle categorie",
+          "content": "Tutte le tue categorie vengono mostrate in una tabella con le seguenti informazioni:\n\n- Nome e colore identificativo.\n- Barra di avanzamento: Indica la percentuale spesa rispetto al budget mensile adattato al periodo selezionato (settimana, mese o anno). Se superi il 100%, la barra diventa rossa.\n- Spesa attuale vs. limite di budget in formato valuta.\n\nIl budget mensile viene adattato automaticamente in base al periodo: diviso per 4 nella vista settimanale, mantenuto in quella mensile, e moltiplicato per 12 in quella annuale."
         },
         {
-          "title": "Modifica ed elimina",
-          "content": "Ogni scheda di categoria dispone di due icone di azione diretta nell'angolo in alto a destra:\n\n- Icona di modifica (Matita): Apre nuovamente il modulo per modificare il nome, cambiare la tavolozza dei colori o regolare il limite del budget mensile.\n- Icona di eliminazione (Cestino): Consente di rimuovere la categoria dal sistema in modo sicuro."
+          "title": "Ricerca e paginazione",
+          "content": "Se hai molte categorie, puoi:\n\n- Cercare per nome: Digita nel campo di ricerca per filtrare in tempo reale.\n- Navigare per pagine: La tabella mostra 10 categorie per pagina.\n\nOgni riga ha un menu a discesa con le opzioni Modifica e Elimina. L'eliminazione disattiva la categoria e scollega le sue transazioni, che appariranno come 'Senza categoria'."
         }
       ]
     },
     "investments": {
       "title": "Investimenti",
-      "description": "Il modulo progettato per il monitoraggio dei vostri asset finanziari variabili, che vi consente di controllare l'evoluzione del valore del vostro portafoglio e la sua redditività in tempo reale.",
+      "description": "Tieni traccia del tuo portafoglio di attività finanziarie e monitorane la redditività.",
       "topics": [
         {
-          "title": "Metriche e grafici del portafoglio",
-          "content": "Nella parte superiore del pannello vengono mostrate tre schede analitiche che consolidano lo stato globale del vostro portafoglio:\n\n- Capitale investito: La somma totale del denaro che avete destinato all'acquisto dei vostri asset.\n- Valore attuale: Il valore di mercato attuale di tutti i vostri possedimenti combinati.\n- Rendimento / Guadagno: Il profitto o la perdita netta accumulata (con una percentuale e un indicatore di tendenza in colore verde o rosso).\n\nSubito sotto disponete di pannelli visivi avanzati, tra cui un grafico a linee che traccia l'evoluzione temporale del valore del vostro patrimonio e un grafico che dettaglia la ripartizione dei vostri fondi in base al tipo di asset."
+          "title": "Metriche del portafoglio",
+          "content": "Nella parte superiore vengono mostrate tre schede analitiche:\n\n- Valore del portafoglio: Il valore di mercato attuale di tutte le tue attività combinate.\n- Rendimento mensile: La redditività ottenuta nel periodo selezionato.\n- Dividendi: Funzionalità in sviluppo (contrassegnata come 'Prossimamente').\n\nOgni scheda include l'indicatore di tendenza rispetto al periodo precedente."
         },
         {
-          "title": "Registra nuovo investimento",
-          "content": "Per aggiungere un nuovo asset al vostro portafoglio, fate clic sul pulsante '+ Nuovo investimento'. Si aprirà un modulo fluttuante con i seguenti campi obbligatori:\n\n- Nome e Ticker: Il nome dell'asset (es. Apple) e il suo codice di quotazione abbreviato (es. AAPL).\n- Quantità: Il numero totale di unità o azioni acquistate.\n- Prezzo d'acquisto (€): Il costo unitario che avete pagato al momento dell'acquisto dell'asset.\n- Prezzo attuale (€): Il valore unitario di quotazione attuale sul mercato.\n- Tipo di investimento: Menu a discesa per classificare la natura dell'asset."
+          "title": "Grafici di analisi",
+          "content": "Sotto le metriche troverai due visualizzazioni:\n\n- Evoluzione del patrimonio: Grafico a barre che mostra come è variato il valore del tuo portafoglio nel tempo.\n\n- Distribuzione del portafoglio: Grafico a ciambella che scompone la composizione del tuo portafoglio per tipo di attività (Azioni, Criptovalute, Fondi, Immobili, Altri). Al centro viene mostrato il valore totale in formato condensato (milioni, migliaia o valore completo)."
         },
         {
-          "title": "Aggiornamento dei prezzi e operazioni",
-          "content": "Nella griglia o nell'elenco inferiore vengono mostrati tutti gli investimenti attivi. Ogni elemento dispone di pulsanti di azione rapida per mantenere i vostri dati aggiornati:\n\n- Aggiorna prezzo attuale: Un accesso diretto esclusivo che vi consente di modificare rapidamente la quotazione di mercato dell'asset in modo isolato per ricalcolare immediatamente i guadagni senza dover modificare l'intera scheda.\n- Modifica investimento: Consente di correggere qualsiasi parametro originale del record.\n- Rimuovi (Cestino): Esegue un'eliminazione logica per rimuovere in modo sicuro l'asset dalla visualizzazione del portafoglio attivo."
+          "title": "Registrare un'attività",
+          "content": "Clicca su '+ Nuovo investimento' per aggiungere un'attività al tuo portafoglio. I campi sono:\n\n- Nome dell'attività: Il nome identificativo (es. Apple).\n- Ticker (opzionale): Il codice borsistico abbreviato (es. AAPL). Convertito automaticamente in maiuscolo.\n- Tipo: Azioni, Criptovalute, Fondi, Immobili o Altri.\n- Quantità: Numero di unità o azioni possedute.\n- Prezzo d'acquisto (€): Il costo unitario iniziale.\n- Data d'acquisto: Il giorno in cui hai acquisito l'attività."
+        },
+        {
+          "title": "Aggiornare prezzi e gestire",
+          "content": "Nell'elenco delle attività hai diverse azioni a disposizione:\n\n- Aggiorna prezzo: Modifica il prezzo di mercato attuale per ricalcolare la redditività. Se la variazione supera il 50% rispetto al prezzo precedente, il sistema richiede una doppia conferma per evitare errori.\n- Elimina: Rimuovi l'attività dal tuo portafoglio tramite una finestra di conferma.\n\nPuoi filtrare l'elenco per tipo di investimento e cercare per nome o ticker."
+        }
+      ]
+    },
+    "savingsGoals": {
+      "title": "Obiettivi di risparmio",
+      "description": "Definisci obiettivi di risparmio personali, segui i tuoi progressi e mantieni la motivazione per raggiungere i tuoi traguardi finanziari.",
+      "topics": [
+        {
+          "title": "Creare un obiettivo",
+          "content": "Clicca sul pulsante di creazione obiettivo per aggiungere un nuovo obiettivo di risparmio. Configura:\n\n- Nome: Un titolo identificativo (es. 'Viaggio in Giappone', 'Fondo di emergenza').\n- Obiettivo (€): La quantità totale che vuoi raggiungere.\n- Scadenza (opzionale): Il giorno massimo per conseguirlo.\n- Priorità: Bassa, Media o Alta.\n- Link (opzionale): Un URL di riferimento (es. il viaggio che vuoi prenotare).\n\nL'obiettivo viene creato con stato 'Attivo' e progresso iniziale a zero."
+        },
+        {
+          "title": "Stato e progresso",
+          "content": "Ogni obiettivo mostra visivamente il tuo avanzamento:\n\n- Progresso: Percentuale completata e importo accumulato rispetto all'obiettivo.\n- Stato: Attivo (in corso), In pausa (temporaneamente fermato), Completato (obiettivo raggiunto) o Annullato (abbandonato).\n- Contribuisci: Aggiungi un importo all'obiettivo per incrementare il progresso.\n\nPuoi modificare i dati dell'obiettivo (nome, obiettivo, priorità, stato) o eliminarlo quando non è più necessario."
         }
       ]
     },
     "groupGoals": {
       "title": "Obiettivi di gruppo",
-      "description": "Il modulo cooperativo che vi consente di gestire un budget condiviso, invitare altri utenti e monitorare i contributi di ciascun membro verso un obiettivo comune.",
+      "description": "Gestisci obiettivi di risparmio condivisi con altre persone, dividi i contributi e monitora il progresso collettivo.",
       "topics": [
         {
-          "title": "Progresso e impostazioni dell'obiettivo di gruppo",
-          "content": "Nella parte superiore visualizzerete il vostro 'Obiettivo mensile' e una barra di 'Progresso di questo mese' che riflette graficamente la percentuale e la quantità totale raccolta. Potete modificare le regole del gruppo dall'icona dell'ingranaggio (Impostazioni dell'obiettivo di gruppo), dove definirete:\n\n- Nome dell'obiettivo di gruppo: Identificatore del gruppo.\n- Obiettivo mensile (€): La quantità economica totale che il gruppo aspira a raccogliere nel mese.\n- Modalità di ripartizione: Consente di scegliere come viene diviso il pagamento dell'obiettivo tra gli utenti tramite tre opzioni: 'Parti uguali', 'Proporzionale allo stipendio' o 'Percentuali personalizzate'."
+          "title": "Creare e configurare un obiettivo di gruppo",
+          "content": "Clicca su 'Crea primo obiettivo' o 'Crea nuovo obiettivo' per avviare un obiettivo condiviso. Devi definire:\n\n- Nome dell'obiettivo: Identificativo del gruppo (es. 'Viaggio con amici').\n- Obiettivo mensile (€): L'importo totale che il gruppo deve raccogliere ogni mese.\n- Modalità di distribuzione: Come viene suddiviso il pagamento tra i membri:\n  - Equa: Tutti pagano la stessa quantità.\n  - Proporzionale allo stipendio: Ognuno contribuisce in base ai propri introiti.\n  - Personalizzata: L'amministratore definisce una percentuale individuale per ogni membro.\n\nIn modalità personalizzata, le percentuali devono sommare esattamente il 100%. Il sistema lo valida automaticamente."
         },
         {
-          "title": "Gestione dei membri e inviti",
-          "content": "Il pannello centrale 'Membri dell'obiettivo di gruppo' suddivide i partecipanti, il loro ruolo (ADMIN o MEMBER), la configurazione di ripartizione (stipendio/percentuale), la loro 'Quota' assegnata (ciò che devono pagare) e quanto hanno già 'Contribuito'.\n\n- + Invita membro: Apre una finestra di dialogo per aggiungere qualcuno di nuovo inserendo l'Email dell'utente da invitare.\n- Azioni individuali: Alla fine della riga di ciascun membro vi è un menu di opzioni (tre punti) che consente di 'Modificare il membro' (per regolare i suoi parametri finanziari) o 'Rimuovere il membro' per escluderlo dal gruppo."
+          "title": "Invitare e gestire membri",
+          "content": "Come amministratore, puoi invitare altri utenti tramite il loro nome utente o indirizzo email. La persona riceverà una notifica di invito che può accettare o rifiutare dal proprio profilo.\n\nOgni membro ha:\n- Ruolo: ADMIN (può gestire l'obiettivo e invitare) o MEMBER (contribuisce solo).\n- Stipendio: Usato per calcolare il contributo in modalità proporzionale.\n- Percentuale personalizzata: In modalità personalizzata, la % assegnata a quel membro.\n- Quota: Quanto dovrebbe contribuire in base alla modalità di distribuzione.\n- Contribuito: L'importo che ha già versato.\n\nPuoi modificare i dati di un membro o rimuoverlo dal gruppo."
         },
         {
-          "title": "Registrazione e controllo dei contributi",
-          "content": "Nella tabella inferiore 'Contributi recenti' viene tenuto il registro storico delle immissioni di capitale nel fondo comune:\n\n- Pulsante + Aggiungi: Apre il modulo 'Registra contributo' in cui dovrete indicare la 'Quantità da contribuire (€)'. Questo aggiornerà automaticamente la barra di progresso generale.\n- Cronologia: Mostra il nome del membro, la quantità contribuita e la data dell'operazione. Dispone di un'icona a forma di cestino sotto la colonna 'Azioni' per eliminare i contributi registrati per errore."
+          "title": "Contributi e storico",
+          "content": "Qualsiasi membro può registrare un contributo cliccando su '+ Aggiungi'. Indica l'importo in euro e il sistema aggiorna automaticamente la barra di progresso generale.\n\nIl pannello storico mostra tutti i contributi effettuati con:\n- Nome del membro che ha contribuito.\n- Data del contributo.\n- Importo contribuito.\n\nLa percentuale di progresso si calcola dividendo il totale contribuito per l'obiettivo mensile."
+        }
+      ]
+    },
+    "profile": {
+      "title": "Profilo utente",
+      "description": "Gestisci il tuo account, le preferenze, la sicurezza e le impostazioni avanzate da un unico posto.",
+      "topics": [
+        {
+          "title": "Informazioni personali",
+          "content": "Nella sezione superiore puoi modificare i tuoi dati di base:\n\n- Nome utente: Il tuo identificatore sulla piattaforma.\n- Indirizzo email: L'indirizzo associato al tuo account.\n\nEntrambi i campi richiedono la tua password attuale per confermare le modifiche."
+        },
+        {
+          "title": "Sicurezza",
+          "content": "Il pannello di sicurezza ti permette di:\n\n- Cambiare password: Inserisci la password attuale e quella nuova (minimo 8 caratteri). Al cambio, tutte le tue sessioni attive vengono chiuse.\n- Sessioni attive: Visualizza tutti i dispositivi da cui hai effettuato l'accesso (WEB o Telegram) e chiudi quelli che non usi più. Puoi chiudere una sessione specifica o tutte le altre tranne quella attuale."
+        },
+        {
+          "title": "Notifiche e inviti",
+          "content": "La tabella delle notifiche mostra gli inviti in sospeso agli obiettivi di gruppo. Ogni invito indica chi ti ha invitato e a quale obiettivo. Puoi:\n\n- Accettare: Ti unisci all'obiettivo di gruppo come membro.\n- Rifiutare: Scarti l'invito.\n\nLe decisioni si riflettono immediatamente nella sezione Obiettivi di gruppo."
+        },
+        {
+          "title": "Telegram e disattivazione",
+          "content": "Impostazioni aggiuntive del tuo account:\n\n- Collega Telegram: Connetti il tuo account con il bot @Millete_bot per ricevere notifiche e gestire operazioni da Telegram. Per collegare, apri il bot e scrivi /start.\n- Disattiva account: Se desideri smettere di usare la piattaforma, puoi disattivare il tuo account. Questo processo richiede conferma tramite checkbox e password. Tieni presente che la disattivazione è irreversibile."
         }
       ]
     }

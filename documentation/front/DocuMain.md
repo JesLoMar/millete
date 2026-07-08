@@ -141,7 +141,7 @@ Metadatos y configuración de dependencias del proyecto.
 
 - **name:** `millete-front`.
 - **private:** true — no se publica en npm.
-- **version:** `0.1.0`.
+- **version:** `0.1.2`.
 - **type:** `module` — usa módulos ES.
 - **packageManager:** `pnpm@11.7.0` — fuerza el uso de pnpm.
 
@@ -169,6 +169,17 @@ Metadatos y configuración de dependencias del proyecto.
 |-----------|---------|-----|
 | UI | `react`, `react-dom` v19 | Framework |
 | UI | `lucide-react` | Iconos |
+| UI | `sonner` | Notificaciones toast |
+| UI | `@radix-ui/*` | Componentes accesibles |
+| Routing | `react-router-dom` v7 | Enrutador |
+| Estado | `@tanstack/react-query` v5 | Queries y caché |
+| HTTP | `axios` | Cliente HTTP |
+| i18n | `i18next`, `react-i18next`, `i18next-browser-languagedetector`, `i18next-resources-to-backend` | Internacionalización |
+| Form | `react-hook-form`, `@hookform/resolvers`, `zod` v4 | Formularios y validación |
+| Estilos | `tailwindcss` v4, `@tailwindcss/vite` | CSS |
+| Estilos | `clsx`, `class-variance-authority`, `tailwind-merge` | Utilidades de clases |
+| Animación | `framer-motion` | Animaciones y transiciones |
+| UI | `lucide-react` | Iconos |
 | UI | `recharts` | Gráficos |
 | UI | `sonner` | Notificaciones toast |
 | UI | `@radix-ui/*` | Componentes accesibles |
@@ -184,7 +195,7 @@ Metadatos y configuración de dependencias del proyecto.
 
 ### Dependencias de desarrollo
 
-TypeScript v6, Vite v8, ESLint v10, Terser, PostCSS, Autoprefixer, tipos de React y Node.
+TypeScript v6, Vite v8, ESLint v10, Terser, tipos de React y Node.
 
 ---
 
@@ -196,7 +207,8 @@ Plantilla HTML principal. Punto de entrada del navegador.
 
 - **charset:** UTF-8.
 - **viewport:** responsive con escala inicial 1.0.
-- **description:** "Aplicación de gestión financiera familiar".
+- **description:** "Aplicación de gestión financiera personal".
+- **theme-color:** `#1B4D3E` (verde primary de Millete)."Aplicación de gestión financiera familiar".
 - **theme-color:** `#3b82f6` (azul primary).
 
 ### Fuentes

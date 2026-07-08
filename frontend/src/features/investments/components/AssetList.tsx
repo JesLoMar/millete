@@ -1,7 +1,7 @@
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { m } from "framer-motion"
-import { Search } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
 import { Button } from "@/shared/components/core/button"
 import { Badge } from "@/shared/components/core/badge"
@@ -13,21 +13,36 @@ import type { InvestmentResponse } from "../types"
 interface AssetListProps {
   investments: InvestmentResponse[]
   isLoading: boolean
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
   onDelete: (investment: InvestmentResponse) => void
 }
 
-export function AssetList({ investments, isLoading, onDelete }: AssetListProps) {
+const ITEMS_PER_PAGE = 10
+
+export function AssetList({ investments, isLoading, currentPage, totalPages, onPageChange, onDelete }: AssetListProps) {
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
 
-  const filteredData = investments.filter((inv) => {
-    const matchesSearch =
-      inv.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || inv.type === typeFilter
-    return matchesSearch && matchesType
-  })
+  // Reset to page 0 when filters change
+  useEffect(() => {
+    onPageChange(0)
+  }, [searchTerm, typeFilter, onPageChange])
+
+  const filteredData = useMemo(() => {
+    return investments.filter((inv) => {
+      const matchesSearch =
+        inv.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        inv.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesType = typeFilter === "all" || inv.type === typeFilter
+      return matchesSearch && matchesType
+    })
+  }, [investments, searchTerm, typeFilter])
+
+  const from = filteredData.length > 0 ? currentPage * ITEMS_PER_PAGE + 1 : 0
+  const to = Math.min((currentPage + 1) * ITEMS_PER_PAGE, filteredData.length)
 
   if (isLoading) return <AssetListSkeleton />
 
@@ -107,6 +122,37 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
           )}
         </m.div>
       </div>
+
+      {totalPages > 1 && (
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
+          <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
+            {t("transactions:showingInterval", { from, to, total: filteredData.length })}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="h-8 border-border"
+            >
+              <ChevronLeft size={16} aria-hidden="true" />
+            </Button>
+            <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
+              {currentPage + 1} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="h-8 border-border"
+            >
+              <ChevronRight size={16} aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

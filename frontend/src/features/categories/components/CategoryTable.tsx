@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { m } from "framer-motion"
 import { useQuery } from "@tanstack/react-query"
@@ -35,17 +35,13 @@ export function CategoryTable({ period }: CategoryTableProps) {
       cat.name.toLowerCase().includes(searchTerm.toLowerCase())
     ), [categories, searchTerm])
 
-  const { currentPage, totalPages, paginatedRange, prevPage, nextPage, resetPage } = usePagination({
+  const { currentPage, totalPages, paginatedRange, prevPage, nextPage } = usePagination({
     totalItems: filteredData.length,
   })
 
   const paginatedItems = useMemo(() =>
     filteredData.slice(paginatedRange.start, paginatedRange.end),
     [filteredData, paginatedRange])
-
-  useEffect(() => {
-    resetPage()
-  }, [searchTerm, resetPage])
 
   const { data: expensesData } = useQuery<CategoriesExpenseResponse>({
     queryKey: ['categoryExpenses', period],

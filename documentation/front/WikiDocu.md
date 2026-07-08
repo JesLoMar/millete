@@ -101,4 +101,4 @@ El contenido de la wiki se define en los archivos de traducción i18n bajo la cl
 
 - La wiki es estática y se sirve desde archivos JSON de i18n.
 - Soporta imágenes opcionales por tema.
-- No requiere autenticación (ruta pública opcional, actualmente protegida).
+- No requiere autenticación (ruta pública).
