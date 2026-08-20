@@ -80,9 +80,9 @@ Controlador REST mapeado a /api/v1/categories. Usa la anotación @Validated a ni
 
 Crea una nueva categoría. Extrae el userId del token JWT mediante authentication.getName(). Valida el cuerpo de la petición con @Valid y lo recibe como RegisterCategoryRequestDTO. Traduce el DTO a RegisterCategoryCommand (record con userId, nombre, color, budgetLimit). Ejecuta registerCategoryUseCase.register(command). Mapea el resultado a CategoryResponseDTO. Responde 201 Created.
 
-### GET /
+### GET /?page=&size=&search=
 
-Lista las categorías activas del usuario autenticado. Extrae el userId del token. Llama a getCategoryUseCase.findByUserId(userId). El servicio ya filtra solo las activas. El filtrado principal ocurre a nivel de base de datos mediante @SQLRestriction("active = true") en CategoryEntity. Mapea cada categoría a CategoryResponseDTO. Responde 200 OK.
+Lista las categorías activas del usuario autenticado de forma paginada. Extrae el userId del token. Soporta un query param opcional `search` para filtrar por nombre (case-insensitive). Llama a `getCategoryUseCase.findByUserId(userId, pageable, search)`. El servicio filtra solo las activas a nivel de base de datos mediante `@SQLRestriction("active = true")` en CategoryEntity. Mapea el resultado a `PaginatedResponseDTO<CategoryResponseDTO>`. Responde 200 OK.
 
 ### PUT /{id}
 
@@ -174,7 +174,7 @@ Define el método update que recibe UUID id, UUID userId y UpdateCategoryCommand
 
 ### GetCategoryUseCase
 
-Define el método findByUserId que recibe UUID userId y devuelve List(Category). Solo expone datos del usuario autenticado. Se eliminó el método findAll() por seguridad.
+Define el método `findByUserId(UUID userId, Pageable pageable, String search)` que devuelve `Page<Category>`. Solo expone datos del usuario autenticado. Se eliminó el método `findAll()` por seguridad.
 
 ---
 
@@ -182,9 +182,11 @@ Define el método findByUserId que recibe UUID userId y devuelve List(Category).
 
 ### CategoryRepository
 
-Define los métodos: save, findById, findByIdAndUserId, findByIdUsuario, findCategoriesWithBudgetByUserId.
+Define los métodos: save, findById, findByIdAndUserId, findByIdUsuario, findByIdUsuarioPaginated, findCategoriesWithBudgetByUserId.
 
 El método findByIdAndUserId es la pieza clave de seguridad: recibe id y userId y busca en base de datos validando ambos campos simultáneamente, garantizando que solo el propietario pueda acceder al recurso.
+
+El método findByIdUsuarioPaginated añade paginación y búsqueda opcional por nombre (case-insensitive) para el listado del usuario.
 
 ---
 
@@ -256,7 +258,7 @@ Esto preserva el historial financiero completo sin perder datos.
 
 El módulo categories del frontend se comunica con estos endpoints:
 
-- GET /api/v1/categories — Obtiene la lista de categorías activas del usuario autenticado
+- GET /api/v1/categories?page=&size=&search= — Obtiene la lista de categorías activas del usuario autenticado paginadas
 - POST /api/v1/categories — Crea una nueva categoría enviando name, color y budgetLimit
 - PUT /api/v1/categories/:id — Edita una categoría existente (solo el propietario puede hacerlo)
 - DELETE /api/v1/categories/:id — Elimina (desactiva) una categoría (solo el propietario puede hacerlo)

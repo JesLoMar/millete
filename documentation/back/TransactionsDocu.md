@@ -37,14 +37,18 @@ Obtiene métricas de transacciones para el período especificado.
 3. Ejecuta transactionMetricsUseCase.getMetrics().
 4. Responde 200 con TransactionMetricsResponseDTO.
 
-### GET /
+### GET /?page=&size=&search=&type=&period=
 
-Lista todas las transacciones activas del usuario autenticado.
+Lista las transacciones activas del usuario autenticado de forma paginada y filtrada.
 
 1. Extrae el userId del token.
-2. Llama a listTransactionsUseCase.findAllByUserId().
-3. Mapea cada Transaction a TransactionResponseDTO mediante mapToDTO, que resuelve el nombre y color de la categoría usando CategoryRepository.findByIdAndUserId().
-4. Las transacciones se devuelven ordenadas por fecha descendente.
+2. Parsea los parámetros de query: `page` (default 0), `size` (default 50), `search` (filtro por descripción, opcional), `type` (`INCOME` o `EXPENSE`, opcional) y `period` (`week`, `month` o `year`, default `month`).
+3. Obtiene el total de elementos que cumplen los filtros mediante `listTransactionsUseCase.countByUserIdAndFilters()`.
+4. Recupera la página solicitada con `listTransactionsUseCase.findAllByUserId()`.
+5. Mapea cada `Transaction` a `TransactionResponseDTO` mediante `mapToDTO`, que resuelve el nombre y color de la categoría usando `CategoryRepository.findByIdAndUserId()`.
+6. Devuelve `PaginatedResponseDTO<TransactionResponseDTO>` ordenado por fecha descendente.
+
+La paginación delega el filtrado y la ordenación a la base de datos para evitar cargar grandes volúmenes de datos en memoria.
 
 ### POST /
 

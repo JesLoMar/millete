@@ -27,8 +27,16 @@ Controlador REST mapeado a /api/v1/planned-transactions.
 ### POST /
 Crea una plantilla de transacción recurrente. Valida que la categoría exista si se especifica. Responde 201 con PlannedTransactionResponseDTO. Inicializa el control de ejecuciones en nulo.
 
-### GET /
-Lista las plantillas activas del usuario autenticado, ordenadas por fecha de inicio descendente.
+### GET /?page=&size=&search=&type=
+Lista las plantillas activas del usuario autenticado de forma paginada, ordenadas por fecha de inicio descendente.
+
+Parámetros opcionales:
+- `page`: número de página (0-based). Default: 0.
+- `size`: tamaño de página. Default: 50.
+- `search`: filtro por texto en la descripción (case-insensitive).
+- `type`: filtro por tipo de transacción (`INCOME` o `EXPENSE`).
+
+Responde 200 con `PaginatedResponseDTO<PlannedTransactionResponseDTO>`.
 
 ### PUT /{id}
 Actualiza una plantilla existente. Verifica que pertenezca al usuario. Valida la categoría si se especifica.
@@ -150,7 +158,7 @@ La clase TransactionScheduler (ubicada dentro de shared/infrastructure/config/sc
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /api/v1/planned-transactions | Listar todas las plantillas del usuario |
+| GET | /api/v1/planned-transactions?page=&size=&search=&type= | Listar plantillas del usuario paginadas |
 | POST | /api/v1/planned-transactions | Registrar una nueva plantilla de recurrencia |
 | PUT | /api/v1/planned-transactions/:id | Modificar datos estructurales o el patrón de la plantilla |
 | DELETE | /api/v1/planned-transactions/:id | Desactivar lógicamente la plantilla (soft delete) |

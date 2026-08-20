@@ -32,27 +32,27 @@ El estado del período se gestiona con useState<PeriodFilter>("month") y se pasa
 
 ## components/CategoryTable.tsx
 
-Tabla principal que muestra todas las categorías con su información de gasto y presupuesto.
+Tabla principal que muestra las categorías con paginación server-side, información de gasto y presupuesto.
 
 ### Datos que consume
 
-- useCategories: hook compartido que obtiene las categorías desde GET /categories.
+- useCategories: hook compartido que obtiene las categorías paginadas desde `GET /categories?page=&size=&search=`.
 - useQuery: obtiene los gastos por categoría desde GET /dashboard/categories?period= según el período activo. Query key: ['categoryExpenses', period].
 - useCategoryMutations: hook centralizado con deleteCategory e isDeleting.
-- usePagination: hook reutilizable con currentPage, totalPages, paginatedRange, prevPage, nextPage, resetPage.
+- useServerPagination: hook compartido con displayItems, displayPage, totalDisplayPages, nextPage, prevPage, setDisplayPage.
 
 ### Estado local
 
-- searchTerm: texto de búsqueda.
+- searchTerm: texto de búsqueda enviado al backend.
 - editingCategory: categoría seleccionada para editar (controla EditCategoryDialog).
 - deletingCategory: categoría seleccionada para eliminar (controla ConfirmDeletionDialog).
 
 ### Filtrado y paginación
 
-- Filtra categorías por nombre con búsqueda en tiempo real sin distinguir mayúsculas/minúsculas.
-- usePagination recibe totalItems = filteredData.length y 10 items por página.
-- paginatedRange devuelve { start, end } para hacer slice de los datos filtrados.
-- La página se resetea automáticamente al cambiar el término de búsqueda mediante useEffect.
+- Filtra categorías por nombre enviando `search` al backend. La búsqueda se realiza server-side (case-insensitive).
+- Server chunk: 50 elementos por petición al backend. Frontend muestra 10 elementos por página.
+- Reset automático a la primera página cuando cambia el término de búsqueda.
+- Prefetch del siguiente bloque de 50 al llegar al límite del chunk actual.
 
 ### Funciones principales
 
@@ -65,11 +65,11 @@ Tabla principal que muestra todas las categorías con su información de gasto y
 - Carga: muestra CategoryTableSkeleton con 5 filas de placeholder animadas que replican la estructura real (círculo, nombre, barra, importe, botón).
 - Vacío (sin categorías): mensaje centrado "No hay categorías".
 - Con datos: lista de CategoryRow con barra de progreso, porcentaje y gasto/límite.
-- Paginación: si hay más de 10 categorías (totalPages > 1), muestra controles de página anterior/siguiente con contador y texto "Mostrando X-Y de Z transacciones".
+- Paginación: controles de página anterior/siguiente con contador y texto "Mostrando X-Y de Z categorías".
 
 ### Buscador
 
-Input con icono Search a la izquierda. Filtra categorías por nombre en tiempo real. Placeholder i18n categories.search.
+Input con icono Search a la izquierda. Filtra categorías por nombre enviando la búsqueda al backend. Placeholder i18n categories.search.
 
 ### Cabecera de la tabla
 
@@ -362,7 +362,7 @@ El porcentaje de gasto y la barra de progreso se recalculan con el límite ajust
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /categories | Obtener todas las categorías |
+| GET | /categories?page=&size=&search= | Obtener categorías paginadas |
 | POST | /categories | Crear nueva categoría |
 | PUT | /categories/:id | Editar categoría existente |
 | DELETE | /categories/:id | Eliminar categoría |
@@ -392,3 +392,10 @@ El porcentaje de gasto y la barra de progreso se recalculan con el límite ajust
 
 - Menú contextual siempre visible: el botón de tres puntos (MoreHorizontal) en CategoryRow eliminó la dependencia del hover (opacity-0 group-hover:opacity-100) y ahora es siempre visible en todas las vistas. Esto estandariza la navegación con el resto de módulos (transacciones, inversiones) y garantiza accesibilidad en dispositivos táctiles y tablets.
 - ConfirmDeletionDialog genérico: el diálogo de confirmación acepta ahora props opcionales title y description que permiten personalizar el texto según el tipo de entidad que se está eliminando (categoría, transacción, inversión). Se añadieron las claves i18n common.delete y common.deleting para los botones. El componente es reutilizado por Transactions (TransactionList, RecurringTransactionsList) e Investments (InvestmentsPage).
+
+## Paginación server-side (v0.2.0)
+
+- `CategoryTable` migró a paginación server-side mediante `useServerPagination`: backend devuelve bloques de 50 categorías y el frontend muestra 10 por página.
+- La búsqueda por nombre se delega al backend a través del query param `search`.
+- Prefetch automático del siguiente bloque de 50 al llegar al final del chunk actual.
+- Reset de página actual ante cualquier cambio de filtro de búsqueda.

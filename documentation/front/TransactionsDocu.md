@@ -119,11 +119,12 @@ Texto dinámico para el tooltip de tendencias: dashboard.metrics.vsLastMonth, vs
 
 ## components/TransactionList.tsx
 
-Lista principal de transacciones con filtros, buscador y paginación.
+Lista principal de transacciones con filtros, buscador y paginación server-side.
 
 ### Datos
 
-- Obtiene transacciones de GET /transactions mediante useQuery con query key ['transactions'] (sin dependencia del período).
+- Obtiene transacciones de `GET /transactions?page=&size=&search=&type=&period=` mediante `useServerPagination`.
+- Server chunk: 50 elementos por petición al backend. Frontend muestra 10 elementos por página.
 - Filtra solo las activas (active !== false).
 - Mapea categoryName del backend a category y extrae categoryColor para usar en los badges.
 
@@ -133,17 +134,18 @@ La interfaz local Transaction incluye ahora el campo opcional categoryColor (str
 
 ### Filtros
 
-Tres botones: Todos, Ingresos, Gastos. Al cambiar el filtro se resetea la página actual a 1 mediante useEffect con goToPage(1).
+Tres botones: Todos, Ingresos, Gastos. Al cambiar el filtro se resetea la página actual a 0 y se dispara una nueva petición al backend con el tipo seleccionado.
 
 ### Buscador
 
-Input con icono Search. Filtra por texto en la descripción. Búsqueda en tiempo real sin distinguir mayúsculas/minúsculas.
+Input con icono Search. La búsqueda por descripción se envía al backend (debounce implícito vía cambio controlado). Resetea la página actual al cambiar el término.
 
 ### Paginación
 
-- Usa usePagination desde @/features/categories/hooks/usePagination con 10 items por página.
+- Usa `useServerPagination` desde `@/shared/hooks/useServerPagination` (server 50, display 10).
 - Controles de navegación: flechas ChevronLeft/ChevronRight y contador "X / Y".
 - Muestra texto "Mostrando X-Y de Z transacciones".
+- Cuando el usuario avanza a la página 5 (última página del chunk actual), se prefetcha/trae el siguiente bloque de 50 del backend.
 
 ### Fila de transacción
 
@@ -216,16 +218,16 @@ El botón de tres puntos eliminó las clases opacity-0 group-hover:opacity-100 y
 
 ## components/RecurringTransactionsList.tsx
 
-Lista de transacciones recurrentes con sus propios filtros y buscador.
+Lista de transacciones recurrentes con sus propios filtros, buscador y paginación server-side.
 
 ### Datos
 
-- Obtiene transacciones recurrentes mediante usePlannedTransactions (hook compartido).
+- Obtiene transacciones recurrentes mediante `usePlannedTransactions` (hook compartido), que internamente usa `useServerPagination` (server 50, display 10).
 - Usa useQueryClient para invalidar queries tras eliminar.
 
 ### Filtros y buscador
 
-Misma mecánica que TransactionList: tres botones de filtro y buscador por texto con icono Search.
+Misma mecánica que TransactionList: tres botones de filtro y buscador por texto con icono Search. Los filtros y la búsqueda se delegan al backend.
 
 ### Eliminación
 
@@ -526,12 +528,12 @@ Mismos campos que NewRecurringTransactionDialog. Los valores se inicializan desd
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /transactions | Listar transacciones del usuario |
+| GET | /transactions?page=&size=&search=&type=&period= | Listar transacciones del usuario paginadas |
 | POST | /transactions | Crear transacción |
 | PUT | /transactions/:id | Editar transacción |
 | DELETE | /transactions/:id | Eliminar transacción |
 | GET | /transactions/metrics?period= | Métricas de transacciones |
-| GET | /planned-transactions | Listar transacciones recurrentes |
+| GET | /planned-transactions?page=&size=&search=&type= | Listar transacciones recurrentes paginadas |
 | POST | /planned-transactions | Crear transacción recurrente |
 | PUT | /planned-transactions/:id | Editar transacción recurrente |
 | DELETE | /planned-transactions/:id | Eliminar transacción recurrente |
@@ -581,4 +583,11 @@ El componente `TransactionList.tsx` fue dividido en subcomponentes especializado
 - Menú contextual siempre visible: el botón de tres puntos (MoreHorizontal) en TransactionList, TransactionRow y RecurringTransactionRow eliminó las clases opacity-0 group-hover:opacity-100 y ahora es siempre visible en todas las vistas. Esto estandariza la navegación con Categories e Investments y garantiza accesibilidad en dispositivos táctiles y tablets.
 - Modal de confirmación al eliminar transacciones: TransactionList reemplazó window.confirm por ConfirmDeletionDialog con props title y description personalizadas (transactions.deleteTitle y transactions.deleteConfirmation), mostrando un diálogo consistente con el resto de la aplicación. Se añadió estado isDeleting para deshabilitar botones durante la petición.
 - Modal de confirmación al eliminar transacciones recurrentes: RecurringTransactionsList añadió props title y description específicas (transactions.recurring.deleteTitle y transactions.recurring.deleteConfirmation) a ConfirmDeletionDialog, con texto contextual que indica que las ejecuciones futuras no se realizarán.
+
+## Paginación server-side (v0.2.0)
+
+- `TransactionList` y `RecurringTransactionsList` migraron de paginación client-side a `useServerPagination`: el backend devuelve bloques de 50 elementos y el frontend muestra 10 páginas de 10.
+- Filtros y búsqueda se delegan al backend mediante query params (`search`, `type`, `period`), reduciendo la carga de datos y retrasos con grandes volúmenes.
+- Prefetch automático del siguiente chunk de 50 registros cuando el usuario llega al límite del bloque actual.
+- Reset de página actual ante cualquier cambio de filtro o búsqueda.
 - Nuevas claves i18n: se añadieron transactions.noCategory, transactions.deleteTitle, transactions.deleteConfirmation, transactions.recurring.deleteTitle, transactions.recurring.deleteConfirmation, common.delete y common.deleting en los 7 idiomas.

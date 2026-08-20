@@ -90,7 +90,7 @@ Todas las queries comparten:
 
 ### Queries
 
-- investments: GET /investments. Query key: ['investments'] (sin período). Filtra solo activas (active !== false).
+- investments: GET /investments?page=&size=&search=&type=. Query key: ['investments', search, type, page]. Usa `useServerPagination` (server 50, display 10). Filtra solo activas (active !== false).
 - metrics: GET /dashboard/investments/metrics?period=. Query key: ['investmentMetrics', period].
 - evolution: GET /dashboard/investments/evolution?period=. Query key: ['investmentEvolution', period].
 - distribution: GET /dashboard/investments/distribution?period=. Query key: ['investmentDistribution', period].
@@ -215,7 +215,13 @@ Función auxiliar que formatea valores monetarios: ≥1M → "X.XM", ≥1000 →
 
 ## components/AssetList.tsx
 
-Lista de activos del usuario con buscador y filtro por tipo.
+Lista de activos del usuario con buscador, filtro por tipo y paginación server-side.
+
+### Datos
+
+- Obtiene inversiones mediante `useServerPagination` a través del hook `useInvestmentQueries`.
+- Server chunk: 50 elementos por petición al backend. Frontend muestra 10 elementos por página.
+- Query params enviados al backend: `search` (assetName o ticker) y `type` (STOCK, CRYPTO, FUND, REAL_ESTATE, OTHER).
 
 ### Props
 
@@ -225,7 +231,7 @@ Lista de activos del usuario con buscador y filtro por tipo.
 
 ### Buscador
 
-Input con icono Search. Filtra por assetName o ticker. Sin distinción de mayúsculas/minúsculas.
+Input con icono Search. La búsqueda por assetName o ticker se envía al backend.
 
 ### Filtro por tipo
 
@@ -239,6 +245,7 @@ Cada fila se renderiza con AssetRow pasando investment y onDelete. La carga se m
 
 - Carga: AssetListSkeleton (buscador + 5 AssetSkeletonRow).
 - Vacío: mensaje "No se encontraron activos" centrado.
+- Paginación: controles de página anterior/siguiente con contador y texto "Mostrando X-Y de Z activos".
 
 ---
 
@@ -354,7 +361,7 @@ Diálogo para actualizar el precio de mercado de un activo. Se abre desde el bot
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /investments | Listar inversiones del usuario |
+| GET | /investments?page=&size=&search=&type= | Listar inversiones del usuario paginadas |
 | POST | /investments | Crear nueva inversión |
 | DELETE | /investments/:id | Eliminar inversión |
 | PATCH | /investments/:id/price | Actualizar precio de mercado |
@@ -389,3 +396,9 @@ Diálogo para actualizar el precio de mercado de un activo. Se abre desde el bot
 
 - Menú contextual siempre visible: el botón de tres puntos (MoreHorizontal) en AssetRow eliminó las clases opacity-0 group-hover:opacity-100 y ahora es siempre visible en todas las vistas. Esto estandariza la navegación con Categories y Transactions, garantizando accesibilidad en dispositivos táctiles y tablets.
 - Modal de confirmación al eliminar con textos contextuales: ConfirmDeletionDialog recibe props title y description personalizadas para inversiones (investments.deleteTitle y investments.deleteConfirmation), mostrando un texto que indica que se eliminará todo el historial asociado. Se añadieron las claves i18n investments.deleteTitle e investments.deleteConfirmation en los 7 idiomas.
+
+## Paginación server-side (v0.2.0)
+
+- `AssetList` migró a paginación server-side mediante `useServerPagination`: backend devuelve bloques de 50 inversiones y el frontend muestra 10 por página.
+- La búsqueda por nombre/ticker y el filtro por tipo se delegan al backend mediante query params (`search`, `type`).
+- Prefetch automático del siguiente bloque de 50 al llegar al límite del chunk actual.

@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { XIcon } from "lucide-react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
@@ -31,10 +30,12 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-function DialogOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+type DialogOverlayProps = Omit<
+  React.ComponentProps<typeof DialogPrimitive.Overlay>,
+  "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"
+>
+
+function DialogOverlay({ className, ...props }: DialogOverlayProps) {
   return (
     <DialogPrimitive.Overlay asChild>
       <m.div
@@ -53,20 +54,26 @@ function DialogOverlay({
   )
 }
 
+type DialogContentProps = Omit<
+  React.ComponentProps<typeof DialogPrimitive.Content>,
+  "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"
+> & {
+  showCloseButton?: boolean
+}
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  showCloseButton?: boolean
-}) {
+}: DialogContentProps) {
   return (
     <DialogPortal data-slot="dialog-portal">
       <AnimatePresence>
-        <DialogOverlay />
-        <DialogPrimitive.Content asChild>
+        <DialogOverlay key="dialog-overlay" />
+        <DialogPrimitive.Content key="dialog-content" asChild {...props}>
           <m.div
+            key="dialog-content-div"
             data-slot="dialog-content"
             className={cn(
               "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg outline-none sm:max-w-lg",
@@ -76,7 +83,6 @@ function DialogContent({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            {...props}
           >
             {children}
             {showCloseButton && (

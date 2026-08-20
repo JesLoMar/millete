@@ -1,3 +1,4 @@
+import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { Loader2 } from "lucide-react"
 import { Label } from "@/shared/components/core/label"
@@ -18,15 +19,16 @@ interface CategorySelectProps {
 
 export function CategorySelect({ value, onValueChange, className }: CategorySelectProps) {
   const { t } = useTranslation(['transactions', 'common', 'categories', 'auth', 'dashboard'])
-  const { data: categories, isLoading } = useCategories()
+  const { displayItems: categories, isLoading } = useCategories()
+  const selectId = useId()
 
   return (
     <div className={`space-y-2 ${className || ""}`}>
-      <Label className="text-sm font-semibold">
+      <Label htmlFor={selectId} className="text-sm font-semibold">
         {t('transactions:category')}
       </Label>
       <Select value={value} onValueChange={onValueChange} disabled={isLoading}>
-        <SelectTrigger className="bg-background border-border">
+        <SelectTrigger id={selectId} className="bg-background border-border w-full">
           {isLoading ? (
             <div className="flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" />
@@ -37,12 +39,12 @@ export function CategorySelect({ value, onValueChange, className }: CategorySele
           )}
         </SelectTrigger>
         <SelectContent className="bg-card border-border">
-          {categories?.length === 0 && (
+          {categories.length === 0 && (
             <div className="px-2 py-4 text-sm text-muted-foreground text-center">
               {t('categories:empty')}
             </div>
           )}
-          {categories?.map((cat) => (
+          {categories.map((cat) => (
             <SelectItem key={cat.id} value={cat.id}>
               {cat.name}
             </SelectItem>

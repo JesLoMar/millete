@@ -40,7 +40,7 @@ Obtiene los gastos agrupados por categoría para el gráfico de donut. Responde 
 
 ### GET /budgets?period=
 
-Obtiene el estado de los presupuestos por categoría. Responde `200` con `DashboardBudgetsResponseDTO`.
+Obtiene el estado de los presupuestos por categoría. Devuelve únicamente los 5 presupuestos más críticos: primero los que ya han sido sobrepasados (gasto >= límite), ordenados de mayor a menor porcentaje de gasto, seguidos de los más cercanos a superar el límite. No aplica paginación. Responde `200` con `DashboardBudgetsResponseDTO`.
 
 ### GET /recent-transactions?limit=
 
@@ -134,16 +134,18 @@ Campos: `totalExpenses`, `categories` (Lista de `CategoryExpenseItemResponseDTO`
 
 ## 4. Presupuestos (getBudgets)
 
-Muestra el estado de los presupuestos por categoría.
+Muestra el estado de los presupuestos por categoría, limitado a los 5 más críticos.
 
 ### Funcionamiento
 
 1. Obtiene las categorías que tienen presupuesto definido con `findCategoriesWithBudgetByUserId`.
 2. Obtiene las transacciones del período.
 3. Para cada categoría con presupuesto, calcula el gasto real filtrando transacciones de tipo `EXPENSE` con esa categoría. Usa `filter(t -> t.getCategoryId() != null && t.getCategoryId().equals(category.getId()))` para evitar `NullPointerException` con categorías huérfanas.
-4. Calcula el porcentaje de gasto sobre el límite.
-5. Filtra solo las que tienen gasto mayor que cero.
-6. Ordena: primero las que superan el 100%, luego por porcentaje descendente.
+4. Ajusta el límite presupuestario según el período solicitado: semana ÷ 4, mes sin cambios, año × 12.
+5. Calcula el porcentaje de gasto sobre el límite ajustado.
+6. Filtra solo las que tienen gasto mayor que cero.
+7. Ordena: primero las que superan el 100%, luego por porcentaje descendente.
+8. Limita el resultado a los 5 primeros elementos.
 
 ### DashboardBudgetsResponseDTO
 

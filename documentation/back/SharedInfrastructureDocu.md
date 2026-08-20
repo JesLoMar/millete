@@ -20,7 +20,8 @@ El módulo de notificaciones internas (`com.puntomartinez.millete.notifications`
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/v1/notifications` | Lista notificaciones activas del usuario |
+| GET | `/api/v1/notifications?limit=` | Lista notificaciones no leídas del usuario, ordenadas de más a menos recientes. El parámetro opcional `limit` acota el resultado (por ejemplo, 20 para la campana del topnav). |
+| GET | `/api/v1/notifications/paginated?page=&size=` | Lista paginada de todas las notificaciones activas del usuario. Tamaño de página por defecto: 25 para la tabla de perfil. |
 | GET | `/api/v1/notifications/unread-count` | Devuelve el número de notificaciones no leídas |
 | POST | `/api/v1/notifications/{id}/read` | Marca una notificación como leída |
 | DELETE | `/api/v1/notifications/{id}` | Elimina (soft delete) una notificación |
@@ -33,7 +34,7 @@ El módulo de notificaciones internas (`com.puntomartinez.millete.notifications`
 ### Servicio de aplicación
 
 `NotificationService` implementa `CreateNotificationUseCase` y expone métodos para:
-- Listar notificaciones activas de un usuario
+- Listar notificaciones activas de un usuario, opcionalmente limitadas o paginadas
 - Contar no leídas
 - Marcar como leída
 - Eliminar (soft delete)
