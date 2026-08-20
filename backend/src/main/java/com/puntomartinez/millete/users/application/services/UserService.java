@@ -24,6 +24,8 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     private final TokenProvider tokenProvider;
     private final AccountLockService accountLockService;
 
+    private final String dummyPasswordHash;
+
     public UserService(UserRepository userRepository,
                        PasswordHasherPort passwordHasher,
                        TokenProvider tokenProvider,
@@ -32,8 +34,8 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         this.passwordHasher = passwordHasher;
         this.tokenProvider = tokenProvider;
         this.accountLockService = accountLockService;
+        this.dummyPasswordHash = passwordHasher.hashPassword(UUID.randomUUID().toString());
     }
-
 
     @Override
     public User register(RegisterUserCommand command) {
@@ -63,23 +65,24 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
         return userRepository.save(newUser);
     }
 
-
     @Override
     public User login(LoginUserCommand command) {
-        User user = userRepository.findByIdentifier(command.identifier())
-                .orElseThrow(() -> new AuthenticationFailedException("Credenciales inválidas"));
+        var maybeUser = userRepository.findByIdentifier(command.identifier());
 
+        if (maybeUser.isEmpty()) {
+            passwordHasher.matches(command.rawPassword(), dummyPasswordHash);
+            throw new AuthenticationFailedException("Credenciales inválidas");
+        }
 
+        User user = maybeUser.get();
         accountLockService.checkLockStatus(user.getId());
         if (!passwordHasher.matches(command.rawPassword(), user.getPassword())) {
             accountLockService.handleFailedLogin(user.getId());
             throw new AuthenticationFailedException("Credenciales inválidas");
         }
         accountLockService.handleSuccessfulLogin(user.getId());
-
         return user;
     }
-
 
     @Override
     public User getUserById(UUID id) {
@@ -90,14 +93,11 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     public void linkTelegram(UUID userId, Long chatId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-
-
         userRepository.findByTelegramChatId(chatId).ifPresent(existing -> {
             if (!existing.getId().equals(userId)) {
                 throw new ResourceAlreadyExistsException("Este Telegram ya está vinculado a otra cuenta");
             }
         });
-
         user.setTelegramChatId(chatId);
         user.setModifiedAt(LocalDateTime.now());
         userRepository.save(user);

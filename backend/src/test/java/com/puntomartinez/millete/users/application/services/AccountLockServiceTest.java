@@ -73,7 +73,7 @@ class AccountLockServiceTest {
     }
 
     @Test
-    @DisplayName("checkLockStatus - bloqueo expirado realiza desbloqueo perezoso y guarda")
+    @DisplayName("checkLockStatus - bloqueo expirado limpia el bloqueo pero conserva los intentos (progresivo)")
     void checkLockStatusShouldUnlockWhenBlockExpired() {
         security.setFailedAttempts(5);
         security.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
@@ -82,7 +82,7 @@ class AccountLockServiceTest {
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
 
-        assertThat(security.getFailedAttempts()).isZero();
+        assertThat(security.getFailedAttempts()).isEqualTo(5);
         assertThat(security.getBlockedUntil()).isNull();
         verify(loginSecurityRepository).save(security);
     }
@@ -159,6 +159,23 @@ class AccountLockServiceTest {
                 .isAfter(LocalDateTime.now().plusMinutes(14))
                 .isBefore(LocalDateTime.now().plusMinutes(16));
         verify(loginSecurityRepository).save(security);
+    }
+
+    @Test
+    @DisplayName("handleFailedLogin - cada fallo tras el umbral duplica la espera")
+    void handleFailedLoginShouldEscalateLockDuration() {
+        security.setFailedAttempts(5);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+        when(loginSecurityRepository.save(any(UserLoginSecurity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThatThrownBy(() -> accountLockService.handleFailedLogin(userId))
+                .isInstanceOf(AccountLockedException.class)
+                .hasMessageContaining("Inténtalo de nuevo en 30 minutos");
+
+        assertThat(security.getFailedAttempts()).isEqualTo(6);
+        assertThat(security.getBlockedUntil())
+                .isAfter(LocalDateTime.now().plusMinutes(29))
+                .isBefore(LocalDateTime.now().plusMinutes(31));
     }
 
     // ==================== handleSuccessfulLogin ====================

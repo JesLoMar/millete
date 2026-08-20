@@ -42,6 +42,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CSRF deshabilitado CONSCIENTEMENTE: la autenticación usa JWT en cookie
+                // httpOnly + SameSite=Strict, que el navegador no adjunta en peticiones
+                // cross-site → el vector CSRF clásico no aplica. Además la API es stateless
+                // (no hay sesión de servidor).
+                //
+                // CONTRATO: si algún día el front y el back se separan en dominios distintos
+                // (hoy lo enmascara el proxy nginx, que los sirve same-origin), habrá que
+                // relajar SameSite a Lax y entonces SÍ hace falta protección CSRF
+                // (token sincronizado). No quites este comentario sin revisar esa decisión.
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth

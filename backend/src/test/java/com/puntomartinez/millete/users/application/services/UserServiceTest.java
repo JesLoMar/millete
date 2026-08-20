@@ -183,13 +183,13 @@ class UserServiceTest {
 
         verify(accountLockService).checkLockStatus(defaultUserId);
         verify(accountLockService).handleFailedLogin(defaultUserId);
-        verify(passwordHasher, never()).matches(anyString(), anyString());
+        verify(passwordHasher).matches(eq("wrong"), any());
         verify(tokenProvider, never()).generateToken(any());
         verify(accountLockService, never()).handleSuccessfulLogin(any());
     }
 
     @Test
-    @DisplayName("Login con usuario inexistente lanza error genérico sin comprobar bloqueos")
+    @DisplayName("Login con usuario inexistente: error genérico, sin tocar bloqueos, con comparación dummy")
     void shouldThrowWhenUserNotFound() {
         when(userRepository.findByIdentifier(email)).thenReturn(Optional.empty());
 
@@ -199,6 +199,7 @@ class UserServiceTest {
                 .isThrownBy(() -> userService.login(command))
                 .withMessage("Credenciales inválidas");
 
+        verify(passwordHasher).matches(eq(rawPassword), any());
         verify(accountLockService, never()).checkLockStatus(any());
         verify(accountLockService, never()).handleFailedLogin(any());
     }
