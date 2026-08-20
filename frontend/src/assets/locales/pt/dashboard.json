@@ -127,6 +127,25 @@
   },
   "export": {
     "success": "Cópia de segurança exportada com sucesso",
-    "error": "Erro ao exportar os dados"
+    "error": "Erro ao exportar os dados",
+    "title": "Exportar dados",
+    "configTitle": "Configurar exportação",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Exporta todos os seus dados de usuário",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "Todos os CSVs num único ficheiro",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "Um ficheiro por secção",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Relatório financeiro estilizado",
+    "entity": "Tipo de dados",
+    "selectEntity": "Selecionar tipo...",
+    "period": "Período",
+    "period1m": "Último mês",
+    "period3m": "Últimos 3 meses",
+    "period6m": "Últimos 6 meses",
+    "period1y": "Último ano",
+    "periodAll": "Tudo",
+    "action": "Exportar"
   }
 }

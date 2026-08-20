@@ -127,6 +127,25 @@
   },
   "export": {
     "success": "Copia di backup esportata correttamente",
-    "error": "Errore durante l'esportazione dei dati"
+    "error": "Errore durante l'esportazione dei dati",
+    "title": "Esporta dati",
+    "configTitle": "Configura esportazione",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Esporta tutti i tuoi dati utente",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "Tutti i CSV in un unico file",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "Un file per sezione",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Report finanziario stilizzato",
+    "entity": "Tipo di dati",
+    "selectEntity": "Seleziona tipo...",
+    "period": "Periodo",
+    "period1m": "Ultimo mese",
+    "period3m": "Ultimi 3 mesi",
+    "period6m": "Ultimi 6 mesi",
+    "period1y": "Ultimo anno",
+    "periodAll": "Tutto",
+    "action": "Esporta"
   }
 }
