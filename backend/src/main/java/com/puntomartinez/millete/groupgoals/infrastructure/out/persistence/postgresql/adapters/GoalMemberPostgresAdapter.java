@@ -7,6 +7,7 @@ import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postg
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +51,16 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
     @Override
     public List<GoalMember> findByUserId(UUID userId) {
         return jpaRepository.findByUserIdAndActiveTrue(userId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GoalMember> findByGoalIdIn(Collection<UUID> goalIds) {
+        if (goalIds == null || goalIds.isEmpty()) {
+            return List.of();
+        }
+        return jpaRepository.findByGoalIdInAndActiveTrue(goalIds).stream()
                 .map(mapper::toDomain)
                 .toList();
     }

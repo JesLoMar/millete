@@ -9,6 +9,7 @@ import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -81,7 +82,7 @@ public class GroupGoalController {
 
     @PostMapping
     public ResponseEntity<GoalResponseDTO> createGoal(
-            @RequestBody CreateGoalRequestDTO request,
+            @Valid @RequestBody CreateGoalRequestDTO request,
             Authentication authentication) {
 
         UUID adminId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -105,7 +106,7 @@ public class GroupGoalController {
     @PutMapping("/{goalId}")
     public ResponseEntity<Void> updateGoal(
             @PathVariable UUID goalId,
-            @RequestBody UpdateGoalRequestDTO request,
+            @Valid @RequestBody UpdateGoalRequestDTO request,
             Authentication authentication) {
 
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
@@ -126,7 +127,7 @@ public class GroupGoalController {
     public ResponseEntity<Void> updateMember(
             @PathVariable UUID goalId,
             @PathVariable UUID memberId,
-            @RequestBody UpdateMemberRequestDTO request,
+            @Valid @RequestBody UpdateMemberRequestDTO request,
             Authentication authentication) {
 
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();

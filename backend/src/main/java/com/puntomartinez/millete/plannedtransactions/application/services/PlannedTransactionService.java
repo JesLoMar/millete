@@ -48,7 +48,9 @@ public class PlannedTransactionService implements
     @Override
     public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
+            // findByIdAndUserId: valida existencia Y propiedad — una categoría de otro
+            // usuario responde 404 igual que una inexistente (no revela que el UUID existe)
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
                     .orElseThrow(() -> new ResourceNotFoundException("The specified category does not exist."));
         }
 
@@ -121,13 +123,14 @@ public class PlannedTransactionService implements
         }
 
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
+            // Misma regla que en register: existencia + propiedad
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category does not exist."));
         }
 
         boolean recurrenceChanged = !tx.getStartDate().equals(command.startDate()) ||
-                                    tx.getFrequencyType() != command.frequencyType() ||
-                                    !tx.getFrequencyInterval().equals(command.frequencyInterval());
+                tx.getFrequencyType() != command.frequencyType() ||
+                !tx.getFrequencyInterval().equals(command.frequencyInterval());
 
         tx.setAmount(command.amount());
         tx.setType(command.type());

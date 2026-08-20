@@ -70,7 +70,7 @@ class GroupGoalServiceTest {
         when(goalUnitRepository.save(any(GoalUnit.class))).thenAnswer(inv -> inv.getArgument(0));
         when(goalMemberRepository.save(any(GoalMember.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        GoalUnit result = groupGoalService.createGoalUnit(userId, "Goal García", new BigDecimal("1000.00"), "EQUITATIVE");
+        GoalUnit result = groupGoalService.createGoalUnit(userId, "Goal García", new BigDecimal("1000.00"), DistributionMode.EQUITATIVE);
 
         assertThat(result.getName()).isEqualTo("Goal García");
         assertThat(result.getDistributionMode()).isEqualTo(DistributionMode.EQUITATIVE);
@@ -290,8 +290,9 @@ class GroupGoalServiceTest {
     @DisplayName("Obtener metas por usuario")
     void shouldGetGoalsByUserId() {
         GoalMember membership = mock(GoalMember.class);
+        when(membership.getGoalId()).thenReturn(goalId);
+        when(membership.getUserId()).thenReturn(userId);
         when(membership.isAdmin()).thenReturn(true);
-        when(membership.isActive()).thenReturn(true);
 
         GoalUnit goal = mock(GoalUnit.class);
         when(goal.getId()).thenReturn(goalId);
@@ -300,14 +301,19 @@ class GroupGoalServiceTest {
 
         when(goalUnitRepository.countByUserId(userId)).thenReturn(1L);
         when(goalUnitRepository.findByUserId(userId, 0, 12)).thenReturn(List.of(goal));
-        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(membership));
-        when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(membership));
+        // El servicio hace UNA consulta IN para toda la página (sin N+1)
+        when(goalMemberRepository.findByGoalIdIn(List.of(goalId))).thenReturn(List.of(membership));
 
         var result = groupGoalService.getGoalsByUserId(userId, 0, 12);
 
         assertThat(result.goals()).hasSize(1);
         assertThat(result.goals().get(0).name()).isEqualTo("Goal García");
+        assertThat(result.goals().get(0).activeMembers()).isEqualTo(1);
         assertThat(result.goals().get(0).isAdmin()).isTrue();
+
+        // Guardarraíl anti-N+1: los métodos por-meta no deben tocarse en el listado
+        verify(goalMemberRepository, never()).findByGoalIdAndUserId(any(), any());
+        verify(goalMemberRepository, never()).findByGoalId(any());
     }
 
     @Test
@@ -356,7 +362,7 @@ class GroupGoalServiceTest {
         when(goalMemberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
         UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
-        request.setRole("ADMIN");
+        request.setRole(GoalRole.ADMIN);
         request.setSalary(new BigDecimal("2000.00"));
 
         groupGoalService.updateMember(goalId, memberId, userId, request);
@@ -382,7 +388,7 @@ class GroupGoalServiceTest {
         when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(member));
 
         UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
-        request.setRole("MEMBER");
+        request.setRole(GoalRole.MEMBER);
 
         assertThatExceptionOfType(ForbiddenOperationException.class)
                 .isThrownBy(() -> groupGoalService.updateMember(goalId, memberId, userId, request))
@@ -408,7 +414,7 @@ class GroupGoalServiceTest {
         when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(member, otherAdmin));
 
         UpdateMemberRequestDTO request = new UpdateMemberRequestDTO();
-        request.setRole("MEMBER");
+        request.setRole(GoalRole.MEMBER);
 
         groupGoalService.updateMember(goalId, memberId, userId, request);
 
@@ -428,7 +434,7 @@ class GroupGoalServiceTest {
 
         UpdateGoalRequestDTO request = new UpdateGoalRequestDTO();
         request.setMonthlyTarget(new BigDecimal("2000.00"));
-        request.setDistributionMode("PROPORTIONAL");
+        request.setDistributionMode(DistributionMode.PROPORTIONAL);
 
         groupGoalService.updateGoal(goalId, userId, request);
 

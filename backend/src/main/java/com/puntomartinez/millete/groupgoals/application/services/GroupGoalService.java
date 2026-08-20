@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -58,13 +59,15 @@ public class GroupGoalService implements
         this.notificationRepository = notificationRepository;
     }
 
+    // El DistributionMode llega ya validado desde el DTO (enum, no String):
+    // Jackson rechaza valores inválidos con un 400 genérico antes de llegar aquí.
     @Override
-    public GoalUnit createGoalUnit(UUID adminUserId, String name, BigDecimal monthlyTarget, String distributionMode) {
+    public GoalUnit createGoalUnit(UUID adminUserId, String name, BigDecimal monthlyTarget, DistributionMode distributionMode) {
         GoalUnit goalUnit = new GoalUnit();
         goalUnit.setId(UUID.randomUUID());
         goalUnit.setName(name);
         goalUnit.setMonthlyTarget(monthlyTarget);
-        goalUnit.setDistributionMode(DistributionMode.valueOf(distributionMode.toUpperCase()));
+        goalUnit.setDistributionMode(distributionMode);
         goalUnit.setCreatedAt(LocalDateTime.now());
         goalUnit.setModifiedAt(LocalDateTime.now());
         goalUnit.setActive(true);
@@ -107,21 +110,28 @@ public class GroupGoalService implements
 
         List<GoalUnit> goals = goalUnitRepository.findByUserId(userId, safePage, size);
 
+        // Una sola consulta para los miembros (activos) de TODAS las metas de la
+        // página, agrupados en memoria por goalId. Antes: 2 consultas por meta (N+1).
+        List<UUID> goalIds = goals.stream().map(GoalUnit::getId).toList();
+        Map<UUID, List<GoalMember>> membersByGoal = goalMemberRepository.findByGoalIdIn(goalIds).stream()
+                .collect(Collectors.groupingBy(GoalMember::getGoalId));
+
         List<GoalListItemResponseDTO> result = new ArrayList<>();
         for (GoalUnit goal : goals) {
-            GoalMember membership = goalMemberRepository.findByGoalIdAndUserId(goal.getId(), userId)
-                    .filter(GoalMember::isActive)
+            // findByGoalIdIn devuelve solo miembros activos (AndActiveTrue en el repo JPA)
+            List<GoalMember> members = membersByGoal.getOrDefault(goal.getId(), List.of());
+
+            GoalMember membership = members.stream()
+                    .filter(m -> m.getUserId().equals(userId))
+                    .findFirst()
                     .orElse(null);
             if (membership == null) continue;
-
-            List<GoalMember> allMembers = goalMemberRepository.findByGoalId(goal.getId());
-            long activeMembers = allMembers.stream().filter(GoalMember::isActive).count();
 
             result.add(new GoalListItemResponseDTO(
                     goal.getId(),
                     goal.getName(),
                     goal.getMonthlyTarget(),
-                    activeMembers,
+                    members.size(),
                     membership.isAdmin()));
         }
 
@@ -163,9 +173,9 @@ public class GroupGoalService implements
                 .toList();
 
         Map<UUID, BigDecimal> contributionTotals = goalContributionRepository.findByGoalId(goalId).stream()
-                .collect(java.util.stream.Collectors.groupingBy(
+                .collect(Collectors.groupingBy(
                         GoalContribution::getUserId,
-                        java.util.stream.Collectors.reducing(BigDecimal.ZERO, GoalContribution::getAmount, BigDecimal::add)));
+                        Collectors.reducing(BigDecimal.ZERO, GoalContribution::getAmount, BigDecimal::add)));
 
         return new GoalDetailResponseDTO(
                 goal.getId(), goal.getName(), goal.getMonthlyTarget(),
@@ -209,7 +219,8 @@ public class GroupGoalService implements
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found in this goal"));
 
 
-        if (request.getRole() != null && request.getRole().equals("MEMBER") && member.isAdmin()) {
+        // GoalRole llega como enum validado desde el DTO (comparación por referencia)
+        if (request.getRole() == GoalRole.MEMBER && member.isAdmin()) {
             long activeAdmins = goalMemberRepository.findByGoalId(goalId).stream()
                     .filter(GoalMember::isActive)
                     .filter(GoalMember::isAdmin)
@@ -219,7 +230,7 @@ public class GroupGoalService implements
             }
         }
 
-        if (request.getRole() != null) member.setRole(GoalRole.valueOf(request.getRole()));
+        if (request.getRole() != null) member.setRole(request.getRole());
         if (request.getSalary() != null) member.setSalary(request.getSalary());
         if (request.getCustomPercentage() != null) member.setCustomPercentage(request.getCustomPercentage());
 
@@ -245,7 +256,8 @@ public class GroupGoalService implements
         if (request.getMonthlyTarget() != null) goal.setMonthlyTarget(request.getMonthlyTarget());
 
         if (request.getDistributionMode() != null) {
-            DistributionMode newMode = DistributionMode.valueOf(request.getDistributionMode());
+            // Sin valueOf: el enum ya viene validado del DTO
+            DistributionMode newMode = request.getDistributionMode();
             if (newMode == DistributionMode.CUSTOM && oldMode != DistributionMode.CUSTOM) {
                 List<GoalMember> members = goalMemberRepository.findByGoalId(goalId);
                 List<GoalMember> activeMembers = members.stream().filter(GoalMember::isActive).toList();
