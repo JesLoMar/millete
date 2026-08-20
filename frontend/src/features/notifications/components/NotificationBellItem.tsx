@@ -46,16 +46,23 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
       type="button"
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors hover:bg-accent/30 text-left w-full',
-        'bg-accent/10 border-accent/40'
+        notification.read
+          ? 'bg-card border-border'
+          : 'bg-accent/10 border-accent/40'
       )}
       onClick={handleClick}
     >
-      <div className="shrink-0">
+      <div className="shrink-0 relative">
         <Icon className="h-5 w-5 text-primary" />
+        {!notification.read && (
+          <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{notification.title}</p>
+        <p className={cn('font-medium text-sm truncate', !notification.read && 'text-foreground')}>
+          {notification.title}
+        </p>
         <p className="text-xs text-muted-foreground truncate">{notification.message}</p>
       </div>
 

@@ -6,6 +6,7 @@ import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsU
 import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsReadUseCase;
 import com.puntomartinez.millete.notifications.infrastructure.in.controller.dto.NotificationResponseDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,10 +28,31 @@ public class NotificationController {
     private final DeleteNotificationUseCase deleteNotificationUseCase;
 
     @GetMapping
-    public ResponseEntity<List<NotificationResponseDTO>> getNotifications(Authentication authentication) {
+    public ResponseEntity<List<NotificationResponseDTO>> getNotifications(
+            Authentication authentication,
+            @RequestParam(required = false) Integer limit) {
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-        List<Notification> notifications = getNotificationsUseCase.getUserNotifications(jwtUser.getId());
+        int safeLimit = limit != null ? limit : Integer.MAX_VALUE;
+        List<Notification> notifications = getNotificationsUseCase.getUserNotifications(jwtUser.getId(), safeLimit);
         return ResponseEntity.ok(notifications.stream().map(this::toDto).toList());
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<PaginatedResponseDTO<NotificationResponseDTO>> getNotificationsPaginated(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size) {
+        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+        var result = getNotificationsUseCase.getUserNotificationsPage(jwtUser.getId(), page, size);
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                result.content().stream().map(this::toDto).toList(),
+                result.currentPage(),
+                result.totalPages(),
+                result.totalElements(),
+                result.size(),
+                result.first(),
+                result.last()
+        ));
     }
 
     @GetMapping("/unread-count")

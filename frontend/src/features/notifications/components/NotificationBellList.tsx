@@ -1,7 +1,9 @@
 import { Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNotifications, useMarkNotificationAsRead } from '../hooks/useNotifications';
+import { useRecentNotifications, useMarkNotificationAsRead } from '../hooks/useNotifications';
 import { NotificationBellItem } from './NotificationBellItem';
+
+const RECENT_LIMIT = 20;
 
 interface NotificationBellListProps {
   onNavigate: () => void;
@@ -9,7 +11,7 @@ interface NotificationBellListProps {
 
 export function NotificationBellList({ onNavigate }: NotificationBellListProps) {
   const { t } = useTranslation('notifications');
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading } = useRecentNotifications(RECENT_LIMIT);
   const { mutate: markAsRead } = useMarkNotificationAsRead();
 
   const unreadNotifications = notifications?.filter((n) => !n.read) ?? [];
