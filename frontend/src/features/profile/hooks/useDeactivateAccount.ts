@@ -14,9 +14,9 @@ export function useDeactivateAccount() {
   return useMutation({
     mutationFn: (data: DeactivateAccountRequest) => profileService.deactivateAccount(data),
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
       await logout();
-      navigate('/login');
+      queryClient.clear();
+      navigate('/login', { replace: true });
       notify.success('Cuenta eliminada correctamente');
     },
     onError: (error: AxiosError<{ message?: string }>) => {
