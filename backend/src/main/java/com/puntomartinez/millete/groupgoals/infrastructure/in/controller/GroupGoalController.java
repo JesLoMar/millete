@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller;
 
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import com.puntomartinez.millete.groupgoals.application.services.GroupGoalService;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
@@ -48,10 +49,25 @@ public class GroupGoalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GoalListItemResponseDTO>> getMyGoals(Authentication authentication) {
+    public ResponseEntity<PaginatedResponseDTO<GoalListItemResponseDTO>> getMyGoals(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-        List<GoalListItemResponseDTO> goals = groupGoalService.getGoalsByUserId(userId);
-        return ResponseEntity.ok(goals);
+        var pageResult = groupGoalService.getGoalsByUserId(userId, page, size);
+
+        int totalPages = pageResult.totalPages();
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                pageResult.goals(),
+                safePage,
+                totalPages,
+                pageResult.totalElements(),
+                size,
+                safePage == 0,
+                safePage >= totalPages - 1 || totalPages == 0
+        ));
     }
 
     @GetMapping("/{goalId}")
@@ -130,12 +146,23 @@ public class GroupGoalController {
     }
 
     @GetMapping("/{goalId}/contributions")
-    public ResponseEntity<Map<UUID, BigDecimal>> getContributions(
+    public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContributions(
             @PathVariable UUID goalId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "60") int size,
             Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-        Map<UUID, BigDecimal> contributions = calculateContributionsUseCase.calculateContributions(goalId, userId);
-        return ResponseEntity.ok(contributions);
+        var pageResult = groupGoalService.getContributionHistory(goalId, userId, page, size);
+
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                pageResult.contributions(),
+                page,
+                pageResult.totalPages(),
+                pageResult.totalElements(),
+                size,
+                page == 0,
+                page >= pageResult.totalPages() - 1 || pageResult.totalPages() == 0
+        ));
     }
 
     @PostMapping("/{goalId}/contributions")

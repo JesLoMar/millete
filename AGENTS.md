@@ -1,405 +1,178 @@
-# Millete — Agent Context
+# Millete — Guide for AI Coding Agents
 
-> **Purpose:** This file provides everything an AI coding agent needs to know about the Millete project. It is written in English because the project's code comments and documentation are mixed (Spanish backend docs, English frontend docs). When in doubt, default to English for code and Spanish for user-facing text.
+Millete is a self-hosted personal finance web application: income/expense tracking,
+recurring bills, investment portfolios, savings goals, and family-unit collaboration.
+It is a decoupled full-stack app: a Spring Boot REST API, a React SPA, and a
+PostgreSQL database, orchestrated with Docker Compose.
 
----
+Repository layout:
 
-## 1. Project Overview
+- `backend/` — Spring Boot 4.x / Java 25 API (Maven project).
+- `frontend/` — React 19 + TypeScript SPA (pnpm project).
+- `scripts/` — shell scripts for DB init/restore and data-generation utilities.
+- `documentation/` — per-module docs (`back/` for backend modules, `front/` for
+  frontend features) plus UI screenshots.
+- `docker-compose.yml`, `manage.sh`, `.env.example` — deployment/ops at the root.
 
-**Millete** is a production-ready, self-hosted personal finance platform. It tracks income/expenses, manages recurring bills, monitors investment portfolios, and enables secure family-unit collaboration.
+## Tech stack
 
-- **Live URL:** https://www.millete.online
-- **Version:** 0.1.2
-- **Architecture:** Hexagonal / Domain-Driven Design (DDD) with a decoupled frontend/backend.
+Backend (`backend/pom.xml`):
 
-### Architecture Diagram (Mermaid)
+- Java 25, Spring Boot 4.x (`spring-boot-starter-web`, `-security`, `-data-jpa`,
+  `-validation`, `-flyway`, `-thymeleaf`).
+- PostgreSQL 16 via Hibernate ORM; **Flyway** manages the schema
+  (`backend/src/main/resources/db/migration/`, `ddl-auto: validate` — never let
+  Hibernate create/alter the schema; write a new `V<n>__*.sql` migration instead).
+- Auth: stateless JWT (jjwt 0.12.6, 12-hour expiry) stored in an HttpOnly cookie;
+  BCrypt password hashing; Jasypt for config encryption.
+- Lombok + MapStruct (with `lombok-mapstruct-binding`) as annotation processors.
+- Apache Commons CSV, PDFBox, Flying Saucer (PDF) for exports/reports.
 
-```mermaid
-graph LR
-    Client((Browser / UI)) -->|HTTPS| Nginx[Nginx Reverse Proxy]
-    Nginx -->|Routing| Frontend[React 19 SPA]
-    Nginx -->|REST API + JWT| Backend[Spring Boot Core]
-    subgraph SpringBootApp
-        Backend --> Infrastructure[Adapters: Controllers / Security]
-        Infrastructure -->|Implements / Drives| Ports[Application Ports]
-        Ports --> Domain[Domain Core: Entities / Value Objects]
-        Infrastructure -->|Persistence Adapter| DB[(PostgreSQL)]
-    end
-```
+Frontend (`frontend/package.json`):
 
-### Key Principles
+- React 19, TypeScript, Vite 8, Tailwind CSS 4, Shadcn/ui-style components on
+  Radix UI primitives, Sonner toasts, framer-motion, lucide-react icons.
+- Server state via **TanStack Query**; forms via react-hook-form + zod; axios
+  client in `frontend/src/shared/api/axiosClient.ts`; routing with
+  react-router-dom v7; i18next for translations.
+- Package manager: **pnpm only** (`preinstall` enforces it; Node >= 20, pnpm >= 11).
 
-- **Pure Domain Core:** Business logic has zero dependencies on frameworks, databases, or external libraries. This guarantees maximum testability.
-- **Strict Anti-IDOR Layer:** Every database transaction validates cross-entity resource ownership dynamically against the authenticated context.
+## Architecture
 
----
+### Backend — Hexagonal / DDD, package-by-feature
 
-## 2. Technology Stack
+Base package: `com.puntomartinez.millete` under `backend/src/main/java`. Each
+bounded context is a top-level package: `users`, `categories`, `transactions`,
+`plannedtransactions`, `investments`, `savingsgoals`, `groupgoals`, `dashboard`,
+`dataexport`, `notifications`, plus `shared`.
 
-### Backend
+Every module follows the same three-layer hexagonal layout:
 
-| Layer | Technology | Version |
-|-------|------------|---------|
-| Language | Java | 25 (LTS) |
-| Framework | Spring Boot | 4.0.6 |
-| Security | Spring Security, JWT (jjwt), BCrypt | — |
-| Persistence | Hibernate ORM, PostgreSQL | 16 |
-| Migrations | Flyway | — |
-| Build Tool | Maven | — |
-| Utilities | Lombok, MapStruct | 1.18.40, 1.6.3 |
-| PDF/HTML | Apache PDFBox, Flying Saucer, Thymeleaf | — |
-| CSV | Apache Commons CSV | — |
-| Encryption | Jasypt | 3.0.5 |
+- `<module>/domain/model` — pure domain entities/value objects (no framework deps).
+- `<module>/domain/ports/in` — use-case interfaces; `domain/ports/out` —
+  repository/output ports.
+- `<module>/application/services` — services implementing the `in` ports.
+- `<module>/infrastructure/in/controller` — REST controllers + request/response DTOs.
+- `<module>/infrastructure/out/persistence/postgresql` — JPA `*Entity`,
+  Spring Data `*Repository`, `*PostgresAdapter` (implements the `out` port), and
+  MapStruct `*EntityMapper`.
 
-### Frontend
+The `shared` module holds cross-cutting code: domain exceptions
+(`DomainException` subclasses such as `ResourceNotFoundException`,
+`ForbiddenOperationException`), the global exception handler,
+`SecurityConfig`, `JwtAuthenticationFilter`, `LoginRateLimitFilter`, shared DTOs
+(`JwtUser`, `PaginatedResponseDTO`, `ErrorResponseDTO`), and the daily
+`TransactionScheduler` that materializes recurring transactions.
 
-| Layer | Technology | Version |
-|-------|------------|---------|
-| Framework | React | 19.2.5 |
-| Language | TypeScript | ~6.0.2 |
-| Bundler | Vite | 8.0.10 |
-| Styling | Tailwind CSS | 4.2.4 |
-| UI Library | shadcn/ui + Radix UI | — |
-| State (Server) | TanStack Query (React Query) | 5.100.8 |
-| HTTP Client | Axios | 1.16.0 |
-| Routing | React Router DOM | 7.14.2 |
-| Forms | React Hook Form + Zod | 7.75.0, 4.4.3 |
-| i18n | i18next, react-i18next | 26.0.8 |
-| Icons | Lucide React | 1.14.0 |
-| Notifications | Sonner | 2.0.7 |
-| Animation | Framer Motion | 12.41.0 |
-| Package Manager | pnpm | 11.7.0 (enforced) |
+Key architectural constraints:
 
-### Infrastructure
+- The domain core must stay free of Spring/JPA dependencies.
+- **Anti-IDOR rule:** every data access must validate resource ownership against
+  the authenticated user context; ownership checks are a core part of business
+  logic, not an afterthought.
+- DTOs are mapped with MapStruct; controllers never expose JPA entities.
 
-- **Containerization:** Docker + Docker Compose
-- **Reverse Proxy:** Nginx (Alpine, rootless)
-- **Database:** PostgreSQL 16 (Alpine)
-- **Backups:** Automated daily at 02:00 AM, 7-day retention
+### Frontend — feature-based modules
 
----
+`frontend/src` layout:
 
-## 3. Project Structure
+- `app/` — app shell: router and global CSS.
+- `features/` — one folder per domain (`auth`, `categories`, `dashboard`,
+  `transactions`, `investments`, `savingsgoals`, `groupgoals`, `notifications`,
+  `profile`, `wiki`), each with `components/`, `hooks/`, `pages/`, `constants.ts`,
+  `utils.ts`, and an `index.ts` barrel export.
+- `shared/` — reusable `components/` (layout, metric cards, selectors, `core/`
+  UI primitives), `api/axiosClient.ts`, `config/`, `constants/`, `hooks/`,
+  `themes/`, `types/`, `utils/`.
+- `lib/` — `i18n.ts` setup and generic utilities.
 
-```
-millete/
-├── backend/          # Spring Boot application (Java 25)
-│   ├── src/main/java/com/puntomartinez/millete/
-│   │   ├── categories/
-│   │   ├── dashboard/
-│   │   ├── dataexport/
-│   │   ├── groupgoals/
-│   │   ├── investments/
-│   │   ├── notifications/
-│   │   ├── plannedtransactions/
-│   │   ├── savingsgoals/
-│   │   ├── shared/           # Security, config, exceptions, global advice
-│   │   ├── transactions/
-│   │   └── users/
-│   ├── src/test/java/...   # Unit tests (JUnit, Mockito)
-│   ├── src/main/resources/
-│   │   ├── application.yml
-│   │   ├── db/migration/     # Flyway SQL migrations
-│   │   └── templates/          # Thymeleaf templates for PDF export
-│   ├── pom.xml
-│   └── Dockerfile
-├── frontend/         # React 19 SPA (TypeScript + Vite)
-│   ├── src/
-│   │   ├── app/              # Router, global layout
-│   │   ├── assets/locales/   # i18n translation files (es, en, de, fr, it, ja, pt)
-│   │   ├── features/         # Feature-based modules
-│   │   │   ├── auth/
-│   │   │   ├── categories/
-│   │   │   ├── dashboard/
-│   │   │   ├── groupgoals/
-│   │   │   ├── investments/
-│   │   │   ├── notifications/
-│   │   │   ├── profile/
-│   │   │   ├── savingsgoals/
-│   │   │   ├── transactions/
-│   │   │   └── wiki/
-│   │   ├── lib/              # i18n setup, utilities
-│   │   └── shared/           # API client, components, hooks, themes, utils
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
-│   ├── eslint.config.js
-│   ├── components.json       # shadcn/ui configuration
-│   └── Dockerfile
-├── scripts/          # Shell scripts for DB init and restore
-├── documentation/    # Markdown docs for backend and frontend modules
-├── docker-compose.yml
-├── manage.sh         # Unified management script
-├── .env.example
-└── AGENTS.md         # This file
-```
+The SPA is served by Nginx, which proxies API calls to the backend under
+`/api/v1` (configurable via `VITE_API_URL`).
 
-### Backend Module Layout (Hexagonal Architecture)
+## Build and test commands
 
-Each domain module (e.g., `categories`, `transactions`) follows the same package structure:
-
-```
-com.puntomartinez.millete.<module>/
-├── application/services/          # Application services (orchestration)
-├── domain/
-│   ├── model/                   # Entities, Value Objects, Enums
-│   ├── ports/
-│   │   ├── in/                  # Use cases (interfaces) + Commands
-│   │   └── out/                 # Repository interfaces (driven ports)
-│   └── utils/                   # Domain-specific helpers (if any)
-├── infrastructure/
-│   ├── in/
-│   │   └── controller/          # REST controllers + DTOs
-│   └── out/
-│       └── persistence/
-│           └── postgresql/      # JPA entities, adapters, mappers, repositories
-```
-
-**Rules:**
-- Domain classes must NOT import Spring, Jakarta, or any framework annotations.
-- Infrastructure adapters implement the `out` ports.
-- Controllers call application services, which call domain logic through `in` ports.
-
-### Frontend Module Layout (Feature-Based)
-
-```
-src/features/<feature>/
-├── components/          # React components (subfolders allowed)
-├── hooks/               # TanStack Query hooks, custom hooks
-├── pages/               # Route-level page components
-├── services/            # API service functions (thin wrappers around axios)
-├── types/               # TypeScript interfaces/types
-├── schemas/             # Zod validation schemas
-└── constants.ts         # Feature constants
-```
-
-Shared code lives in `src/shared/` and `src/lib/`.
-
----
-
-## 4. Build & Development Commands
-
-### Prerequisites
-
-- Docker 24.0+ and Docker Compose 2.0+
-- Git Bash (on Windows) or any POSIX shell
-- Node.js >= 20 and pnpm >= 11 (for local frontend dev only)
-- Java 25 and Maven 3.9+ (for local backend dev only)
-
-### Environment Setup
-
-1. Copy environment file:
-   ```bash
-   cp .env.example .env
-   ```
-2. Edit `.env` with strong passwords (generate with `openssl rand -base64 32`).
-
-### Management Script (`manage.sh`)
-
-| Command | Description |
-|---------|-------------|
-| `sh manage.sh init` | Create Docker volume, fix permissions, prepare scripts |
-| `sh manage.sh start` | Start all services in background |
-| `sh manage.sh stop` | Stop services (preserve data) |
-| `sh manage.sh restart` | Quick restart (ignores config changes) |
-| `sh manage.sh reload` | Rebuild images and recreate containers |
-| `sh manage.sh down` | Stop and remove containers/networks |
-| `sh manage.sh status` | Show container health and recent backups |
-| `sh manage.sh logs [svc]` | Tail logs (optionally filter by service) |
-| `sh manage.sh backup-now` | Manual database backup |
-| `sh manage.sh restore` | Interactive database restoration wizard |
-| `sh manage.sh create-app-user` | Create `millete_app` DB user |
-| `sh manage.sh clean-all` | **DESTRUCTIVE:** wipe everything |
-
-### Frontend-Only (Local Development)
+Backend (run inside `backend/`, Maven wrapper included):
 
 ```bash
-cd frontend
+./mvnw clean package          # build jar (runs tests)
+./mvnw test                   # run the JUnit test suite
+./mvnw spring-boot:run        # run locally (dev profile, needs local PostgreSQL)
+```
+
+Frontend (run inside `frontend/`):
+
+```bash
 pnpm install
-pnpm dev          # Vite dev server on http://localhost:5173
-pnpm build        # Production build
-pnpm type-check   # TypeScript check only
-pnpm lint         # ESLint check
-pnpm lint:fix     # Auto-fix ESLint issues
-pnpm preview      # Preview production build
+pnpm dev                      # Vite dev server
+pnpm build:check              # tsc --noEmit + vite build (use before finishing work)
+pnpm lint                     # ESLint, zero warnings allowed (--max-warnings 0)
+pnpm doctor                   # react-doctor analysis
 ```
 
-### Backend-Only (Local Development)
+Full stack via Docker Compose (always through Git Bash on Windows):
 
 ```bash
-cd backend
-./mvnw clean package -DskipTests   # Build JAR
-./mvnw test                        # Run tests
-./mvnw spring-boot:run             # Run locally (requires local PostgreSQL)
+cp .env.example .env          # then edit secrets
+sh manage.sh init             # create volume millete_postgres_data + backups/ dir
+sh manage.sh start            # build & start db, backend, frontend, backup services
+sh manage.sh reload           # rebuild images after code changes
+sh manage.sh logs backend     # tail logs
+sh manage.sh status / backup-now / restore / clean-all
 ```
 
-**Note:** `application.yml` has hardcoded dev credentials for local IntelliJ runs. Do not commit production secrets.
+App URL: http://localhost:3000 (only the frontend port is exposed; backend 8080
+and PostgreSQL 5432 stay on the internal `millete_network`).
 
----
+## Testing instructions
 
-## 5. Testing Strategy
+- Backend: JUnit 5 via `spring-boot-starter-test`. Tests live in
+  `backend/src/test/java` mirroring the module structure — unit tests for domain
+  models and application services, plus controller tests (e.g.
+  `DataExportControllerTest`). Run with `./mvnw test`.
+- Frontend: no test framework is currently configured; verification is
+  `pnpm lint` and `pnpm build:check` (strict TypeScript).
+- There are no E2E tests; manual verification runs against the Docker stack.
 
-### Backend Tests
+## Code style and conventions
 
-- **Framework:** JUnit 5 + Mockito (via `spring-boot-starter-test`)
-- **Location:** `backend/src/test/java/...`
-- **Coverage:** Unit tests for application services, domain models, controllers, and infrastructure adapters.
-- **Naming:** `*Test.java` (e.g., `UserServiceTest.java`)
-- **Run:** `./mvnw test`
+- Language of code, comments, and documentation is **English**.
+- Backend: Lombok for boilerplate; constructor injection; MapStruct mappers for
+  entity↔domain and DTO conversions; Bean Validation on request DTOs; throw the
+  `shared` domain exceptions and let `GlobalExceptionHandler` render
+  `ErrorResponseDTO`.
+- Follow the existing hexagonal folder structure when adding a module — do not
+  put framework annotations in `domain/` classes.
+- Database changes: add a new Flyway migration in
+  `backend/src/main/resources/db/migration/` (`V<n>__description.sql`); existing
+  migrations are `V1__initial_schema.sql` and `V2__v0.1.0.sql`.
+- Frontend: functional components + hooks; TanStack Query for all server state
+  (no ad-hoc fetch state); react-hook-form + zod for forms; Tailwind utility
+  classes with Shadcn/ui primitives; ESLint flat config with zero-warning policy.
+- Use pnpm for the frontend — npm/yarn are blocked by `only-allow`.
 
-### Frontend Tests
+## Security considerations
 
-- **Current Status:** The project does **not** currently have frontend unit tests. There are no `*.test.ts` or `*.spec.tsx` files in `frontend/src/`.
-- **If adding tests:** Use Vitest (consistent with Vite) + React Testing Library + Jest DOM matchers.
+- Never commit `.env`; use `.env.example` as the template and generate secrets
+  with `openssl rand -base64 32` (`JWT_SECRET`, `JASYPT_ENCRYPTOR_PASSWORD`, DB
+  passwords).
+- JWT travels in an HttpOnly, SameSite=Strict cookie (`cookie-secure` must be
+  `true` in production/HTTPS); tokens expire after 12 hours.
+- Login is rate-limited (`LoginRateLimitFilter`); keep it enabled.
+- The backend port is intentionally not exposed in production; all traffic goes
+  through the Nginx reverse proxy. CORS origins are whitelisted via
+  `CORS_ALLOWED_ORIGINS`.
+- The app connects to PostgreSQL as the least-privilege `millete_app` user
+  (created by `scripts/init-app-user.sh`); the superuser is used only for
+  backups. All containers run as non-root.
+- Enforce the anti-IDOR ownership validation on every new endpoint that touches
+  user data.
+- `application.yml` contains local-dev defaults (dev profile, localhost DB);
+  production values come from environment variables via Docker Compose.
 
-### Integration / E2E
+## Where to learn more
 
-- No E2E test suite is currently configured. The project relies on Docker Compose healthchecks and manual QA.
-
----
-
-## 6. Code Style Guidelines
-
-### Java (Backend)
-
-- **Language Level:** Java 25
-- **Framework:** Spring Boot 4.x
-- **Lombok:** Use `@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor` aggressively. Do not write boilerplate getters/setters.
-- **MapStruct:** Use for DTO <-> Entity mapping. Define mappers as interfaces with `@Mapper`.
-- **JPA:** Use `UUID` for primary keys. Enable `ddl-auto: validate` (never `create-drop` in production).
-- **Logging:** Use `@Slf4j` from Lombok. Log client errors at `warn`, server errors at `error` with stack traces.
-- **Exceptions:** Throw domain exceptions from `shared.domain.exception`. Never leak raw stack traces to the client.
-- **Security:** All endpoints under `/api/v1` require authentication except `POST /api/v1/auth/register` and `POST /api/v1/auth/login`.
-
-### TypeScript / React (Frontend)
-
-- **TypeScript:** Strict mode enabled. Target `es2023`.
-- **Imports:** Use `@/` alias for project imports. Use `import type` for type-only imports (`verbatimModuleSyntax` is enabled).
-- **Components:** Functional components with hooks. No class components.
-- **Styling:** Tailwind CSS v4 with utility classes. Use `cn()` utility from `@/lib/utils` for conditional class merging.
-- **Forms:** React Hook Form + Zod for validation. Define schemas in `features/<feature>/schemas/`.
-- **API Calls:** Use TanStack Query hooks in `features/<feature>/hooks/`. Services in `features/<feature>/services/` should be thin axios wrappers.
-- **i18n:** All user-facing strings must be translated. Translation keys are namespaced (e.g., `api:errors.default`).
-- **ESLint Rules:**
-  - `no-console`: warn (only `console.warn` and `console.error` allowed)
-  - `no-debugger`: warn
-  - `@typescript-eslint/no-unused-vars`: warn (ignore `_` prefix)
-  - `@typescript-eslint/no-explicit-any`: warn
-  - `react-refresh/only-export-components`: warn
-  - `react-hooks/set-state-in-effect`: warn
-
----
-
-## 7. API & Security
-
-### Authentication
-
-- **Mechanism:** Stateless JWT (12-hour expiration)
-- **Token Storage:** HttpOnly cookie (`ms_token`) + `Authorization: Bearer <token>` header
-- **Cookie Flags:** `HttpOnly=true`, `SameSite=Strict`, `Secure=false` in dev (`true` in prod)
-- **Password Hashing:** BCrypt
-
-### Rate Limiting & Brute Force Protection
-
-1. **IP-based rate limiting:** `LoginRateLimitFilter` limits login to 5 attempts/minute per IP. Uses in-memory `ConcurrentHashMap`.
-2. **Account locking:** `AccountLockService` locks a user account for 15 minutes after 5 consecutive failed login attempts. Persisted in `user_sessions` table.
-
-### CORS
-
-- Configured via `CORS_ALLOWED_ORIGINS` env variable.
-- Default dev origin: `http://localhost:5173`
-- Credentials enabled.
-
-### API Client (Frontend)
-
-- `apiClient` is an Axios instance in `src/shared/api/axiosClient.ts`.
-- Base URL: `import.meta.env.VITE_API_URL` (default `/api/v1` in Docker, `http://localhost:8080/api/v1` in local dev).
-- Interceptors: 401 clears storage and redirects to `/login`. Global error notifications via Sonner (unless `skipGlobalErrorNotify` is set).
-
----
-
-## 8. Database & Migrations
-
-- **Database:** PostgreSQL 16
-- **Migrations:** Flyway
-- **Migration Files:** `backend/src/main/resources/db/migration/`
-  - `V1__initial_schema.sql` — Initial schema (users, family units, categories, transactions, planned transactions, investments)
-  - `V2__v0.1.0.sql` — v0.1.0 updates
-- **App User:** `millete_app` (minimal privileges). Superuser `postgres` only for backups.
-- **Schema Rules:**
-  - Use `UUID` for all primary keys.
-  - Use `active BOOLEAN DEFAULT TRUE` for soft deletes.
-  - Include `created_at` and `modified_at` timestamps on all tables.
-  - Use `CHECK` constraints for enums and business rules.
-
----
-
-## 9. Deployment & Operations
-
-### Docker Compose Services
-
-| Service | Container Name | Port (Host) | Description |
-|---------|----------------|-------------|-------------|
-| PostgreSQL | `millete-db` | — (internal) | Database |
-| Backend | `millete-backend` | — (internal) | Spring Boot API |
-| Frontend | `millete-frontend` | `3000` | Nginx serving React SPA |
-| Backup | `millete-db-backup` | — | Daily cron backup |
-
-### Nginx Routing
-
-- `/` → Serves React SPA static files
-- `/api/v1` → Proxies to `millete-backend:8080`
-
-### Backup & Restore
-
-- **Automatic:** Daily at 02:00 AM, 7-day retention.
-- **Manual:** `sh manage.sh backup-now`
-- **Restore:** `sh manage.sh restore` (interactive wizard)
-- **Storage:** `./backups/` directory on host.
-
-### Production Checklist
-
-- Change all passwords in `.env`.
-- Set `JWT_SECRET` to a strong 64-char base64 string.
-- Set `CORS_ALLOWED_ORIGINS` to your actual domain(s).
-- Set `cookie-secure: true` in backend config (requires HTTPS).
-- Backend port `8080` must **not** be exposed to the host.
-
----
-
-## 10. Security Considerations
-
-- **No root containers:** All containers run as non-root users (`millete-user` UID 1001, `millete` UID 1001).
-- **External volume:** `millete_postgres_data` persists across container removals.
-- **Anti-IDOR:** Every service method validates that the authenticated user owns the requested resource.
-- **Input Validation:** DTOs use Jakarta Validation (`@NotBlank`, `@Size`, etc.).
-- **Error Obfuscation:** Generic 500 messages are returned to clients; details are logged server-side.
-- **Jasypt:** Sensitive properties in `application.yml` can be encrypted with Jasypt.
-
----
-
-## 11. Common Pitfalls for Agents
-
-1. **Do not use `npm` or `yarn` in the frontend.** The project enforces `pnpm` via `only-allow`.
-2. **Do not add framework annotations to domain classes.** Keep `domain/` packages pure.
-3. **Do not expose backend port 8080 in production.** All traffic must flow through Nginx.
-4. **Do not forget i18n.** Any new user-facing text needs a translation key.
-5. **Do not use `console.log` in production frontend code.** ESLint will warn; Terser will strip it in production builds anyway.
-6. **Do not modify Flyway migrations that have already been applied.** Create new `V<N>__description.sql` files instead.
-7. **Windows users must use Git Bash** for `manage.sh` and other shell scripts.
-8. **When adding a new backend module,** follow the exact hexagonal package structure (`domain/ports/in`, `domain/ports/out`, `application/services`, `infrastructure/in/controller`, `infrastructure/out/persistence/postgresql`).
-9. **When adding a new frontend feature,** create a folder under `src/features/<feature>/` with `components/`, `hooks/`, `pages/`, `services/`, `types/`, and `schemas/`.
-
----
-
-## 12. Useful Documentation Files
-
-- `README.md` — High-level overview, quick start, feature list.
-- `CHANGELOG.md` — Version history.
-- `SECURITY.md` — Security policy and reporting.
-- `documentation/back/*.md` — Detailed backend module documentation (in Spanish).
-- `documentation/front/*.md` — Detailed frontend module documentation (in Spanish).
-
----
-
-*Last updated: 2026-07-07*
+`documentation/back/` has one doc per backend module (users, transactions,
+categories, dashboard, group/saving goals, investments, planned transactions,
+import/export, shared infrastructure, DB); `documentation/front/` does the same
+for frontend features (auth, routing, shared components, i18n, etc.). Consult
+the relevant doc before making non-trivial changes to a module.

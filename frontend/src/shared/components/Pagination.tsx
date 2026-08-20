@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
 
-interface TransactionListPaginationProps {
+interface PaginationProps {
   currentPage: number
   totalPages: number
   from: number
@@ -12,7 +12,7 @@ interface TransactionListPaginationProps {
   onNext: () => void
 }
 
-export function TransactionListPagination({ currentPage, totalPages, from, to, total, onPrev, onNext }: TransactionListPaginationProps) {
+export function Pagination({ currentPage, totalPages, from, to, total, onPrev, onNext }: PaginationProps) {
   const { t } = useTranslation()
 
   if (totalPages <= 1) return null
@@ -20,7 +20,7 @@ export function TransactionListPagination({ currentPage, totalPages, from, to, t
   return (
     <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
       <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
-        {t("transactions:showingInterval", { from, to, total })}
+        {t("common:showingInterval", { from, to, total })}
       </p>
       <div className="flex items-center gap-2">
         <Button

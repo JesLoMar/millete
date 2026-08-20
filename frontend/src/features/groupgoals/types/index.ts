@@ -27,6 +27,7 @@ export interface GroupGoalDetail {
   isAdmin: boolean
   members: GoalMember[]
   contributions: GoalContribution[]
+  contributionTotals: Record<string, number>
 }
 
 export interface GoalListItem {

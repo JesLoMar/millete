@@ -1,7 +1,13 @@
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/axiosClient"
-import type { GoalListItem, GroupGoalDetail } from "../types"
+import { useServerPagination, type PaginatedResponse } from "@/shared/hooks/useServerPagination"
+import type { GoalListItem, GroupGoalDetail, GoalContribution } from "../types"
+
+const GOAL_SERVER_SIZE = 12
+const GOAL_DISPLAY_SIZE = 4
+const CONTRIBUTION_SERVER_SIZE = 60
+const CONTRIBUTION_DISPLAY_SIZE = 20
 
 interface RawGoalDetailResponse {
   id: string
@@ -11,6 +17,7 @@ interface RawGoalDetailResponse {
   isAdmin: boolean
   members: RawGoalMember[]
   contributions: RawGoalContribution[]
+  contributionTotals: Record<string, number>
 }
 
 interface RawGoalMember {
@@ -30,25 +37,34 @@ interface RawGoalContribution {
   date: string
 }
 
-export function useGroupGoalQueries(selectedGoalId: string | null) {
-  const { data: goals = [], isLoading } = useQuery<GoalListItem[]>({
-    queryKey: ["group-goals"],
-    queryFn: async () => {
-      const response = await apiClient.get("/goals")
+export function useGroupGoals() {
+  const fetchPage = useCallback(
+    async (page: number): Promise<PaginatedResponse<GoalListItem>> => {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(GOAL_SERVER_SIZE),
+      })
+      const response = await apiClient.get(`/goals?${params.toString()}`)
       return response.data
     },
-  })
+    []
+  )
 
-  const sortedGoals = useMemo(() => {
-    return goals.toSorted((a, b) => {
-      if (a.isAdmin && !b.isAdmin) return -1
-      if (!a.isAdmin && b.isAdmin) return 1
-      return a.name.localeCompare(b.name)
-    })
-  }, [goals])
+  return {
+    ...useServerPagination<GoalListItem>({
+      queryKey: ["group-goals"],
+      fetchPage,
+      serverSize: GOAL_SERVER_SIZE,
+      displaySize: GOAL_DISPLAY_SIZE,
+    }),
+    serverSize: GOAL_SERVER_SIZE,
+    displaySize: GOAL_DISPLAY_SIZE,
+  }
+}
 
+export function useGroupGoalDetail(selectedGoalId: string | null) {
   const { data: rawGoal } = useQuery<RawGoalDetailResponse>({
-    queryKey: ["group-goals", selectedGoalId],
+    queryKey: ["group-goals", "detail", selectedGoalId],
     queryFn: async () => {
       const response = await apiClient.get(`/goals/${selectedGoalId}`)
       return response.data
@@ -79,8 +95,35 @@ export function useGroupGoalQueries(selectedGoalId: string | null) {
         amount: c.amount,
         date: c.date || "",
       })),
+      contributionTotals: rawGoal.contributionTotals || {},
     }
   }, [rawGoal])
 
-  return { goals: sortedGoals, isLoading, selectedGoal }
+  return { selectedGoal }
+}
+
+export function useGroupGoalContributions(goalId: string | null) {
+  const fetchPage = useCallback(
+    async (page: number): Promise<PaginatedResponse<GoalContribution>> => {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(CONTRIBUTION_SERVER_SIZE),
+      })
+      const response = await apiClient.get(`/goals/${goalId}/contributions?${params.toString()}`)
+      return response.data
+    },
+    [goalId]
+  )
+
+  return {
+    ...useServerPagination<GoalContribution>({
+      queryKey: ["group-goals", goalId ?? "", "contributions"],
+      fetchPage,
+      serverSize: CONTRIBUTION_SERVER_SIZE,
+      displaySize: CONTRIBUTION_DISPLAY_SIZE,
+      enabled: !!goalId,
+    }),
+    serverSize: CONTRIBUTION_SERVER_SIZE,
+    displaySize: CONTRIBUTION_DISPLAY_SIZE,
+  }
 }

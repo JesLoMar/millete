@@ -97,6 +97,16 @@ public class SavingsGoalService implements
     }
 
     @Override
+    public List<SavingsGoal> findByUserId(UUID userId, int page, int size, String search, String status) {
+        return savingsGoalRepository.findAllByUserId(userId, page, size, search, status);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, String status) {
+        return savingsGoalRepository.countByUserIdAndFilters(userId, search, status);
+    }
+
+    @Override
     public SavingsGoal getByIdAndUserId(UUID id, UUID userId) {
         return savingsGoalRepository.findByIdAndUserId(id, userId)
                 .filter(SavingsGoal::isActive)

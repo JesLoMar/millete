@@ -144,7 +144,7 @@ public class DashboardService implements GetDashboardDataUseCase {
             if (aOver && !bOver) return -1;
             if (!aOver && bOver) return 1;
             return Double.compare(b.percentage(), a.percentage());
-        }).collect(Collectors.toList());
+        }).limit(5).collect(Collectors.toList());
 
         return new DashboardBudgetsResponseDTO(period, budgetItems);
     }

@@ -100,13 +100,19 @@ public class GroupGoalService implements
         return goalUnit.calculateContributions();
     }
 
-    public List<GoalListItemResponseDTO> getGoalsByUserId(UUID userId) {
-        List<GoalMember> memberships = goalMemberRepository.findByUserId(userId);
-        List<GoalListItemResponseDTO> result = new ArrayList<>();
+    public GoalListPage getGoalsByUserId(UUID userId, int page, int size) {
+        long totalElements = goalUnitRepository.countByUserId(userId);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
 
-        for (GoalMember membership : memberships) {
-            GoalUnit goal = goalUnitRepository.findById(membership.getGoalId()).orElse(null);
-            if (goal == null || !goal.isActive()) continue;
+        List<GoalUnit> goals = goalUnitRepository.findByUserId(userId, safePage, size);
+
+        List<GoalListItemResponseDTO> result = new ArrayList<>();
+        for (GoalUnit goal : goals) {
+            GoalMember membership = goalMemberRepository.findByGoalIdAndUserId(goal.getId(), userId)
+                    .filter(GoalMember::isActive)
+                    .orElse(null);
+            if (membership == null) continue;
 
             List<GoalMember> allMembers = goalMemberRepository.findByGoalId(goal.getId());
             long activeMembers = allMembers.stream().filter(GoalMember::isActive).count();
@@ -125,8 +131,10 @@ public class GroupGoalService implements
             return a.name().compareTo(b.name());
         });
 
-        return result;
+        return new GoalListPage(result, totalElements, totalPages);
     }
+
+    public record GoalListPage(List<GoalListItemResponseDTO> goals, long totalElements, int totalPages) {}
 
     public GoalDetailResponseDTO getGoalDetail(UUID goalId, UUID userId) {
         GoalUnit goal = goalUnitRepository.findById(goalId)
@@ -154,7 +162,27 @@ public class GroupGoalService implements
                 })
                 .toList();
 
-        List<GoalContribution> contributions = goalContributionRepository.findByGoalId(goalId);
+        Map<UUID, BigDecimal> contributionTotals = goalContributionRepository.findByGoalId(goalId).stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        GoalContribution::getUserId,
+                        java.util.stream.Collectors.reducing(BigDecimal.ZERO, GoalContribution::getAmount, BigDecimal::add)));
+
+        return new GoalDetailResponseDTO(
+                goal.getId(), goal.getName(), goal.getMonthlyTarget(),
+                goal.getDistributionMode().name(), isAdmin,
+                memberDTOs, List.of(), contributionTotals);
+    }
+
+    public ContributionHistoryPage getContributionHistory(UUID goalId, UUID userId, int page, int size) {
+        GoalMember member = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
+                .filter(GoalMember::isActive)
+                .orElseThrow(() -> new ForbiddenOperationException("You are not a member of this goal"));
+
+        long totalElements = goalContributionRepository.countByGoalId(goalId);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+
+        List<GoalContribution> contributions = goalContributionRepository.findByGoalId(goalId, safePage, size);
         List<GoalContributionDTO> contributionDTOs = contributions.stream()
                 .map(c -> {
                     String userName = userRepository.findById(c.getUserId())
@@ -164,11 +192,10 @@ public class GroupGoalService implements
                 })
                 .toList();
 
-        return new GoalDetailResponseDTO(
-                goal.getId(), goal.getName(), goal.getMonthlyTarget(),
-                goal.getDistributionMode().name(), isAdmin,
-                memberDTOs, contributionDTOs);
+        return new ContributionHistoryPage(contributionDTOs, totalElements, totalPages);
     }
+
+    public record ContributionHistoryPage(List<GoalContributionDTO> contributions, long totalElements, int totalPages) {}
 
     public void updateMember(UUID goalId, UUID memberId, UUID userId, UpdateMemberRequestDTO request) {
         GoalMember requester = goalMemberRepository.findByGoalIdAndUserId(goalId, userId)

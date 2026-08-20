@@ -290,24 +290,24 @@ class GroupGoalServiceTest {
     @DisplayName("Obtener metas por usuario")
     void shouldGetGoalsByUserId() {
         GoalMember membership = mock(GoalMember.class);
-        when(membership.getGoalId()).thenReturn(goalId);
         when(membership.isAdmin()).thenReturn(true);
+        when(membership.isActive()).thenReturn(true);
 
         GoalUnit goal = mock(GoalUnit.class);
         when(goal.getId()).thenReturn(goalId);
         when(goal.getName()).thenReturn("Goal García");
         when(goal.getMonthlyTarget()).thenReturn(new BigDecimal("1000.00"));
-        when(goal.isActive()).thenReturn(true);
 
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of(membership));
-        when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(goal));
+        when(goalUnitRepository.countByUserId(userId)).thenReturn(1L);
+        when(goalUnitRepository.findByUserId(userId, 0, 12)).thenReturn(List.of(goal));
+        when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId)).thenReturn(Optional.of(membership));
         when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(membership));
 
-        var result = groupGoalService.getGoalsByUserId(userId);
+        var result = groupGoalService.getGoalsByUserId(userId, 0, 12);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("Goal García");
-        assertThat(result.get(0).isAdmin()).isTrue();
+        assertThat(result.goals()).hasSize(1);
+        assertThat(result.goals().get(0).name()).isEqualTo("Goal García");
+        assertThat(result.goals().get(0).isAdmin()).isTrue();
     }
 
     @Test

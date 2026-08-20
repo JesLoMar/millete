@@ -9,6 +9,8 @@ import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundExcepti
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -91,6 +93,18 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
     @Override
     public List<Transaction> findAllByUserId(UUID userId) {
         return transactionRepository.findAllByUserId(userId);
+    }
+
+    @Override
+    public List<Transaction> findAllByUserId(UUID userId, int page, int size, String search, TransactionType type,
+                                               LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.findAllByUserId(userId, page, size, search, type, startDate, endDate);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, TransactionType type,
+                                        LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.countByUserIdAndFilters(userId, search, type, startDate, endDate);
     }
 
 

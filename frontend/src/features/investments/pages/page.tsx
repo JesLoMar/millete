@@ -17,14 +17,19 @@ import type { InvestmentResponse } from "../types"
 export const InvestmentsPage = () => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<PeriodFilter>("month")
-  const [page, setPage] = useState(0)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentResponse | null>(null)
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
     setPeriod(newPeriod)
   }, [])
 
-  const { investments, metrics, evolution, distribution } = useInvestmentQueries(period, page)
+  const { investments, metrics, evolution, distribution } = useInvestmentQueries({
+    period,
+    search: searchTerm,
+    type: typeFilter,
+  })
   const { deleteInvestment } = useInvestmentMutations()
 
   const handleDelete = async () => {
@@ -38,9 +43,7 @@ export const InvestmentsPage = () => {
     }
   }
 
-  const handlePageChange = useCallback((newPage: number) => {
-    setPage(newPage)
-  }, [])
+  const data = investments.data
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -75,11 +78,18 @@ export const InvestmentsPage = () => {
           </div>
 
           <AssetList
-            investments={investments.data?.content || []}
+            investments={data?.displayItems || []}
             isLoading={investments.isLoading}
-            currentPage={investments.data?.currentPage ?? 0}
-            totalPages={investments.data?.totalPages ?? 1}
-            onPageChange={handlePageChange}
+            displayPage={data?.displayPage ?? 0}
+            totalDisplayPages={data?.totalDisplayPages ?? 1}
+            totalElements={data?.totalElements ?? 0}
+            displaySize={data?.displaySize ?? 10}
+            searchTerm={searchTerm}
+            typeFilter={typeFilter}
+            onSearchChange={setSearchTerm}
+            onTypeFilterChange={setTypeFilter}
+            onNextPage={data?.nextPage ?? (() => {})}
+            onPrevPage={data?.prevPage ?? (() => {})}
             onDelete={setDeletingInvestment}
           />
         </main>

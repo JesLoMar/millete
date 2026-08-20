@@ -5,6 +5,7 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRep
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalContributionEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalContributionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,5 +30,17 @@ public class GoalContributionPostgresAdapter implements GoalContributionReposito
         return jpaRepository.findByGoalIdAndActiveTrueOrderByDateDesc(goalId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<GoalContribution> findByGoalId(UUID goalId, int page, int size) {
+        return jpaRepository.findByGoalIdAndActiveTrueOrderByDateDesc(goalId, PageRequest.of(page, size)).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByGoalId(UUID goalId) {
+        return jpaRepository.countByGoalIdAndActiveTrue(goalId);
     }
 }

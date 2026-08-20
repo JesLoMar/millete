@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.savingsgoals.infrastructure.in.controller;
 
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.*;
@@ -58,23 +59,42 @@ public class SavingsGoalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SavingsGoalResponseDTO>> getAll(
+    public ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> getAll(
             Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "90") int size,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String status) {
         UUID userId = getUserId(authentication);
+        String normalizedStatus = normalizeStatus(status);
 
-        List<SavingsGoal> goals;
-        if (status != null && !status.isBlank()) {
-            goals = listSavingsGoalsUseCase.findByUserIdAndStatus(userId, status.toUpperCase());
-        } else {
-            goals = listSavingsGoalsUseCase.findByUserId(userId);
-        }
+        long totalElements = listSavingsGoalsUseCase.countByUserIdAndFilters(userId, search, normalizedStatus);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
 
-        List<SavingsGoalResponseDTO> response = goals.stream()
+        List<SavingsGoal> goals = listSavingsGoalsUseCase.findByUserId(
+                userId, safePage, size, search, normalizedStatus);
+
+        List<SavingsGoalResponseDTO> content = goals.stream()
                 .map(this::mapToResponse)
                 .toList();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                content,
+                safePage,
+                totalPages,
+                totalElements,
+                size,
+                safePage == 0,
+                safePage >= totalPages - 1 || totalPages == 0
+        ));
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        return status.toUpperCase();
     }
 
     @GetMapping("/{id}")

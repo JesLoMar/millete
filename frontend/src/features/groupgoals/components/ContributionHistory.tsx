@@ -1,15 +1,30 @@
 import { useTranslation } from "react-i18next"
 import { Plus } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
-import type { GoalContribution } from "../types"
+import { Pagination } from "@/shared/components/Pagination"
+import { formatDate } from "@/shared/utils/date"
+import { useGroupGoalContributions } from "../hooks/useGroupGoalQueries"
 
 interface ContributionHistoryProps {
-  contributions: GoalContribution[]
+  goalId: string
   onAddClick: () => void
 }
 
-export function ContributionHistory({ contributions, onAddClick }: ContributionHistoryProps) {
+export function ContributionHistory({ goalId, onAddClick }: ContributionHistoryProps) {
   const { t } = useTranslation()
+  const {
+    displayItems: contributions,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading,
+    nextPage,
+    prevPage,
+  } = useGroupGoalContributions(goalId)
+
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
   return (
     <div>
@@ -25,7 +40,11 @@ export function ContributionHistory({ contributions, onAddClick }: ContributionH
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {(!contributions || contributions.length === 0) ? (
+        {isLoading && contributions.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            {t('groupGoals:loadingContributions')}
+          </p>
+        ) : contributions.length === 0 ? (
           <p className="text-center text-muted-foreground py-12 text-sm">
             {t('groupGoals:noContributions')}
           </p>
@@ -58,13 +77,23 @@ export function ContributionHistory({ contributions, onAddClick }: ContributionH
                   </span>
 
                   <span className="text-xs sm:text-sm text-muted-foreground text-right whitespace-nowrap">
-                    {t('groupGoals:date')}
+                    {formatDate(c.date)}
                   </span>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+        <Pagination
+          currentPage={displayPage}
+          totalPages={totalDisplayPages}
+          from={from}
+          to={to}
+          total={totalElements}
+          onPrev={prevPage}
+          onNext={nextPage}
+        />
       </div>
     </div>
   )

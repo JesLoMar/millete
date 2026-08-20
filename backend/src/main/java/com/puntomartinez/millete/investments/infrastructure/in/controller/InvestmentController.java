@@ -70,15 +70,18 @@ public class InvestmentController {
     public ResponseEntity<PaginatedResponseDTO<InvestmentResponseDTO>> getAllInvestments(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type) {
 
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
+        Investment.InvestmentType investmentType = parseType(type);
 
-        long totalElements = listUseCase.countActiveByUserId(userId);
+        long totalElements = listUseCase.countByUserIdAndFilters(userId, search, investmentType);
         int totalPages = (int) Math.ceil((double) totalElements / size);
         int safePage = Math.min(page, Math.max(0, totalPages - 1));
 
-        List<Investment> investments = listUseCase.findAllByUserId(userId, safePage, size);
+        List<Investment> investments = listUseCase.findAllByUserId(userId, safePage, size, search, investmentType);
 
         List<InvestmentResponseDTO> content = investments.stream()
                 .map(this::mapToDTO)
@@ -95,6 +98,17 @@ public class InvestmentController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    private Investment.InvestmentType parseType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        try {
+            return Investment.InvestmentType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
 

@@ -13,7 +13,6 @@ import { EditCategoryDialog } from "./EditCategoryDialog"
 import { ConfirmDeletionDialog } from "./ConfirmDeletionDialog"
 import { CategoryRow } from "./CategoryRow"
 import { CategoryTableSkeleton } from "./CategoryTableSkeleton"
-import { usePagination } from "../hooks/usePagination"
 import type { PeriodFilter } from "@/shared/components/PeriodSelector"
 import type { CategoriesExpenseResponse } from "../types"
 
@@ -23,25 +22,22 @@ interface CategoryTableProps {
 
 export function CategoryTable({ period }: CategoryTableProps) {
   const { t } = useTranslation(['categories', 'common', 'dashboard', 'transactions'])
-  const { data: categories = [], isLoading } = useCategories()
-  const { deleteCategory, isDeleting } = useCategoryMutations()
-
   const [searchTerm, setSearchTerm] = useState("")
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
 
-  const filteredData = useMemo(() =>
-    categories.filter((cat) =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [categories, searchTerm])
+  const {
+    displayItems: categories,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading,
+    nextPage,
+    prevPage,
+  } = useCategories({ search: searchTerm })
 
-  const { currentPage, totalPages, paginatedRange, prevPage, nextPage } = usePagination({
-    totalItems: filteredData.length,
-  })
-
-  const paginatedItems = useMemo(() =>
-    filteredData.slice(paginatedRange.start, paginatedRange.end),
-    [filteredData, paginatedRange])
+  const { deleteCategory, isDeleting } = useCategoryMutations()
 
   const { data: expensesData } = useQuery<CategoriesExpenseResponse>({
     queryKey: ['categoryExpenses', period],
@@ -89,7 +85,10 @@ export function CategoryTable({ period }: CategoryTableProps) {
     return Math.min((spent / limit) * 100, 100)
   }
 
-  if (isLoading) return <CategoryTableSkeleton />
+  if (isLoading && categories.length === 0) return <CategoryTableSkeleton />
+
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
   return (
     <div className="space-y-4">
@@ -108,7 +107,7 @@ export function CategoryTable({ period }: CategoryTableProps) {
             {t(`dashboard:header.period.${period}`)}
           </span>
           <p className="text-sm text-muted-foreground">
-            {t('categories:showing', { total: filteredData.length })}
+            {t('categories:showing', { total: totalElements })}
           </p>
         </div>
       </div>
@@ -126,12 +125,12 @@ export function CategoryTable({ period }: CategoryTableProps) {
             }
           }}
         >
-          {paginatedItems.length === 0 ? (
+          {categories.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('categories:empty')}
             </p>
           ) : (
-            paginatedItems.map((cat) => (
+            categories.map((cat) => (
               <m.div
                 key={cat.id}
                 variants={{
@@ -153,21 +152,17 @@ export function CategoryTable({ period }: CategoryTableProps) {
           )}
         </m.div>
 
-        {totalPages > 1 && (
+        {totalDisplayPages > 1 && (
           <div className="px-6 py-4 flex items-center justify-between border-t border-border bg-background/20">
             <p className="text-xs text-muted-foreground font-medium">
-              {t('transactions:showingInterval', {
-                from: (currentPage - 1) * 10 + 1,
-                to: Math.min(currentPage * 10, filteredData.length),
-                total: filteredData.length,
-              })}
+              {t('transactions:showingInterval', { from, to, total: totalElements })}
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 1} className="h-8 border-border">
+              <Button variant="outline" size="sm" onClick={prevPage} disabled={displayPage === 0} className="h-8 border-border">
                 <ChevronLeft size={16} />
               </Button>
-              <span className="text-sm text-muted-foreground min-w-15 text-center">{currentPage} / {totalPages}</span>
-              <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === totalPages} className="h-8 border-border">
+              <span className="text-sm text-muted-foreground min-w-15 text-center">{displayPage + 1} / {totalDisplayPages}</span>
+              <Button variant="outline" size="sm" onClick={nextPage} disabled={displayPage >= totalDisplayPages - 1} className="h-8 border-border">
                 <ChevronRight size={16} />
               </Button>
             </div>

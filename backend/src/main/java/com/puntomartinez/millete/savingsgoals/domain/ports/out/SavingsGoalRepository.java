@@ -11,4 +11,6 @@ public interface SavingsGoalRepository {
     Optional<SavingsGoal> findByIdAndUserId(UUID id, UUID userId);
     List<SavingsGoal> findAllByUserId(UUID userId);
     List<SavingsGoal> findAllByUserIdAndStatus(UUID userId, String status);
+    List<SavingsGoal> findAllByUserId(UUID userId, int page, int size, String search, String status);
+    long countByUserIdAndFilters(UUID userId, String search, String status);
 }

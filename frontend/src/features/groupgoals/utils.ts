@@ -6,15 +6,7 @@ export function calculateContributions(
 ): ContributionMember[] {
   const { members, monthlyTarget, distributionMode } = selectedGoal
 
-  const contributedMap: Record<string, number> = {}
-  if (selectedGoal.contributions) {
-    selectedGoal.contributions.forEach((c) => {
-      const key = c.userId
-      if (key) {
-        contributedMap[key] = (contributedMap[key] || 0) + c.amount
-      }
-    })
-  }
+  const contributedMap: Record<string, number> = selectedGoal.contributionTotals || {}
 
   const expectedMap: Record<string, number> = {}
 

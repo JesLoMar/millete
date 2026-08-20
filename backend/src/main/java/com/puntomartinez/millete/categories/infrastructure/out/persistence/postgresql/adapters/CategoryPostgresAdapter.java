@@ -5,6 +5,10 @@ import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers.CategoryEntityMapper;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.repository.JpaCategoryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,6 +25,17 @@ public class CategoryPostgresAdapter implements CategoryRepository {
     public CategoryPostgresAdapter(JpaCategoryRepository jpaRepository, CategoryEntityMapper mapper) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
+    }
+
+    private Specification<CategoryEntity> buildSpecification(UUID userId, String search) {
+        Specification<CategoryEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), pattern));
+        }
+
+        return spec;
     }
 
     @Override
@@ -57,5 +72,20 @@ public class CategoryPostgresAdapter implements CategoryRepository {
         return jpaRepository.findCategoriesWithBudgetByUserId(userId).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Category> findAllByUserId(UUID userId, int page, int size, String search) {
+        Specification<CategoryEntity> spec = buildSpecification(userId, search);
+        Page<CategoryEntity> result = jpaRepository.findAll(spec,
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+        return result.getContent().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search) {
+        return jpaRepository.count(buildSpecification(userId, search));
     }
 }

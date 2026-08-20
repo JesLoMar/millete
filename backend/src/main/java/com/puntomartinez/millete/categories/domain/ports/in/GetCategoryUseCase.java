@@ -6,4 +6,6 @@ import java.util.UUID;
 
 public interface GetCategoryUseCase {
     List<Category> findByUserId(UUID userId);
+    List<Category> findAllByUserId(UUID userId, int page, int size, String search);
+    long countByUserIdAndFilters(UUID userId, String search);
 }

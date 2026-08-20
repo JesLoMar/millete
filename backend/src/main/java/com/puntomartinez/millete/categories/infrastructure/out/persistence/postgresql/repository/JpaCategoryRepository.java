@@ -2,6 +2,7 @@ package com.puntomartinez.millete.categories.infrastructure.out.persistence.post
 
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface JpaCategoryRepository extends JpaRepository<CategoryEntity, UUID> {
+public interface JpaCategoryRepository extends JpaRepository<CategoryEntity, UUID>, JpaSpecificationExecutor<CategoryEntity> {
 
     List<CategoryEntity> findByUserId(UUID userId);
 

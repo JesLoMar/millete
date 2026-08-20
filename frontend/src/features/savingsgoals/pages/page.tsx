@@ -1,10 +1,11 @@
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { TopNav } from "@/shared/components/TopNav"
 import { Sidebar } from "@/shared/components/Sidebar"
 import { Header, type PeriodFilter } from "@/shared/components/Header"
 import { Input } from "@/shared/components/core/input"
 import { Loader2 } from "lucide-react"
+import { Pagination } from "@/shared/components/Pagination"
 import { EmptyState } from "../components/EmptyState"
 import { SavingsGoalCard } from "../components/SavingsGoalCard"
 import { ContributionModal } from "../components/ContributionModal"
@@ -14,66 +15,10 @@ import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmD
 import { useSavingsGoals, useAddContribution, useDeleteSavingsGoal } from "../hooks/useSavingsGoals"
 import type { SavingsGoal } from "../types"
 
-interface SearchableGoalListProps {
-  goals: SavingsGoal[]
-  onAddContribution: (goal: SavingsGoal) => void
-  onEdit: (goal: SavingsGoal) => void
-  onDelete: (goal: SavingsGoal) => void
-}
-
-function SearchableGoalList({ goals, onAddContribution, onEdit, onDelete }: SearchableGoalListProps) {
-  const { t } = useTranslation()
-  const [search, setSearch] = useState("")
-
-  const filteredGoals = useMemo(() => {
-    if (!search.trim()) return goals
-    const lower = search.toLowerCase()
-    return goals.filter((g) => g.name.toLowerCase().includes(lower))
-  }, [goals, search])
-
-  return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Input
-          placeholder={t('savingsGoals:searchPlaceholder')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            aria-label={t('savingsGoals:clearSearch')}
-          >
-            ✕
-          </button>
-        )}
-      </div>
-
-      {filteredGoals.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredGoals.map((goal) => (
-            <SavingsGoalCard
-              key={goal.id}
-              goal={goal}
-              onAddContribution={onAddContribution}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export const SavingsGoalsPage = () => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<PeriodFilter>("month")
+  const [searchTerm, setSearchTerm] = useState("")
   const [ui, setUi] = useState({
     isContributionOpen: false,
     isEditOpen: false,
@@ -81,13 +26,26 @@ export const SavingsGoalsPage = () => {
   })
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null)
 
-  const { data: goals, isLoading, error } = useSavingsGoals()
+  const {
+    displayItems: goals,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading,
+    error,
+    nextPage,
+    prevPage,
+  } = useSavingsGoals({ search: searchTerm })
   const { mutateAsync: addContribution } = useAddContribution()
   const { mutateAsync: deleteGoal, isPending: isDeleting } = useDeleteSavingsGoal()
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
     setPeriod(newPeriod)
   }, [])
+
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
   const handleAddContribution = async (amount: number) => {
     if (!selectedGoal) return
@@ -147,15 +105,73 @@ export const SavingsGoalsPage = () => {
             </div>
           )}
 
-          {!isLoading && !error && (!goals || goals.length === 0) && <EmptyState />}
+          {!isLoading && !error && (!goals || goals.length === 0) && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Input
+                  placeholder={t('savingsGoals:searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={t('savingsGoals:clearSearch')}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <EmptyState />
+            </div>
+          )}
 
           {!isLoading && !error && goals && goals.length > 0 && (
-            <SearchableGoalList
-              goals={goals}
-              onAddContribution={openContribution}
-              onEdit={openEdit}
-              onDelete={openDelete}
-            />
+            <div className="space-y-4">
+              <div className="relative">
+                <Input
+                  placeholder={t('savingsGoals:searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={t('savingsGoals:clearSearch')}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {goals.map((goal) => (
+                  <SavingsGoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onAddContribution={openContribution}
+                    onEdit={openEdit}
+                    onDelete={openDelete}
+                  />
+                ))}
+              </div>
+
+              <Pagination
+                currentPage={displayPage}
+                totalPages={totalDisplayPages}
+                from={from}
+                to={to}
+                total={totalElements}
+                onPrev={prevPage}
+                onNext={nextPage}
+              />
+            </div>
           )}
         </main>
       </div>

@@ -188,7 +188,7 @@ export const DashboardPage = () => {
           </m.div>
           <m.div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6" variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}>
             <div className="lg:col-span-5 min-h-96">
-              <BudgetBars data={budgets.data} loading={budgets.isLoading} />
+              <BudgetBars data={budgets.data} loading={budgets.isLoading} period={period} />
             </div>
             <div className="lg:col-span-7 min-h-96">
               <RecentTransactions data={recentTransactions.data} loading={recentTransactions.isLoading} />

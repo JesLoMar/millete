@@ -1,7 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
+import { useCallback } from "react"
+import { useServerPagination, type PaginatedResponse } from "@/shared/hooks/useServerPagination"
 import { apiClient } from "@/shared/api/axiosClient"
+import { useQuery } from "@tanstack/react-query"
 import type { PeriodFilter } from "@/shared/components/PeriodSelector"
 import type { InvestmentResponse, InvestmentMetricsData, EvolutionResponse, DistributionResponse } from "../types"
+
+const SERVER_SIZE = 50
+const DISPLAY_SIZE = 10
 
 export interface PaginatedInvestmentsResponse {
   content: InvestmentResponse[]
@@ -13,15 +18,37 @@ export interface PaginatedInvestmentsResponse {
   last: boolean
 }
 
-export function useInvestmentQueries(period: PeriodFilter, page: number = 0, size: number = 10) {
-  const { data: investmentsData, isLoading: investmentsIsLoading } = useQuery<PaginatedInvestmentsResponse>({
-    queryKey: ['investments', page, size],
-    queryFn: async () => {
-      const response = await apiClient.get(`investments?page=${page}&size=${size}`)
+interface UseInvestmentsOptions {
+  period: PeriodFilter
+  search?: string
+  type?: string
+  enabled?: boolean
+}
+
+export function useInvestmentQueries(options: UseInvestmentsOptions) {
+  const { period, search = "", type = "all", enabled = true } = options
+
+  const fetchPage = useCallback(
+    async (page: number): Promise<PaginatedResponse<InvestmentResponse>> => {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(SERVER_SIZE),
+      })
+      if (search.trim()) params.set("search", search.trim())
+      if (type !== "all") params.set("type", type)
+
+      const response = await apiClient.get(`/investments?${params.toString()}`)
       return response.data
     },
-    retry: 1,
-    staleTime: 30_000,
+    [search, type]
+  )
+
+  const pagination = useServerPagination<InvestmentResponse>({
+    queryKey: ["investments", search, type],
+    fetchPage,
+    serverSize: SERVER_SIZE,
+    displaySize: DISPLAY_SIZE,
+    enabled,
   })
 
   const { data: metricsData, isLoading: metricsIsLoading } = useQuery<InvestmentMetricsData>({
@@ -55,9 +82,11 @@ export function useInvestmentQueries(period: PeriodFilter, page: number = 0, siz
   })
 
   return {
-    investments: { data: investmentsData, isLoading: investmentsIsLoading },
+    investments: { data: pagination, isLoading: pagination.isLoading },
     metrics: { data: metricsData, isLoading: metricsIsLoading },
     evolution: { data: evolutionData, isLoading: evolutionIsLoading },
     distribution: { data: distributionData, isLoading: distributionIsLoading },
+    serverSize: SERVER_SIZE,
+    displaySize: DISPLAY_SIZE,
   }
 }

@@ -4,6 +4,7 @@ import com.puntomartinez.millete.savingsgoals.application.services.SavingsGoalSe
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,27 +85,29 @@ class SavingsGoalControllerTest {
     }
 
     @Test
-    void getAll_shouldReturnListOfGoals() {
+    void getAll_shouldReturnPaginatedGoals() {
         SavingsGoal goal = createGoal();
-        when(savingsGoalService.findByUserId(userId)).thenReturn(List.of(goal));
+        when(savingsGoalService.countByUserIdAndFilters(userId, null, null)).thenReturn(1L);
+        when(savingsGoalService.findByUserId(userId, 0, 90, null, null)).thenReturn(List.of(goal));
 
-        ResponseEntity<List<SavingsGoalResponseDTO>> response = controller.getAll(authentication, null);
+        ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response = controller.getAll(authentication, 0, 90, null, null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().size());
-        assertEquals("Vacaciones", response.getBody().getFirst().getName());
+        assertEquals(1, response.getBody().content().size());
+        assertEquals("Vacaciones", response.getBody().content().getFirst().getName());
     }
 
     @Test
     void getAll_shouldFilterByStatus_whenProvided() {
         SavingsGoal goal = createGoal();
-        when(savingsGoalService.findByUserIdAndStatus(userId, "ACTIVE")).thenReturn(List.of(goal));
+        when(savingsGoalService.countByUserIdAndFilters(userId, null, "ACTIVE")).thenReturn(1L);
+        when(savingsGoalService.findByUserId(userId, 0, 90, null, "ACTIVE")).thenReturn(List.of(goal));
 
-        ResponseEntity<List<SavingsGoalResponseDTO>> response = controller.getAll(authentication, "active");
+        ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response = controller.getAll(authentication, 0, 90, null, "active");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, response.getBody().size());
+        assertEquals(1, response.getBody().content().size());
     }
 
     @Test
