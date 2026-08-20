@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { useTranslation } from "react-i18next"
-import { Calendar, Plus, Pencil, Trash2 } from "lucide-react"
+import { Calendar, Plus, Pencil, Trash2, ExternalLink } from "lucide-react"
 import type { SavingsGoal } from "../types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
 import { Badge } from "@/shared/components/core/badge"
@@ -67,6 +67,19 @@ export const SavingsGoalCard = memo(({ goal, onAddContribution, onEdit, onDelete
             <div className="text-xs text-muted-foreground">{t('savingsGoals:of')} {formatCurrency(goal.targetAmount)}</div>
           </div>
           <div className="flex gap-1">
+            {goal.link && (
+              <Button variant="ghost" size="icon" asChild>
+                <a
+                  href={goal.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={t('savingsGoals:viewLink')}
+                  aria-label={t('savingsGoals:viewLink')}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </Button>
+            )}
             <Button variant="ghost" size="icon" onClick={() => onEdit(goal)} title={t('savingsGoals:editGoal')}>
               <Pencil className="w-4 h-4" />
             </Button>

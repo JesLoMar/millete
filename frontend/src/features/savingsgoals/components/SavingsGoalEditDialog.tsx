@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { PiggyBank } from "lucide-react"
 import { Spinner } from "@/shared/components/Spinner"
@@ -30,6 +30,25 @@ const PRIORITIES = [
   { value: "HIGH", labelKey: "savingsGoals:priorities.HIGH" },
 ] as const
 
+/**
+ * Valida el link tal como lo normalizará el hook:
+ * vacío es válido (campo opcional); si no tiene protocolo se asume https://;
+ * solo se aceptan http(s) y URLs sintácticamente válidas.
+ */
+const isValidLink = (link: string): boolean => {
+  const trimmed = link.trim()
+  if (!trimmed) return true
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+
+  try {
+    const url = new URL(withProtocol)
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -50,10 +69,20 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
   const { t } = useTranslation()
   const { mutateAsync: updateGoal, isPending: isUpdating } = useUpdateSavingsGoal()
   const [form, setForm] = useState(() => getInitialForm(goal))
+  const [linkTouched, setLinkTouched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Al cerrar el diálogo, el estado "tocado" se resetea para la próxima apertura
+  useEffect(() => {
+    if (!open) setLinkTouched(false)
+  }, [open])
 
   const handleSave = async () => {
     if (!goal || !form.name.trim() || !form.targetAmount) return
+    if (!isValidLink(form.link)) {
+      setLinkTouched(true)
+      return
+    }
 
     try {
       await updateGoal({
@@ -75,7 +104,13 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
     }
   }
 
-  const isValid = form.name.trim() && form.targetAmount && Number(form.targetAmount) > 0
+  const linkError = linkTouched && !isValidLink(form.link)
+
+  const isValid =
+    form.name.trim() &&
+    form.targetAmount &&
+    Number(form.targetAmount) > 0 &&
+    isValidLink(form.link)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,9 +190,17 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
                 placeholder={t('savingsGoals:linkPlaceholder')}
                 value={form.link}
                 onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
+                onBlur={() => setLinkTouched(true)}
                 disabled={isUpdating}
                 className="bg-background border-border"
+                aria-invalid={linkError}
+                aria-describedby={linkError ? "edit-goal-link-error" : undefined}
               />
+              {linkError && (
+                <p id="edit-goal-link-error" className="text-xs text-destructive">
+                  {t('savingsGoals:invalidLink')}
+                </p>
+              )}
             </div>
           </div>
 
