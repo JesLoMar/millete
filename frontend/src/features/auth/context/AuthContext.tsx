@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useCallback, use, useMemo, useEffec
 import { useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { apiClient } from '@/shared/api/axiosClient';
-import { secureStorage } from '@/shared/utils/secureStorage';
+import { sessionCache } from '@/shared/utils/sessionCache';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSessionId(null);
       setIsOffline(false);
-      secureStorage.clear();
+      sessionCache.clear();
       queryClient.clear();
     }
   }, [queryClient]);
@@ -78,12 +78,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (result.status === 'ok') {
       setUser(result.user);
       setSessionId(result.sessionId);
-      secureStorage.setUser(result.user);
-      secureStorage.setSessionId(result.sessionId);
+      sessionCache.setUser(result.user);
+      sessionCache.setSessionId(result.sessionId);
       setIsOffline(false);
     } else if (result.status === 'unauthenticated') {
       // Sesión inválida: limpiamos cualquier resto cacheado.
-      secureStorage.clear();
+      sessionCache.clear();
       setUser(null);
       setSessionId(null);
       setIsOffline(false);
@@ -112,14 +112,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (userData?: User): Promise<void> => {
       if (userData) {
         setUser(userData);
-        secureStorage.setUser(userData);
+        sessionCache.setUser(userData);
       }
       const result = await fetchCurrentUser();
       if (result.status === 'ok') {
         setUser(result.user);
         setSessionId(result.sessionId);
-        secureStorage.setUser(result.user);
-        secureStorage.setSessionId(result.sessionId);
+        sessionCache.setUser(result.user);
+        sessionCache.setSessionId(result.sessionId);
         setIsOffline(false);
       } else {
         await logout();

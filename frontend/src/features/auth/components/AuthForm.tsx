@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { useTranslation, Trans } from "react-i18next"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowRight } from "lucide-react"
 import { Spinner } from "@/shared/components/Spinner"
@@ -13,24 +13,20 @@ import { LoginFields } from "./AuthForm/LoginFields"
 import { RegisterFields } from "./AuthForm/RegisterFields"
 import { PasswordField } from "./AuthForm/PasswordField"
 import { AuthFooter } from "./AuthForm/AuthFooter"
-
 import {
   loginSchema,
   registerSchema,
   type CombinedAuthFormData
 } from "@/features/auth/schemas/auth.schema"
 import type { RegisterUserRequest } from "../types"
-
 import { useAutofillFix } from "@/shared/hooks/useAutofillFix"
 
 export function AuthForm() {
   const [mode, setMode] = useState<"login" | "register">("login")
   const { t } = useTranslation(['auth', 'common'])
-
   useAutofillFix()
 
   const currentSchema = mode === "login" ? loginSchema : registerSchema
-
   const {
     register,
     handleSubmit,
@@ -44,7 +40,6 @@ export function AuthForm() {
 
   const { mutate: loginMutate, isPending: isLoginPending, isError: isLoginError } = useLoginMutation()
   const { mutate: registerMutate, isPending: isRegisterPending, isError: isRegisterError } = useRegisterMutation()
-
   const isPending = isLoginPending || isRegisterPending
 
   const usernameWatch = watch("usernameRegistro")
@@ -72,18 +67,17 @@ export function AuthForm() {
   return (
     <div className="w-full flex flex-col justify-center space-y-8 sm:space-y-12 py-6">
       <AuthHeader />
-
       <div className="space-y-3 sm:space-y-4">
-        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight"
-          dangerouslySetInnerHTML={{ __html: t('auth:greeting') }}
-        />
+        {/* El saludo se interpola con <Trans>: el <br /> se declara en el JSX y
+            el texto de la traducción se renderiza escapado — nada de HTML crudo. */}
+        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
+          <Trans i18nKey="greeting" ns="auth" components={{ br: <br /> }} />
+        </h1>
         <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
           {t('auth:subtitle')}
         </p>
       </div>
-
       <AuthToggle mode={mode} onToggle={handleModeChange} />
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6" noValidate>
         {mode === "login" ? (
           <LoginFields register={register} errors={errors} disabled={isPending} />
@@ -95,9 +89,7 @@ export function AuthForm() {
             disabled={isPending}
           />
         )}
-
         <PasswordField register={register} errors={errors} disabled={isPending} mode={mode} />
-
         <Button
           type="submit"
           disabled={isPending || !isValid}
@@ -113,7 +105,6 @@ export function AuthForm() {
             </>
           )}
         </Button>
-
         {(isLoginError || isRegisterError) && (
           <p className="text-destructive text-sm text-center" role="alert">
             {mode === "login"
@@ -122,7 +113,6 @@ export function AuthForm() {
           </p>
         )}
       </form>
-
       <AuthFooter />
     </div>
   )
