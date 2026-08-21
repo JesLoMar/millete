@@ -24,10 +24,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.createSuccess') || 'Transacción creada correctamente')
+      notify.success(t('transactions:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.createError') || 'Error al crear la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.createError'))
     },
   })
 
@@ -46,10 +46,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.updateSuccess') || 'Transacción actualizada correctamente')
+      notify.success(t('transactions:alerts.updateSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.updateError') || 'Error al actualizar la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.updateError'))
     },
   })
 
@@ -67,10 +67,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.deleteSuccess') || 'Transacción eliminada correctamente')
+      notify.success(t('transactions:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.deleteError') || 'Error al eliminar la transacción')
+      notify.error(err.response?.data?.message || t('transactions:alerts.deleteError'))
     },
   })
 
@@ -88,10 +88,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.createRecurringSuccess') || 'Transacción recurrente programada correctamente')
+      notify.success(t('transactions:alerts.createRecurringSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.createRecurringError') || 'Error al programar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.createRecurringError'))
     },
   })
 
@@ -110,10 +110,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.updateRecurringSuccess') || 'Transacción recurrente actualizada correctamente')
+      notify.success(t('transactions:alerts.updateRecurringSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.updateRecurringError') || 'Error al actualizar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.updateRecurringError'))
     },
   })
 
@@ -131,10 +131,10 @@ export const useTransactionMutations = () => {
         queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
         queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
       ])
-      notify.success(t('transactions:alerts.deleteRecurringSuccess') || 'Transacción recurrente eliminada correctamente')
+      notify.success(t('transactions:alerts.deleteRecurringSuccess'))
     },
     onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.deleteRecurringError') || 'Error al eliminar la transacción recurrente')
+      notify.error(err.response?.data?.message || t('transactions:alerts.deleteRecurringError'))
     },
   })
 

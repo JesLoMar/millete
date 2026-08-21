@@ -106,5 +106,8 @@
     "memberDeleteError": "Error deleting the member",
     "contributionSuccess": "Contribution registered successfully",
     "contributionError": "Error registering the contribution"
-  }
+  },
+  "invitationRejected": "Invitation declined",
+  "invitationRejectedMessage": "You've declined the invitation. You won't join this group goal.",
+  "rejectError": "Error declining the invitation"
 }

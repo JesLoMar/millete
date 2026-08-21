@@ -106,5 +106,8 @@
     "memberDeleteError": "Error al eliminar el miembro",
     "contributionSuccess": "Aportación registrada correctamente",
     "contributionError": "Error al registrar la aportación"
-  }
+  },
+  "invitationRejected": "Invitación rechazada",
+  "invitationRejectedMessage": "Has rechazado la invitación. No te unirás a esta meta grupal.",
+  "rejectError": "Error al rechazar la invitación"
 }

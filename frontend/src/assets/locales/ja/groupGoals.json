@@ -106,5 +106,8 @@
     "memberDeleteError": "メンバーの削除中にエラーが発生しました",
     "contributionSuccess": "貢献が正常に登録されました",
     "contributionError": "貢献の登録中にエラーが発生しました"
-  }
+  },
+  "invitationRejected": "招待を拒否しました",
+  "invitationRejectedMessage": "招待を拒否しました。このグループ目標には参加しません。",
+  "rejectError": "招待の拒否中にエラーが発生しました"
 }

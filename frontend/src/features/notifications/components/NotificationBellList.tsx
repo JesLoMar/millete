@@ -14,7 +14,7 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
   const { data: notifications, isLoading } = useRecentNotifications(RECENT_LIMIT);
   const { mutate: markAsRead } = useMarkNotificationAsRead();
 
-  const unreadNotifications = notifications?.filter((n) => !n.read) ?? [];
+  const allNotifications = notifications ?? [];
 
   if (isLoading) {
     return (
@@ -26,7 +26,7 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
     );
   }
 
-  if (unreadNotifications.length === 0) {
+  if (allNotifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <Bell className="h-10 w-10 text-muted-foreground/50 mb-3" />
@@ -37,7 +37,7 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
 
   return (
     <div className="space-y-2">
-      {unreadNotifications.map((notification) => (
+      {allNotifications.map((notification) => (
         <NotificationBellItem
           key={notification.id}
           notification={notification}

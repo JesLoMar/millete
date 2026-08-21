@@ -106,5 +106,8 @@
     "memberDeleteError": "Erreur lors de la suppression du membre",
     "contributionSuccess": "Contribution enregistrée avec succès",
     "contributionError": "Erreur lors de l'enregistrement de la contribution"
-  }
+  },
+  "invitationRejected": "Invitation refusée",
+  "invitationRejectedMessage": "Vous avez refusé l'invitation. Vous ne rejoindrez pas cet objectif de groupe.",
+  "rejectError": "Erreur lors du refus de l'invitation"
 }

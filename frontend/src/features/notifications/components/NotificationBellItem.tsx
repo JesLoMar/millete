@@ -24,17 +24,19 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
         return Bell;
     }
   };
-
   const Icon = getIcon();
 
   const handleClick = useCallback(() => {
+    if (!notification.read) {
+      onMarkAsRead(notification.id);
+    }
     onNavigate();
     if (notification.type === 'GOAL_INVITATION') {
       navigate('/profile?section=notifications');
     } else {
       navigate('/notifications');
     }
-  }, [notification.type, navigate, onNavigate]);
+  }, [notification.id, notification.read, notification.type, navigate, onMarkAsRead, onNavigate]);
 
   const handleDismiss = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -58,23 +60,23 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
           <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary" />
         )}
       </div>
-
       <div className="flex-1 min-w-0">
         <p className={cn('font-medium text-sm truncate', !notification.read && 'text-foreground')}>
           {notification.title}
         </p>
         <p className="text-xs text-muted-foreground truncate">{notification.message}</p>
       </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-        onClick={handleDismiss}
-        title={t('common:actions.close')}
-      >
-        <X className="h-4 w-4" />
-      </Button>
+      {!notification.read && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+          onClick={handleDismiss}
+          title={t('common:actions.close')}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
     </button>
   );
 });

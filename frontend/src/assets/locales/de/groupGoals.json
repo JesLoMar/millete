@@ -106,5 +106,8 @@
     "memberDeleteError": "Fehler beim Löschen des Mitglieds",
     "contributionSuccess": "Beitrag erfolgreich registriert",
     "contributionError": "Fehler beim Registrieren des Beitrags"
-  }
+  },
+  "invitationRejected": "Einladung abgelehnt",
+  "invitationRejectedMessage": "Sie haben die Einladung abgelehnt. Sie treten diesem Gruppenziel nicht bei.",
+  "rejectError": "Fehler beim Ablehnen der Einladung"
 }

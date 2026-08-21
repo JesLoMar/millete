@@ -6,8 +6,11 @@ import { Card, CardContent } from "@/shared/components/core/card"
 import { apiClient } from "@/shared/api/axiosClient"
 import { useAuth } from "@/features/auth/context/AuthContext"
 import { notify } from "@/shared/utils/notifications/notify"
-import { CheckCircle, XCircle, Loader2, Users } from "lucide-react"
+import { CheckCircle, XCircle, Loader2, Users, UserX } from "lucide-react"
+import { ROUTES } from "@/app/router/routes"
 import type { ApiError } from "@/shared/types/api"
+
+type JoinStatus = "ready" | "processing" | "accepted" | "rejected" | "error"
 
 export const JoinGroupGoalPage = () => {
   const { t } = useTranslation()
@@ -15,8 +18,7 @@ export const JoinGroupGoalPage = () => {
   const navigate = useNavigate()
   const { isLoading: authLoading } = useAuth()
   const invitationId = searchParams.get("invitationId")
-
-  const [status, setStatus] = useState<"ready" | "accepting" | "success" | "error">("ready")
+  const [status, setStatus] = useState<JoinStatus>("ready")
   const [message, setMessage] = useState("")
 
   if (authLoading) {
@@ -37,7 +39,7 @@ export const JoinGroupGoalPage = () => {
             </div>
             <h2 className="text-xl font-semibold">{t('groupGoals:error')}</h2>
             <p className="text-muted-foreground">{t('groupGoals:invalidToken')}</p>
-            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+            <Button variant="outline" onClick={() => navigate(ROUTES.dashboard)}>
               {t('nav:goToDashboard')}
             </Button>
           </CardContent>
@@ -47,10 +49,10 @@ export const JoinGroupGoalPage = () => {
   }
 
   const handleAccept = async () => {
-    setStatus("accepting")
+    setStatus("processing")
     try {
       await apiClient.post(`/goals/invitations/${invitationId}/accept`)
-      setStatus("success")
+      setStatus("accepted")
       const successMsg = t('groupGoals:invitationAccepted')
       setMessage(successMsg)
       notify.success(successMsg)
@@ -64,16 +66,17 @@ export const JoinGroupGoalPage = () => {
   }
 
   const handleReject = async () => {
-    setStatus("accepting")
+    setStatus("processing")
     try {
       await apiClient.post(`/goals/invitations/${invitationId}/reject`)
-      setStatus("error")
-      setMessage("Invitación rechazada")
-      notify.info("Has rechazado la invitación")
+      setStatus("rejected")
+      const rejectedMsg = t('groupGoals:invitationRejectedMessage')
+      setMessage(rejectedMsg)
+      notify.info(rejectedMsg)
     } catch (err) {
       const apiError = err as ApiError
       setStatus("error")
-      const errorMsg = apiError.response?.data?.message || "Error al rechazar la invitación"
+      const errorMsg = apiError.response?.data?.message || t('groupGoals:rejectError')
       setMessage(errorMsg)
       notify.error(errorMsg)
     }
@@ -102,28 +105,37 @@ export const JoinGroupGoalPage = () => {
               </div>
             </>
           )}
-
-          {status === "accepting" && (
+          {status === "processing" && (
             <div className="space-y-4 py-6">
               <Loader2 className="size-12 text-primary animate-spin mx-auto" />
               <p className="text-muted-foreground text-sm">{t('groupGoals:processingInvitation')}</p>
             </div>
           )}
-
-          {status === "success" && (
+          {status === "accepted" && (
             <>
               <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto">
                 <CheckCircle className="size-12 text-primary" />
               </div>
               <h2 className="text-xl font-semibold">{t('groupGoals:welcome')}</h2>
               <p className="text-muted-foreground">{message}</p>
-              <Button onClick={() => navigate("/group-goals")} className="gap-2">
+              <Button onClick={() => navigate(ROUTES.groupGoals)} className="gap-2">
                 <Users className="size-4" />
                 {t('groupGoals:goToFamily')}
               </Button>
             </>
           )}
-
+          {status === "rejected" && (
+            <>
+              <div className="bg-muted p-4 rounded-full w-fit mx-auto">
+                <UserX className="size-12 text-muted-foreground" />
+              </div>
+              <h2 className="text-xl font-semibold">{t('groupGoals:invitationRejected')}</h2>
+              <p className="text-muted-foreground">{message}</p>
+              <Button variant="outline" onClick={() => navigate(ROUTES.dashboard)}>
+                {t('nav:goToDashboard')}
+              </Button>
+            </>
+          )}
           {status === "error" && (
             <>
               <div className="bg-destructive/10 p-4 rounded-full w-fit mx-auto">
@@ -131,7 +143,7 @@ export const JoinGroupGoalPage = () => {
               </div>
               <h2 className="text-xl font-semibold">{t('groupGoals:error')}</h2>
               <p className="text-muted-foreground">{message}</p>
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              <Button variant="outline" onClick={() => navigate(ROUTES.dashboard)}>
                 {t('nav:goToDashboard')}
               </Button>
             </>
