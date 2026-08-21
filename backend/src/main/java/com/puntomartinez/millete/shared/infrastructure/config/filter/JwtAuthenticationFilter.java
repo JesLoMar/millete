@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,10 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
     private final UserSessionRepository userSessionRepository;
+    private final String cookieName;
 
-    public JwtAuthenticationFilter(TokenProvider tokenProvider, UserSessionRepository userSessionRepository) {
+    public JwtAuthenticationFilter(TokenProvider tokenProvider,
+                                   UserSessionRepository userSessionRepository,
+                                   @Value("${jwt.cookie-name}") String cookieName) {
         this.tokenProvider = tokenProvider;
         this.userSessionRepository = userSessionRepository;
+        this.cookieName = cookieName;
     }
 
     @Override
@@ -75,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("ms_token".equals(cookie.getName())) {
+                if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

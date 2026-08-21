@@ -29,7 +29,7 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     }
 
     private Specification<TransactionEntity> buildSpecification(UUID userId, String search, TransactionType type,
-                                                               LocalDateTime startDate, LocalDateTime endDate) {
+                                                                LocalDateTime startDate, LocalDateTime endDate) {
         Specification<TransactionEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
         spec = spec.and((root, query, cb) -> cb.equal(root.get("active"), true));
 
@@ -82,8 +82,10 @@ public class TransactionPostgresAdapter implements TransactionRepository {
 
     @Override
     public List<Transaction> findRecentByUserId(UUID userId, int limit) {
-        return repository.findTop5ByUserIdOrderByDateDesc(userId).stream()
-                .limit(limit)
+        if (limit <= 0) {
+            return List.of();
+        }
+        return repository.findByUserIdAndActiveTrueOrderByDateDesc(userId, PageRequest.of(0, limit)).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
@@ -97,7 +99,7 @@ public class TransactionPostgresAdapter implements TransactionRepository {
 
     @Override
     public List<Transaction> findAllByUserId(UUID userId, int page, int size, String search, TransactionType type,
-                                               LocalDateTime startDate, LocalDateTime endDate) {
+                                             LocalDateTime startDate, LocalDateTime endDate) {
         Specification<TransactionEntity> spec = buildSpecification(userId, search, type, startDate, endDate);
         Page<TransactionEntity> result = repository.findAll(spec,
                 PageRequest.of(page, size, Sort.by("date").descending()));

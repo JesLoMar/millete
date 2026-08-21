@@ -6,15 +6,23 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterUserRequestDTO(
 
-        @NotBlank(message = "El nombre de usuario es obligatorio")
-        @Size(max = 50, message = "El nombre de usuario no puede exceder 50 caracteres")
+        @Size(max = 50, message = "El nombre de usuario no puede superar los 50 caracteres")
         String username,
 
-        @NotBlank(message = "El email es obligatorio")
         @Email(message = "El formato del email no es válido")
+        @Size(max = 100, message = "El email no puede superar los 100 caracteres")
         String email,
 
         @NotBlank(message = "La contraseña es obligatoria")
         @Size(min = 8, max = 100, message = "La contraseña debe tener entre 8 y 100 caracteres")
         String password
-) {}
+) {
+        public RegisterUserRequestDTO {
+                username = normalize(username);
+                email = normalize(email);
+        }
+
+        private static String normalize(String value) {
+                return (value == null || value.isBlank()) ? null : value.trim();
+        }
+}

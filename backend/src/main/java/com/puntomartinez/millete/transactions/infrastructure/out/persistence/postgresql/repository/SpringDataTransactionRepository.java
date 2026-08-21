@@ -25,7 +25,7 @@ public interface SpringDataTransactionRepository extends JpaRepository<Transacti
             @Param("end") LocalDateTime end
     );
 
-    List<TransactionEntity> findTop5ByUserIdOrderByDateDesc(UUID userId);
+    List<TransactionEntity> findByUserIdAndActiveTrueOrderByDateDesc(UUID userId, Pageable pageable);
 
     List<TransactionEntity> findAllByCategoryId(UUID categoryId);
 }
