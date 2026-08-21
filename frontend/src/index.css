@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -7,32 +6,22 @@
   --color-crust: hsl(var(--crust));
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
-
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
-
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-
-
   --color-surface: hsl(var(--surface));
   --color-surface-hover: hsl(var(--surface-hover));
   --color-subtle: hsl(var(--subtle));
@@ -41,17 +30,14 @@
   --color-chart-3: hsl(var(--chart-3));
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
-
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-headline: "Playfair Display", Georgia, serif;
   --font-mono: "Space Mono", monospace;
 }
-
 @layer base {
   :root {
     --background: 37.2 75.8% 87.1%;
@@ -77,19 +63,14 @@
     --ring: 25.7 77.8% 42.4%;
     --crust: 25.7 77.8% 42.4%;
     --radius: 0.5rem;
-
-
     --surface: 39.1 76.7% 83.1%;
     --surface-hover: 43.3 61.0% 76.9%;
     --subtle: 42.1 42.9% 73.9%;
-
-
     --chart-1: 162.0 48.1% 20.4%;
     --chart-2: 144.1 47.1% 46.7%;
     --chart-3: 47.0 91.7% 52.7%;
     --chart-4: 215.6 38.1% 46.9%;
     --chart-5: 9.4 70.2% 44.7%;
-
     --sidebar: 39.5 100.0% 92.5%;
     --sidebar-foreground: 24.0 32.6% 18.0%;
     --sidebar-primary: 162.0 48.1% 20.4%;
@@ -98,11 +79,9 @@
     --sidebar-accent-foreground: 24.0 32.6% 18.0%;
     --sidebar-border: 42.1 42.9% 73.9%;
     --sidebar-ring: 25.7 77.8% 42.4%;
-
     color-scheme: light;
   }
 }
-
 @layer base {
   * {
     @apply border-border;
@@ -113,43 +92,35 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
   }
-
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-
   ::-webkit-scrollbar-thumb {
     background-color: hsl(var(--muted-foreground) / 0.25);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
-
   ::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground) / 0.4);
   }
-
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
     20%, 40%, 60%, 80% { transform: translateX(4px); }
   }
-
   .animate-shake {
     animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
   }
-
   * {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -160,18 +131,9 @@
     scroll-behavior: auto !important;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
+/* Autofill del navegador: CSS puro con tokens de tema (sin JS ni timers).
+   Al derivar de --card/--card-foreground, sigue al tema activo en vez de
+   quedarse pintado en un beige fijo. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -184,12 +146,12 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0px 1000px #f0e0c0 inset !important;
-  -webkit-text-fill-color: #3d2b1f !important;
-  background-color: #f0e0c0 !important;
+  -webkit-box-shadow: 0 0 0px 1000px hsl(var(--card)) inset !important;
+  -webkit-text-fill-color: hsl(var(--card-foreground)) !important;
+  caret-color: hsl(var(--card-foreground)) !important;
+  background-color: hsl(var(--card)) !important;
   background-image: none !important;
 }
-
 @theme inline {
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -200,7 +162,6 @@ select:-webkit-autofill:active {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
 @layer components {
   .bill-confetti__container {
     position: fixed;
@@ -209,7 +170,6 @@ select:-webkit-autofill:active {
     pointer-events: none;
     overflow: hidden;
   }
-
   .bill-confetti__item {
     position: absolute;
     pointer-events: none;
@@ -217,14 +177,12 @@ select:-webkit-autofill:active {
     filter: drop-shadow(0 1px 2px rgba(27, 77, 62, 0.2));
     opacity: 0;
   }
-
   .bill-confetti__item svg {
     display: block;
     width: 100%;
     height: 100%;
   }
 }
-
 @keyframes bill-confetti-fall {
   0% {
     transform: translate3d(0, 0, 0) rotate(var(--r-start));
@@ -241,7 +199,6 @@ select:-webkit-autofill:active {
     opacity: 0;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .bill-confetti__container {
     display: none;

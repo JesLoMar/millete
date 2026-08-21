@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { SavingsGoal } from "../types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/components/core/dialog"
@@ -17,6 +17,12 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
   const { t } = useTranslation()
   const [amount, setAmount] = useState("")
 
+  // Reset al abrir: antes el key={goal?.id} solo remontaba al cambiar de meta,
+  // así que reabrir la MISMA meta conservaba el amount anterior.
+  useEffect(() => {
+    if (isOpen) setAmount("")
+  }, [isOpen])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const numAmount = parseFloat(amount)
@@ -26,7 +32,7 @@ export const ContributionModal = ({ isOpen, onClose, onSubmit, goal }: Props) =>
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} key={goal?.id}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("savingsGoals:addFunds", { name: goal?.name })}</DialogTitle>

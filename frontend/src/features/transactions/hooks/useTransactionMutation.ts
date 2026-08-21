@@ -1,9 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { apiClient } from "@/shared/api/axiosClient"
 import { notify } from "@/shared/utils/notifications/notify"
 import type { ApiError } from "@/shared/types/api"
 import type { TransactionResponse, RegisterTransactionRequest } from "@/features/transactions/index"
+
+// Fuente única de las queries que dependen de los datos financieros.
+// Añadir una décima clave = editar solo este array.
+const FINANCIAL_DATA_QUERY_KEYS = [
+  'transactions',
+  'transactionMetrics',
+  'dashboardMetrics',
+  'historyChart',
+  'categoryStats',
+  'budgets',
+  'recentTransactions',
+  'categoryExpenses',
+  'plannedTransactions',
+] as const
+
+const invalidateFinancialData = (queryClient: QueryClient) =>
+  Promise.all(
+    FINANCIAL_DATA_QUERY_KEYS.map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey: [queryKey] })
+    )
+  )
 
 export const useTransactionMutations = () => {
   const queryClient = useQueryClient()
@@ -13,17 +34,7 @@ export const useTransactionMutations = () => {
     mutationFn: (data: RegisterTransactionRequest) =>
       apiClient.post<TransactionResponse>('transactions', data),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.createSuccess'))
     },
     onError: (err: ApiError) => {
@@ -35,17 +46,7 @@ export const useTransactionMutations = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<RegisterTransactionRequest> }) =>
       apiClient.put<TransactionResponse>(`transactions/${id}`, data),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.updateSuccess'))
     },
     onError: (err: ApiError) => {
@@ -56,17 +57,7 @@ export const useTransactionMutations = () => {
   const deleteTransaction = useMutation({
     mutationFn: (id: string) => apiClient.delete(`transactions/${id}`),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.deleteSuccess'))
     },
     onError: (err: ApiError) => {
@@ -77,17 +68,7 @@ export const useTransactionMutations = () => {
   const createRecurring = useMutation({
     mutationFn: (data: Record<string, unknown>) => apiClient.post('planned-transactions', data),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.createRecurringSuccess'))
     },
     onError: (err: ApiError) => {
@@ -99,17 +80,7 @@ export const useTransactionMutations = () => {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       apiClient.put(`planned-transactions/${id}`, data),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.updateRecurringSuccess'))
     },
     onError: (err: ApiError) => {
@@ -120,17 +91,7 @@ export const useTransactionMutations = () => {
   const deleteRecurring = useMutation({
     mutationFn: (id: string) => apiClient.delete(`planned-transactions/${id}`),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] }),
-        queryClient.invalidateQueries({ queryKey: ['historyChart'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryStats'] }),
-        queryClient.invalidateQueries({ queryKey: ['budgets'] }),
-        queryClient.invalidateQueries({ queryKey: ['recentTransactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['categoryExpenses'] }),
-        queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] }),
-      ])
+      await invalidateFinancialData(queryClient)
       notify.success(t('transactions:alerts.deleteRecurringSuccess'))
     },
     onError: (err: ApiError) => {

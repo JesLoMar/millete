@@ -19,12 +19,10 @@ import {
   type CombinedAuthFormData
 } from "@/features/auth/schemas/auth.schema"
 import type { RegisterUserRequest } from "../types"
-import { useAutofillFix } from "@/shared/hooks/useAutofillFix"
 
 export function AuthForm() {
   const [mode, setMode] = useState<"login" | "register">("login")
   const { t } = useTranslation(['auth', 'common'])
-  useAutofillFix()
 
   const currentSchema = mode === "login" ? loginSchema : registerSchema
   const {

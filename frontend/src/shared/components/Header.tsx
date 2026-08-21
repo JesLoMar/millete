@@ -51,10 +51,14 @@ function getGreetingKey(now: Date): GreetingKey {
   return "dashboard:header.greeting.evening"
 }
 
-function getCurrentWeek(now: Date): number {
-  const start = new Date(now.getFullYear(), 0, 1)
-  const diff = now.getTime() - start.getTime()
-  return Math.ceil((diff / (1000 * 60 * 60 * 24) + start.getDay() + 1) / 7)
+// Semana del año según ISO-8601 (la semana 1 es la que contiene el primer
+// jueves del año; las semanas empiezan en lunes).
+function getISOWeek(now: Date): number {
+  const date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+  const dayNum = date.getUTCDay() || 7 // domingo pasa de 0 a 7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum) // jueves de esta semana
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
 function formatDate(now: Date) {
@@ -62,10 +66,13 @@ function formatDate(now: Date) {
     dayOfWeek: now.getDay() as 0|1|2|3|4|5|6,
     monthIndex: now.getMonth() as 0|1|2|3|4|5|6|7|8|9|10|11,
     year: now.getFullYear(),
-    week: getCurrentWeek(now),
+    week: getISOWeek(now),
   }
 }
 
+// "Reloj" barato: no hay intervalos; la fecha/hora se recalcula en cada render
+// (coste trivial) y se fuerza un render al recuperar el foco o la visibilidad,
+// para que una sesión abierta de un día para otro no muestre datos congelados.
 function useNow(): Date {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/co
 import { Badge } from "@/shared/components/core/badge"
 import { Button } from "@/shared/components/core/button"
 import { ProgressBar } from "@/shared/components/core/progress-bar"
+import { formatCurrency } from "@/shared/utils/i18nFormat"
 
 const PriorityBadge = ({ priority }: { priority: string }) => {
   const { t } = useTranslation()
@@ -16,11 +17,6 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
   }
 }
 
-const currencyFormatter = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' })
-const formatCurrency = (amount: number) => {
-  return currencyFormatter.format(amount)
-}
-
 interface Props {
   goal: SavingsGoal
   onAddContribution: (goal: SavingsGoal) => void
@@ -28,10 +24,11 @@ interface Props {
   onDelete: (goal: SavingsGoal) => void
 }
 
+// formatCurrency viene de i18nFormat: respeta el idioma activo
+// (y la futura moneda preferida del usuario), no un es-ES/EUR fijo.
 export const SavingsGoalCard = memo(({ goal, onAddContribution, onEdit, onDelete }: Props) => {
   const { t } = useTranslation()
   const progressPercentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
-
   return (
     <Card className="flex flex-col hover:border-ring transition-colors">
       <CardHeader className="flex flex-row items-start justify-between pb-2 space-y-0">

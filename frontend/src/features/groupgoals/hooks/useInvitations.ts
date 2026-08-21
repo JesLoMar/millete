@@ -1,49 +1,28 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invitationsService } from '../services/invitations.service';
-import type { Notification } from '@/features/notifications/types';
 
+// Una sola invalidación por prefijo: ['notifications'] cubre la lista completa,
+// las variantes ['notifications', 'recent', n], la paginada y ['notifications',
+// 'unread-count'] — y invalidate ya refetchea las queries activas, así que
+// refetchQueries/setQueryData eran redundantes y podían divergir.
 export function useAcceptInvitation() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: invitationsService.accept,
-    onSuccess: (_, invitationId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
-      queryClient.refetchQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['group-goals'] });
-
-      queryClient.setQueryData<Notification[]>(['notifications'], (old) => {
-        if (!old) return old;
-        return old.map((n) =>
-          n.metadata?.invitationId === invitationId || n.metadata?.id === invitationId
-            ? { ...n, actionedAt: new Date().toISOString() }
-            : n
-        );
-      });
     },
   });
 }
 
 export function useRejectInvitation() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: invitationsService.reject,
-    onSuccess: (_, invitationId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
-      queryClient.refetchQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['group-goals'] });
-
-      queryClient.setQueryData<Notification[]>(['notifications'], (old) => {
-        if (!old) return old;
-        return old.map((n) =>
-          n.metadata?.invitationId === invitationId || n.metadata?.id === invitationId
-            ? { ...n, actionedAt: new Date().toISOString() }
-            : n
-        );
-      });
     },
   });
 }

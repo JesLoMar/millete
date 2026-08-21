@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { TopNav } from "@/shared/components/TopNav"
 import { Sidebar } from "@/shared/components/Sidebar"
-import { Header, type PeriodFilter } from "@/shared/components/Header"
+import { Header } from "@/shared/components/Header"
 import { Input } from "@/shared/components/core/input"
 import { Loader2 } from "lucide-react"
 import { Pagination } from "@/shared/components/Pagination"
@@ -17,7 +17,6 @@ import type { SavingsGoal } from "../types"
 
 export const SavingsGoalsPage = () => {
   const { t } = useTranslation()
-  const [period, setPeriod] = useState<PeriodFilter>("month")
   const [searchTerm, setSearchTerm] = useState("")
   const [ui, setUi] = useState({
     isContributionOpen: false,
@@ -37,27 +36,32 @@ export const SavingsGoalsPage = () => {
     nextPage,
     prevPage,
   } = useSavingsGoals({ search: searchTerm })
+
   const { mutateAsync: addContribution } = useAddContribution()
   const { mutateAsync: deleteGoal, isPending: isDeleting } = useDeleteSavingsGoal()
-
-  const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
-    setPeriod(newPeriod)
-  }, [])
 
   const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
   const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
   const handleAddContribution = async (amount: number) => {
     if (!selectedGoal) return
-    await addContribution({ id: selectedGoal.id, amount })
-    setUi((prev) => ({ ...prev, isContributionOpen: false }))
-    setSelectedGoal(null)
+    try {
+      await addContribution({ id: selectedGoal.id, amount })
+      setUi((prev) => ({ ...prev, isContributionOpen: false }))
+      setSelectedGoal(null)
+    } catch {
+      // El toast de error ya sale del hook; el modal queda abierto para reintentar.
+    }
   }
 
   const handleDelete = async () => {
     if (!ui.deletingGoal) return
-    await deleteGoal(ui.deletingGoal.id)
-    setUi((prev) => ({ ...prev, deletingGoal: null }))
+    try {
+      await deleteGoal(ui.deletingGoal.id)
+      setUi((prev) => ({ ...prev, deletingGoal: null }))
+    } catch {
+      // El toast de error ya sale del hook; el diálogo queda abierto.
+    }
   }
 
   const openContribution = (goal: SavingsGoal) => {
@@ -81,30 +85,21 @@ export const SavingsGoalsPage = () => {
         <TopNav />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <Header
-              onPeriodChange={handlePeriodChange}
-              defaultPeriod={period}
-              hidePeriodSelector
-            />
-
+            <Header hidePeriodSelector />
             <div className="w-full sm:w-auto flex flex-col">
               <SavingsGoalDialog />
             </div>
-
           </div>
-
           {isLoading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           )}
-
           {error && (
             <div className="text-center text-sm text-destructive py-8">
               {t('savingsGoals:loadingError')}
             </div>
           )}
-
           {!isLoading && !error && (!goals || goals.length === 0) && (
             <div className="space-y-4">
               <div className="relative">
@@ -128,7 +123,6 @@ export const SavingsGoalsPage = () => {
               <EmptyState />
             </div>
           )}
-
           {!isLoading && !error && goals && goals.length > 0 && (
             <div className="space-y-4">
               <div className="relative">
@@ -149,7 +143,6 @@ export const SavingsGoalsPage = () => {
                   </button>
                 )}
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {goals.map((goal) => (
                   <SavingsGoalCard
@@ -161,7 +154,6 @@ export const SavingsGoalsPage = () => {
                   />
                 ))}
               </div>
-
               <Pagination
                 currentPage={displayPage}
                 totalPages={totalDisplayPages}
@@ -175,7 +167,6 @@ export const SavingsGoalsPage = () => {
           )}
         </main>
       </div>
-
       <ContributionModal
         isOpen={ui.isContributionOpen}
         onClose={() => {
@@ -185,7 +176,6 @@ export const SavingsGoalsPage = () => {
         onSubmit={handleAddContribution}
         goal={selectedGoal}
       />
-
       <SavingsGoalEditDialog
         key={selectedGoal?.id}
         open={ui.isEditOpen}
@@ -195,7 +185,6 @@ export const SavingsGoalsPage = () => {
         }}
         goal={selectedGoal}
       />
-
       <ConfirmDeletionDialog
         open={!!ui.deletingGoal}
         onOpenChange={(open) => {

@@ -12,16 +12,10 @@ interface SidebarProps {
   showDisabled?: boolean
 }
 
-function notifyComingSoon(featureName: string, messageTemplate: string) {
-  const finalMessage = messageTemplate.replace("{{feature}}", featureName);
-  notify.info(finalMessage);
-}
-
 export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const { t } = useTranslation(['nav', 'common'])
   const navigate = useNavigate()
   const location = useLocation()
-
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   useEffect(() => {
@@ -45,17 +39,17 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const bottomItems = getEnabledNavItems("bottom")
   const disabledItems = showDisabled ? getDisabledNavItems() : []
 
-  const featureComingSoonTemplate = t('errors.featureComingSoon', { feature: "{{feature}}" })
-
   const handleNavigate = useCallback((path: string) => {
     navigate(path)
     setIsMobileOpen(false)
   }, [navigate])
 
+  // Interpolación nativa de i18next: la traducción declara {{feature}} y
+  // t() lo sustituye directamente — nada de pasar el placeholder como valor
+  // y re-reemplazarlo a mano después.
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
-    const featureName = t(itemLabelKey)
-    notifyComingSoon(featureName, featureComingSoonTemplate)
-  }, [t, featureComingSoonTemplate])
+    notify.info(t('errors.featureComingSoon', { feature: t(itemLabelKey) }))
+  }, [t])
 
   const isActive = (item: NavItem): boolean => {
     if (item.path === "/dashboard") {
@@ -89,7 +83,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
             )
           })}
         </ul>
-
         {disabledItems.length > 0 && (
           <div className="mt-6 pt-6 border-t border-border/40">
             <p className="px-4 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">
@@ -112,7 +105,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           </div>
         )}
       </nav>
-
       {bottomItems.length > 0 && (
         <nav className="p-4 mt-auto border-t" aria-label={t('bottomNav')}>
           <ul className="space-y-1">
@@ -151,7 +143,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           aria-hidden="true"
         />
       )}
-
       <aside
         className={cn(
           "border-r bg-card/50 backdrop-blur-md flex flex-col select-none",
@@ -177,7 +168,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
             <X size={18} />
           </Button>
         </div>
-
         {sidebarContent}
       </aside>
     </>
