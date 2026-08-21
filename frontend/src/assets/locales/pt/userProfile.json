@@ -21,8 +21,7 @@
     "save": "Alterar senha",
     "success": "Senha atualizada com sucesso",
     "error": "Erro ao alterar a senha",
-    "mismatch": "As senhas não coincidem",
-    "tooShort": "A senha deve ter pelo menos 6 caracteres"
+    "mismatch": "As senhas não coincidem"
   },
   "preferences": {
     "title": "Preferências",

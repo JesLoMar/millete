@@ -1,6 +1,8 @@
 import * as z from "zod";
 
-const passwordSchema = z.string().min(8, { message: "validations:min_length" });
+export const PASSWORD_MIN_LENGTH = 8;
+
+export const passwordSchema = z.string().min(PASSWORD_MIN_LENGTH, { message: "validations:min_length" });
 
 const authFormFieldsSchema = z.object({
   identifier: z.string().optional(),

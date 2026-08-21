@@ -22,14 +22,16 @@
     "refresh": "Refresh",
     "export": "Export",
     "import": "Import",
-    "send": "Send"
+    "send": "Send",
+    "retry": "Retry"
   },
   "status": {
     "loading": "Loading...",
     "loadingSession": "Loading session...",
     "error": "Error",
     "empty": "No data available",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "connectionError": "Could not reach the server. Check your connection."
   },
   "entities": {
     "dashboard": "Dashboard",

@@ -22,14 +22,16 @@
     "refresh": "更新",
     "export": "エクスポート",
     "import": "インポート",
-    "send": "送信"
+    "send": "送信",
+    "retry": "再試行"
   },
   "status": {
     "loading": "読み込み中...",
     "loadingSession": "セッション読み込み中...",
     "error": "エラー",
     "empty": "データがありません",
-    "processing": "処理中..."
+    "processing": "処理中...",
+    "connectionError": "サーバーに接続できませんでした。接続を確認してください。"
   },
   "entities": {
     "dashboard": "ダッシュボード",

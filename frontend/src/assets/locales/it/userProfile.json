@@ -21,8 +21,7 @@
     "save": "Cambia password",
     "success": "Password aggiornata con successo",
     "error": "Errore durante il cambio della password",
-    "mismatch": "Le password non corrispondono",
-    "tooShort": "La password deve contenere almeno 6 caratteri"
+    "mismatch": "Le password non corrispondono"
   },
   "preferences": {
     "title": "Preferenze",

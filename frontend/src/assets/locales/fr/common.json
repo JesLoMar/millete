@@ -22,14 +22,16 @@
     "refresh": "Actualiser",
     "export": "Exporter",
     "import": "Importer",
-    "send": "Envoyer"
+    "send": "Envoyer",
+    "retry": "Réessayer"
   },
   "status": {
     "loading": "Chargement...",
     "loadingSession": "Chargement de la session...",
     "error": "Erreur",
     "empty": "Aucune donnée disponible",
-    "processing": "Traitement..."
+    "processing": "Traitement...",
+    "connectionError": "Impossible de contacter le serveur. Vérifiez votre connexion."
   },
   "entities": {
     "dashboard": "Tableau de bord",

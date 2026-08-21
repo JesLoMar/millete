@@ -21,8 +21,7 @@
     "save": "Cambiar contraseña",
     "success": "Contraseña actualizada correctamente",
     "error": "Error al cambiar la contraseña",
-    "mismatch": "Las contraseñas no coinciden",
-    "tooShort": "La contraseña debe tener al menos 6 caracteres"
+    "mismatch": "Las contraseñas no coinciden"
   },
   "preferences": {
     "title": "Preferencias",

@@ -7,19 +7,19 @@ import { Label } from '@/shared/components/core/label';
 import { Button } from '@/shared/components/core/button';
 import { SettingsSection } from './SettingsSection';
 import { useChangePassword } from '../hooks/useChangePassword';
+import { passwordSchema, PASSWORD_MIN_LENGTH } from '@/features/auth/schemas/auth.schema';
 
 export function ChangePasswordSection() {
   const { t } = useTranslation('userProfile');
   const { mutate: changePassword, isPending } = useChangePassword();
-
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [validationError, setValidationError] = useState('');
 
   const handleSubmit = () => {
-    if (newPassword.length < 6) {
-      setValidationError(t('changePassword.tooShort'));
+    if (!passwordSchema.safeParse(newPassword).success) {
+      setValidationError(t('validations:min_length', { min: PASSWORD_MIN_LENGTH }));
       return;
     }
     if (newPassword !== confirmNewPassword) {

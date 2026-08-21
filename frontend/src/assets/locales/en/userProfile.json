@@ -21,8 +21,7 @@
     "save": "Change password",
     "success": "Password updated successfully",
     "error": "Error changing password",
-    "mismatch": "Passwords do not match",
-    "tooShort": "Password must be at least 6 characters"
+    "mismatch": "Passwords do not match"
   },
   "preferences": {
     "title": "Preferences",

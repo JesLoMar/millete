@@ -22,14 +22,16 @@
     "refresh": "Aktualisieren",
     "export": "Exportieren",
     "import": "Importieren",
-    "send": "Senden"
+    "send": "Senden",
+    "retry": "Erneut versuchen"
   },
   "status": {
     "loading": "Wird geladen...",
     "loadingSession": "Sitzung wird geladen...",
     "error": "Fehler",
     "empty": "Keine Daten verfügbar",
-    "processing": "Wird verarbeitet..."
+    "processing": "Wird verarbeitet...",
+    "connectionError": "Der Server konnte nicht erreicht werden. Bitte überprüfen Sie Ihre Verbindung."
   },
   "entities": {
     "dashboard": "Dashboard",

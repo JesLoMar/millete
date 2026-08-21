@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { notify } from "@/shared/utils/notifications/notify";
-import { secureStorage } from '@/shared/utils/secureStorage';
 import i18n from '@/lib/i18n';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
     skipGlobalErrorNotify?: boolean;
+    skipAuthErrorHandler?: boolean;
   }
 }
 
@@ -20,34 +20,42 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/logout'];
+
+const isAuthEndpoint = (url?: string): boolean =>
+  !!url && AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+
+let sessionExpiredNotified = false;
+
 apiClient.interceptors.request.use(
   (config) => config,
   (error) => Promise.reject(error),
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    sessionExpiredNotified = false;
+    return response;
+  },
   (error) => {
     const status = error.response?.status;
     const message = error.response?.data?.message || '';
 
     if (status === 401) {
-
-      secureStorage.clear();
-      window.location.href = '/login';
+      const shouldForceLogout =
+        !isAuthEndpoint(error.config?.url) && !error.config?.skipAuthErrorHandler;
+      if (shouldForceLogout && !sessionExpiredNotified) {
+        sessionExpiredNotified = true;
+        window.dispatchEvent(new Event('auth:logout'));
+      }
       return Promise.reject(error);
     }
-
 
     if (!error.config?.skipGlobalErrorNotify) {
       const errorMessage =
         message || error.response?.data?.error || error.message || i18n.t('api:errors.default');
-
       let description = '';
-
-      if (status === 401) {
-        description = i18n.t('api:errors.status_401');
-      } else if (status === 403) {
+      if (status === 403) {
         description = i18n.t('api:errors.status_403');
       } else if (status === 404) {
         description = i18n.t('api:errors.status_404');
@@ -56,10 +64,8 @@ apiClient.interceptors.response.use(
       } else if (error.code === 'ECONNABORTED') {
         description = i18n.t('api:errors.timeout');
       }
-
       notify.error(errorMessage, { description });
     }
-
     return Promise.reject(error);
   },
 );
