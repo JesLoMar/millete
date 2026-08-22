@@ -28,14 +28,14 @@
     "subtitle": "Scopri i più recenti miglioramenti aggiunti alla piattaforma.",
     "items": [
       {
+        "tag": "v0.1.3",
+        "title": "Migliorare notifiche, traduzioni e sicurezza",
+        "description": "Le notifiche ora si comportano come dovrebbero, link cliccabili negli obiettivi di risparmio. App più veloce con molti dati.\nExtra: Login mobile migliorato con novità e guida, diversi rafforzamenti di sicurezza e logica."
+      },
+      {
         "tag": "v0.1.2",
         "title": "Correggere logica, UI e vulnerabilità",
         "description": "Risolve bug e comportamenti indesiderati negli obiettivi di gruppo, migliora l'interfaccia e introduce piccoli perfezionamenti alla UX.\nExtra: +3 nuovi temi."
-      },
-      {
-        "tag": "v0.1.1",
-        "title": "Ottimizzazione e miglioramenti visivi",
-        "description": "Progettare e implementare una tavolozza di colori personalizzata. Aggiungere feedback visivi e micro-esperienze utente, ridurre il peso del progetto e ottimizzare il caricamento su reti lente."
       }
     ]
   }

@@ -28,14 +28,14 @@
     "subtitle": "Entdecken Sie die neuesten Verbesserungen auf der Plattform.",
     "items": [
       {
+        "tag": "v0.1.3",
+        "title": "Benachrichtigungen, Übersetzungen und Sicherheit verbessern",
+        "description": "Benachrichtigungen verhalten sich jetzt wie vorgesehen, anklickbare Links bei Sparzielen. Schnellere App bei vielen Daten.\nExtra: Verbesserter mobiler Login mit Neuigkeiten und Anleitung, verschiedene Sicherheits- und Logikverbesserungen."
+      },
+      {
         "tag": "v0.1.2",
         "title": "Logik, Benutzeroberfläche und Schwachstellen korrigieren",
         "description": "Fehler und unerwünschtes Verhalten bei Gruppenzielen behebt, die Benutzeroberfläche optimiert und kleine UX-Verbesserungen eingeführt.\nExtra: +3 neue Designs."
-      },
-      {
-        "tag": "v0.1.1",
-        "title": "Optimierung und visuelle Verbesserungen",
-        "description": "Entwurf und Implementierung einer eigenen Farbpalette. Hinzufügen von visuellem Feedback und Micro-User-Experiences, Reduzierung des Projektgewichts und Optimierung der Ladezeiten in langsamen Netzwerken."
       }
     ]
   }
