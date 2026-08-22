@@ -37,6 +37,14 @@ interface RawGoalContribution {
   date: string
 }
 
+interface RawPaginatedContribution {
+  id: string
+  userId: string
+  userName?: string
+  amount: number
+  date: string
+}
+
 export function useGroupGoals() {
   const fetchPage = useCallback(
     async (page: number): Promise<PaginatedResponse<GoalListItem>> => {
@@ -49,7 +57,6 @@ export function useGroupGoals() {
     },
     []
   )
-
   return {
     ...useServerPagination<GoalListItem>({
       queryKey: ["group-goals"],
@@ -71,7 +78,6 @@ export function useGroupGoalDetail(selectedGoalId: string | null) {
     },
     enabled: !!selectedGoalId,
   })
-
   const selectedGoal: GroupGoalDetail | undefined = useMemo(() => {
     if (!rawGoal) return undefined
     return {
@@ -98,7 +104,6 @@ export function useGroupGoalDetail(selectedGoalId: string | null) {
       contributionTotals: rawGoal.contributionTotals || {},
     }
   }, [rawGoal])
-
   return { selectedGoal }
 }
 
@@ -110,11 +115,20 @@ export function useGroupGoalContributions(goalId: string | null) {
         size: String(CONTRIBUTION_SERVER_SIZE),
       })
       const response = await apiClient.get(`/goals/${goalId}/contributions?${params.toString()}`)
-      return response.data
+      const data = response.data
+      return {
+        ...data,
+        content: (data.content ?? []).map((c: RawPaginatedContribution) => ({
+          id: c.id,
+          userId: c.userId,
+          name: c.userName ?? "",
+          amount: c.amount,
+          date: c.date ?? "",
+        })),
+      }
     },
     [goalId]
   )
-
   return {
     ...useServerPagination<GoalContribution>({
       queryKey: ["group-goals", goalId ?? "", "contributions"],

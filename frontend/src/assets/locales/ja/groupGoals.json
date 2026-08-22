@@ -71,6 +71,7 @@
   "name": "名前",
   "role": "役割",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "グループ目標の名前を編集",
   "editMember": "$t(common:actions.edit) メンバー",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) グループ目標",

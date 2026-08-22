@@ -194,7 +194,7 @@ export const SavingsGoalsPage = () => {
         onConfirm={handleDelete}
         isDeleting={isDeleting}
         title={t('savingsGoals:deleteGoalTitle')}
-        description={t("savingsGoals.deleteGoalConfirmation", { name: ui.deletingGoal?.name })}
+        description={t("savingsGoals:deleteGoalConfirmation", { name: ui.deletingGoal?.name })}
       />
     </div>
   )

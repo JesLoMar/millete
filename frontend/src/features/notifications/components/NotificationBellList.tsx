@@ -1,6 +1,6 @@
 import { Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useRecentNotifications, useMarkNotificationAsRead } from '../hooks/useNotifications';
+import { useRecentNotifications, useMarkNotificationAsRead, useDeleteNotification } from '../hooks/useNotifications';
 import { NotificationBellItem } from './NotificationBellItem';
 
 const RECENT_LIMIT = 20;
@@ -13,7 +13,11 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
   const { t } = useTranslation('notifications');
   const { data: notifications, isLoading } = useRecentNotifications(RECENT_LIMIT);
   const { mutate: markAsRead } = useMarkNotificationAsRead();
+  const { mutate: deleteNotification } = useDeleteNotification();
 
+  // Se muestran leídas y no leídas (NotificationBellItem las estila distinto);
+  // marcar como leída ya no hace desaparecer la tarjeta del panel.
+  // Eliminar (X) sí la quita de la lista.
   const allNotifications = notifications ?? [];
 
   if (isLoading) {
@@ -42,6 +46,7 @@ export function NotificationBellList({ onNavigate }: NotificationBellListProps) 
           key={notification.id}
           notification={notification}
           onMarkAsRead={(id) => markAsRead(id)}
+          onDelete={(id) => deleteNotification(id)}
           onNavigate={onNavigate}
         />
       ))}

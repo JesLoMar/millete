@@ -9,10 +9,11 @@ import type { Notification } from '../types';
 interface NotificationBellItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
   onNavigate: () => void;
 }
 
-export const NotificationBellItem = memo(function NotificationBellItem({ notification, onMarkAsRead, onNavigate }: NotificationBellItemProps) {
+export const NotificationBellItem = memo(function NotificationBellItem({ notification, onMarkAsRead, onDelete, onNavigate }: NotificationBellItemProps) {
   const { t } = useTranslation(['notifications', 'common']);
   const navigate = useNavigate();
 
@@ -26,6 +27,9 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
   };
   const Icon = getIcon();
 
+  // Clickar la tarjeta la marca como leída (confirmado por el backend
+  // vía useMarkNotificationAsRead) y navega al destino. La tarjeta
+  // permanece en el panel con estilo de leída.
   const handleClick = useCallback(() => {
     if (!notification.read) {
       onMarkAsRead(notification.id);
@@ -38,10 +42,12 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
     }
   }, [notification.id, notification.read, notification.type, navigate, onMarkAsRead, onNavigate]);
 
+  // La X ELIMINA la notificación (siempre visible, también en las leídas:
+  // es la única forma de quitar una tarjeta del panel una vez leída).
   const handleDismiss = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    onMarkAsRead(notification.id);
-  }, [notification.id, onMarkAsRead]);
+    onDelete(notification.id);
+  }, [notification.id, onDelete]);
 
   return (
     <button
@@ -66,17 +72,15 @@ export const NotificationBellItem = memo(function NotificationBellItem({ notific
         </p>
         <p className="text-xs text-muted-foreground truncate">{notification.message}</p>
       </div>
-      {!notification.read && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-          onClick={handleDismiss}
-          title={t('common:actions.close')}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+        onClick={handleDismiss}
+        title={t('common:actions.delete')}
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </button>
   );
 });

@@ -16,6 +16,9 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const { data: count = 0 } = useUnreadNotificationsCount();
 
+  // Abrir el panel NO marca nada como leído: el badge refleja el contador
+  // real del servidor hasta que el usuario lee cada notificación
+  // (click en la tarjeta). La X de cada tarjeta la elimina.
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button

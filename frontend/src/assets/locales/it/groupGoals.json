@@ -71,6 +71,7 @@
   "name": "Nome",
   "role": "Ruolo",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "Modifica il nome dell'obiettivo di gruppo",
   "editMember": "$t(common:actions.edit) Membro",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) obiettivo di gruppo",

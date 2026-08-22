@@ -71,6 +71,7 @@
   "name": "Nombre",
   "role": "Rol",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "Editar nombre de la meta grupal",
   "editMember": "$t(common:actions.edit) Miembro",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) meta grupal",
