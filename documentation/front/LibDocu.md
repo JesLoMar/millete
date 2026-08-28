@@ -19,13 +19,13 @@ Configuración centralizada de internacionalización (i18n) para toda la aplicac
 ### Configuración
 
 - **fallbackLng:** `'en'` — idioma de respaldo si la traducción no existe en el idioma detectado.
-- **supportedLngs:** 6 idiomas: alemán (de), inglés (en), español (es), francés (fr), italiano (it), portugués (pt).
+- **supportedLngs:** 7 idiomas: alemán (de), inglés (en), español (es), francés (fr), italiano (it), japonés (ja), portugués (pt).
 - **debug:** activado solo en desarrollo (`import.meta.env.DEV`).
 - **interpolation.escapeValue:** `false` — React ya escapa valores por defecto.
 
 ### Recursos
 
-6 archivos JSON de traducción importados estáticamente:
+7 archivos JSON de traducción importados estáticamente:
 
 | Código | Archivo | Idioma |
 |--------|---------|--------|
@@ -34,6 +34,7 @@ Configuración centralizada de internacionalización (i18n) para toda la aplicac
 | es | `src/assets/locales/es/translation.json` | Español |
 | fr | `src/assets/locales/fr/translation.json` | Francés |
 | it | `src/assets/locales/it/translation.json` | Italiano |
+| ja | `src/assets/locales/ja/translation.json` | Japonés |
 | pt | `src/assets/locales/pt/translation.json` | Portugués |
 
 Cada archivo se asigna al namespace `translation` (por defecto).

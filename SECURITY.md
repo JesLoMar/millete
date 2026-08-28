@@ -219,6 +219,7 @@ Millete is designed as a **self-hosted** personal finance application. While it 
 - **Access control:** Users can only access their own data (anti-IDOR)
 - **Session transparency:** Users can view and revoke active sessions
 - **Account deletion:** Full account deactivation supported
+- *"Millete debe servirse tras HTTPS. Cloudflare Tunnel, un reverse proxy con TLS o similar. Los defaults de cookies asumen esto y son inseguros conscientemente solo si los cambias."*
 
 ---
 

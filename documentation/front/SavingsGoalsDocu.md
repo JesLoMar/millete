@@ -21,15 +21,18 @@ Página principal de metas de ahorro personales.
 ### Estructura
 
 - Cabecera con título y botón para crear nueva meta.
-- Lista de `SavingsGoalCard` en grid responsive.
+- Lista de `SavingsGoalCard` en grid responsive (9 metas por página).
 - `EmptyState` cuando no hay metas.
 - Modales controlados para crear, editar y añadir contribuciones.
+- Paginación server-side: backend devuelve bloques de 45 metas; frontend muestra 9 por página.
 
 ### Estado local
 
 - `isCreateOpen`: controla el diálogo de creación.
 - `editingGoal`: meta seleccionada para edición (null si no hay).
 - `contributingGoal`: meta seleccionada para añadir contribución (null si no hay).
+- `searchTerm`: texto de búsqueda enviado al backend para filtrar por nombre.
+- Estado de paginación gestionado por `useServerPagination`.
 
 ---
 
@@ -39,7 +42,7 @@ Servicio de API para metas de ahorro. Base URL: `/savings-goals`.
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /savings-goals | Listar metas del usuario |
+| GET | /savings-goals?page=&size=&search=&status= | Listar metas del usuario paginadas |
 | GET | /savings-goals/:id | Obtener meta por ID |
 | POST | /savings-goals | Crear meta |
 | PUT | /savings-goals/:id | Actualizar meta |
@@ -54,22 +57,23 @@ Centraliza las queries y mutaciones de metas de ahorro.
 
 ### useSavingsGoals
 
-- **queryKey:** `['savings-goals']`
-- **queryFn:** `savingsGoalsService.getAll`
+- Usa `useServerPagination` (server 45, display 9) para obtener metas paginadas.
+- Soporta búsqueda por nombre (`search`) y filtro por `status`.
+- **queryKey:** `['savings-goals', search, status, page]`.
 
 ### useCreateSavingsGoal
 
-- Crea una meta y invalida `['savings-goals']`.
+- Crea una meta e invalida `['savings-goals']`.
 - Toast de éxito/error con claves `savingsGoals:alerts.createSuccess` / `createError`.
 
 ### useUpdateSavingsGoal
 
-- Actualiza una meta y invalida `['savings-goals']`.
+- Actualiza una meta e invalida `['savings-goals']`.
 - Toast de éxito/error con claves `savingsGoals:alerts.updateSuccess` / `updateError`.
 
 ### useDeleteSavingsGoal
 
-- Elimina una meta y invalida `['savings-goals']`.
+- Elimina una meta e invalida `['savings-goals']`.
 - Toast de éxito/error con claves `savingsGoals:alerts.deleteSuccess` / `deleteError`.
 
 ### useAddContribution
@@ -161,3 +165,9 @@ Llama a `onSave(amount)`, invalida la lista y cierra el modal.
 - Las metas de ahorro son personales (no compartidas).
 - Las contribuciones se acumulan en `currentAmount`.
 - El estado permite pausar, completar o cancelar metas.
+
+## Paginación server-side (v0.2.0)
+
+- La página de metas de ahorro usa `useServerPagination`: backend devuelve bloques de 45 metas y el frontend muestra 9 por página.
+- Soporta búsqueda por nombre y filtro por estado (`ACTIVE`, `PAUSED`, `COMPLETED`, `CANCELLED`) enviados al backend.
+- Prefetch automático del siguiente bloque de 45 al llegar al límite del chunk actual.

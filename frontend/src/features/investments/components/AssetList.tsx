@@ -1,7 +1,6 @@
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { m } from "framer-motion"
-import { Search } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/shared/components/core/input"
 import { Button } from "@/shared/components/core/button"
 import { Badge } from "@/shared/components/core/badge"
@@ -13,23 +12,40 @@ import type { InvestmentResponse } from "../types"
 interface AssetListProps {
   investments: InvestmentResponse[]
   isLoading: boolean
+  displayPage: number
+  totalDisplayPages: number
+  totalElements: number
+  displaySize: number
+  searchTerm: string
+  typeFilter: string
+  onSearchChange: (value: string) => void
+  onTypeFilterChange: (value: string) => void
+  onNextPage: () => void
+  onPrevPage: () => void
   onDelete: (investment: InvestmentResponse) => void
 }
 
-export function AssetList({ investments, isLoading, onDelete }: AssetListProps) {
+export function AssetList({
+  investments,
+  isLoading,
+  displayPage,
+  totalDisplayPages,
+  totalElements,
+  displaySize,
+  searchTerm,
+  typeFilter,
+  onSearchChange,
+  onTypeFilterChange,
+  onNextPage,
+  onPrevPage,
+  onDelete,
+}: AssetListProps) {
   const { t } = useTranslation()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
 
-  const filteredData = investments.filter((inv) => {
-    const matchesSearch =
-      inv.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = typeFilter === "all" || inv.type === typeFilter
-    return matchesSearch && matchesType
-  })
+  const from = totalElements > 0 ? displayPage * displaySize + 1 : 0
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
-  if (isLoading) return <AssetListSkeleton />
+  if (isLoading && investments.length === 0) return <AssetListSkeleton />
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
@@ -43,7 +59,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
             placeholder={t('investments:searchAsset')}
             className="pl-10 bg-background border-border h-9 sm:h-10 text-sm"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -52,7 +68,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
         <Button
           variant={typeFilter === "all" ? "secondary" : "ghost"}
           size="sm"
-          onClick={() => setTypeFilter("all")}
+          onClick={() => onTypeFilterChange("all")}
           className="h-7 text-xs rounded-md"
         >
           {t('investments:filterAll')}
@@ -62,7 +78,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
             key={invType.value}
             variant={typeFilter === invType.value ? "secondary" : "ghost"}
             size="sm"
-            onClick={() => setTypeFilter(invType.value)}
+            onClick={() => onTypeFilterChange(invType.value)}
             className="h-7 text-xs rounded-md gap-1.5"
           >
             <invType.icon size={12} className={invType.color} aria-hidden="true" />
@@ -70,7 +86,7 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
           </Button>
         ))}
         <Badge variant="outline" className="text-xs ml-auto shrink-0">
-          {filteredData.length}
+          {totalElements}
         </Badge>
       </div>
 
@@ -87,12 +103,12 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
             }
           }}
         >
-          {filteredData.length === 0 ? (
+          {investments.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('investments:noAssets')}
             </p>
           ) : (
-            filteredData.map((inv) => (
+            investments.map((inv) => (
               <m.div
                 key={inv.id}
                 variants={{
@@ -107,6 +123,37 @@ export function AssetList({ investments, isLoading, onDelete }: AssetListProps) 
           )}
         </m.div>
       </div>
+
+      {totalDisplayPages > 1 && (
+        <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
+          <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
+            {t("transactions:showingInterval", { from, to, total: totalElements })}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onPrevPage}
+              disabled={displayPage === 0}
+              className="h-8 border-border"
+            >
+              <ChevronLeft size={16} aria-hidden="true" />
+            </Button>
+            <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
+              {displayPage + 1} / {totalDisplayPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onNextPage}
+              disabled={displayPage >= totalDisplayPages - 1}
+              className="h-8 border-border"
+            >
+              <ChevronRight size={16} aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

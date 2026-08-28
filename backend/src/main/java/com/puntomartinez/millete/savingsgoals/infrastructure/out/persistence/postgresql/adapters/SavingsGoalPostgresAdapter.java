@@ -5,6 +5,10 @@ import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalReposi
 import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.entity.SavingsGoalEntity;
 import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.mappers.SavingsGoalEntityMapper;
 import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.repository.JpaSavingsGoalRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -52,5 +56,36 @@ public class SavingsGoalPostgresAdapter implements SavingsGoalRepository {
         return jpaRepository.findByUserIdAndStatusAndActiveTrue(userId, status).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    private Specification<SavingsGoalEntity> buildSpecification(UUID userId, String search, String status) {
+        Specification<SavingsGoalEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("active"), true));
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), pattern));
+        }
+
+        if (status != null && !status.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status.toUpperCase()));
+        }
+
+        return spec;
+    }
+
+    @Override
+    public List<SavingsGoal> findAllByUserId(UUID userId, int page, int size, String search, String status) {
+        Specification<SavingsGoalEntity> spec = buildSpecification(userId, search, status);
+        Page<SavingsGoalEntity> result = jpaRepository.findAll(spec,
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+        return result.getContent().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, String status) {
+        return jpaRepository.count(buildSpecification(userId, search, status));
     }
 }

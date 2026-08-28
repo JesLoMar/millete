@@ -1,4 +1,5 @@
-import { useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/shared/components/core/button"
 import { Spinner } from "@/shared/components/Spinner"
 import { Input } from "@/shared/components/core/input"
@@ -26,9 +27,14 @@ export function EditGoalNameDialog({
   onSave,
   isSaving = false,
 }: EditGoalNameDialogProps) {
+  const { t } = useTranslation(["groupGoals", "common"])
   const [editedName, setEditedName] = useState<string | null>(null)
   const name = editedName ?? currentName
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (open) setEditedName(null)
+  }, [open])
 
   const handleSave = async () => {
     if (!name.trim()) return
@@ -46,25 +52,25 @@ export function EditGoalNameDialog({
         }}
       >
         <DialogHeader>
-          <DialogTitle>Editar nombre del Group Goal</DialogTitle>
+          <DialogTitle>{t("groupGoals:editNameTitle")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Nombre</Label>
+            <Label>{t("groupGoals:name")}</Label>
             <Input
               ref={inputRef}
               value={name}
               onChange={(e) => setEditedName(e.target.value)}
-              placeholder="Nombre del goal"
+              placeholder={t("groupGoals:familyNamePlaceholder")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {t("common:actions.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={!name.trim() || isSaving}>
-            {isSaving ? <Spinner size={20} /> : "Guardar"}
+            {isSaving ? <Spinner size={20} /> : t("common:actions.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

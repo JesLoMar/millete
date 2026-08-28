@@ -7,6 +7,8 @@ import com.puntomartinez.millete.notifications.infrastructure.out.persistence.po
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.mappers.NotificationEntityMapper;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.repository.JpaNotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -32,10 +34,16 @@ public class NotificationPostgresAdapter implements NotificationRepository {
     }
 
     @Override
-    public List<Notification> findActiveByUserIdOrderByCreatedAtDesc(UUID userId) {
-        return jpaRepository.findByUserIdAndActiveTrueOrderByCreatedAtDesc(userId).stream()
+    public List<Notification> findActiveByUserIdOrderByCreatedAtDesc(UUID userId, int limit) {
+        return jpaRepository.findByUserIdAndActiveTrueOrderByCreatedAtDesc(userId, PageRequest.of(0, limit)).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Page<Notification> findActiveByUserIdPaginated(UUID userId, int page, int size) {
+        return jpaRepository.findAllByUserIdAndActiveTrueOrderByCreatedAtDesc(userId, PageRequest.of(page, size))
+                .map(mapper::toDomain);
     }
 
     @Override

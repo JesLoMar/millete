@@ -38,7 +38,7 @@ public class SavingsGoalService implements
         goal.setDeadline(command.deadline());
         goal.setPriority(command.priority() != null ? command.priority() : "MEDIUM");
         goal.setStatus("ACTIVE");
-        goal.setLink(command.link());
+        goal.setLink(LinkSanitizer.sanitize(command.link()));
         goal.setCreatedAt(LocalDateTime.now());
         goal.setModifiedAt(LocalDateTime.now());
         goal.setActive(true);
@@ -60,7 +60,7 @@ public class SavingsGoalService implements
                 command.deadline(),
                 command.priority(),
                 command.status(),
-                command.link()
+                LinkSanitizer.sanitize(command.link())
         );
         return savingsGoalRepository.save(goal);
     }
@@ -94,6 +94,16 @@ public class SavingsGoalService implements
         return savingsGoalRepository.findAllByUserIdAndStatus(userId, status).stream()
                 .filter(SavingsGoal::isActive)
                 .toList();
+    }
+
+    @Override
+    public List<SavingsGoal> findByUserId(UUID userId, int page, int size, String search, String status) {
+        return savingsGoalRepository.findAllByUserId(userId, page, size, search, status);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, String status) {
+        return savingsGoalRepository.countByUserIdAndFilters(userId, search, status);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package com.puntomartinez.millete.users.application.services;
 
 import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
-import com.puntomartinez.millete.users.domain.model.UserSession;
-import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
+import com.puntomartinez.millete.users.domain.model.UserLoginSecurity;
+import com.puntomartinez.millete.users.domain.ports.out.LoginSecurityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +13,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -25,157 +27,193 @@ import static org.mockito.Mockito.*;
 class AccountLockServiceTest {
 
     @Mock
-    private UserSessionRepository userSessionRepository;
-
-    @Mock
-    private SessionPersistenceService sessionPersistenceService;
+    private LoginSecurityRepository loginSecurityRepository;
 
     @InjectMocks
     private AccountLockService accountLockService;
 
     private final UUID userId = UUID.randomUUID();
-    private UserSession session;
+    private UserLoginSecurity security;
 
     @BeforeEach
     void setUp() {
-        session = new UserSession();
-        session.setId(UUID.randomUUID());
-        session.setUserId(userId);
-        session.setChannel(AccountLockService.CHANNEL_WEB);
-        session.setLoginAttempts(0);
-        session.setCreatedAt(LocalDateTime.now());
-        session.setModifiedAt(LocalDateTime.now());
+        security = new UserLoginSecurity();
+        security.setUserId(userId);
+        security.setFailedAttempts(0);
+        security.setCreatedAt(LocalDateTime.now());
+        security.setModifiedAt(LocalDateTime.now());
     }
 
+    // ==================== checkLockStatus ====================
+
     @Test
-    @DisplayName("checkLockStatus - sesión no existe no hace nada")
-    void checkLockStatusShouldDoNothingWhenSessionNotFound() {
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.emptyList());
+    @DisplayName("checkLockStatus - usuario sin registro de seguridad no hace nada")
+    void checkLockStatusShouldDoNothingWhenNoRecord() {
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
 
-        verify(userSessionRepository).findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB);
-        verify(sessionPersistenceService, never()).saveSession(any());
+        verify(loginSecurityRepository).findByUserId(userId);
+        verify(loginSecurityRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("checkLockStatus - sesión no bloqueada guarda cambios pendientes")
-    void checkLockStatusShouldSaveWhenNotBlocked() {
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.singletonList(session));
-
-        assertThatCode(() -> accountLockService.checkLockStatus(userId))
-                .doesNotThrowAnyException();
-
-        verify(sessionPersistenceService).saveSession(session);
-    }
-
-    @Test
-    @DisplayName("checkLockStatus - sesión bloqueada lanza AccountLockedException")
+    @DisplayName("checkLockStatus - cuenta bloqueada lanza AccountLockedException")
     void checkLockStatusShouldThrowWhenBlocked() {
-        session.setLoginAttempts(5);
-        session.setBlockedUntil(LocalDateTime.now().plusMinutes(10));
-
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.singletonList(session));
+        security.setFailedAttempts(5);
+        security.setBlockedUntil(LocalDateTime.now().plusMinutes(10));
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
 
         assertThatThrownBy(() -> accountLockService.checkLockStatus(userId))
                 .isInstanceOf(AccountLockedException.class)
                 .hasMessageContaining("Inténtalo de nuevo en");
 
-        verify(sessionPersistenceService, never()).saveSession(any());
+        verify(loginSecurityRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("checkLockStatus - bloqueo expirado realiza desbloqueo perezoso y guarda")
+    @DisplayName("checkLockStatus - bloqueo expirado limpia el bloqueo pero conserva los intentos (progresivo)")
     void checkLockStatusShouldUnlockWhenBlockExpired() {
-        session.setLoginAttempts(5);
-        session.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
-
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.singletonList(session));
+        security.setFailedAttempts(5);
+        security.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
 
         assertThatCode(() -> accountLockService.checkLockStatus(userId))
                 .doesNotThrowAnyException();
 
-
-        assertThat(session.getLoginAttempts()).isZero();
-        assertThat(session.getBlockedUntil()).isNull();
-
-        verify(sessionPersistenceService).saveSession(session);
+        assertThat(security.getFailedAttempts()).isEqualTo(5);
+        assertThat(security.getBlockedUntil()).isNull();
+        verify(loginSecurityRepository).save(security);
     }
 
     @Test
-    @DisplayName("handleFailedLogin - delega en SessionPersistenceService y no lanza si no está bloqueado")
-    void handleFailedLoginShouldDelegateAndNotThrowWhenNotBlocked() {
-        session.setLoginAttempts(3);
-        session.registerFailedAttempt(5, 15);
+    @DisplayName("checkLockStatus - registro limpio no persiste nada")
+    void checkLockStatusShouldNotSaveWhenRecordIsClean() {
+        // Dado: un usuario sin intentos ni bloqueo (lo habitual en cada login)
+        UUID userId = UUID.randomUUID();
+        UserLoginSecurity security = new UserLoginSecurity();
+        security.setUserId(userId);
+        security.setFailedAttempts(0);
+        security.setBlockedUntil(null);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
 
-        when(sessionPersistenceService.persistFailedAttempt(userId)).thenReturn(session);
+        // Cuando
+        accountLockService.checkLockStatus(userId);
+
+        // Entonces: no hay nada que persistir — ni un solo write innecesario
+        verify(loginSecurityRepository, never()).save(any());
+    }
+
+    // ==================== handleFailedLogin ====================
+
+    @Test
+    @DisplayName("handleFailedLogin - crea registro si no existe y cuenta el primer fallo")
+    void handleFailedLoginShouldCreateRecordOnFirstFailure() {
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         assertThatCode(() -> accountLockService.handleFailedLogin(userId))
                 .doesNotThrowAnyException();
 
-        verify(sessionPersistenceService).persistFailedAttempt(userId);
+        ArgumentCaptor<UserLoginSecurity> captor = ArgumentCaptor.forClass(UserLoginSecurity.class);
+        verify(loginSecurityRepository).save(captor.capture());
+        UserLoginSecurity saved = captor.getValue();
+        assertThat(saved.getUserId()).isEqualTo(userId);
+        assertThat(saved.getFailedAttempts()).isEqualTo(1);
+        assertThat(saved.getBlockedUntil()).isNull();
+        assertThat(saved.getLastAttemptAt()).isNotNull();
     }
 
     @Test
-    @DisplayName("handleFailedLogin - lanza AccountLockedException cuando se alcanza el límite")
-    void handleFailedLoginShouldThrowWhenBlocked() {
-        session.setLoginAttempts(5);
-        session.setBlockedUntil(LocalDateTime.now().plusMinutes(15));
+    @DisplayName("handleFailedLogin - incrementa intentos sin bloquear por debajo del límite")
+    void handleFailedLoginShouldIncrementWithoutBlocking() {
+        security.setFailedAttempts(3);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
-        when(sessionPersistenceService.persistFailedAttempt(userId)).thenReturn(session);
+        assertThatCode(() -> accountLockService.handleFailedLogin(userId))
+                .doesNotThrowAnyException();
+
+        assertThat(security.getFailedAttempts()).isEqualTo(4);
+        assertThat(security.getBlockedUntil()).isNull();
+        verify(loginSecurityRepository).save(security);
+    }
+
+    @Test
+    @DisplayName("handleFailedLogin - bloquea y lanza AccountLockedException al 5º intento")
+    void handleFailedLoginShouldBlockAtFifthAttempt() {
+        security.setFailedAttempts(4);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         assertThatThrownBy(() -> accountLockService.handleFailedLogin(userId))
                 .isInstanceOf(AccountLockedException.class)
                 .hasMessageContaining("Inténtalo de nuevo en 15 minutos");
 
-        verify(sessionPersistenceService).persistFailedAttempt(userId);
+        assertThat(security.getFailedAttempts()).isEqualTo(5);
+        assertThat(security.getBlockedUntil())
+                .isAfter(LocalDateTime.now().plusMinutes(14))
+                .isBefore(LocalDateTime.now().plusMinutes(16));
+        verify(loginSecurityRepository).save(security);
     }
 
     @Test
-    @DisplayName("handleSuccessfulLogin - no hace nada si no existe sesión")
-    void handleSuccessfulLoginShouldDoNothingWhenSessionNotFound() {
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.emptyList());
+    @DisplayName("handleFailedLogin - cada fallo tras el umbral duplica la espera")
+    void handleFailedLoginShouldEscalateLockDuration() {
+        security.setFailedAttempts(5);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+        when(loginSecurityRepository.save(any(UserLoginSecurity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        assertThatThrownBy(() -> accountLockService.handleFailedLogin(userId))
+                .isInstanceOf(AccountLockedException.class)
+                .hasMessageContaining("Inténtalo de nuevo en 30 minutos");
+
+        assertThat(security.getFailedAttempts()).isEqualTo(6);
+        assertThat(security.getBlockedUntil())
+                .isAfter(LocalDateTime.now().plusMinutes(29))
+                .isBefore(LocalDateTime.now().plusMinutes(31));
+    }
+
+    // ==================== handleSuccessfulLogin ====================
+
+    @Test
+    @DisplayName("handleSuccessfulLogin - no hace nada si no existe registro")
+    void handleSuccessfulLoginShouldDoNothingWhenNoRecord() {
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
         assertThatCode(() -> accountLockService.handleSuccessfulLogin(userId))
                 .doesNotThrowAnyException();
 
-        verify(userSessionRepository, never()).save(any());
+        verify(loginSecurityRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("handleSuccessfulLogin - resetea intentos si existen fallos previos")
     void handleSuccessfulLoginShouldResetAttempts() {
-        session.setLoginAttempts(3);
-        session.setBlockedUntil(LocalDateTime.now().plusMinutes(5));
-
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.singletonList(session));
+        security.setFailedAttempts(3);
+        security.setBlockedUntil(LocalDateTime.now().minusMinutes(1));
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
 
         accountLockService.handleSuccessfulLogin(userId);
 
-        assertThat(session.getLoginAttempts()).isZero();
-        assertThat(session.getBlockedUntil()).isNull();
-
-        verify(userSessionRepository).save(session);
+        assertThat(security.getFailedAttempts()).isZero();
+        assertThat(security.getBlockedUntil()).isNull();
+        verify(loginSecurityRepository).save(security);
     }
 
     @Test
     @DisplayName("handleSuccessfulLogin - no guarda si no hay intentos previos")
     void handleSuccessfulLoginShouldNotSaveWhenClean() {
-        session.setLoginAttempts(0);
-        session.setBlockedUntil(null);
-
-        when(userSessionRepository.findByUserIdAndChannel(userId, AccountLockService.CHANNEL_WEB))
-                .thenReturn(Collections.singletonList(session));
+        security.setFailedAttempts(0);
+        security.setBlockedUntil(null);
+        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
 
         accountLockService.handleSuccessfulLogin(userId);
 
-        verify(userSessionRepository, never()).save(any());
+        verify(loginSecurityRepository, never()).save(any());
     }
 }

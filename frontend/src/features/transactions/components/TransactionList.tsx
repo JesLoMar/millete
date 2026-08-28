@@ -1,16 +1,16 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/axiosClient"
 import { EditTransactionDialog } from './dialogs/EditTransactionDialog'
 import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
 import { type PeriodFilter } from "@/shared/components/Header"
-import { usePagination } from "@/features/categories/hooks/usePagination"
 import { TransactionListFilters } from "./TransactionListFilters"
 import { TransactionListDesktop } from "./TransactionListDesktop"
 import { TransactionListMobile } from "./TransactionListMobile"
 import { TransactionListPagination } from "./TransactionListPagination"
 import { TransactionListSkeleton } from "./TransactionListSkeleton"
+import { useTransactions } from "../hooks/useTransactions"
 import { type Filter } from "../constants"
 import type { Transaction } from "./types"
 
@@ -24,87 +24,7 @@ interface ListState {
   isDeleting: boolean
 }
 
-interface SearchableTransactionListProps {
-  transactions: Transaction[]
-  onEdit: (tx: Transaction) => void
-  onDelete: (tx: Transaction) => void
-}
-
-const ITEMS_PER_PAGE = 10
-
-function SearchableTransactionList({ transactions, onEdit, onDelete }: SearchableTransactionListProps) {
-  const { t } = useTranslation()
-  const [filter, setFilter] = useState<Filter>("all")
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const filteredData = useMemo(() => {
-    return transactions.filter((tx) => {
-      const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesFilter =
-        filter === "all" ||
-        (filter === "income" && tx.type === "INCOME") ||
-        (filter === "expense" && tx.type === "EXPENSE")
-      return matchesSearch && matchesFilter
-    })
-  }, [transactions, filter, searchTerm])
-
-  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
-    totalItems: filteredData.length,
-    itemsPerPage: ITEMS_PER_PAGE,
-    initialPage: 1,
-  })
-
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    const end = start + ITEMS_PER_PAGE
-    return filteredData.slice(start, end)
-  }, [filteredData, currentPage])
-
-  return (
-    <div className="space-y-4">
-      <TransactionListFilters
-        filter={filter}
-        searchTerm={searchTerm}
-        totalCount={filteredData.length}
-        onFilterChange={setFilter}
-        onSearchChange={setSearchTerm}
-      />
-
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {paginatedData.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12 text-sm">
-            {t('transactions:empty')}
-          </p>
-        ) : (
-          <>
-            <TransactionListDesktop
-              transactions={paginatedData}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-            <TransactionListMobile
-              transactions={paginatedData}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          </>
-        )}
-
-        <TransactionListPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
-          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)}
-          total={filteredData.length}
-          onPrev={prevPage}
-          onNext={nextPage}
-        />
-      </div>
-    </div>
-  )
-}
-
-export function TransactionList({ period: _period }: TransactionListProps) {
+export function TransactionList({ period }: TransactionListProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
@@ -114,32 +34,23 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     isDeleting: false,
   })
 
+  const [filter, setFilter] = useState<Filter>("all")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const {
+    displayItems: transactions,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading,
+    nextPage,
+    prevPage,
+  } = useTransactions({ search: searchTerm, type: filter, period })
+
   const updateState = (updates: Partial<ListState>) => {
     setState(prev => ({ ...prev, ...updates }))
   }
-
-  const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      const response = await apiClient.get('/transactions')
-      const result: Transaction[] = []
-      for (const tx of response.data) {
-        if (tx.active === false) continue
-        result.push({
-          id: tx.id,
-          description: tx.description,
-          category: tx.categoryName || "Sin categoría",
-          categoryColor: tx.categoryColor || null,
-          categoryId: tx.categoryId,
-          amount: tx.amount,
-          date: tx.date,
-          type: tx.type,
-          active: tx.active
-        })
-      }
-      return result
-    },
-  })
 
   const handleDeleteConfirm = async () => {
     if (!state.deletingTransaction) return
@@ -158,17 +69,53 @@ export function TransactionList({ period: _period }: TransactionListProps) {
     }
   }
 
-  if (isLoading) {
+  if (isLoading && transactions.length === 0) {
     return <TransactionListSkeleton />
   }
 
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+
   return (
     <div className="space-y-4">
-      <SearchableTransactionList
-        transactions={transactions}
-        onEdit={(tx) => updateState({ editingTransaction: tx })}
-        onDelete={(tx) => updateState({ deletingTransaction: tx })}
+      <TransactionListFilters
+        filter={filter}
+        searchTerm={searchTerm}
+        totalCount={totalElements}
+        onFilterChange={setFilter}
+        onSearchChange={setSearchTerm}
       />
+
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        {transactions.length === 0 ? (
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            {t('transactions:empty')}
+          </p>
+        ) : (
+          <>
+            <TransactionListDesktop
+              transactions={transactions}
+              onEdit={(tx) => updateState({ editingTransaction: tx })}
+              onDelete={(tx) => updateState({ deletingTransaction: tx })}
+            />
+            <TransactionListMobile
+              transactions={transactions}
+              onEdit={(tx) => updateState({ editingTransaction: tx })}
+              onDelete={(tx) => updateState({ deletingTransaction: tx })}
+            />
+          </>
+        )}
+
+        <TransactionListPagination
+          currentPage={displayPage}
+          totalPages={totalDisplayPages}
+          from={from}
+          to={to}
+          total={totalElements}
+          onPrev={prevPage}
+          onNext={nextPage}
+        />
+      </div>
 
       <EditTransactionDialog
         key={state.editingTransaction?.id}

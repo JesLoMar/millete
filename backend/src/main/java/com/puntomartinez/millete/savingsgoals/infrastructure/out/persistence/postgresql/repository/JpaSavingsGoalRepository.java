@@ -2,13 +2,14 @@ package com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.po
 
 import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.entity.SavingsGoalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface JpaSavingsGoalRepository extends JpaRepository<SavingsGoalEntity, UUID> {
+public interface JpaSavingsGoalRepository extends JpaRepository<SavingsGoalEntity, UUID>, JpaSpecificationExecutor<SavingsGoalEntity> {
 
     List<SavingsGoalEntity> findByUserIdAndActiveTrueOrderByCreatedAtDesc(UUID userId);
 

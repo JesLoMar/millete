@@ -1,92 +1,140 @@
 {
+  "index": {
+    "title": "Benutzerhandbuch",
+    "description": "Wählen Sie im Menü einen Abschnitt aus, um dessen Inhalt anzuzeigen."
+  },
   "sections": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Das Hauptfenster, in dem Sie den Status Ihrer Finanzen einsehen und auf Kernfunktionen zugreifen können.",
+      "description": "Das Hauptfenster, in dem Sie den Gesamtstatus Ihrer Finanzen, die wichtigsten Kennzahlen und die am häufigsten genutzten Funktionen einsehen.",
       "topics": [
         {
           "title": "Schnellzugriff",
-          "content": "Vom Dashboard aus haben Sie direkten Zugriff auf folgende Schnellfunktionen: \n\n- Transaktion hinzufügen: Ermöglicht das Hinzufügen von Einnahmen oder Ausgaben zum Kontostand. Diese müssen kategorisiert werden.\n\n- Kategorie erstellen: Ermöglicht das Erstellen neuer Kategorien zur Organisation Ihrer Transaktionen. Diesen kann ein Budget zugewiesen werden.\n\n- Daten importieren: Ermöglicht den Import von Benutzerdaten aus einer älteren Version in die aktuelle Version.\n\n- Daten exportieren: Ermöglicht den Export von Daten für einen späteren Import."
+          "content": "Vom Dashboard aus haben Sie vier Direktaktionsschaltflächen:\n\n- Transaktion hinzufügen: Erfassen Sie sofort eine einmalige Einnahme oder Ausgabe. Sie müssen Beschreibung, Typ, Betrag und Kategorie angeben.\n\n- Kategorie erstellen: Definieren Sie eine neue Kategorie zur Klassifizierung Ihrer Bewegungen. Sie können eine Farbe und ein monatliches Budget zuweisen.\n\n- Daten importieren: Laden Sie eine zuvor exportierte JSON-Datei, um Ihre Daten wiederherzustellen oder zu migrieren.\n\n- Daten exportieren: Laden Sie Ihre Informationen in mehreren Formaten herunter: JSON (vollständig), ZIP (komprimiert), CSV (nach Entitätstyp) oder PDF (Bericht nach Zeitraum)."
         },
         {
           "title": "Hauptmetriken",
-          "content": "Direkt unter dem vorherigen Bereich finden Sie vier Karten mit Ihrem aktuellen Gesamtsaldo, Einnahmen, Ausgaben und dem freien Guthaben. Jede Karte zeigt den Trend im Vergleich zum vorherigen Zeitraum mit einem Prozentsatz in Grün oder Rot.\n\nVerwenden Sie die Zeitraumauswahl (Woche, Monat, Jahr), um den Zeitbereich zu ändern."
+          "content": "Direkt unter den Schnellzugriffen finden Sie vier Karten, die Ihre finanzielle Situation zusammenfassen:\n\n- Gesamtsaldo: Die Differenz zwischen Ihren Einnahmen und Ausgaben im ausgewählten Zeitraum.\n- Einnahmen: Gesamteingänge mit Trend im Vergleich zum vorherigen Zeitraum.\n- Ausgaben: Gesamtausgaben, ebenfalls mit Trendindikator.\n- Ersparnisse: Das verfügbare Guthaben nach Abzug der Ausgaben.\n\nVerwenden Sie die Zeitraumauswahl (Woche, Monat, Jahr), um den Zeitbereich zu ändern. Trends werden in Grün (günstig) oder Rot (ungünstig) angezeigt."
         },
         {
-          "title": "Informationspanels",
-          "content": "Unter den Hauptmetriken finden Sie Panels mit Diagrammen und zusammenfassenden Informationen zu Ihren Ausgaben und Budgets.\n\n- Ausgabenverlauf: Zeigt ein Balkendiagramm mit der Entwicklung Ihrer Ausgaben im Laufe der Zeit.\n\n- Ausgaben nach Kategorie: Zeigt ein Donut-Diagramm mit den Gesamtausgaben pro Kategorie im ausgewählten Zeitraum.\n\n- Budgets: Wenn Sie Kategorien mit einem Budget eingerichtet haben, sehen Sie einen Balken, der anzeigt, wie viel Sie im Verhältnis zum Budget ausgegeben haben."
+          "title": "Diagramme und Budgets",
+          "content": "Im unteren Bereich des Dashboards sehen Sie drei Informationspaneele:\n\n- Ausgabenverlauf: Balkendiagramm mit der Entwicklung Ihrer Ausgaben im Laufe der Zeit. Bei mehr als 12 Zeiträumen werden nur die letzten angezeigt, mit einem Hinweis.\n\n- Ausgaben nach Kategorie: Donut-Diagramm mit der prozentualen Verteilung der Ausgaben je Kategorie im aktiven Zeitraum.\n\n- Budgets: Fortschrittsbalken, die anzeigen, wie viel Sie vom zugewiesenen Budget jeder Kategorie verbraucht haben. Grün bei unter 80%, Bernstein beim Annähern an das Limit und Rot bei Überschreitung."
         }
       ]
     },
     "transactions": {
       "title": "Transaktionen",
-      "description": "Das Modul, in dem Sie all Ihre finanziellen Bewegungen erfassen und verwalten, seien es einmalige oder automatisierte Vorgänge.",
+      "description": "Das Modul, in dem Sie alle Ihre finanziellen Bewegungen – sowohl einmalige als auch wiederkehrende – erfassen, bearbeiten und organisieren.",
       "topics": [
         {
           "title": "Transaktion erfassen",
-          "content": "Um eine einmalige Bewegung hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Transaktion'. Es öffnet sich ein Formular, in dem Sie Folgendes angeben müssen:\n\n- Beschreibung: Ein identifizierender Name oder Begriff (z. B. Wöchentlicher Einkauf bei Lidl).\n- Typ: Ermöglicht die Klassifizierung des Vorgangs als 'Ausgabe' oder 'Einnahme'.\n- Betrag (€): Der genaue Betrag des Vorgangs.\n- Kategorie: Ermöglicht die Zuweisung der Bewegung zu einer bestehenden Kategorie über ein Dropdown-Menü."
+          "content": "Klicken Sie auf '+ Neue Transaktion', um das Erstellungsformular zu öffnen. Sie müssen ausfüllen:\n\n- Beschreibung: Ein identifizierender Name (z. B. 'Wöchentlicher Einkauf bei Lidl').\n- Typ: Wählen Sie, ob es sich um eine Ausgabe oder Einnahme handelt.\n- Betrag (€): Der genaue Betrag der Operation.\n- Kategorie: Bei der Erstellung obligatorisch. Weisen Sie die Transaktion einer bestehenden Kategorie zu.\n\nDie Transaktion wird mit dem aktuellen Datum gespeichert und sofort im Dashboard angezeigt."
         },
         {
-          "title": "Neue wiederkehrende Transaktion",
-          "content": "Wenn Sie feste Zahlungen oder Einnahmen haben, können Sie diese über die Schaltfläche 'Wiederkehrend' automatisieren. Dieses Formular enthält die Basisfelder einer normalen Transaktion und fügt Planungsoptionen hinzu:\n\n- Frequenz und Intervall: Ermöglicht die Konfiguration, in welchen Zeitabständen sich der Vorgang wiederholen soll.\n- Startdatum: Definiert den genauen Tag, an dem das System beginnt, die Bewegung automatisch zu erfassen.\n- Enddatum (optional): Legt ein Zeitlimit fest, ab dem sich die Transaktion nicht mehr wiederholt."
+          "title": "Wiederkehrende Transaktionen",
+          "content": "Um periodische Zahlungen oder Eingänge zu automatisieren, verwenden Sie die Schaltfläche 'Wiederkehrende Transaktion'. Zusätzlich zu den Basisdaten müssen Sie konfigurieren:\n\n- Frequenz: Tage, Wochen, Monate oder Jahre.\n- Intervall: Alle wie viele Frequenzeinheiten sie sich wiederholt (z. B. alle 2 Wochen).\n- Startdatum: Der Tag, an dem die Automatisierung beginnt.\n- Enddatum (optional): Falls die Wiederholung zeitlich begrenzt ist.\n\nDas System berechnet automatisch die geschätzte nächste Ausführung und zeigt sie in der Liste der wiederkehrenden Transaktionen an."
         },
         {
-          "title": "Filterung und Suche",
-          "content": "Das System enthält Werkzeuge, um Ihre Einträge schnell zu lokalisieren:\n\n- Schnell-Tabs: Schaltflächen, um die Liste nach 'Alle', nur 'Einnahmen' oder nur 'Ausgaben' zu filtern. Enthält einen Zähler mit der Gesamtzahl der gefundenen Vorgänge.\n- Suchleiste: Ein Textfeld ('Nach Beschreibung suchen...'), mit dem Sie eine bestimmte Bewegung durch Eingabe von Schlüsselwörtern finden können."
+          "title": "Suchen, filtern und organisieren",
+          "content": "Die Transaktionsliste enthält Such- und Filterwerkzeuge:\n\n- Schnell-Tabs: Filtern zwischen Alle, Einnahmen oder Ausgaben. Zeigt einen Zähler mit der Gesamtzahl der Ergebnisse.\n- Suchleiste: Geben Sie Stichwörter aus der Beschreibung ein, um bestimmte Transaktionen zu finden.\n- Paginierung: Bei vielen Transaktionen werden 10 pro Seite angezeigt, mit Navigationssteuerung.\n\nJede Transaktion zeigt ein Badge mit der tatsächlichen Farbe ihrer Kategorie. Falls eine Transaktion ohne Kategorie verbleibt (verwaist), wird dies mit einem Hilfe-Symbol in Bernstein angezeigt."
+        },
+        {
+          "title": "Bearbeiten und Löschen",
+          "content": "Jede Transaktion verfügt über ein Drei-Punkte-Menü (immer sichtbar) mit zwei Optionen:\n\n- Bearbeiten: Ermöglicht die Änderung von Beschreibung, Typ, Betrag und Kategorie. Beim Bearbeiten kann die Kategorie leer gelassen werden (im Gegensatz zur Erstellung).\n- Löschen: Öffnet einen Bestätigungsdialog. Nach dem Löschen verschwindet die Transaktion aus der Liste und die Dashboard-Metriken werden automatisch aktualisiert."
         }
       ]
     },
     "categories": {
       "title": "Kategorien",
-      "description": "Das Modul zur Klassifizierung Ihrer finanziellen Bewegungen und zur Festlegung monatlicher Ausgabenlimits, um Ihre Budgets unter Kontrolle zu halten.",
+      "description": "Organisieren Sie Ihre Ausgaben in personalisierten Kategorien und kontrollieren Sie Ihre monatlichen Budgets.",
       "topics": [
         {
-          "title": "Neue Kategorie erstellen",
-          "content": "Um eine neue Klassifizierung anzulegen, klicken Sie auf die Schaltfläche '+ Neue Kategorie'. Es öffnet sich ein schwebendes Formular mit den folgenden Pflichtfeldern:\n\n- Name: Der identifizierende Begriff der Kategorie (z. B. Lebensmittel, Transport, Freizeit).\n- Farbe: Eine visuelle Auswahl oder ein Textfeld zur Zuweisung einer benutzerdefinierten Farbe im Hexadezimalformat (z. B. #FF5733), was die visuelle Identifizierung in den Diagrammen erleichtert.\n- Monatliches Budget (€): Der maximale Geldbetrag, den Sie in dieser Kategorie im Laufe des Monats auszugeben planen."
+          "title": "Kategorie erstellen",
+          "content": "Klicken Sie auf '+ Kategorie hinzufügen', um das Erstellungsformular zu öffnen. Sie benötigen:\n\n- Name: Der Bezeichner der Kategorie (z. B. Lebensmittel, Transport, Freizeit).\n- Farbe: Wählen Sie eine Farbe aus 32 verfügbaren Optionen im visuellen Selektor. Diese Farbe wird in allen Diagrammen und Transaktions-Badges verwendet.\n- Monatliches Budget (optional): Die maximale Grenze, die Sie planen auszugeben. Falls nicht angegeben, wird die Kategorie ohne Budgetkontrolle erstellt."
         },
         {
-          "title": "Verwaltungs- und Visualisierungspanel",
-          "content": "Auf dem Hauptbildschirm des Moduls sehen Sie ein Raster mit all Ihren aktiven Kategorien. Jede Karte zeigt Ihnen übersichtlich:\n\n- Den Namen der Kategorie und die damit verknüpfte unverwechselbare Farbe.\n- Das zugewiesene monatliche Budget (oder den entsprechenden Hinweis, falls kein Budgetlimit konfiguriert wurde).\n- Die Schnellaktionstasten, um das Element in Echtzeit zu verwalten."
+          "title": "Kategorientabelle",
+          "content": "Alle Ihre Kategorien werden in einer Tabelle mit folgenden Informationen angezeigt:\n\n- Name und identifizierende Farbe.\n- Fortschrittsbalken: Zeigt den ausgegebenen Prozentsatz im Verhältnis zum monatlichen Budget, angepasst an den ausgewählten Zeitraum (Woche, Monat oder Jahr). Bei Überschreitung von 100% wird der Balken rot.\n- Aktuelle Ausgaben vs. Budgetlimit im Währungsformat.\n\nDas monatliche Budget wird automatisch an den Zeitraum angepasst: geteilt durch 4 in der Wochenansicht, beibehalten in der Monatsansicht und multipliziert mit 12 in der Jahresansicht."
         },
         {
-          "title": "Modifizieren und Löschen",
-          "content": "Jede Kategoriekarte verfügt über zwei Symbole für direkte Aktionen in der oberen rechten Ecke:\n\n- Bearbeiten-Symbol (Stift): Öffnet das Formular erneut, um den Namen zu ändern, die Farbpalette anzupassen oder das monatliche Budgetlimit zu korrigieren.\n- Löschen-Symbol (Papierkorb): Ermöglicht das sichere Entfernen der Kategorie aus dem System."
+          "title": "Suche und Paginierung",
+          "content": "Falls Sie viele Kategorien haben, können Sie:\n\n- Nach Namen suchen: Tippen Sie in das Suchfeld, um in Echtzeit zu filtern.\n- Seiten durchblättern: Die Tabelle zeigt 10 Kategorien pro Seite.\n\nJede Zeile verfügt über ein Dropdown-Menü mit den Optionen Bearbeiten und Löschen. Das Löschen deaktiviert die Kategorie und entkoppelt ihre Transaktionen, die als 'Ohne Kategorie' erscheinen."
         }
       ]
     },
     "investments": {
       "title": "Investitionen",
-      "description": "Das Modul für die Verfolgung Ihrer variablen Finanzanlagen, mit dem Sie die Wertentwicklung Ihres Portfolios und dessen Rentabilität in Echtzeit kontrollieren können.",
+      "description": "Verfolgen Sie Ihr Portfolio an Finanzanlagen und überwachen Sie dessen Rentabilität.",
       "topics": [
         {
-          "title": "Portfolio-Metriken und Diagramme",
-          "content": "Im oberen Teil des Panels werden drei analytische Karten angezeigt, die den Gesamtstatus Ihres Portfolios zusammenfassen:\n\n- Investiertes Kapital: Die Gesamtsumme des Geldes, das Sie für den Kauf Ihrer Vermögenswerte aufgewendet haben.\n- Aktueller Wert: Der aktuelle Marktwert all Ihrer kombinierten Besitztümer.\n- Rendite / Gewinn: Der kumulierte Nettogewinn oder -verlust (mit einem Prozentsatz und einem Trendindikator in Grün oder Rot).\n\nDirekt darunter stehen Ihnen erweiterte visuelle Panels zur Verfügung, darunter ein Liniendiagramm, das die zeitliche Entwicklung Ihres Vermögenswerts darstellt, und ein Diagramm, das die Verteilung Ihrer Mittel nach Vermögenswert-Typ detailliert beschreibt."
+          "title": "Portfolio-Metriken",
+          "content": "Im oberen Bereich werden drei analytische Karten angezeigt:\n\n- Portfoliowert: Der aktuelle Marktwert aller Ihrer kombinierten Vermögenswerte.\n- Monatliche Rendite: Die im ausgewählten Zeitraum erzielte Rentabilität.\n- Dividenden: Funktion in Entwicklung (als 'Demnächst' markiert).\n\nJede Karte enthält den Trendindikator im Vergleich zum vorherigen Zeitraum."
         },
         {
-          "title": "Neue Investition registrieren",
-          "content": "Um Ihrem Portfolio einen neuen Vermögenswert hinzuzufügen, klicken Sie auf die Schaltfläche '+ Neue Investition'. Es öffnet sich ein schwebendes Formular mit den folgenden Pflichtfeldern:\n\n- Name und Ticker: Der Name des Vermögenswerts (z. B. Apple) und sein abgekürztes Börsenkürzel (z. B. AAPL).\n- Menge: Die Gesamtzahl der erworbenen Einheiten oder Aktien.\n- Kaufpreis (€): Die Stückkosten, die Sie beim Erwerb des Vermögenswerts gezahlt haben.\n- Aktueller Preis (€): Der aktuelle aktuelle Börsenkurs am Markt.\n- Investitionstyp: Dropdown-Menü zur Klassifizierung der Art des Vermögenswerts."
+          "title": "Analysediagramme",
+          "content": "Unter den Metriken finden Sie zwei Visualisierungen:\n\n- Vermögensentwicklung: Balkendiagramm, das zeigt, wie sich der Wert Ihres Portfolios im Laufe der Zeit verändert hat.\n\n- Portfolioverteilung: Donut-Diagramm, das die Zusammensetzung Ihres Portfolios nach Vermögenswert-Typ (Aktien, Krypto, Fonds, Immobilien, Sonstiges) aufschlüsselt. In der Mitte wird der Gesamtwert in komprimierter Form (Millionen, Tausende oder Vollwert) angezeigt."
         },
         {
-          "title": "Preisaktualisierung und Operationen",
-          "content": "Im unteren Raster oder in der Liste werden alle aktiven Investitionen angezeigt. Jedes Element verfügt über Schnellaktionstasten, um Ihre Daten auf dem neuesten Stand zu halten:\n\n- Aktuellen Preis aktualisieren: Ein exklusiver Direktzugriff, mit dem Sie den Marktkurs des Vermögenswerts isoliert ändern können, um die Gewinne sofort neu zu berechnen, ohne den gesamten Eintrag bearbeiten zu müssen.\n- Investition bearbeiten: Ermöglicht die Korrektur aller ursprünglichen Parameter des Eintrags.\n- Abmelden (Papierkorb): Führt eine logische Löschung durch, um den Vermögenswert sicher aus Ihrer aktiven Portfolioansicht zu entfernen."
+          "title": "Vermögenswert erfassen",
+          "content": "Klicken Sie auf '+ Neue Investition', um einen Vermögenswert zu Ihrem Portfolio hinzuzufügen. Die Felder sind:\n\n- Vermögenswert-Name: Der identifizierende Name (z. B. Apple).\n- Ticker (optional): Der abgekürzte Börsencode (z. B. AAPL). Automatisch in Großbuchstaben umgewandelt.\n- Typ: Aktien, Krypto, Fonds, Immobilien oder Sonstiges.\n- Menge: Anzahl der Einheiten oder Aktien.\n- Kaufpreis (€): Die anfänglichen Stückkosten.\n- Kaufdatum: Der Tag, an dem Sie den Vermögenswert erworben haben."
+        },
+        {
+          "title": "Preise aktualisieren und verwalten",
+          "content": "In der Vermögenswert-Liste stehen Ihnen mehrere Aktionen zur Verfügung:\n\n- Preis aktualisieren: Ändern Sie den aktuellen Marktpreis, um die Rentabilität neu zu berechnen. Wenn die Änderung mehr als 50% vom vorherigen Preis abweicht, fordert das System eine Doppelbestätigung an, um Fehler zu vermeiden.\n- Löschen: Entfernen Sie den Vermögenswert aus Ihrem Portfolio über einen Bestätigungsdialog.\n\nSie können die Liste nach Investitionstyp filtern und nach Namen oder Ticker suchen."
         }
       ]
     },
-    "family": {
-      "title": "Gruppenziele",
-      "description": "Das kooperative Modul, mit dem Sie ein gemeinsames Budget verwalten, andere Benutzer einladen und die Beiträge jedes Mitglieds zu einem gemeinsamen Ziel überwachen können.",
+    "savingsGoals": {
+      "title": "Sparziele",
+      "description": "Definieren Sie persönliche Sparziele, verfolgen Sie Ihren Fortschritt und bleiben Sie motiviert, Ihre finanziellen Ziele zu erreichen.",
       "topics": [
         {
-          "title": "Fortschritt und Einstellungen des Gruppenziels",
-          "content": "Im oberen Bereich sehen Sie Ihr 'Monatliches Ziel' und einen Balken für den 'Fortschritt in diesem Monat', der den Prozentsatz und den gesammelten Gesamtbetrag grafisch widerspiegelt. Sie können die Gruppenregeln über das Zahnrad-Symbol (Einstellungen des Gruppenziels) ändern, wo Sie Folgendes definieren:\n\n- Name des Gruppenziels: Identifikationsmerkmal der Gruppe.\n- Monatliches Ziel (€): Der finanzielle Gesamtbetrag, den die Gruppe im Monat zu sammeln versucht.\n- Verteilungsmethode: Ermöglicht die Auswahl, wie die Zahlung des Ziels unter den Benutzern aufgeteilt wird, durch drei Optionen: 'Gleiche Teile', 'Proportional zum Gehalt' oder 'Benutzerdefinierte Prozentsätze'."
+          "title": "Ziel erstellen",
+          "content": "Klicken Sie auf die Schaltfläche zum Erstellen eines Ziels, um ein neues Sparziel hinzuzufügen. Konfigurieren Sie:\n\n- Name: Ein identifizierender Titel (z. B. 'Reise nach Japan', 'Notfallfonds').\n- Ziel (€): Der Gesamtbetrag, den Sie erreichen möchten.\n- Frist (optional): Der späteste Tag zur Erreichung.\n- Priorität: Niedrig, Mittel oder Hoch.\n- Link (optional): Eine Referenz-URL (z. B. die Reise, die Sie buchen möchten).\n\nDas Ziel wird mit dem Status 'Aktiv' und dem anfänglichen Fortschritt Null erstellt."
         },
         {
-          "title": "Mitgliederverwaltung und Einladungen",
-          "content": "Das zentrale Panel 'Mitglieder des Gruppenziels' schlüsselt die Mitglieder, ihre Rolle (ADMIN oder MEMBER), ihre Verteilungskonfiguration (Gehalt/Prozentsatz), ihren zugewiesenen 'Anteil' (was sie zahlen müssen) und das, was sie bereits 'Beigetragen' haben, auf.\n\n- + Mitglied einladen: Öffnet einen Dialog, um jemanden neu hinzuzufügen, indem Sie die 'E-Mail-Adresse des einzuladenden Benutzers' eingeben.\n- Individuelle Aktionen: Am Ende der Zeile jedes Mitglieds befindet sich ein Optionsmenü (drei Punkte), das es ermöglicht, das 'Mitglied zu bearbeiten' (um seine Finanzparameter anzupassen) oder das 'Mitglied zu entfernen', um es aus der Gruppe auszuschließen."
+          "title": "Status und Fortschritt",
+          "content": "Jedes Ziel zeigt visuell Ihren Fortschritt:\n\n- Fortschritt: Prozentsatz der Fertigstellung und akkumulierter Betrag in Relation zum Ziel.\n- Status: Aktiv (in Bearbeitung), Pausiert (vorübergehend gestoppt), Abgeschlossen (Ziel erreicht) oder Abgebrochen (aufgegeben).\n- Beitragen leisten: Fügen Sie dem Ziel einen Betrag hinzu, um den Fortschritt zu erhöhen.\n\nSie können die Zieldaten (Name, Ziel, Priorität, Status) bearbeiten oder das Ziel löschen, wenn es nicht mehr benötigt wird."
+        }
+      ]
+    },
+    "groupGoals": {
+      "title": "Gruppenziele",
+      "description": "Verwalten Sie gemeinsame Sparziele mit anderen Personen, teilen Sie die Beiträge und verfolgen Sie den kollektiven Fortschritt.",
+      "topics": [
+        {
+          "title": "Gruppenziel erstellen und konfigurieren",
+          "content": "Klicken Sie auf 'Erstes Ziel erstellen' oder 'Neues Ziel erstellen', um ein gemeinsames Ziel zu starten. Sie müssen definieren:\n\n- Zielname: Gruppenidentifikator (z. B. 'Freundesreise').\n- Monatliches Ziel (€): Der Gesamtbetrag, den die Gruppe jeden Monat sammeln muss.\n- Verteilungsmodus: Wie die Zahlung unter den Mitgliedern aufgeteilt wird:\n  - Gleich: Alle zahlen denselben Betrag.\n  - Proportional zum Gehalt: Jeder trägt entsprechend seinen Einkünften bei.\n  - Benutzerdefiniert: Der Administrator definiert einen individuellen Prozentsatz für jedes Mitglied.\n\nIm benutzerdefinierten Modus müssen die Prozentsätze genau 100% ergeben. Das System überprüft dies automatisch."
         },
         {
-          "title": "Erfassung und Kontrolle von Beiträgen",
-          "content": "In der unteren Tabelle 'Neueste Beiträge' wird der historische Verlauf der Kapitaleinzahlungen in den gemeinsamen Topf geführt:\n\n- Schaltfläche + Hinzufügen: Öffnet das Formular 'Beitrag registrieren', in dem Sie den 'Beizutragenden Betrag (€)' angeben müssen. Dies aktualisiert automatisch den allgemeinen Fortschrittsbalken.\n- Verlauf: Zeigt den Namen des Mitglieds, den beigetragenen Betrag und das Datum des Vorgangs. Verfügt über ein Papierkorb-Symbol unter der Spalte 'Aktionen', um irrtümlich registrierte Beiträge zu löschen."
+          "title": "Mitglieder einladen und verwalten",
+          "content": "Als Administrator können Sie andere Benutzer per Benutzername oder E-Mail-Adresse einladen. Die Person erhält eine Einladungsbenachrichtigung, die sie in ihrem Profil annehmen oder ablehnen kann.\n\nJedes Mitglied hat:\n- Rolle: ADMIN (kann das Ziel verwalten und einladen) oder MEMBER (trägt nur bei).\n- Gehalt: Wird zur Berechnung des Beitrags im proportionalen Modus verwendet.\n- Benutzerdefinierter Prozentsatz: Im benutzerdefinierten Modus der zugewiesene %.\n- Anteil: Was sie entsprechend dem Verteilungsmodus beitragen sollten.\n- Beigetragen: Der Betrag, den sie bereits beigetragen haben.\n\nSie können die Daten eines Mitglieds bearbeiten oder es aus der Gruppe entfernen."
+        },
+        {
+          "title": "Beiträge und Verlauf",
+          "content": "Jedes Mitglied kann einen Beitrag registrieren, indem es auf '+ Hinzufügen' klickt. Geben Sie den Betrag in Euro ein und das System aktualisiert automatisch den allgemeinen Fortschrittsbalken.\n\nDas Verlaufs-Panel zeigt alle geleisteten Beiträge mit:\n- Name des Mitglieds, das beigetragen hat.\n- Datum des Beitrags.\n- Beigetragener Betrag.\n\nDer Fortschrittsprozentsatz wird berechnet, indem der Gesamtbeitrag durch das monatliche Ziel geteilt wird."
+        }
+      ]
+    },
+    "profile": {
+      "title": "Benutzerprofil",
+      "description": "Verwalten Sie Ihr Konto, Ihre Einstellungen, Sicherheit und erweiterte Konfigurationen an einem Ort.",
+      "topics": [
+        {
+          "title": "Persönliche Informationen",
+          "content": "Im oberen Bereich können Sie Ihre Grunddaten ändern:\n\n- Benutzername: Ihr Identifikator auf der Plattform.\n- E-Mail-Adresse: Die mit Ihrem Konto verknüpfte Adresse.\n\nBeide Felder erfordern Ihr aktuelles Passwort zur Bestätigung der Änderungen."
+        },
+        {
+          "title": "Sicherheit",
+          "content": "Das Sicherheitspanel ermöglicht Ihnen:\n\n- Passwort ändern: Geben Sie Ihr aktuelles Passwort und das neue ein (mindestens 8 Zeichen). Beim Ändern werden alle Ihre aktiven Sitzungen geschlossen.\n- Aktive Sitzungen: Zeigen Sie alle Geräte an, von denen Sie sich angemeldet haben (WEB oder Telegram), und schließen Sie diejenigen, die Sie nicht mehr nutzen. Sie können eine bestimmte Sitzung oder alle anderen außer der aktuellen schließen."
+        },
+        {
+          "title": "Benachrichtigungen und Einladungen",
+          "content": "Die Benachrichtigungstabelle zeigt ausstehende Einladungen zu Gruppenzielen. Jede Einladung zeigt an, wer Sie eingeladen hat und zu welchem Ziel. Sie können:\n\n- Annehmen: Sie treten dem Gruppenziel als Mitglied bei.\n- Ablehnen: Sie verwerfen die Einladung.\n\nEntscheidungen werden sofort im Abschnitt Gruppenziele widergespiegelt."
+        },
+        {
+          "title": "Telegram und Deaktivierung",
+          "content": "Zusätzliche Kontoeinstellungen:\n\n- Telegram verknüpfen: Verbinden Sie Ihr Konto mit dem @Millete_bot, um Benachrichtigungen zu erhalten und Operationen von Telegram aus zu verwalten. Öffnen Sie dazu den Bot und tippen Sie /start.\n- Konto deaktivieren: Wenn Sie die Plattform nicht mehr nutzen möchten, können Sie Ihr Konto deaktivieren. Dieser Prozess erfordert eine Bestätigung per Checkbox und Passwort. Bedenken Sie, dass die Deaktivierung irreversibel ist."
         }
       ]
     }

@@ -28,14 +28,14 @@
     "subtitle": "Discover the latest improvements added to the platform.",
     "items": [
       {
+        "tag": "v0.1.3",
+        "title": "Improve notifications, translations, and security",
+        "description": "Notifications now behave as they should, clickable links in savings goals. Faster app with large amounts of data.\nExtra: Improved mobile login with updates and guide, various security and logic enhancements."
+      },
+      {
         "tag": "v0.1.2",
         "title": "Fix logic, UI, and vulnerabilities",
         "description": "Fixes bugs and unintended behaviors in group goals, improves the interface, and introduces minor UX enhancements.\nExtra: +3 new themes."
-      },
-      {
-        "tag": "v0.1.1",
-        "title": "Optimization and Visual Improvements",
-        "description": "Design and implement custom color palette. Add visual feedback and micro-user experiences, reduce project size, and optimize loading on slow networks."
       }
     ]
   }

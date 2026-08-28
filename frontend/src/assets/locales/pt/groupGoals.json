@@ -71,6 +71,7 @@
   "name": "Nome",
   "role": "Função",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "Editar nome da meta em grupo",
   "editMember": "$t(common:actions.edit) Membro",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) meta em grupo",
@@ -106,5 +107,8 @@
     "memberDeleteError": "Erro ao excluir o membro",
     "contributionSuccess": "Contribuição registrada com sucesso",
     "contributionError": "Erro ao registrar a contribuição"
-  }
+  },
+  "invitationRejected": "Convite recusado",
+  "invitationRejectedMessage": "Você recusou o convite. Você não entrará nesta meta de grupo.",
+  "rejectError": "Erro ao recusar o convite"
 }

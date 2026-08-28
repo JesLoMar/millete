@@ -4,9 +4,9 @@ import { AuthProvider } from '@/features/auth/context/AuthContext';
 const LoginPage = lazy(() => import('@/features/auth/pages/page').then(m => ({ default: m.LoginPage })));
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
 import { PublicRoute } from '@/app/router/PublicRoute';
+import { ROUTES } from '@/app/router/routes';
 import { Toaster } from '@/shared/components/core/sonner';
 import { Spinner } from '@/shared/components/Spinner';
-
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/page').then(m => ({ default: m.DashboardPage })));
 const TransactionsPage = lazy(() => import('@/features/transactions/pages/page').then(m => ({ default: m.TransactionsPage })));
 const CategoriesPage = lazy(() => import('@/features/categories/pages/page').then(m => ({ default: m.CategoriesPage })));
@@ -18,7 +18,6 @@ const WikiPage = lazy(() => import('@/features/wiki/pages/page'));
 const ProfilePage = lazy(() => import('@/features/profile/pages/page').then(m => ({ default: m.ProfilePage })));
 const SavingsGoalsPage = lazy(() => import('@/features/savingsgoals/pages/page').then(m => ({ default: m.SavingsGoalsPage })));
 const NotificationsPage = lazy(() => import('@/features/notifications/pages/page'));
-
 function PageLoader() {
   return (
     <div className="flex h-screen w-full items-center justify-center">
@@ -26,7 +25,6 @@ function PageLoader() {
     </div>
   );
 }
-
 export default function App() {
   return (
     <AuthProvider>
@@ -34,27 +32,24 @@ export default function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route element={<PublicRoute />}>
-              <Route path="/" element={<LoginPage />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route path={ROUTES.home} element={<LoginPage />} />
+              <Route path={ROUTES.login} element={<LoginPage />} />
             </Route>
-
-            <Route path="/wiki" element={<WikiLayout />}>
+            <Route path={ROUTES.wiki} element={<WikiLayout />}>
               <Route index element={<WikiPage />} />
               <Route path=":section" element={<WikiPage />} />
             </Route>
-
             <Route element={<ProtectedRoute />}>
-              <Route path="/join-group-goal" element={<JoinGroupGoalPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/transactions" element={<TransactionsPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/investments" element={<InvestmentsPage />} />
-              <Route path="/group-goals" element={<GroupGoalsPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/savings-goals" element={<SavingsGoalsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path={ROUTES.joinGroupGoal} element={<JoinGroupGoalPage />} />
+              <Route path={ROUTES.dashboard} element={<DashboardPage />} />
+              <Route path={ROUTES.transactions} element={<TransactionsPage />} />
+              <Route path={ROUTES.categories} element={<CategoriesPage />} />
+              <Route path={ROUTES.investments} element={<InvestmentsPage />} />
+              <Route path={ROUTES.groupGoals} element={<GroupGoalsPage />} />
+              <Route path={ROUTES.profile} element={<ProfilePage />} />
+              <Route path={ROUTES.savingsGoals} element={<SavingsGoalsPage />} />
+              <Route path={ROUTES.notifications} element={<NotificationsPage />} />
             </Route>
-
             <Route path="*" element={<ProtectedRoute />}>
               <Route path="*" element={<DashboardPage />} />
             </Route>

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Upload, X, FileJson, CheckCircle } from "lucide-react"
+import { Upload, X, FileJson } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/components/core/dialog"
 import { Button } from "@/shared/components/core/button"
 
@@ -136,7 +136,7 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
               aria-label={t('common:actions.delete')}
             >
               <X className="size-4" />
-              {t('common:actions.remove')}
+              {t('common:actions.delete')}
             </button>
           )}
         </div>
@@ -152,7 +152,6 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
             {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={!selectedFile} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl px-5 transition-all">
-            <CheckCircle className="mr-2 size-4" />
             {t('common:actions.accept')}
           </Button>
         </div>

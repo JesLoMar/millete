@@ -46,10 +46,18 @@ Envuelve rutas que requieren autenticación. Si el usuario no tiene sesión, red
 | `/categories` | CategoriesPage | Gestión de categorías |
 | `/investments` | InvestmentsPage | Gestión de inversiones |
 | `/savings-goals` | SavingsGoalsPage | Metas de ahorro personales |
-| `/group-goals` | GroupGoalsPage | Metas grupales / familiares |
+| `/group-goals` | GroupGoalsPage | Metas grupales |
 | `/join-group-goal` | JoinGroupGoalPage | Aceptar invitación a meta grupal |
 | `/profile` | ProfilePage | Perfil de usuario |
-| `/wiki` | WikiPage | Wiki de ayuda |
+
+#### Rutas públicas adicionales
+
+| Ruta | Componente | Descripción |
+|------|-----------|-------------|
+| `/wiki` | WikiPage | Wiki de ayuda (pública, no requiere autenticación) |
+| `/wiki/:section` | WikiPage | Sección específica de la wiki (pública) |
+
+> **Nota:** `/wiki` y `/wiki/:section` son rutas públicas que no están envueltas ni por `PublicRoute` ni por `ProtectedRoute`. Se renderizan directamente dentro del `Routes` para que sean accesibles sin autenticación.
 
 #### Ruta 404 (catch-all)
 
@@ -99,10 +107,6 @@ Hoja de estilos global que configura Tailwind CSS, variables CSS y temas.
 
 `@import "tailwindcss"` — importa Tailwind CSS con la nueva sintaxis de v4.
 
-### Variante dark
-
-`@custom-variant dark (&:is(.dark *))` — define la variante `dark:` para modo oscuro basada en la clase `.dark` en el elemento raíz.
-
 ### Tema personalizado (`@theme`)
 
 Define variables de diseño con valores HSL:
@@ -116,11 +120,12 @@ Define variables de diseño con valores HSL:
 
 ### Variables CSS (`@layer base`)
 
-Define valores por defecto para modo claro (`:root`) y oscuro (`.dark`):
+Define valores por defecto para modo claro (`:root`). El diseño es **exclusivamente light**; no existe modo oscuro. Las variables se sobreescriben dinámicamente por `useTheme` al cambiar de paleta (Millete, Dark Millete, Rosé, Ember).
 
-- **Modo claro:** fondos blancos, texto oscuro, primary azul.
-- **Modo oscuro:** fondos oscuros, texto claro, primary azul claro.
-- Ambos modos definen 28 variables CSS (las mismas que aplica `useTheme` dinámicamente como base).
+- **Modo claro:** fondos crema, texto carbón, primary verde bosque.
+- Define 28 variables CSS más 8 variables de sidebar (las mismas que aplica `useTheme` dinámicamente).
+
+> **Nota:** No hay `@custom-variant dark` ni bloque `.dark` en `index.css`. El sistema de temas se basa en la sustitución completa de variables CSS mediante `useTheme`, no en alternancia claro/oscuro.
 
 ### Estilos base
 
@@ -134,11 +139,11 @@ Define variables específicas para el sidebar en modo claro y oscuro:
 - `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`
 - `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, `--sidebar-ring`
 
-Estas variables se expone como colores de Tailwind mediante `@theme inline`.
+Estas variables se exponen como colores de Tailwind mediante `@theme inline`.
 
 ### Integración con useTheme
 
-- `index.css` proporciona los valores base (modo claro/oscuro estáticos).
+- `index.css` proporciona los valores base estáticos.
 - `useTheme` sobreescribe dinámicamente estas variables al cambiar de tema, aplicando los valores de la paleta seleccionada.
 - Las variables de sidebar permanecen estáticas (no cambian con el tema).
 

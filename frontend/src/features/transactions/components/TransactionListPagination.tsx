@@ -27,19 +27,19 @@ export function TransactionListPagination({ currentPage, totalPages, from, to, t
           variant="outline"
           size="sm"
           onClick={onPrev}
-          disabled={currentPage === 1}
+          disabled={currentPage === 0}
           className="h-8 border-border"
         >
           <ChevronLeft size={16} aria-hidden="true" />
         </Button>
         <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
-          {currentPage} / {totalPages}
+          {currentPage + 1} / {totalPages}
         </span>
         <Button
           variant="outline"
           size="sm"
           onClick={onNext}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages - 1}
           className="h-8 border-border"
         >
           <ChevronRight size={16} aria-hidden="true" />

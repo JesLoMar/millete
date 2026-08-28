@@ -21,8 +21,7 @@
     "save": "Passwort ändern",
     "success": "Passwort erfolgreich aktualisiert",
     "error": "Fehler beim Ändern des Passworts",
-    "mismatch": "Die Passwörter stimmen nicht überein",
-    "tooShort": "Das Passwort muss mindestens 6 Zeichen lang sein"
+    "mismatch": "Die Passwörter stimmen nicht überein"
   },
   "preferences": {
     "title": "Einstellungen",

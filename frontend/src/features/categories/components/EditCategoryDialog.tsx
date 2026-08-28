@@ -163,7 +163,6 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
                   <Spinner size={20} />
                 ) : (
                   <>
-                    <CheckCircle className="mr-2 size-4" aria-hidden="true" />
                     {t('common:actions.save')}
                   </>
                 )}

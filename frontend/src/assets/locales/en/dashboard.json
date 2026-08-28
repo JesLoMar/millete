@@ -126,6 +126,25 @@
     "errorFormat": "Invalid file format"
   },
   "export": {
+    "title": "Export data",
+    "configTitle": "Configure export",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Exports all your user data",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "All CSVs in a single file",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "One file per section",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Styled financial report",
+    "entity": "Data type",
+    "selectEntity": "Select type...",
+    "period": "Period",
+    "period1m": "Last month",
+    "period3m": "Last 3 months",
+    "period6m": "Last 6 months",
+    "period1y": "Last year",
+    "periodAll": "All",
+    "action": "Export",
     "success": "Backup exported successfully",
     "error": "Error exporting data"
   }

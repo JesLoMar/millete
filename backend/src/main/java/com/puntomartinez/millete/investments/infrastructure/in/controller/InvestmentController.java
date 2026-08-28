@@ -10,6 +10,7 @@ import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.In
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.RegisterInvestmentRequestDTO;
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.UpdateInvestmentPriceRequestDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
@@ -66,16 +67,48 @@ public class InvestmentController {
 
 
     @GetMapping
-    public ResponseEntity<List<InvestmentResponseDTO>> getAllInvestments(Authentication authentication) {
+    public ResponseEntity<PaginatedResponseDTO<InvestmentResponseDTO>> getAllInvestments(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type) {
+
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-        List<Investment> investments = listUseCase.findAllByUserId(userId)
-                .stream()
-                .filter(Investment::isActive)
-                .toList();
-        List<InvestmentResponseDTO> responseList = investments.stream()
+        Investment.InvestmentType investmentType = parseType(type);
+
+        long totalElements = listUseCase.countByUserIdAndFilters(userId, search, investmentType);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+
+        List<Investment> investments = listUseCase.findAllByUserId(userId, safePage, size, search, investmentType);
+
+        List<InvestmentResponseDTO> content = investments.stream()
                 .map(this::mapToDTO)
                 .toList();
-        return ResponseEntity.ok(responseList);
+
+        PaginatedResponseDTO<InvestmentResponseDTO> response = new PaginatedResponseDTO<>(
+                content,
+                safePage,
+                totalPages,
+                totalElements,
+                size,
+                safePage == 0,
+                safePage >= totalPages - 1 || totalPages == 0
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    private Investment.InvestmentType parseType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        try {
+            return Investment.InvestmentType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
 

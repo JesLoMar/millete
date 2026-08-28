@@ -1,92 +1,140 @@
 {
+  "index": {
+    "title": "Guide d'utilisation",
+    "description": "Sélectionnez une section dans le menu latéral pour consulter son contenu."
+  },
   "sections": {
     "dashboard": {
       "title": "Tableau de bord",
-      "description": "Le panneau principal où vous consultez l'état de vos finances et accédez aux fonctionnalités clés.",
+      "description": "Le panneau principal où vous consultez l'état global de vos finances, les indicateurs clés et accédez aux fonctionnalités les plus utilisées.",
       "topics": [
         {
           "title": "Actions rapides",
-          "content": "Depuis le Tableau de bord, vous disposez d'un accès direct aux actions rapides pour :\n\n- Ajouter une transaction : Permet d'ajouter des revenus ou des dépenses au solde du compte. Elles doivent être catégorisées.\n\n- Créer une catégorie : Permet de créer de nouvelles catégories pour organiser vos transactions. Un budget peut leur être alloué.\n\n- Importer des données : Permet d'importer les données de l'utilisateur depuis une version antérieure vers la version actuelle.\n\n- Exporter des données : Permet d'exporter les données pour une importation ultérieure."
+          "content": "Depuis le Tableau de bord, vous disposez de quatre boutons d'action directe :\n\n- Ajouter une transaction : Enregistrez immédiatement un revenu ou une dépense ponctuelle. Vous devez indiquer la description, le type, le montant et la catégorie.\n\n- Créer une catégorie : Définissez une nouvelle catégorie pour classer vos mouvements. Vous pouvez lui attribuer une couleur et un budget mensuel.\n\n- Importer des données : Chargez un fichier JSON précédemment exporté pour restaurer ou migrer vos informations.\n\n- Exporter des données : Téléchargez vos informations dans plusieurs formats : JSON (complet), ZIP (compressé), CSV (par type d'entité) ou PDF (rapport par période)."
         },
         {
           "title": "Mesures principales",
-          "content": "Dans la partie située immédiatement en dessous de la section précédente, vous trouverez quatre cartes affichant votre solde total, vos revenus, vos dépenses et votre solde disponible. Chacune indique la tendance par rapport à la période précédente avec un pourcentage en vert ou en rouge.\n\nUtilisez le sélecteur de période (semaine, mois, année) pour modifier la plage de temps."
+          "content": "Juste en dessous des actions rapides, vous trouverez quatre cartes résumant votre situation financière :\n\n- Solde : La différence entre vos revenus et dépenses sur la période sélectionnée.\n- Revenus : Total des entrées d'argent, avec tendance par rapport à la période précédente.\n- Dépenses : Total des sorties, également avec indicateur de tendance.\n- Épargne : L'argent libre disponible après avoir couvert vos dépenses.\n\nUtilisez le sélecteur de période (semaine, mois, année) pour modifier la plage de temps. Les tendances sont affichées en vert (favorable) ou rouge (défavorable)."
         },
         {
-          "title": "Panneaux d'information",
-          "content": "Sous les mesures principales, vous trouverez des panneaux contenant des graphiques et des informations résumées sur vos dépenses et vos budgets.\n\n- Historique des dépenses : Affiche un graphique en barres illustrant l'évolution de vos dépenses au fil du temps.\n\n- Graphique des dépenses par catégorie : Affiche un graphique de type donut avec le total dépensé dans chaque catégorie au cours de la période sélectionnée.\n\n- Budgets : Si vous avez des catégories avec un budget configuré, vous verrez une barre indiquant votre niveau de dépense par rapport à ce budget."
+          "title": "Graphiques et budgets",
+          "content": "Dans la partie inférieure du Tableau de bord, vous visualisez trois panneaux d'information :\n\n- Historique des dépenses : Graphique en barres montrant l'évolution de vos dépenses dans le temps. S'il y a plus de 12 périodes, seules les dernières sont affichées avec un avis.\n\n- Dépenses par catégorie : Graphique en donut avec la répartition pourcentage de ce qui a été dépensé dans chaque catégorie pendant la période active.\n\n- Budgets : Barres de progression indiquant combien vous avez consommé du budget assigné à chaque catégorie. En vert si en dessous de 80%, ambre si vous approchez de la limite, et rouge si vous l'avez dépassée."
         }
       ]
     },
     "transactions": {
       "title": "Transactions",
-      "description": "Le module où vous enregistrez et gérez tous vos mouvements financiers, qu'il s'agisse d'opérations ponctuelles ou automatisées.",
+      "description": "Le module où vous enregistrez, modifiez et organisez tous vos mouvements financiers, tant ponctuels que récurrents.",
       "topics": [
         {
           "title": "Enregistrer une transaction",
-          "content": "Pour ajouter un mouvement unique, cliquez sur le bouton '+ Nouvelle transaction'. Un formulaire s'ouvrira dans lequel vous devrez indiquer :\n\n- Description : Un nom ou un concept identificatoire (ex : Courses hebdomadaires chez Lidl).\n- Type : Permet de classer l'opération en tant que 'Dépense' ou 'Revenu'.\n- Montant (€) : Le montant exact de l'opération.\n- Catégorie : Permet d'assigner le mouvement à une catégorie existante via un menu déroulant."
+          "content": "Cliquez sur '+ Nouvelle transaction' pour ouvrir le formulaire de création. Vous devez compléter :\n\n- Description : Un nom identifiant (ex. 'Courses hebdomadaires chez Lidl').\n- Type : Sélectionnez s'il s'agit d'une Dépense ou d'un Revenu.\n- Montant (€) : Le montant exact de l'opération.\n- Catégorie : Obligatoire lors de la création. Attribuez la transaction à l'une de vos catégories existantes.\n\nLa transaction est enregistrée avec la date actuelle et est immédiatement reflétée sur le Tableau de bord."
         },
         {
-          "title": "Nouvelle transaction récurrente",
-          "content": "Si vous avez des paiements ou des encaissements fixes, vous pouvez les automatiser à l'aide du bouton 'Récurrentes'. Ce formulaire comprend les champs de base d'une transaction normale, tout en ajoutant des options de planification :\n\n- Fréquence et intervalle : Permet de configurer la régularité de la répétition de l'opération.\n- Date de début : Définit le jour exact où le système commencera à enregistrer automatiquement le mouvement.\n- Date de fin (optionnelle) : Établit une limite temporelle pour que la transaction cesse de se répéter."
+          "title": "Transactions récurrentes",
+          "content": "Pour automatiser des paiements ou encaissements périodiques, utilisez le bouton 'Transaction récurrente'. En plus des champs de base, vous devez configurer :\n\n- Fréquence : Jours, semaines, mois ou années.\n- Intervalle : Toutes les combien d'unités de fréquence cela se répète (ex. toutes les 2 semaines).\n- Date de début : Le jour où l'automatisation commence.\n- Date de fin (optionnelle) : Si la récurrence a une durée limitée.\n\nLe système calcule automatiquement la prochaine exécution estimée et l'affiche dans la liste des récurrentes."
         },
         {
-          "title": "Filtrage et recherche",
-          "content": "Le système inclut des outils pour localiser rapidement vos enregistrements :\n\n- Onglets rapides : Boutons pour filtrer la liste en affichant 'Toutes', uniquement les 'Revenus' ou uniquement les 'Dépenses'. Comprend un compteur avec le nombre total d'opérations trouvées.\n- Barre de recherche : Une barre de texte ('Rechercher par description...') qui vous permet de trouver un mouvement spécifique en saisissant les mots-clés de son libellé."
+          "title": "Rechercher, filtrer et organiser",
+          "content": "La liste des transactions inclut des outils de recherche et de filtrage :\n\n- Onglets rapides : Filtrez entre Toutes, Revenus ou Dépenses. Affiche un compteur avec le total des résultats.\n- Barre de recherche : Saisissez des mots-clés de la description pour localiser des transactions spécifiques.\n- Pagination : Si vous avez beaucoup de transactions, 10 sont affichées par page avec des contrôles de navigation.\n\nChaque transaction affiche un badge avec la couleur réelle de sa catégorie. Si une transaction reste sans catégorie (orpheline), cela est indiqué avec une icône d'aide en ambre."
+        },
+        {
+          "title": "Modifier et supprimer",
+          "content": "Chaque transaction dispose d'un menu à trois points (toujours visible) avec deux options :\n\n- Modifier : Permet de modifier la description, le type, le montant et la catégorie. Lors de la modification, la catégorie peut être laissée vide (contrairement à la création).\n- Supprimer : Ouvre une boîte de dialogue de confirmation. Une fois supprimée, la transaction disparaît de la liste et les métriques du Tableau de bord sont automatiquement mises à jour."
         }
       ]
     },
     "categories": {
       "title": "Catégories",
-      "description": "Le module conçu pour classer vos mouvements financiers et définir des limites de dépenses mensuelles afin de garder le contrôle sur vos budgets.",
+      "description": "Organisez vos dépenses en catégories personnalisées et contrôlez vos budgets mensuels.",
       "topics": [
         {
-          "title": "Créer une nouvelle catégorie",
-          "content": "Pour enregistrer une nouvelle classification, cliquez sur le bouton '+ Nouvelle catégorie'. Un formulaire flottant s'affichera avec les champs obligatoires suivants :\n\n- Nom : Le terme identificatoire de la catégorie (ex : Alimentation, Transport, Loisirs).\n- Couleur : Un sélecteur visuel ou un champ de texte pour attribuer une couleur personnalisée au format hexadécimal (ex : #FF5733), ce qui facilitera son identification visuelle sur les graphiques.\n- Budget mensuel (€) : La limite maximale d'argent que vous prévoyez de dépenser dans cette catégorie tout au long du mois."
+          "title": "Créer une catégorie",
+          "content": "Cliquez sur '+ Ajouter une catégorie' pour ouvrir le formulaire de création. Vous avez besoin de :\n\n- Nom : L'identifiant de la catégorie (ex. Alimentation, Transport, Loisirs).\n- Couleur : Sélectionnez une couleur parmi 32 options disponibles dans le sélecteur visuel. Cette couleur est utilisée dans tous les graphiques et les badges de transactions.\n- Budget mensuel (optionnel) : La limite maximale que vous prévoyez de dépenser. Si non indiqué, la catégorie est créée sans contrôle budgétaire."
         },
         {
-          "title": "Panneau de gestion et de visualisation",
-          "content": "Sur l'écran principal du module, vous verrez une grille regroupant toutes vos catégories actives. Chaque carte vous présente clairement :\n\n- Le nom de la catégorie et sa couleur distinctive associée.\n- Le budget mensuel alloué (ou la mention correspondante si elle a été configurée sans limite de budget).\n- Les boutons d'action rapide pour gérer l'élément en temps réel."
+          "title": "Tableau des catégories",
+          "content": "Toutes vos catégories sont affichées dans un tableau avec les informations suivantes :\n\n- Nom et couleur d'identification.\n- Barre de progression : Indique le pourcentage dépensé par rapport au budget mensuel ajusté à la période sélectionnée (semaine, mois ou année). Si vous dépassez 100%, la barre devient rouge.\n- Dépenses actuelles vs. limite budgétaire au format monétaire.\n\nLe budget mensuel est automatiquement ajusté selon la période : divisé par 4 en vue hebdomadaire, maintenu en vue mensuelle, et multiplié par 12 en vue annuelle."
         },
         {
-          "title": "Modifier et supprimer",
-          "content": "Chaque carte de catégorie dispose de deux icônes d'action directe dans le coin supérieur droit :\n\n- Icône d'édition (Crayon) : Ouvre à nouveau le formulaire pour modifier le nom, changer la palette de couleurs ou ajuster la limite du budget mensuel.\n- Icône de suppression (Corbeille) : Permet de supprimer la catégorie du système de manière sécurisée."
+          "title": "Recherche et pagination",
+          "content": "Si vous avez beaucoup de catégories, vous pouvez :\n\n- Rechercher par nom : Saisissez dans le champ de recherche pour filtrer en temps réel.\n- Naviguer par pages : Le tableau affiche 10 catégories par page.\n\nChaque ligne dispose d'un menu déroulant avec les options Modifier et Supprimer. La suppression désactive la catégorie et dissocie ses transactions, qui apparaissent comme 'Sans catégorie'."
         }
       ]
     },
     "investments": {
       "title": "Investissements",
-      "description": "Le module conçu pour le suivi de vos actifs financiers variables, vous permettant de contrôler l'évolution de la valeur de votre portefeuille et sa rentabilité en temps réel.",
+      "description": "Suivez votre portefeuille d'actifs financiers et surveillez sa rentabilité.",
       "topics": [
         {
-          "title": "Mesures et graphiques du portefeuille",
-          "content": "Dans la partie supérieure du panneau, trois cartes analytiques consolident l'état global de votre portefeuille :\n\n- Capital investi : La somme totale de l'argent que vous avez alloué à l'achat de vos actifs.\n- Valeur actuelle : La valeur marchande actuelle de tous vos avoirs combinés.\n- Rendement / Gain : Le bénéfice ou la perte nette accumulée (avec un pourcentage et un indicateur de tendance en couleur verte ou rouge).\n\nJuste en dessous, vous disposez de panneaux visuels avancés, notamment un graphique en lignes qui dessine l'évolution temporelle de la valeur de votre patrimoine et un graphique détaillant la répartition de vos fonds selon le type d'actif."
+          "title": "Métriques du portefeuille",
+          "content": "En haut, trois cartes analytiques sont affichées :\n\n- Valeur du portefeuille : La valeur marchande actuelle de tous vos actifs combinés.\n- Rendement mensuel : La rentabilité obtenue sur la période sélectionnée.\n- Dividendes : Fonctionnalité en développement (marquée 'Prochainement').\n\nChaque carte inclut l'indicateur de tendance par rapport à la période précédente."
         },
         {
-          "title": "Enregistrer un nouvel investissement",
-          "content": "Pour ajouter un nouvel actif à votre portefeuille, cliquez sur le bouton '+ Nouvel investissement'. Un formulaire flottant s'ouvrira avec les champs obligatoires suivants :\n\n- Nom et Ticker : Le nom de l'actif (ex : Apple) et son code boursier abrégé (ex : AAPL).\n- Quantité : Le nombre total d'unités ou d'actions acquises.\n- Prix d'achat (€) : Le coût unitaire que vous avez payé lors de l'acquisition de l'actif.\n- Prix actuel (€) : La valeur unitaire actuelle du cours sur le marché.\n- Type d'investissement : Menu déroulant pour classifier la nature de l'actif."
+          "title": "Graphiques d'analyse",
+          "content": "Sous les métriques, vous trouverez deux visualisations :\n\n- Évolution du patrimoine : Graphique en barres montrant comment la valeur de votre portefeuille a varié dans le temps.\n\n- Répartition du portefeuille : Graphique en donut détaillant la composition de votre portefeuille par type d'actif (Actions, Crypto, Fonds, Immobilier, Autres). Au centre, la valeur totale est affichée en format condensé (millions, milliers ou valeur complète)."
         },
         {
-          "title": "Actualisation des prix et opérations",
-          "content": "Dans la grille ou la liste inférieure, tous les investissements actifs sont affichés. Chaque élément dispose de boutons d'action rapide pour maintenir vos données à jour :\n\n- Actualiser le prix actuel : Un accès direct exclusif qui vous permet de modifier rapidement le cours du marché de l'actif de manière isolée afin de recalculer immédiatement les gains sans avoir à modifier l'ensemble de la fiche.\n- Modifier l'investissement : Permet de corriger n'importe quel paramètre d'origine de l'enregistrement.\n- Retirer (Corbeille) : Effectue une suppression logique pour retirer l'actif en toute sécurité de votre affichage du portefeuille actif."
+          "title": "Enregistrer un actif",
+          "content": "Cliquez sur '+ Nouvel investissement' pour ajouter un actif à votre portefeuille. Les champs sont :\n\n- Nom de l'actif : Le nom identifiant (ex. Apple).\n- Ticker (optionnel) : Le code boursier abrégé (ex. AAPL). Converti automatiquement en majuscules.\n- Type : Actions, Crypto, Fonds, Immobilier ou Autres.\n- Quantité : Nombre d'unités ou d'actions détenues.\n- Prix d'achat (€) : Le coût unitaire initial.\n- Date d'achat : Le jour où vous avez acquis l'actif."
+        },
+        {
+          "title": "Mettre à jour les prix et gérer",
+          "content": "Dans la liste des actifs, vous disposez de plusieurs actions :\n\n- Actualiser le prix : Modifiez le prix du marché actuel pour recalculer la rentabilité. Si le changement dépasse 50% par rapport au prix précédent, le système demande une double confirmation pour éviter les erreurs.\n- Supprimer : Retirez l'actif de votre portefeuille via une boîte de dialogue de confirmation.\n\nVous pouvez filtrer la liste par type d'investissement et rechercher par nom ou ticker."
+        }
+      ]
+    },
+    "savingsGoals": {
+      "title": "Objectifs d'épargne",
+      "description": "Définissez des objectifs d'épargne personnels, suivez votre progression et restez motivés pour atteindre vos buts financiers.",
+      "topics": [
+        {
+          "title": "Créer un objectif",
+          "content": "Cliquez sur le bouton de création d'objectif pour ajouter un nouvel objectif d'épargne. Configurez :\n\n- Nom : Un titre identifiant (ex. 'Voyage au Japon', 'Fond d'urgence').\n- Objectif (€) : Le montant total que vous souhaitez réunir.\n- Date limite (optionnelle) : Le jour maximum pour l'atteindre.\n- Priorité : Basse, Moyenne ou Haute.\n- Lien (optionnel) : Une URL de référence (ex. le voyage que vous souhaitez réserver).\n\nL'objectif est créé avec le statut 'Actif' et une progression initiale à zéro."
+        },
+        {
+          "title": "Statut et progression",
+          "content": "Chaque objectif montre visuellement votre avancement :\n\n- Progression : Pourcentage accompli et montant accumulé par rapport à l'objectif.\n- Statut : Actif (en cours), En pause (temporairement arrêté), Terminé (objectif atteint) ou Annulé (abandonné).\n- Contribuer : Ajoutez un montant à l'objectif pour augmenter la progression.\n\nVous pouvez modifier les données de l'objectif (nom, objectif, priorité, statut) ou le supprimer quand il n'est plus nécessaire."
         }
       ]
     },
     "groupGoals": {
       "title": "Objectifs de groupe",
-      "description": "Le module coopératif qui vous permet de gérer un budget partagé, d'inviter d'autres utilisateurs et de suivre les contributions de chaque membre vers un objectif commun.",
+      "description": "Gérez des objectifs d'épargne partagés avec d'autres personnes, répartissez les contributions et suivez la progression collective.",
       "topics": [
         {
-          "title": "Progression et paramètres de l'objectif de groupe",
-          "content": "Dans la partie supérieure, vous visualiserez votre 'Objectif mensuel' et une barre de 'Progression ce mois-ci' qui reflète graphiquement le pourcentage et le montant total collecté. Vous pouvez modifier les règles du groupe depuis l'icône d'engrenage (Paramètres de l'objectif de groupe), où vous définirez :\n\n- Nom de l'objectif de groupe : Identifiant du groupe.\n- Objectif mensuel (€) : Le montant financier total que le groupe aspire à collecter au cours du mois.\n- Mode de répartition : Permet de choisir comment le paiement de l'objectif est divisé entre les utilisateurs grâce à trois options : 'Parts égales', 'Proportionnel au salaire' ou 'Pourcentages personnalisés'."
+          "title": "Créer et configurer un objectif de groupe",
+          "content": "Cliquez sur 'Créer le premier objectif' ou 'Créer un nouvel objectif' pour lancer un objectif partagé. Vous devez définir :\n\n- Nom de l'objectif : Identifiant du groupe (ex. 'Voyage entre amis').\n- Objectif mensuel (€) : Le montant total que le groupe doit réunir chaque mois.\n- Mode de répartition : Comment le paiement est divisé entre les membres :\n  - Égal : Tout le monde paie le même montant.\n  - Proportionnel au salaire : Chacun contribue selon ses revenus.\n  - Personnalisé : L'administrateur définit un pourcentage individuel pour chaque membre.\n\nEn mode personnalisé, les pourcentages doivent totaliser exactement 100%. Le système valide cela automatiquement."
         },
         {
-          "title": "Gestion des membres et invitations",
-          "content": "Le panneau central 'Membres de l'objectif de groupe' détaille les participants, leur rôle (ADMIN ou MEMBER), leur configuration de répartition (salaire/pourcentage), leur 'Quote-part' attribuée (ce qu'ils doivent payer) et ce qu'ils ont déjà 'Contribué'.\n\n- + Inviter un membre : Ouvre une boîte de dialogue pour ajouter une nouvelle personne en saisissant l'E-mail de l'utilisateur à inviter.\n- Actions individuelles : À la fin de la ligne de chaque membre, un menu d'options (trois points) permet de 'Modifier le membre' (pour ajuster ses paramètres financiers) ou de 'Supprimer le membre' pour le retirer du groupe."
+          "title": "Inviter et gérer les membres",
+          "content": "En tant qu'administrateur, vous pouvez inviter d'autres utilisateurs par leur nom d'utilisateur ou leur adresse e-mail. La personne recevra une notification d'invitation qu'elle peut accepter ou refuser depuis son profil.\n\nChaque membre a :\n- Rôle : ADMIN (peut gérer l'objectif et inviter) ou MEMBER (contribue uniquement).\n- Salaire : Utilisé pour calculer la contribution en mode proportionnel.\n- Pourcentage personnalisé : En mode personnalisé, le % attribué à ce membre.\n- Quote-part : Ce qu'il devrait contribuer selon le mode de répartition.\n- Contribué : Le montant qu'il a déjà versé.\n\nVous pouvez modifier les données d'un membre ou le retirer du groupe."
         },
         {
-          "title": "Enregistrement et contrôle des contributions",
-          "content": "Dans le tableau inférieur 'Contributions récentes', l'historique des injections de capitaux dans le fonds commun est conservé :\n\n- Bouton + Ajouter : Ouvre le formulaire 'Enregistrer une contribution' où vous devez indiquer le 'Montant à contribuer (€)'. Cela mettra automatiquement à jour la barre de progression générale.\n- Historique : Affiche le nom du membre, le montant contribué et la date de l'opération. Il dispose d'une icône de corbeille sous la colonne 'Actions' pour supprimer les contributions enregistrées par erreur."
+          "title": "Contributions et historique",
+          "content": "Tout membre peut enregistrer une contribution en cliquant sur '+ Ajouter'. Indiquez le montant en euros et le système met à jour automatiquement la barre de progression générale.\n\nLe panneau historique affiche toutes les contributions réalisées avec :\n- Nom du membre ayant contribué.\n- Date de la contribution.\n- Montant contribué.\n\nLe pourcentage de progression est calculé en divisant le total contribué par l'objectif mensuel."
+        }
+      ]
+    },
+    "profile": {
+      "title": "Profil utilisateur",
+      "description": "Gérez votre compte, vos préférences, votre sécurité et vos paramètres avancés depuis un seul endroit.",
+      "topics": [
+        {
+          "title": "Informations personnelles",
+          "content": "Dans la section supérieure, vous pouvez modifier vos données de base :\n\n- Nom d'utilisateur : Votre identifiant sur la plateforme.\n- Adresse e-mail : L'adresse associée à votre compte.\n\nLes deux champs nécessitent votre mot de passe actuel pour confirmer les modifications."
+        },
+        {
+          "title": "Sécurité",
+          "content": "Le panneau de sécurité vous permet de :\n\n- Changer le mot de passe : Saisissez votre mot de passe actuel et le nouveau (minimum 8 caractères). Lors du changement, toutes vos sessions actives sont fermées.\n- Sessions actives : Visualisez tous les appareils depuis lesquels vous vous êtes connecté (WEB ou Telegram) et fermez ceux que vous n'utilisez plus. Vous pouvez fermer une session spécifique ou toutes les autres sauf l'actuelle."
+        },
+        {
+          "title": "Notifications et invitations",
+          "content": "Le tableau des notifications affiche les invitations en attente aux objectifs de groupe. Chaque invitation indique qui vous a invité et à quel objectif. Vous pouvez :\n\n- Accepter : Vous rejoignez l'objectif de groupe en tant que membre.\n- Refuser : Vous écartez l'invitation.\n\nLes décisions sont immédiatement reflétées dans la section Objectifs de groupe."
+        },
+        {
+          "title": "Telegram et désactivation",
+          "content": "Paramètres additionnels de votre compte :\n\n- Lier Telegram : Connectez votre compte avec le bot @Millete_bot pour recevoir des notifications et gérer des opérations depuis Telegram. Pour lier, ouvrez le bot et tapez /start.\n- Désactiver le compte : Si vous souhaitez cesser d'utiliser la plateforme, vous pouvez désactiver votre compte. Ce processus nécessite une confirmation via case à cocher et mot de passe. Gardez à l'esprit que la désactivation est irréversible."
         }
       ]
     }

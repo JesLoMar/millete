@@ -71,6 +71,7 @@
   "name": "Name",
   "role": "Role",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "Edit group goal name",
   "editMember": "$t(common:actions.edit) Member",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) group goal",
@@ -106,5 +107,8 @@
     "memberDeleteError": "Error deleting the member",
     "contributionSuccess": "Contribution registered successfully",
     "contributionError": "Error registering the contribution"
-  }
+  },
+  "invitationRejected": "Invitation declined",
+  "invitationRejectedMessage": "You've declined the invitation. You won't join this group goal.",
+  "rejectError": "Error declining the invitation"
 }

@@ -40,15 +40,19 @@ Crea un nuevo objetivo de ahorro.
 3. Inicializa `currentAmount` a cero, `status` a `ACTIVE` y `priority` a `MEDIUM` si no se especifica.
 4. Responde `201 Created` con `SavingsGoalResponseDTO`.
 
-### GET /
+### GET /?page=&size=&search=&status=
 
-Lista los objetivos de ahorro activos del usuario autenticado.
+Lista los objetivos de ahorro activos del usuario autenticado de forma paginada.
 
 1. Extrae el `userId` del token JWT.
-2. Soporta un query param opcional `status` para filtrar por estado (ACTIVE, PAUSED, COMPLETED, CANCELLED).
+2. Soporta query params opcionales:
+   - `page`: número de página (0-based). Default: 0.
+   - `size`: tamaño de página. Default: 45.
+   - `search`: filtro por nombre del objetivo (case-insensitive).
+   - `status`: filtra por estado (`ACTIVE`, `PAUSED`, `COMPLETED`, `CANCELLED`).
 3. Si no se especifica `status`, devuelve todos los activos.
 4. Filtra solo goals con `active = true` (realizado en el servicio).
-5. Responde `200 OK` con una lista de `SavingsGoalResponseDTO`.
+5. Responde `200 OK` con `PaginatedResponseDTO<SavingsGoalResponseDTO>`.
 
 ### GET /{id}
 
@@ -228,8 +232,8 @@ Cada setter de validación lanza `IllegalArgumentException` con un mensaje descr
 
 ### ListSavingsGoalsUseCase
 
-- `findByUserId(UUID)` → `List<SavingsGoal>`
-- `findByUserIdAndStatus(UUID, String)` → `List<SavingsGoal>`
+- `findByUserId(UUID, Pageable, String search)` → `Page<SavingsGoal>`
+- `findByUserIdAndStatus(UUID, String status, Pageable, String search)` → `Page<SavingsGoal>`
 
 ### GetSavingsGoalUseCase
 
@@ -252,8 +256,8 @@ Define los siguientes métodos:
 - `save(SavingsGoal)` → `SavingsGoal`
 - `findById(UUID)` → `Optional<SavingsGoal>`
 - `findByIdAndUserId(UUID, UUID)` → `Optional<SavingsGoal>` — búsqueda segura por ID y propietario
-- `findAllByUserId(UUID)` → `List<SavingsGoal>` — todos los goals activos del usuario
-- `findAllByUserIdAndStatus(UUID, String)` → `List<SavingsGoal>` — goals activos del usuario filtrados por estado
+- `findAllByUserId(UUID, Pageable, String search)` → `Page<SavingsGoal>` — todos los goals activos del usuario, paginados
+- `findAllByUserIdAndStatus(UUID, String, Pageable, String search)` → `Page<SavingsGoal>` — goals activos del usuario filtrados por estado, paginados
 
 ---
 
@@ -343,7 +347,7 @@ Cada vez que se añade una contribución o se actualiza el objetivo (cambiando `
 | Método | Endpoint | Uso |
 |--------|----------|-----|
 | POST | /api/v1/savings-goals | Crear nuevo objetivo de ahorro |
-| GET | /api/v1/savings-goals | Listar objetivos activos (opcional: ?status=ACTIVE) |
+| GET | /api/v1/savings-goals?page=&size=&search=&status= | Listar objetivos activos paginados (opcional: ?status=ACTIVE) |
 | GET | /api/v1/savings-goals/:id | Obtener detalle de un objetivo |
 | PUT | /api/v1/savings-goals/:id | Actualizar datos del objetivo |
 | PATCH | /api/v1/savings-goals/:id/contribute | Añadir una contribución al objetivo |

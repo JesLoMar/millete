@@ -46,8 +46,23 @@ public class NotificationService implements
 
     @Override
     @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(UUID userId) {
-        return notificationRepository.findActiveByUserIdOrderByCreatedAtDesc(userId);
+    public List<Notification> getUserNotifications(UUID userId, int limit) {
+        return notificationRepository.findActiveByUserIdOrderByCreatedAtDesc(userId, limit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginatedNotifications getUserNotificationsPage(UUID userId, int page, int size) {
+        var pageResult = notificationRepository.findActiveByUserIdPaginated(userId, page, size);
+        return new PaginatedNotifications(
+                pageResult.getContent(),
+                pageResult.getNumber(),
+                pageResult.getTotalPages(),
+                pageResult.getTotalElements(),
+                pageResult.getSize(),
+                pageResult.isFirst(),
+                pageResult.isLast()
+        );
     }
 
     @Override

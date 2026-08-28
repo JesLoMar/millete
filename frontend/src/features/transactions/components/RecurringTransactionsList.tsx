@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useQueryClient } from "@tanstack/react-query"
 import { Search } from "lucide-react"
@@ -13,19 +13,27 @@ import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmD
 import { RecurringTransactionRow } from "./RecurringTransactionRow"
 import { TransactionSkeleton } from "./TransactionSkeleton"
 import { TransactionListPagination } from "./TransactionListPagination"
-import { usePagination } from "@/features/categories/hooks/usePagination"
 import { FILTERS, FILTER_LABELS, type Filter } from "../constants"
-
-const ITEMS_PER_PAGE = 10
 
 export function RecurringTransactionsList() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const { data: transactions = [], isLoading } = usePlannedTransactions()
+
   const [recurringFilter, setRecurringFilter] = useState<Filter>("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [editingTransaction, setEditingTransaction] = useState<PlannedTransaction | null>(null)
   const [deletingTransaction, setDeletingTransaction] = useState<PlannedTransaction | null>(null)
+
+  const {
+    displayItems: transactions,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading,
+    nextPage,
+    prevPage,
+  } = usePlannedTransactions({ search: searchTerm, type: recurringFilter })
 
   const handleDelete = async () => {
     if (!deletingTransaction) return
@@ -39,32 +47,10 @@ export function RecurringTransactionsList() {
     }
   }
 
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx) => {
-      const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesFilter =
-        recurringFilter === "all" ||
-        (recurringFilter === "income" && tx.type === "INCOME") ||
-        (recurringFilter === "expense" && tx.type === "EXPENSE")
-      return matchesSearch && matchesFilter
-    })
-  }, [transactions, recurringFilter, searchTerm])
+  if (isLoading && transactions.length === 0) return <TransactionSkeleton rows={5} />
 
-  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
-    totalItems: filteredTransactions.length,
-    itemsPerPage: ITEMS_PER_PAGE,
-    initialPage: 1,
-  })
-
-  const paginatedTransactions = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    const end = start + ITEMS_PER_PAGE
-    return filteredTransactions.slice(start, end)
-  }, [filteredTransactions, currentPage])
-
-  if (isLoading) return <TransactionSkeleton rows={5} />
-
-  if (transactions.length === 0) return null
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
   return (
     <div className="space-y-4">
@@ -87,7 +73,7 @@ export function RecurringTransactionsList() {
             ))}
           </div>
           <Badge variant="outline" className="text-xs">
-            {filteredTransactions.length}
+            {totalElements}
           </Badge>
         </div>
 
@@ -104,12 +90,12 @@ export function RecurringTransactionsList() {
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex flex-col">
-          {paginatedTransactions.length === 0 ? (
+          {transactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-12 text-sm">
               {t('transactions:recurring.emptyFilter')}
             </p>
           ) : (
-            paginatedTransactions.map((tx) => (
+            transactions.map((tx) => (
               <RecurringTransactionRow
                 key={tx.id}
                 transaction={tx}
@@ -121,11 +107,11 @@ export function RecurringTransactionsList() {
         </div>
 
         <TransactionListPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          from={(currentPage - 1) * ITEMS_PER_PAGE + 1}
-          to={Math.min(currentPage * ITEMS_PER_PAGE, filteredTransactions.length)}
-          total={filteredTransactions.length}
+          currentPage={displayPage}
+          totalPages={totalDisplayPages}
+          from={from}
+          to={to}
+          total={totalElements}
           onPrev={prevPage}
           onNext={nextPage}
         />
@@ -144,7 +130,7 @@ export function RecurringTransactionsList() {
         itemName={deletingTransaction?.description || ""}
         onConfirm={handleDelete}
         title={t('transactions:recurring.deleteTitle')}
-        description={t('transactions:recurring.deleteConfirmation', { name: deletingTransaction?.description || "" })}
+        description={t("transactions:recurring.deleteConfirmation", { name: deletingTransaction?.description || "" })}
       />
     </div>
   )

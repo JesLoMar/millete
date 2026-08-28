@@ -1,9 +1,11 @@
 package com.puntomartinez.millete.users.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.config.CookieAuthFactory;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.users.domain.ports.in.ManageProfileUseCase;
 import com.puntomartinez.millete.users.infrastructure.in.controller.dto.*;
-import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,9 +19,11 @@ import java.util.UUID;
 public class ProfileController {
 
     private final ManageProfileUseCase profileUseCase;
+    private final CookieAuthFactory cookieAuthFactory;
 
-    public ProfileController(ManageProfileUseCase profileUseCase) {
+    public ProfileController(ManageProfileUseCase profileUseCase, CookieAuthFactory cookieAuthFactory) {
         this.profileUseCase = profileUseCase;
+        this.cookieAuthFactory = cookieAuthFactory;
     }
 
     @GetMapping
@@ -118,6 +122,9 @@ public class ProfileController {
             @RequestBody @Valid DeactivateAccountRequestDTO request) {
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
         profileUseCase.deactivateAccount(jwtUser.getId(), request.password());
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookieAuthFactory.createExpiredCookie().toString())
+                .build();
     }
 }

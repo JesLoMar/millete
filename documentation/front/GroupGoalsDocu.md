@@ -94,8 +94,9 @@ Hook que centraliza las queries de GroupGoal. Recibe `selectedGoalId`.
 
 ### Queries
 
-- **goals:** `GET /group-goals`. Query key: `['group-goals']`. Sin retry ni staleTime explícitos (usa defaults).
+- **goals:** `GET /group-goals?page=&size=`. Usa `useServerPagination` (server 12, display 4). Query key base: `['group-goals']`.
 - **goal detail:** `GET /group-goals/:id`. Query key: `['group-goal', selectedGoalId]`. Solo se ejecuta si `selectedGoalId` existe (`enabled: !!selectedGoalId`).
+- **contributions:** `GET /group-goals/:id/contributions?page=&size=`. Usa `useServerPagination` (server 60, display 20) dentro del detalle de meta.
 
 ### Tipos internos
 
@@ -105,7 +106,7 @@ Define interfaces `RawGoalResponse`, `RawGoalMember` y `RawGoalContribution` par
 
 `selectedGoal` se construye con `useMemo` a partir de `rawGoal`:
 - Mapea `RawGoalMember` a `GoalMember`: name con fallback "Miembro", role normalizado a "ADMIN" | "MEMBER", salary con fallback 0.
-- Mapea `RawGoalContribution` a `GoalContribution`: name con fallback "Miembro", date con fallback de `contributionDate`.
+- Mapea `RawGoalContribution` a `GoalContribution`: name con fallback "Miembro", date formateada con `formatDate`.
 
 ### Ordenación
 
@@ -113,7 +114,7 @@ Define interfaces `RawGoalResponse`, `RawGoalMember` y `RawGoalContribution` par
 
 ### Retorno
 
-`{ goals, isLoading, selectedGoal }`.
+`{ goals, isLoading, selectedGoal, contributions, contributionsPagination }`.
 
 ---
 
@@ -146,7 +147,7 @@ Funciones `handle*` (mutateAsync) y estados de carga (`isCreating`, `isInviting`
 
 Funciones de utilidad:
 
-- **formatDate:** formatea una fecha ISO a formato español (día 2 dígitos + mes abreviado + año) con `toLocaleDateString("es-ES")`.
+- **formatDate:** re-exportado desde `@/shared/utils/date`. Formatea una fecha ISO/LocalDateTime a formato legible (día 2 dígitos + mes abreviado + año) usando el locale activo.
 - **calculateContributions:** calcula las contribuciones esperadas y realizadas de cada miembro según el modo de distribución:
   - **CUSTOM:** `expected = (customPercentage / 100) * monthlyTarget`. Si `totalCustomPercentage` es 0, expected es 0.
   - **EQUITATIVE:** `expected = monthlyTarget / members.length`.
@@ -285,18 +286,25 @@ Selector de modo de distribución.
 
 ## components/ContributionHistory.tsx
 
-Historial de aportaciones.
+Historial de aportaciones paginado.
 
 ### Props
 
 - **contributions:** GoalContribution[]
 - **onAddClick:** callback
+- **pagination:** controles de paginación (currentPage, totalDisplayPages, nextPage, prevPage)
+
+### Datos
+
+- Obtiene aportaciones paginadas desde `GET /group-goals/:id/contributions?page=&size=` (server 60, display 20).
+- Fechas formateadas con `formatDate` de `@/shared/utils/date`.
 
 ### Estructura
 
 - Cabecera con título y botón "Añadir aportación" (Plus).
 - Si no hay aportaciones: mensaje "No hay aportaciones registradas" centrado.
 - Lista de aportaciones: nombre del miembro, fecha formateada, importe en verde con signo "+".
+- Controles de paginación al final si hay más de una página.
 
 ---
 
@@ -382,7 +390,7 @@ Historial de aportaciones.
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /group-goals | Listar metas del usuario |
+| GET | /group-goals?page=&size= | Listar metas del usuario paginadas |
 | POST | /group-goals | Crear nueva meta |
 | GET | /group-goals/:id | Obtener detalle de meta |
 | PUT | /group-goals/:id | Actualizar meta (nombre, modo, objetivo) |
@@ -390,6 +398,7 @@ Historial de aportaciones.
 | POST | /group-goals/invitations/:token/accept | Aceptar invitación |
 | PUT | /group-goals/:id/members/:memberId | Editar miembro |
 | DELETE | /group-goals/:id/members/:memberId | Eliminar miembro |
+| GET | /group-goals/:id/contributions?page=&size= | Ver contribuciones paginadas |
 | POST | /group-goals/:id/contributions | Añadir aportación |
 
 ---

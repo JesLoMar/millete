@@ -20,6 +20,7 @@ import {
 } from "@/shared/components/core/select"
 import { apiClient } from "@/shared/api/axiosClient"
 import { useQueryClient } from "@tanstack/react-query"
+import { FREQUENCY_TYPES } from "../../constants"
 
 interface PlannedTransaction {
   id: string
@@ -56,7 +57,7 @@ function getInitialForm(transaction: PlannedTransaction | null): FormState {
     description: transaction?.description || "",
     amount: transaction?.amount ? String(Math.abs(transaction.amount)) : "",
     type: transaction?.type || "EXPENSE",
-    frequencyType: transaction?.frequencyType || "MONTHLY",
+    frequencyType: transaction?.frequencyType || "MONTHS",
     frequencyInterval: transaction?.frequencyInterval ? String(transaction.frequencyInterval) : "1",
     categoryId: transaction?.categoryId || null,
     error: null,
@@ -101,7 +102,7 @@ export function EditRecurringTransactionDialog({
       onOpenChange(false)
     } catch (err) {
       const axiosError = err as { response?: { data?: { message?: string } } }
-      const message = axiosError?.response?.data?.message || t('transactions:updateError')
+      const message = axiosError?.response?.data?.message || t('transactions:alerts.updateRecurringError')
       updateForm({ error: message, isSubmitting: false })
     }
   }
@@ -120,7 +121,7 @@ export function EditRecurringTransactionDialog({
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-foreground">
-              {t('transactions:editRecurringTitle')}
+              {t('transactions:recurring.editTitle')}
             </DialogTitle>
           </DialogHeader>
 
@@ -176,7 +177,9 @@ export function EditRecurringTransactionDialog({
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-recurring-frequency" className="text-sm font-semibold">{t('transactions:frequency')}</Label>
+                <Label htmlFor="edit-recurring-frequency" className="text-sm font-semibold">
+                  {t('transactions:recurring.frequency')}
+                </Label>
                 <Select
                   value={form.frequencyType}
                   onValueChange={(value) => updateForm({ frequencyType: value })}
@@ -186,16 +189,17 @@ export function EditRecurringTransactionDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DAILY">{t('transactions:daily')}</SelectItem>
-                    <SelectItem value="WEEKLY">{t('transactions:weekly')}</SelectItem>
-                    <SelectItem value="MONTHLY">{t('transactions:monthly')}</SelectItem>
-                    <SelectItem value="YEARLY">{t('transactions:yearly')}</SelectItem>
+                    {FREQUENCY_TYPES.map((freq) => (
+                      <SelectItem key={freq.value} value={freq.value}>
+                        {t(freq.labelKey)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-recurring-interval" className="text-sm font-semibold">
-                  {t('transactions:interval')}
+                  {t('transactions:recurring.interval')}
                 </Label>
                 <Input
                   id="edit-recurring-interval"

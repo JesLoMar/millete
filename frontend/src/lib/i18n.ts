@@ -41,6 +41,14 @@ const namespaces = [
   "notifications",
 ];
 
+// Sincroniza <html lang="..."> con el idioma activo (WCAG 3.1.1:
+// los lectores de pantalla dependen de este atributo para pronunciar bien).
+const syncDocumentLang = (lng: string | undefined) => {
+  if (lng) {
+    document.documentElement.lang = lng;
+  }
+};
+
 i18n
   .use(LanguageDetector)
   .use(backend)
@@ -55,6 +63,9 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-  });
+  })
+  .then(() => syncDocumentLang(i18n.language));
+
+i18n.on("languageChanged", syncDocumentLang);
 
 export default i18n;

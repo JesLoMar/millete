@@ -67,10 +67,10 @@ class NotificationServiceTest {
         Notification n1 = createNotification(userId, "Nueva invitación 1", LocalDateTime.now().minusHours(2));
         Notification n2 = createNotification(userId, "Nueva invitación 2", LocalDateTime.now());
 
-        when(notificationRepository.findActiveByUserIdOrderByCreatedAtDesc(userId))
+        when(notificationRepository.findActiveByUserIdOrderByCreatedAtDesc(userId, 20))
                 .thenReturn(List.of(n2, n1));
 
-        List<Notification> result = notificationService.getUserNotifications(userId);
+        List<Notification> result = notificationService.getUserNotifications(userId, 20);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getTitle()).isEqualTo("Nueva invitación 2");

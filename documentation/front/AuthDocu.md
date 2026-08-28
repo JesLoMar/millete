@@ -2,6 +2,7 @@
 
 ## Estructura de archivos
 
+- components/BillConfetti.tsx — Capa decorativa de billetes flotantes (confetti)
 - components/AuthForm.tsx — Orquestador del formulario con react-hook-form + zod
 - components/BackgroundDecoration.tsx — Fondo decorativo con efectos de blur
 - components/InfoSection.tsx — Panel informativo (wrapper)
@@ -31,15 +32,12 @@ Página de login que ocupa toda la pantalla. Estructura:
 - Si isLoading es true, muestra un placeholder con animación de pulso y texto "Cargando...".
 - Si isAuthenticated es true, redirige a /dashboard con Navigate to="/dashboard" replace.
 - Si no está autenticado, renderiza el layout completo:
-  - Izquierda (1/3): AuthForm.
-  - Derecha (2/3): InfoSection (solo visible en escritorio, hidden lg:block).
-  - Fondo: BackgroundDecoration con z-10 relativo.
+  - Grid de 2 columnas iguales (`grid-cols-1 lg:grid-cols-2`).
+  - Izquierda: AuthForm.
+  - Derecha: InfoSection (solo visible en escritorio, `hidden lg:flex`).
+  - Fondo: BackgroundDecoration (fixed, `-z-10`) + BillConfetti (fixed, `z-0`).
 - Atributos aria-label en main y secciones para accesibilidad.
-- Clase selection:bg-primary/30 selection:text-white en el main.
-
-### Compatibilidad con Safari (v0.0.3)
-
-Se añadieron ajustes de estilo para garantizar una experiencia visual consistente en navegadores Safari, tanto en escritorio como en dispositivos móviles. Los cambios incluyen correcciones en el centrado vertical del formulario y en el renderizado de los efectos de blur del fondo decorativo.
+- `select-none` en el main.
 
 ---
 
@@ -50,7 +48,7 @@ Controla el estado del formulario mediante react-hook-form integrado con zod (zo
 ### Estado local
 
 - mode: "login" o "register" — determina qué campos se muestran y qué mutación se ejecuta.
-- showPassword: boolean — controla visibilidad de la contraseña.
+- `useAutofillFix()` se invoca para corregir el fondo azul de autofill de Chrome/Edge.
 
 ### Esquema de formulario
 
@@ -83,10 +81,6 @@ Controla el estado del formulario mediante react-hook-form integrado con zod (zo
 - hasIdentifier (register): advertencia si ambos campos (username y email) están vacíos.
 - isValid: botón deshabilitado si el esquema no se cumple.
 
-### Compatibilidad con Safari (v0.0.3)
-
-Se corrigieron problemas de renderizado específicos de Safari en los campos de entrada y en las animaciones de transición entre modos login/register. Los inputs utilizan propiedades CSS compatibles con WebKit para evitar comportamientos inconsistentes en autocompletado y estilos de foco.
-
 ---
 
 ## Subcomponentes de AuthForm/
@@ -109,7 +103,7 @@ Campo identifier (acepta username o email). Requerido.
 - Muestra mensaje de error de validación si el campo está vacío.
 - Registrado en el formulario como identifier.
 
-Props: control (de react-hook-form), disabled, errors
+Props: register (de react-hook-form), disabled, errors
 
 ### RegisterFields.tsx
 
@@ -119,7 +113,7 @@ Campos opcionales username y email, separados por un divisor visual "o".
 - Muestra advertencia si ambos están vacíos (hasIdentifier).
 - Email vacío se ignora en el submit.
 
-Props: control, errors, disabled, hasIdentifier
+Props: register, errors, disabled, hasIdentifier
 
 ### PasswordField.tsx
 
@@ -131,7 +125,7 @@ Campo password común a login y register.
 - Modo registro: hint de 8 caracteres mínimos.
 - Muestra mensaje de error de validación si no cumple mínimo de caracteres.
 
-Props: control, disabled, mode
+Props: register, errors, disabled, mode
 
 ### AuthFooter.tsx
 
@@ -165,10 +159,6 @@ Muestra 3 pasos numerados y un banner de enlace a la wiki.
 
 Línea de tiempo vertical con novedades. La primera entrada lleva un punto brillante y un tag opcional.
 
-### Compatibilidad con Safari (v0.0.3)
-
-Se ajustaron los estilos de la línea de tiempo y los efectos visuales para garantizar un renderizado correcto en Safari, especialmente en las animaciones del punto brillante y en los espaciados de la lista de novedades.
-
 ---
 
 ## context/AuthContext.tsx
@@ -177,10 +167,10 @@ Estado global de autenticación. Provee token, user, isAuthenticated, isLoading,
 
 ### User interface
 
-- name: string
+- username: string
 - email: string
-- avatar?: string
-- role?: string
+
+> **Nota:** El backend `TopNavUserResponseDTO` solo devuelve `{ username, email }`. No hay campos `avatar` ni `role` en la respuesta actual.
 
 ### Inicialización (useEffect de montaje)
 
@@ -237,7 +227,7 @@ Llama a authService.login(credentials) con identifier y password.
    - Prioridad 2: query param ?redirect= de la URL.
    - Sanitiza la ruta con sanitizeRedirect():
      - Rechaza URLs absolutas, protocolos javascript:, rutas que no empiezan por / o empiezan por //.
-     - Solo permite rutas base predefinidas: /dashboard, /transactions, /categories, /investments, /family, /join-family y sus subrutas.
+     - Solo permite rutas base predefinidas: /dashboard, /transactions, /categories, /investments, /savings-goals, /group-goals, /join-group-goal, /profile, /wiki y sus subrutas.
    - Si no hay redirect válido, navega a /dashboard.
 5. Navega con replace: true para evitar volver al login con "atrás".
 
@@ -295,7 +285,7 @@ Contratos de datos entre frontend y backend:
 - LoginRequest: identifier (string), password (string).
 - RegisterUserRequest: username (opcional), email (opcional), password (obligatorio).
 - TokenResponse: token (string JWT).
-- UserTopnavResponse: username, email, role, avatar (todos opcionales).
+- UserTopnavResponse: username, email (todos opcionales).
 - ApiErrorResponse: status, message, error, timestamp (todos opcionales).
 
 ---
@@ -344,11 +334,11 @@ Contratos de datos entre frontend y backend:
 - Página con estados de carga y redirección: LoginPage muestra placeholder durante carga y redirige a /dashboard si ya está autenticado.
 - Registro robusto: login automático tras registro con manejo de errores diferenciado y mensajes i18n.
 - Notificaciones toast: éxito y error notificados con notify.success y notify.error.
-- Accesibilidad: atributos aria-label en secciones principales y selección de texto estilizada.
+- Accesibilidad: atributos aria-label en secciones principales.
 - Modo registro con email opcional: email vacío se omite en el submit; solo se valida formato si el usuario introduce un valor.
 
 ---
 
 ## Mejoras implementadas (v0.0.3)
 
-- Compatibilidad con Safari: se corrigieron problemas de renderizado específicos de Safari en el formulario de autenticación, incluyendo centrado vertical, efectos de blur del fondo decorativo, estilos de foco en inputs, animaciones de transición entre modos y espaciados en la sección informativa. Todos los componentes del módulo (AuthForm, AuthFooter, InfoSection, FirstSteps, NewsList, page.tsx) recibieron ajustes para garantizar una experiencia visual consistente en navegadores basados en WebKit.
+- Compatibilidad con Safari: se corrigieron problemas de renderizado específicos de Safari en el formulario de autenticación, incluyendo centrado vertical, efectos de blur del fondo decorativo, estilos de foco en inputs, animaciones de transición entre modos y espaciados en la sección informativa.

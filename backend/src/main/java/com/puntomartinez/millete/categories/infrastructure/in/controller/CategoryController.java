@@ -10,6 +10,7 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCas
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.CategoryResponseDTO;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.RegisterCategoryRequestDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,15 +59,32 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDTO>> getAll(Authentication authentication) {
+    public ResponseEntity<PaginatedResponseDTO<CategoryResponseDTO>> getAll(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String search) {
+
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
-        List<CategoryResponseDTO> response = getCategoryUseCase.findByUserId(userId)
+        long totalElements = getCategoryUseCase.countByUserIdAndFilters(userId, search);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+
+        List<CategoryResponseDTO> content = getCategoryUseCase.findAllByUserId(userId, safePage, size, search)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                content,
+                safePage,
+                totalPages,
+                totalElements,
+                size,
+                safePage == 0,
+                safePage >= totalPages - 1 || totalPages == 0
+        ));
     }
 
     @PutMapping("/{id}")

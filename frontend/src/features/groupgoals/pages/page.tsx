@@ -11,11 +11,12 @@ import { EditMemberDialog } from "@/features/groupgoals/components/dialogs/EditM
 import { EditGoalNameDialog } from "@/features/groupgoals/components/dialogs/EditGoalNameDialog"
 import { AddContributionDialog } from "@/features/groupgoals/components/dialogs/AddContributionDialog"
 import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
-import { useGroupGoalQueries } from "@/features/groupgoals/hooks/useGroupGoalQueries"
+import { useGroupGoals, useGroupGoalDetail } from "@/features/groupgoals/hooks/useGroupGoalQueries"
 import { useGroupGoalMutations } from "@/features/groupgoals/hooks/useGroupGoalMutations"
 import { calculateContributions } from "@/features/groupgoals/utils"
 import { notify } from "@/shared/utils/notifications/notify"
 import { apiClient } from "@/shared/api/axiosClient"
+import { Pagination } from "@/shared/components/Pagination"
 import { useQueryClient } from "@tanstack/react-query"
 import type { ContributionMember, GoalListItem } from "@/features/groupgoals/types"
 import type { ApiError } from "@/shared/types/api"
@@ -61,8 +62,21 @@ export const GroupGoalsPage = () => {
     deletingMemberName: "",
   })
 
-  const { goals, isLoading: isLoadingList, selectedGoal } = useGroupGoalQueries(selectedGoalId)
+  const {
+    displayItems: goals,
+    displayPage,
+    displaySize,
+    totalDisplayPages,
+    totalElements,
+    isLoading: isLoadingList,
+    nextPage,
+    prevPage,
+  } = useGroupGoals()
+  const { selectedGoal } = useGroupGoalDetail(selectedGoalId)
   const mutations = useGroupGoalMutations(selectedGoalId)
+
+  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
+  const to = Math.min((displayPage + 1) * displaySize, totalElements)
 
 
   const totalCustomPercentage = useMemo(() => {
@@ -176,14 +190,25 @@ export const GroupGoalsPage = () => {
         <TopNav />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {!selectedGoalId ? (
-            <GroupGoalSelector
-              goals={goals || []}
-              isLoading={isLoadingList}
-              onSelect={setSelectedGoalId}
-              onCreateClick={() => setDialogs((prev) => ({ ...prev, isCreateOpen: true }))}
-              onEditClick={(goal) => setActions((prev) => ({ ...prev, editingGoal: goal }))}
-              onDeleteClick={(goal) => setActions((prev) => ({ ...prev, deletingGoal: goal }))}
-            />
+            <div className="space-y-4 sm:space-y-6">
+              <GroupGoalSelector
+                goals={goals || []}
+                isLoading={isLoadingList}
+                onSelect={setSelectedGoalId}
+                onCreateClick={() => setDialogs((prev) => ({ ...prev, isCreateOpen: true }))}
+                onEditClick={(goal) => setActions((prev) => ({ ...prev, editingGoal: goal }))}
+                onDeleteClick={(goal) => setActions((prev) => ({ ...prev, deletingGoal: goal }))}
+              />
+              <Pagination
+                currentPage={displayPage}
+                totalPages={totalDisplayPages}
+                from={from}
+                to={to}
+                total={totalElements}
+                onPrev={prevPage}
+                onNext={nextPage}
+              />
+            </div>
           ) : selectedGoal ? (
             <GroupGoalDetail
               goal={selectedGoal}

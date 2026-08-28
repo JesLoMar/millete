@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.investments.application.services;
 
 import com.puntomartinez.millete.investments.domain.model.Investment;
+import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
 import com.puntomartinez.millete.investments.domain.ports.in.ListInvestmentsUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentPriceUseCase;
@@ -51,6 +52,16 @@ public class InvestmentService implements RegisterInvestmentUseCase, ListInvestm
     @Override
     public List<Investment> findAllByUserId(UUID userId) {
         return investmentRepository.findAllByUserId(userId);
+    }
+
+    @Override
+    public List<Investment> findAllByUserId(UUID userId, int page, int size, String search, InvestmentType type) {
+        return investmentRepository.findAllByUserId(userId, page, size, search, type);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, InvestmentType type) {
+        return investmentRepository.countByUserIdAndFilters(userId, search, type);
     }
 
 

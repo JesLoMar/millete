@@ -1,24 +1,24 @@
 package com.puntomartinez.millete.users.infrastructure.in.controller;
 
+import com.puntomartinez.millete.shared.infrastructure.config.CookieAuthFactory;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.users.application.services.SessionPersistenceService;
 import com.puntomartinez.millete.users.application.services.UserService;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
-import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.infrastructure.in.controller.dto.*;
-import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -35,13 +35,7 @@ public class AuthController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final SessionPersistenceService sessionPersistenceService;
-
-    private final String cookieName;
-    private final boolean cookieSecure;
-    private final boolean cookieHttpOnly;
-    private final String cookieSameSite;
-    private final String cookiePath;
-    private final long cookieMaxAge;
+    private final CookieAuthFactory cookieAuthFactory;
 
     public AuthController(
             RegisterUserUseCase registerUserUseCase,
@@ -50,24 +44,14 @@ public class AuthController {
             UserService userService,
             TokenProvider tokenProvider,
             SessionPersistenceService sessionPersistenceService,
-            @Value("${jwt.cookie-name}") String cookieName,
-            @Value("${jwt.cookie-secure}") boolean cookieSecure,
-            @Value("${jwt.cookie-http-only}") boolean cookieHttpOnly,
-            @Value("${jwt.cookie-same-site}") String cookieSameSite,
-            @Value("${jwt.cookie-path}") String cookiePath,
-            @Value("${jwt.cookie-max-age}") long cookieMaxAge) {
+            CookieAuthFactory cookieAuthFactory) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.getUserDataUseCase = getUserDataUseCase;
         this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.sessionPersistenceService = sessionPersistenceService;
-        this.cookieName = cookieName;
-        this.cookieSecure = cookieSecure;
-        this.cookieHttpOnly = cookieHttpOnly;
-        this.cookieSameSite = cookieSameSite;
-        this.cookiePath = cookiePath;
-        this.cookieMaxAge = cookieMaxAge;
+        this.cookieAuthFactory = cookieAuthFactory;
     }
 
     @PostMapping("/register")
@@ -102,14 +86,7 @@ public class AuthController {
         UserSession session = sessionPersistenceService.createSession(user.getId(), SessionPersistenceService.CHANNEL_WEB);
         String jwt = tokenProvider.generateToken(user, session.getId());
 
-        ResponseCookie cookie = ResponseCookie.from(cookieName, jwt)
-                .httpOnly(cookieHttpOnly)
-                .secure(cookieSecure)
-                .sameSite(cookieSameSite)
-                .path(cookiePath)
-                .maxAge(cookieMaxAge)
-                .build();
-
+        ResponseCookie cookie = cookieAuthFactory.createJwtCookie(jwt);
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         Map<String, String> body = new HashMap<>();
@@ -123,14 +100,7 @@ public class AuthController {
                                        HttpServletResponse response) {
         sessionPersistenceService.markSessionAsInactive(sessionId);
 
-        ResponseCookie expiredCookie = ResponseCookie.from(cookieName, "")
-                .httpOnly(cookieHttpOnly)
-                .secure(cookieSecure)
-                .sameSite(cookieSameSite)
-                .path(cookiePath)
-                .maxAge(0)
-                .build();
-
+        ResponseCookie expiredCookie = cookieAuthFactory.createExpiredCookie();
         response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());
 
         return ResponseEntity.ok().build();

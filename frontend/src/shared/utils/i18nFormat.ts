@@ -1,5 +1,5 @@
 import i18n from '@/lib/i18n';
-import { secureStorage } from '@/shared/utils/secureStorage';
+import { sessionCache } from '@/shared/utils/sessionCache';
 
 const LOCALE_MAP: Record<string, string> = {
   es: 'es-ES',
@@ -19,9 +19,12 @@ function getLocale(): string {
   return (lang && LOCALE_MAP[lang]) || DEFAULT_LOCALE;
 }
 
+// TODO(moneda preferida): nadie escribe 'userPreferences' en sessionCache,
+// así que esto siempre devuelve EUR. Pendiente decidir si se conecta a
+// updatePreferences del perfil o se elimina (ver revisión, punto 9).
 function getCurrency(): string {
   try {
-    const raw = secureStorage.getItem('userPreferences');
+    const raw = sessionCache.getItem('userPreferences');
     if (raw) {
       const prefs = JSON.parse(raw) as { currencyFormat?: { currency?: string } };
       if (prefs.currencyFormat?.currency) {
@@ -29,7 +32,6 @@ function getCurrency(): string {
       }
     }
   } catch {
-
   }
   return DEFAULT_CURRENCY;
 }
@@ -52,7 +54,6 @@ for (const locale of COMMON_LOCALES) {
       })
     );
   }
-
   NUMBER_FORMATTERS.set(
     locale,
     new Intl.NumberFormat(locale, {
@@ -76,13 +77,11 @@ export function formatCurrency(value: number, currency?: string): string {
 export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
   const locale = getLocale();
   const { maximumFractionDigits, minimumFractionDigits, ...restOptions } = options || {};
-
   const finalOptions: Intl.NumberFormatOptions = {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     ...restOptions,
   };
-
   if (
     typeof maximumFractionDigits === 'number' &&
     !isNaN(maximumFractionDigits) &&
@@ -91,7 +90,6 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   ) {
     finalOptions.maximumFractionDigits = maximumFractionDigits;
   }
-
   if (
     typeof minimumFractionDigits === 'number' &&
     !isNaN(minimumFractionDigits) &&
@@ -100,24 +98,18 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   ) {
     finalOptions.minimumFractionDigits = minimumFractionDigits;
   }
-
   if ((finalOptions.minimumFractionDigits ?? 0) > (finalOptions.maximumFractionDigits ?? 20)) {
     finalOptions.minimumFractionDigits = finalOptions.maximumFractionDigits;
   }
-
-
   const hasExtraOptions = Object.keys(restOptions).length > 0;
   const isDefaultMinMax =
     finalOptions.minimumFractionDigits === 2 && finalOptions.maximumFractionDigits === 2;
-
   if (!hasExtraOptions && isDefaultMinMax) {
     const formatter = NUMBER_FORMATTERS.get(locale);
     if (formatter) {
       return formatter.format(value);
     }
   }
-
-
   const fallbackFormatter = NUMBER_FORMATTERS.get(DEFAULT_LOCALE);
   return fallbackFormatter ? fallbackFormatter.format(value) : String(value);
 }

@@ -17,13 +17,19 @@ import type { InvestmentResponse } from "../types"
 export const InvestmentsPage = () => {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<PeriodFilter>("month")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [deletingInvestment, setDeletingInvestment] = useState<InvestmentResponse | null>(null)
 
   const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
     setPeriod(newPeriod)
   }, [])
 
-  const { investments, metrics, evolution, distribution } = useInvestmentQueries(period)
+  const { investments, metrics, evolution, distribution } = useInvestmentQueries({
+    period,
+    search: searchTerm,
+    type: typeFilter,
+  })
   const { deleteInvestment } = useInvestmentMutations()
 
   const handleDelete = async () => {
@@ -36,6 +42,8 @@ export const InvestmentsPage = () => {
       console.error("Error al eliminar inversión:", err)
     }
   }
+
+  const data = investments.data
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -70,8 +78,18 @@ export const InvestmentsPage = () => {
           </div>
 
           <AssetList
-            investments={investments.data || []}
+            investments={data?.displayItems || []}
             isLoading={investments.isLoading}
+            displayPage={data?.displayPage ?? 0}
+            totalDisplayPages={data?.totalDisplayPages ?? 1}
+            totalElements={data?.totalElements ?? 0}
+            displaySize={data?.displaySize ?? 10}
+            searchTerm={searchTerm}
+            typeFilter={typeFilter}
+            onSearchChange={setSearchTerm}
+            onTypeFilterChange={setTypeFilter}
+            onNextPage={data?.nextPage ?? (() => {})}
+            onPrevPage={data?.prevPage ?? (() => {})}
             onDelete={setDeletingInvestment}
           />
         </main>

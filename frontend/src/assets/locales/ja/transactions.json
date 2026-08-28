@@ -66,7 +66,13 @@
     "deleteSuccess": "$t(common:entities.transaction) が正常に削除されました",
     "createRecurringSuccess": "定期取引が正常にスケジュールされました",
     "updateRecurringSuccess": "定期取引が正常に更新されました",
-    "deleteRecurringSuccess": "定期取引が正常に削除されました"
+    "deleteRecurringSuccess": "定期取引が正常に削除されました",
+    "createError": "取引の作成中にエラーが発生しました",
+    "updateError": "取引の更新中にエラーが発生しました",
+    "deleteError": "取引の削除中にエラーが発生しました",
+    "createRecurringError": "定期取引の設定中にエラーが発生しました",
+    "updateRecurringError": "定期取引の更新中にエラーが発生しました",
+    "deleteRecurringError": "定期取引の削除中にエラーが発生しました"
   },
   "deleteTitle": "$t(common:actions.delete) $t(common:entities.transaction)",
   "deleteConfirmation": "$t(common:prompts.deleteConfirm)"

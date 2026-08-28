@@ -28,8 +28,8 @@
 
 Controlador REST mapeado a /api/v1/goals.
 
-### GET /
-Lista las metas compartidas del usuario autenticado. Devuelve lista de GoalListItemResponseDTO ordenadas: primero las que administra, luego alfabéticamente.
+### GET /?page=&size=
+Lista las metas compartidas del usuario autenticado de forma paginada. Devuelve `PaginatedResponseDTO<GoalListItemResponseDTO>` ordenadas: primero las que administra, luego alfabéticamente. Tamaño de página por defecto: 12.
 
 ### GET /{goalId}
 Obtiene el detalle de una meta. Verifica que el usuario sea miembro activo. Devuelve GoalDetailResponseDTO con miembros, aportaciones y flag isAdmin.
@@ -52,8 +52,8 @@ Actualiza el rol, salario o porcentaje personalizado de un miembro. Solo ADMIN.
 ### DELETE /{goalId}/members/{memberId}
 Elimina lógicamente a un miembro (soft delete). Solo ADMIN.
 
-### GET /{goalId}/contributions
-Calcula las contribuciones esperadas de cada miembro según el modo de distribución.
+### GET /{goalId}/contributions?page=&size=
+Obtiene el historial de aportaciones de la meta de forma paginada. Tamaño de página por defecto: 60. Responde `PaginatedResponseDTO<GoalContributionDTO>`.
 
 ### POST /{goalId}/contributions
 Añade una aportación al historial de la meta.
@@ -203,7 +203,7 @@ Devuelve true si el rol es ADMIN.
 - GoalUnitRepository: save, findById, deleteById
 - GoalMemberRepository: save, findById, findByGoalIdAndUserId, findByGoalId, deleteByGoalIdAndUserId, findByUserId
 - GoalInvitationRepository: save, findByToken, findById, findByGoalIdAndEmailAndStatus, findByInvitedUserIdAndStatus, findByGoalIdAndInvitedUserIdAndStatus
-- GoalContributionRepository: save, findByGoalId
+- GoalContributionRepository: save, findByGoalId, findByGoalIdPaginated
 
 ---
 
@@ -270,7 +270,7 @@ Las aportaciones se ordenan por fecha descendente. Los miembros y aportaciones f
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /api/v1/goals | Listar metas compartidas |
+| GET | /api/v1/goals?page=&size= | Listar metas compartidas paginadas |
 | GET | /api/v1/goals/{id} | Detalle de meta |
 | POST | /api/v1/goals | Crear meta |
 | PUT | /api/v1/goals/{id} | Actualizar meta |
@@ -281,7 +281,7 @@ Las aportaciones se ordenan por fecha descendente. Los miembros y aportaciones f
 | POST | /api/v1/goals/invitations/{id}/reject | Rechazar invitación |
 | PUT | /api/v1/goals/{id}/members/{mid} | Editar miembro |
 | DELETE | /api/v1/goals/{id}/members/{mid} | Eliminar miembro |
-| GET | /api/v1/goals/{id}/contributions | Ver contribuciones |
+| GET | /api/v1/goals/{id}/contributions?page=&size= | Ver contribuciones paginadas |
 | POST | /api/v1/goals/{id}/contributions | Añadir aportación |
 
 ---

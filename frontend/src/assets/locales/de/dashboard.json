@@ -126,6 +126,25 @@
     "errorFormat": "Ungültiges Dateiformat"
   },
   "export": {
+    "title": "Daten exportieren",
+    "configTitle": "Export konfigurieren",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "Exportiert alle deine Benutzerdaten",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "Alle CSVs in einer einzigen Datei",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "Eine Datei pro Bereich",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "Gestalteter Finanzbericht",
+    "entity": "Datentyp",
+    "selectEntity": "Typ auswählen...",
+    "period": "Zeitraum",
+    "period1m": "Letzter Monat",
+    "period3m": "Letzte 3 Monate",
+    "period6m": "Letzte 6 Monate",
+    "period1y": "Letztes Jahr",
+    "periodAll": "Alle",
+    "action": "Exportieren",
     "success": "Datensicherung erfolgreich exportiert",
     "error": "Fehler beim Exportieren der Daten"
   }

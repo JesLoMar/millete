@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-    private static final int MAX_ATTEMPTS = 5;
+    private static final int MAX_ATTEMPTS = 20;
     private static final long WINDOW_MS = TimeUnit.MINUTES.toMillis(1);
     private static final int MAX_IPS = 10_000;
     private static final String LOGIN_PATH = "/api/v1/auth/login";
@@ -39,11 +39,10 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         if (windowStart == null || now - windowStart > WINDOW_MS) {
 
             if (attemptsPerIp.size() >= MAX_IPS) {
-
                 evictExpiredEntries(now);
             }
             windowStartPerIp.put(clientIp, now);
-            attemptsPerIp.put(clientIp, new AtomicInteger(1));
+            attemptsPerIp.put(clientIp, new AtomicInteger(0));
             windowStart = now;
         }
 

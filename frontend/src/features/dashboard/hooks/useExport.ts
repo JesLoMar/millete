@@ -2,6 +2,11 @@ import { useState } from "react"
 import { apiClient } from "@/shared/api/axiosClient"
 import type { ExportFormat } from "../constants"
 
+const FILE_BRAND = "millete"
+
+const sanitizeFilenamePart = (value: string): string =>
+  value.replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 50)
+
 export function useExport() {
   const [isExporting, setIsExporting] = useState(false)
 
@@ -10,28 +15,30 @@ export function useExport() {
     try {
       let response: BlobPart
       let filename = ""
-
       switch (format) {
         case "json":
           response = (await apiClient.get("/data/export", { responseType: "blob" })).data
-          filename = "familybudget_export.json"
+          filename = `${FILE_BRAND}_export.json`
           break
         case "zip":
           response = (await apiClient.get("/data/export/zip", { responseType: "blob" })).data
-          filename = "familybudget_export.zip"
+          filename = `${FILE_BRAND}_export.zip`
           break
-        case "csv":
+        case "csv": {
           if (!configValue) return
+          const safe = sanitizeFilenamePart(configValue)
           response = (await apiClient.get(`/data/export/csv/${encodeURIComponent(configValue)}`, { responseType: "blob" })).data
-          filename = `familybudget_${configValue}.csv`
+          filename = `${FILE_BRAND}_export_${safe}.csv`
           break
-        case "pdf":
+        }
+        case "pdf": {
           if (!configValue) return
+          const safe = sanitizeFilenamePart(configValue)
           response = (await apiClient.get(`/data/export/pdf?${new URLSearchParams({ period: configValue })}`, { responseType: "blob" })).data
-          filename = `millete_financial_data_${configValue}.pdf`
+          filename = `${FILE_BRAND}_financial_data_${safe}.pdf`
           break
+        }
       }
-
       const url = window.URL.createObjectURL(new Blob([response]))
       const link = document.createElement("a")
       link.href = url
@@ -40,7 +47,6 @@ export function useExport() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-
       return true
     } catch {
       return false

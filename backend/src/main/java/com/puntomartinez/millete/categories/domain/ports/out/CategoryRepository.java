@@ -12,4 +12,6 @@ public interface CategoryRepository {
     Optional<Category> findActiveByIdAndUserId(UUID id, UUID userId);
     List<Category> findByIdUsuario(UUID userId);
     List<Category> findCategoriesWithBudgetByUserId(UUID userId);
+    List<Category> findAllByUserId(UUID userId, int page, int size, String search);
+    long countByUserIdAndFilters(UUID userId, String search);
 }

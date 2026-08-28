@@ -10,6 +10,7 @@ import java.util.UUID;
 public record PlannedTransactionResponseDTO(
         UUID id,
         UUID categoryId,
+        String categoryName,
         BigDecimal amount,
         TransactionType type,
         String description,
@@ -17,5 +18,6 @@ public record PlannedTransactionResponseDTO(
         Integer frequencyInterval,
         LocalDate startDate,
         LocalDate endDate,
+        LocalDate lastExecutedDate,
         boolean active
 ) {}

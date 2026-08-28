@@ -1,10 +1,15 @@
 package com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.adapters;
 
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
 import com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.entity.TransactionEntity;
 import com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.mappers.TransactionEntityMapper;
 import com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.repository.SpringDataTransactionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -21,6 +26,31 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     public TransactionPostgresAdapter(SpringDataTransactionRepository repository, TransactionEntityMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
+    }
+
+    private Specification<TransactionEntity> buildSpecification(UUID userId, String search, TransactionType type,
+                                                                LocalDateTime startDate, LocalDateTime endDate) {
+        Specification<TransactionEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("active"), true));
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("description")), pattern));
+        }
+
+        if (type != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("type"), type.name()));
+        }
+
+        if (startDate != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("date"), startDate));
+        }
+
+        if (endDate != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("date"), endDate));
+        }
+
+        return spec;
     }
 
     @Override
@@ -52,8 +82,10 @@ public class TransactionPostgresAdapter implements TransactionRepository {
 
     @Override
     public List<Transaction> findRecentByUserId(UUID userId, int limit) {
-        return repository.findTop5ByUserIdOrderByDateDesc(userId).stream()
-                .limit(limit)
+        if (limit <= 0) {
+            return List.of();
+        }
+        return repository.findByUserIdAndActiveTrueOrderByDateDesc(userId, PageRequest.of(0, limit)).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
@@ -63,5 +95,22 @@ public class TransactionPostgresAdapter implements TransactionRepository {
         return repository.findAllByCategoryId(categoryId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<Transaction> findAllByUserId(UUID userId, int page, int size, String search, TransactionType type,
+                                             LocalDateTime startDate, LocalDateTime endDate) {
+        Specification<TransactionEntity> spec = buildSpecification(userId, search, type, startDate, endDate);
+        Page<TransactionEntity> result = repository.findAll(spec,
+                PageRequest.of(page, size, Sort.by("date").descending()));
+        return result.getContent().stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, TransactionType type,
+                                        LocalDateTime startDate, LocalDateTime endDate) {
+        return repository.count(buildSpecification(userId, search, type, startDate, endDate));
     }
 }

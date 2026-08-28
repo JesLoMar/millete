@@ -10,6 +10,7 @@ import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.T
 import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionResponseDTO;
 import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.UpdateTransactionRequestDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
@@ -17,8 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
@@ -46,15 +52,45 @@ public class TransactionController {
 
 
     @GetMapping
-    public ResponseEntity<List<TransactionResponseDTO>> listTransactions(Authentication authentication) {
+    public ResponseEntity<PaginatedResponseDTO<TransactionResponseDTO>> listTransactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "month") String period,
+            Authentication authentication) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
-        List<TransactionResponseDTO> transactions = listTransactionsUseCase.findAllByUserId(userId)
-                .stream()
-                .map(tx -> mapToDTO(tx, userId))
+        Transaction.TransactionType transactionType = parseType(type);
+        LocalDateTime[] range = getDateRange(period);
+
+        long totalElements = listTransactionsUseCase.countByUserIdAndFilters(
+                userId, search, transactionType, range[0], range[1]);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+
+        List<Transaction> transactions = listTransactionsUseCase.findAllByUserId(
+                userId, safePage, size, search, transactionType, range[0], range[1]);
+
+        Map<UUID, CategoryInfo> categoryMap = categoryRepository.findByIdUsuario(userId).stream()
+                .collect(Collectors.toMap(
+                        Category::getId,
+                        c -> new CategoryInfo(c.getName(), c.getColor()),
+                        (a, b) -> a));
+
+        List<TransactionResponseDTO> content = transactions.stream()
+                .map(tx -> mapToDTO(tx, categoryMap))
                 .toList();
 
-        return ResponseEntity.ok(transactions);
+        return ResponseEntity.ok(new PaginatedResponseDTO<>(
+                content,
+                safePage,
+                totalPages,
+                totalElements,
+                size,
+                safePage == 0,
+                safePage >= totalPages - 1 || totalPages == 0
+        ));
     }
 
 
@@ -132,7 +168,10 @@ public class TransactionController {
 
     private TransactionResponseDTO mapToDTO(Transaction tx, UUID userId) {
         CategoryInfo info = resolveCategoryInfo(tx.getCategoryId(), userId);
+        return mapToDTO(tx, info);
+    }
 
+    private TransactionResponseDTO mapToDTO(Transaction tx, CategoryInfo info) {
         return new TransactionResponseDTO(
                 tx.getId(),
                 tx.getCategoryId(),
@@ -145,5 +184,46 @@ public class TransactionController {
                 false,
                 tx.isActive()
         );
+    }
+
+    private TransactionResponseDTO mapToDTO(Transaction tx, Map<UUID, CategoryInfo> categoryMap) {
+        CategoryInfo info = tx.getCategoryId() != null ? categoryMap.get(tx.getCategoryId()) : null;
+        if (info == null) {
+            info = new CategoryInfo("Sin categoría", null);
+        }
+        return mapToDTO(tx, info);
+    }
+
+    private Transaction.TransactionType parseType(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        try {
+            return Transaction.TransactionType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private LocalDateTime[] getDateRange(String period) {
+        LocalDateTime now = LocalDateTime.now();
+        return switch (period.toLowerCase()) {
+            case "week" -> new LocalDateTime[]{
+                    now.with(DayOfWeek.MONDAY).withHour(0).withMinute(0).withSecond(0),
+                    now.with(DayOfWeek.SUNDAY).withHour(23).withMinute(59).withSecond(59)
+            };
+            case "month" -> new LocalDateTime[]{
+                    now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0),
+                    now.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59)
+            };
+            case "year" -> new LocalDateTime[]{
+                    now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0),
+                    now.with(TemporalAdjusters.lastDayOfYear()).withHour(23).withMinute(59).withSecond(59)
+            };
+            default -> new LocalDateTime[]{
+                    now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0),
+                    now.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59)
+            };
+        };
     }
 }

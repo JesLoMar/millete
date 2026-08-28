@@ -46,6 +46,16 @@ public class CategoryService implements RegisterCategoryUseCase, UpdateCategoryU
     }
 
     @Override
+    public List<Category> findAllByUserId(UUID userId, int page, int size, String search) {
+        return categoryRepository.findAllByUserId(userId, page, size, search);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search) {
+        return categoryRepository.countByUserIdAndFilters(userId, search);
+    }
+
+    @Override
     public Category update(UUID id, UUID userId, UpdateCategoryCommand command) {
         Category category = categoryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));

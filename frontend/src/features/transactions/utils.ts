@@ -17,7 +17,9 @@ export function formatFrequency(
   if (tx.frequencyInterval === 1) {
     return t(FREQUENCY_SINGULAR[tx.frequencyType] || "")
   }
-  return t("transactions.recurring.every", {
+  // Namespace con ':' (transactions:...); con '.' i18next no resolvía la clave
+  // y pintaba el texto crudo "transactions.recurring.every".
+  return t("transactions:recurring.every", {
     interval: tx.frequencyInterval,
     unit: t(FREQUENCY_LABELS[tx.frequencyType] || ""),
   })
@@ -28,10 +30,8 @@ export function calculateNextExecution(tx: PlannedTransaction): string {
   const start = new Date(tx.startDate)
   const today = new Date()
   if (start > today) return formatDate(tx.startDate)
-
   const interval = tx.frequencyInterval || 1
   const next = new Date(start)
-
   while (next <= today) {
     switch (tx.frequencyType) {
       case "DAYS": next.setDate(next.getDate() + interval); break
@@ -41,7 +41,6 @@ export function calculateNextExecution(tx: PlannedTransaction): string {
       default: return "—"
     }
   }
-
   if (tx.endDate && next > new Date(tx.endDate)) return "—"
   return formatDate(next.toISOString())
 }

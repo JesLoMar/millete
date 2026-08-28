@@ -32,13 +32,14 @@ Crea una nueva inversión.
 3. Al crear, el currentPrice se inicializa con el purchasePrice.
 4. Responde 201 Created con InvestmentResponseDTO.
 
-### GET /
+### GET /?page=&size=&search=&type=
 
-Lista las inversiones activas del usuario autenticado.
+Lista las inversiones activas del usuario autenticado de forma paginada.
 
-1. Obtiene todas las inversiones del usuario.
-2. Filtra solo las activas.
-3. Mapea cada una a InvestmentResponseDTO con todos los campos calculados.
+1. Extrae el userId del token.
+2. Soporta query params opcionales: `search` (filtro por nombre o ticker, case-insensitive) y `type` (filtra por tipo de activo: `STOCK`, `CRYPTO`, `FUND`, `REAL_ESTATE`, `OTHER`).
+3. Filtra solo las activas.
+4. Mapea el resultado a `PaginatedResponseDTO<InvestmentResponseDTO>` con todos los campos calculados.
 
 ### PATCH /{id}/price
 
@@ -136,7 +137,7 @@ Valida que la cantidad sea mayor que cero. Si no se proporciona currentPrice, us
 
 ### ListInvestmentsUseCase
 
-- findAllByUserId(UUID) → List<Investment>
+- findAllByUserId(UUID, Pageable, String search, InvestmentType type) → Page<Investment>
 
 ### UpdateInvestmentPriceUseCase
 
@@ -196,7 +197,7 @@ Estos valores se calculan bajo demanda y se incluyen en el DTO de respuesta.
 
 | Método | Endpoint | Uso |
 |--------|----------|-----|
-| GET | /api/v1/investments | Listar inversiones activas |
+| GET | /api/v1/investments?page=&size=&search=&type= | Listar inversiones activas paginadas |
 | POST | /api/v1/investments | Crear nueva inversión |
 | PATCH | /api/v1/investments/:id/price | Actualizar precio de mercado |
 | DELETE | /api/v1/investments/:id | Eliminar (desactivar) inversión |

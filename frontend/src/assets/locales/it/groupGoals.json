@@ -71,6 +71,7 @@
   "name": "Nome",
   "role": "Ruolo",
   "edit": "$t(common:actions.edit)",
+  "editNameTitle": "Modifica il nome dell'obiettivo di gruppo",
   "editMember": "$t(common:actions.edit) Membro",
   "delete": "$t(common:actions.delete)",
   "deleteGoal": "$t(common:actions.delete) obiettivo di gruppo",
@@ -106,5 +107,8 @@
     "memberDeleteError": "Errore durante l'eliminazione del membro",
     "contributionSuccess": "Contributo registrato correttamente",
     "contributionError": "Errore durante la registrazione del contributo"
-  }
+  },
+  "invitationRejected": "Invito rifiutato",
+  "invitationRejectedMessage": "Hai rifiutato l'invito. Non ti unirai a questo obiettivo di gruppo.",
+  "rejectError": "Errore durante il rifiuto dell'invito"
 }

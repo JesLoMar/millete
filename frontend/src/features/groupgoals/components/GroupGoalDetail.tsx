@@ -38,6 +38,7 @@ export function GroupGoalDetail({
   onModeChange,
   onAddContribution,
 }: GroupGoalDetailProps) {
+  const goalId = goal.id
   const { t } = useTranslation()
   const isAdmin = goal.isAdmin
   const isCustomMode = goal.distributionMode === "CUSTOM"
@@ -200,7 +201,7 @@ export function GroupGoalDetail({
         </div>
       </div>
 
-      <ContributionHistory contributions={goal.contributions} onAddClick={onAddContribution} />
+      <ContributionHistory goalId={goalId} onAddClick={onAddContribution} />
     </div>
   )
 }

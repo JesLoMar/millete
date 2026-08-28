@@ -28,14 +28,14 @@
     "subtitle": "Découvrez les dernières améliorations apportées à la plateforme.",
     "items": [
       {
+        "tag": "v0.1.3",
+        "title": "Améliorer les notifications, les traductions et la sécurité",
+        "description": "Les notifications se comportent désormais comme elles le devraient, liens cliquables dans les objectifs d'épargne. Application plus rapide avec beaucoup de données.\nExtra : Connexion mobile améliorée avec nouveautés et guide, plusieurs renforcements de la sécurité et de la logique."
+      },
+      {
         "tag": "v0.1.2",
         "title": "Corriger la logique, l'UI et les vulnérabilités",
         "description": "Corrige les bugs et les comportements indésirables dans les objectifs de groupe, améliore l'interface et apporte de petites améliorations UX.\nExtra : +3 nouveaux thèmes."
-      },
-      {
-        "tag": "v0.1.1",
-        "title": "Optimisation et améliorations visuelles",
-        "description": "Concevoir et implémenter une palette de couleurs propre. Ajouter des retours visuels et des micro-expériences utilisateur, réduire le poids du projet et optimiser le chargement sur les réseaux lents."
       }
     ]
   }

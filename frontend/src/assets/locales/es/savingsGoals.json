@@ -17,6 +17,8 @@
   "deadline": "Fecha límite (opcional)",
   "link": "Enlace (opcional)",
   "linkPlaceholder": "https://...",
+  "viewLink": "Ver enlace",
+  "invalidLink": "Introduce una URL válida",
   "progress": "Progreso",
   "of": "de",
   "addFunds": "$t(common:actions.add) fondos a {{name}}",

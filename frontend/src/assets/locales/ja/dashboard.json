@@ -127,6 +127,25 @@
   },
   "export": {
     "success": "バックアップが正常にエクスポートされました",
-    "error": "データのエクスポート中にエラーが発生しました"
+    "error": "データのエクスポート中にエラーが発生しました",
+    "title": "データをエクスポート",
+    "configTitle": "エクスポート設定",
+    "formatJSON": "JSON",
+    "formatJSONDesc": "すべてのユーザーデータをエクスポートします",
+    "formatZIP": "ZIP",
+    "formatZIPDesc": "すべてのCSVを1つのファイルに",
+    "formatCSV": "CSV",
+    "formatCSVDesc": "セクションごとに1ファイル",
+    "formatPDF": "PDF",
+    "formatPDFDesc": "スタイル付き財務レポート",
+    "entity": "データの種類",
+    "selectEntity": "種類を選択...",
+    "period": "期間",
+    "period1m": "先月",
+    "period3m": "過去3か月",
+    "period6m": "過去6か月",
+    "period1y": "過去1年",
+    "periodAll": "すべて",
+    "action": "エクスポート"
   }
 }

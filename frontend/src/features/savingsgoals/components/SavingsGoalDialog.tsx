@@ -30,6 +30,25 @@ const PRIORITIES = [
   { value: "HIGH", labelKey: "savingsGoals:priorities.HIGH" },
 ] as const
 
+/**
+ * Valida el link tal como lo normalizará el hook:
+ * vacío es válido (campo opcional); si no tiene protocolo se asume https://;
+ * solo se aceptan http(s) y URLs sintácticamente válidas.
+ */
+const isValidLink = (link: string): boolean => {
+  const trimmed = link.trim()
+  if (!trimmed) return true
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+
+  try {
+    const url = new URL(withProtocol)
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 export function SavingsGoalDialog() {
   const { t } = useTranslation()
   const { mutateAsync: createGoal, isPending: isCreating } = useCreateSavingsGoal()
@@ -41,6 +60,7 @@ export function SavingsGoalDialog() {
     deadline: "",
     link: "",
   })
+  const [linkTouched, setLinkTouched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const resetForm = () => {
@@ -51,6 +71,7 @@ export function SavingsGoalDialog() {
       deadline: "",
       link: "",
     })
+    setLinkTouched(false)
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -60,6 +81,10 @@ export function SavingsGoalDialog() {
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.targetAmount) return
+    if (!isValidLink(form.link)) {
+      setLinkTouched(true)
+      return
+    }
 
     try {
       await createGoal({
@@ -78,7 +103,13 @@ export function SavingsGoalDialog() {
     }
   }
 
-  const isValid = form.name.trim() && form.targetAmount && Number(form.targetAmount) > 0
+  const linkError = linkTouched && !isValidLink(form.link)
+
+  const isValid =
+    form.name.trim() &&
+    form.targetAmount &&
+    Number(form.targetAmount) > 0 &&
+    isValidLink(form.link)
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -165,9 +196,17 @@ export function SavingsGoalDialog() {
                 placeholder={t('savingsGoals:linkPlaceholder')}
                 value={form.link}
                 onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
+                onBlur={() => setLinkTouched(true)}
                 disabled={isCreating}
                 className="bg-background border-border"
+                aria-invalid={linkError}
+                aria-describedby={linkError ? "goal-link-error" : undefined}
               />
+              {linkError && (
+                <p id="goal-link-error" className="text-xs text-destructive">
+                  {t('savingsGoals:invalidLink')}
+                </p>
+              )}
             </div>
           </div>
 

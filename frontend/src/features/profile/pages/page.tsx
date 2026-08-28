@@ -5,7 +5,7 @@ import { TopNav } from '@/shared/components/TopNav';
 import { Sidebar } from '@/shared/components/Sidebar';
 import { PersonalInfoSection } from '../components/PersonalInfoSection';
 import { ChangePasswordSection } from '../components/ChangePasswordSection';
-import { TelegramSection } from '../components/TelegramSection';
+{/*import { TelegramSection } from '../components/TelegramSection';*/}
 import { SessionsSection } from '../components/SessionsSection';
 import { DeleteAccountSection } from '../components/DeleteAccountSection';
 import { NotificationsTable } from '../components/NotificationsTable';
@@ -32,7 +32,7 @@ export const ProfilePage = () => {
             <h1 className="text-2xl font-bold">{t('title')}</h1>
             <PersonalInfoSection />
             <ChangePasswordSection />
-            <TelegramSection />
+            {/* <TelegramSection /> */}
             <div ref={notificationsRef} id="notifications-section">
               <NotificationsTable />
             </div>

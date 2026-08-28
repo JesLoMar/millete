@@ -3,7 +3,9 @@ package com.puntomartinez.millete.plannedtransactions.application.services;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction.FrequencyType;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
@@ -27,7 +29,8 @@ public class PlannedTransactionService implements
         RegisterPlannedTransactionUseCase,
         ProcessPlannedTransactionsUseCase,
         UpdatePlannedTransactionUseCase,
-        DeletePlannedTransactionUseCase {
+        DeletePlannedTransactionUseCase,
+        ListPlannedTransactionsUseCase {
 
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final CategoryRepository categoryRepository;
@@ -45,7 +48,9 @@ public class PlannedTransactionService implements
     @Override
     public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
+            // findByIdAndUserId: valida existencia Y propiedad — una categoría de otro
+            // usuario responde 404 igual que una inexistente (no revela que el UUID existe)
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
                     .orElseThrow(() -> new ResourceNotFoundException("The specified category does not exist."));
         }
 
@@ -118,13 +123,14 @@ public class PlannedTransactionService implements
         }
 
         if (command.categoryId() != null) {
-            categoryRepository.findById(command.categoryId())
+            // Misma regla que en register: existencia + propiedad
+            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category does not exist."));
         }
 
         boolean recurrenceChanged = !tx.getStartDate().equals(command.startDate()) ||
-                                    tx.getFrequencyType() != command.frequencyType() ||
-                                    !tx.getFrequencyInterval().equals(command.frequencyInterval());
+                tx.getFrequencyType() != command.frequencyType() ||
+                !tx.getFrequencyInterval().equals(command.frequencyInterval());
 
         tx.setAmount(command.amount());
         tx.setType(command.type());
@@ -162,6 +168,17 @@ public class PlannedTransactionService implements
         return plannedTransactionRepository.findAllByUserId(userId).stream()
                 .filter(PlannedTransaction::isActive)
                 .toList();
+    }
+
+    @Override
+    public List<PlannedTransaction> findAllByUserId(UUID userId, int page, int size, String search,
+                                                    TransactionType type) {
+        return plannedTransactionRepository.findAllByUserId(userId, page, size, search, type);
+    }
+
+    @Override
+    public long countByUserIdAndFilters(UUID userId, String search, TransactionType type) {
+        return plannedTransactionRepository.countByUserIdAndFilters(userId, search, type);
     }
 
 

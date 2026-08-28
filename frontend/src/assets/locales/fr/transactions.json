@@ -66,7 +66,13 @@
     "deleteSuccess": "$t(common:entities.transaction) supprimée avec succès",
     "createRecurringSuccess": "Transaction récurrente programmée avec succès",
     "updateRecurringSuccess": "Transaction récurrente mise à jour avec succès",
-    "deleteRecurringSuccess": "Transaction récurrente supprimée avec succès"
+    "deleteRecurringSuccess": "Transaction récurrente supprimée avec succès",
+    "createError": "Erreur lors de la création de la transaction",
+    "updateError": "Erreur lors de la mise à jour de la transaction",
+    "deleteError": "Erreur lors de la suppression de la transaction",
+    "createRecurringError": "Erreur lors de la programmation de la transaction récurrente",
+    "updateRecurringError": "Erreur lors de la mise à jour de la transaction récurrente",
+    "deleteRecurringError": "Erreur lors de la suppression de la transaction récurrente"
   },
   "deleteTitle": "$t(common:actions.delete) $t(common:entities.transaction)",
   "deleteConfirmation": "$t(common:prompts.deleteConfirm)"

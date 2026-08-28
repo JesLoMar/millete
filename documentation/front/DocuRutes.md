@@ -56,6 +56,14 @@ Ninguna. Obtiene todo el estado del contexto de autenticación.
 4. Si no está autenticado, redirige a `/login` guardando la ubicación intentada en `location.state.from`.
 5. Tras login exitoso, `useLoginMutation` recupera `location.state.from` y redirige a la ruta original.
 6. Si el usuario autenticado accede a `/login`, PublicRoute redirige a `/dashboard`.
+7. Las rutas `/wiki` y `/wiki/:section` son públicas: no están envueltas ni por PublicRoute ni por ProtectedRoute, por lo que son accesibles sin autenticación.
+
+1. Usuario accede a una ruta protegida (`/dashboard`, `/transactions`, etc.).
+2. ProtectedRoute verifica el estado de autenticación.
+3. Si está cargando, muestra placeholder.
+4. Si no está autenticado, redirige a `/login` guardando la ubicación intentada en `location.state.from`.
+5. Tras login exitoso, `useLoginMutation` recupera `location.state.from` y redirige a la ruta original.
+6. Si el usuario autenticado accede a `/login`, PublicRoute redirige a `/dashboard`.
 
 ---
 

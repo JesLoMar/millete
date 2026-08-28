@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface GoalContributionRepository {
     GoalContribution save(GoalContribution contribution);
     List<GoalContribution> findByGoalId(UUID goalId);
+    List<GoalContribution> findByGoalId(UUID goalId, int page, int size);
+    long countByGoalId(UUID goalId);
 }
