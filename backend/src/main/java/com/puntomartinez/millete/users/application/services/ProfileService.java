@@ -47,8 +47,7 @@ public class ProfileService implements ManageProfileUseCase {
                 user.getUsername(),
                 user.getEmail(),
                 user.isActive(),
-                user.isAnonymized(),
-                user.getTelegramChatId()
+                user.isAnonymized()
         );
     }
 
@@ -133,16 +132,6 @@ public class ProfileService implements ManageProfileUseCase {
         preferences.setPreferencesJson(trimmed);
         preferences.setModifiedAt(LocalDateTime.now());
         userPreferencesRepository.save(preferences);
-    }
-
-    @Override
-    @Transactional
-    public void unlinkTelegram(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        user.setTelegramChatId(null);
-        user.setModifiedAt(LocalDateTime.now());
-        userRepository.save(user);
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.util.UUID;
 @Service
 public class SessionPersistenceService {
     public static final String CHANNEL_WEB = "WEB";
-    public static final String CHANNEL_TELEGRAM = "TELEGRAM";
     private final UserSessionRepository userSessionRepository;
     public SessionPersistenceService(UserSessionRepository userSessionRepository) {
         this.userSessionRepository = userSessionRepository;

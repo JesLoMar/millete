@@ -11,13 +11,12 @@ public interface ManageProfileUseCase {
     void changePassword(UUID userId, ChangePasswordCommand command);
     String getPreferences(UUID userId);
     void updatePreferences(UUID userId, String preferencesJson);
-    void unlinkTelegram(UUID userId);
     List<UserSession> getActiveSessions(UUID userId);
     void closeSession(UUID userId, UUID sessionIdToClose);
     void closeAllOtherSessions(UUID userId, UUID currentSessionId);
     void deactivateAccount(UUID userId, String password);
 
-    record UserProfileDTO(UUID id, String username, String email, boolean active, boolean anonymized, Long telegramChatId) {}
+    record UserProfileDTO(UUID id, String username, String email, boolean active, boolean anonymized) {}
     record UpdateProfileCommand(String newUsername, String newEmail, String currentPassword) {}
     record ChangePasswordCommand(String currentPassword, String newPassword, UUID currentSessionId) {}
 }

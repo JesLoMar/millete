@@ -9,7 +9,6 @@ public class UserSession {
     private UUID id;
     private UUID userId;
     private String channel;
-    private Long telegramChatId;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;

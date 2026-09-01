@@ -3,7 +3,6 @@ package com.puntomartinez.millete.users.infrastructure.in.controller;
 import com.puntomartinez.millete.shared.infrastructure.config.CookieAuthFactory;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.users.application.services.SessionPersistenceService;
-import com.puntomartinez.millete.users.application.services.UserService;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.model.UserSession;
 import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
@@ -32,7 +31,6 @@ public class AuthController {
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
     private final GetUserDataUseCase getUserDataUseCase;
-    private final UserService userService;
     private final TokenProvider tokenProvider;
     private final SessionPersistenceService sessionPersistenceService;
     private final CookieAuthFactory cookieAuthFactory;
@@ -41,14 +39,12 @@ public class AuthController {
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
             GetUserDataUseCase getUserDataUseCase,
-            UserService userService,
             TokenProvider tokenProvider,
             SessionPersistenceService sessionPersistenceService,
             CookieAuthFactory cookieAuthFactory) {
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.getUserDataUseCase = getUserDataUseCase;
-        this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.sessionPersistenceService = sessionPersistenceService;
         this.cookieAuthFactory = cookieAuthFactory;
@@ -124,36 +120,4 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/telegram/link")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> linkTelegram(
-            @RequestBody Map<String, Long> request,
-            Authentication authentication) {
-
-        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-        Long chatId = request.get("chatId");
-
-        if (chatId == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        userService.linkTelegram(jwtUser.getId(), chatId);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/telegram/status")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> getTelegramStatus(
-            @RequestParam Long chatId,
-            Authentication authentication) {
-
-        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-        User user = userService.getUserById(jwtUser.getId());
-
-        Map<String, Object> response = new HashMap<>();
-        boolean linked = user.getTelegramChatId() != null && user.getTelegramChatId().equals(chatId);
-        response.put("linked", linked);
-
-        return ResponseEntity.ok(response);
-    }
 }
