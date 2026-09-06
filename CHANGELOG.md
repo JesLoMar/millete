@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
+## [0.1.4] - 2026-xx-xx
+
+- Eliminar toda referencia al bot de telegram.
+- Añadir el disparador de transacciones recurrentes.
+- Preparar el backend para compilación nativa.
+
+---
 
 ## [0.1.3] - 2026-08-24
 
