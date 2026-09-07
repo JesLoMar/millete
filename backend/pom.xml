@@ -18,10 +18,10 @@
 
     <properties>
         <java.version>25</java.version>
-
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.40</lombok.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <hibernate.version>7.2.24.Final</hibernate.version>
     </properties>
 
     <dependencies>
@@ -42,10 +42,20 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-graalvm</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>svm</artifactId>
+            <version>25.0.4</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -139,8 +149,12 @@
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
                 <configuration>
+                    <metadataRepository>
+                        <enabled>false</enabled>
+                    </metadataRepository>
+
                     <buildArgs>
-                        <buildArg>--initialize-at-run-time=org.apache.pdfbox.pdmodel.PDDocument</buildArg>
+                        <buildArg>--features=com.puntomartinez.millete.shared.infrastructure.nativeimage.HibernateBytecodeFeature</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
