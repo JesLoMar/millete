@@ -11,12 +11,24 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
 
     @Override
     public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
-        hints.reflection().registerType(UUID[].class);
 
-        hints.resources().registerPattern("org/apache/pdfbox/resources/afm/*.afm");
-        hints.resources().registerPattern("org/apache/pdfbox/resources/glyphlist/glyphlist.txt");
-        hints.resources().registerPattern("org/apache/pdfbox/resources/glyphlist/zapfdingbats.txt");
+        // UUID
+        hints.reflection().registerType(
+                UUID[].class
+        );
 
+        // PDFBox resources
+        hints.resources().registerPattern(
+                "org/apache/pdfbox/resources/afm/*.afm"
+        );
+        hints.resources().registerPattern(
+                "org/apache/pdfbox/resources/glyphlist/glyphlist.txt"
+        );
+        hints.resources().registerPattern(
+                "org/apache/pdfbox/resources/glyphlist/zapfdingbats.txt"
+        );
+
+        // PDF export DTOs
         hints.reflection().registerType(
                 PdfExportData.Summary.class,
                 MemberCategory.INVOKE_PUBLIC_METHODS
