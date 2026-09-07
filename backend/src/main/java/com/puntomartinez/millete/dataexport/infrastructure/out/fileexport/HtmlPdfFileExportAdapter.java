@@ -30,6 +30,15 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
     private static final float HEADER_HEIGHT = 72f;
 
+    // Espaciados verticales reutilizables para mantener un ritmo consistente
+    private static final float SPACE_AFTER_HEADER = 20f;
+    private static final float SPACE_AFTER_SUMMARY = 26f;
+    private static final float SPACE_TITLE_TO_DIVIDER = 8f;
+    private static final float SPACE_DIVIDER_TO_CONTENT = 16f;
+    private static final float SPACE_BETWEEN_SECTIONS = 30f;
+    private static final float TABLE_HEADER_HEIGHT = 22f;
+    private static final float TABLE_ROW_HEIGHT = 22f;
+
     private static final PDType1Font FONT_REGULAR =
             new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 
@@ -105,14 +114,14 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
                 drawBackground(content);
                 drawHeader(content, data);
-                drawSummary(content, data.summary());
+                float summaryBottomY = drawSummary(content, data.summary());
 
                 PdfPageContext context = new PdfPageContext(
                         document,
                         content
                 );
 
-                float y = 555f;
+                float y = summaryBottomY - SPACE_AFTER_SUMMARY;
 
                 if (!data.investments().isEmpty()) {
                     y = drawInvestments(
@@ -130,29 +139,29 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     drawEmptyMessage(
                             context.content(),
                             "No active investments at this time.",
-                            y - 18
+                            y - SPACE_DIVIDER_TO_CONTENT
                     );
 
-                    y -= 45;
+                    y -= SPACE_DIVIDER_TO_CONTENT + 30;
                 }
 
                 y = drawSectionTitle(
                         context.content(),
                         "Transactions in Period",
-                        y - 10
+                        y - SPACE_BETWEEN_SECTIONS
                 );
 
                 if (!data.transactions().isEmpty()) {
                     drawTransactions(
                             context,
                             data.transactions(),
-                            y - 18
+                            y - SPACE_DIVIDER_TO_CONTENT
                     );
                 } else {
                     drawEmptyMessage(
                             context.content(),
                             "No transactions in this period.",
-                            y - 18
+                            y - SPACE_DIVIDER_TO_CONTENT
                     );
                 }
             }
@@ -234,8 +243,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 "Millete - Financial Data",
                 FONT_BOLD,
                 20,
-                x + 18,
-                y - 28,
+                x + 20,
+                y - 30,
                 TEXT_COLOR_R,
                 TEXT_COLOR_G,
                 TEXT_COLOR_B
@@ -254,15 +263,15 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 period,
                 FONT_REGULAR,
                 12,
-                x + 18,
-                y - 48,
+                x + 20,
+                y - 50,
                 MUTED_COLOR_R,
                 MUTED_COLOR_G,
                 MUTED_COLOR_B
         );
     }
 
-    private void drawSummary(
+    private float drawSummary(
             PDPageContentStream content,
             PdfExportData.Summary summary
     ) throws IOException {
@@ -271,13 +280,14 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 PAGE_SIZE.getHeight()
                         - PAGE_MARGIN
                         - HEADER_HEIGHT
-                        - 18;
+                        - SPACE_AFTER_HEADER;
 
-        float gap = 6;
+        float gap = 8;
         float cardWidth =
                 (CONTENT_WIDTH - (gap * 3)) / 4;
 
-        float cardHeight = 64;
+        float cardHeight = 68;
+        float rowGap = 8;
 
         drawMetricCard(
                 content,
@@ -337,7 +347,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 TEXT_COLOR_B
         );
 
-        y -= cardHeight + 10;
+        y -= cardHeight + rowGap;
 
         drawMetricCard(
                 content,
@@ -390,6 +400,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 GREEN_G,
                 GREEN_B
         );
+
+        return y - cardHeight;
     }
 
     private void drawMetricCard(
@@ -426,8 +438,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 label,
                 FONT_BOLD,
                 7,
-                x + 10,
-                y - 17,
+                x + 12,
+                y - 19,
                 MUTED_COLOR_R,
                 MUTED_COLOR_G,
                 MUTED_COLOR_B
@@ -438,8 +450,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 value,
                 FONT_BOLD,
                 15,
-                x + 10,
-                y - 43,
+                x + 12,
+                y - 45,
                 valueR,
                 valueG,
                 valueB
@@ -480,7 +492,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 50
         };
 
-        float tableY = y - 18;
+        float tableY = y - SPACE_DIVIDER_TO_CONTENT;
 
         drawTableHeader(
                 context.content(),
@@ -489,7 +501,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 widths
         );
 
-        float rowY = tableY - 20;
+        float rowY = tableY - TABLE_HEADER_HEIGHT;
         boolean alternate = false;
 
         for (PdfExportData.InvestmentRow investment : investments) {
@@ -500,7 +512,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 rowY =
                         PAGE_SIZE.getHeight()
                                 - PAGE_MARGIN
-                                - 20;
+                                - TABLE_HEADER_HEIGHT;
 
                 drawTableHeader(
                         context.content(),
@@ -509,7 +521,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                         widths
                 );
 
-                rowY -= 20;
+                rowY -= TABLE_HEADER_HEIGHT;
             }
 
             drawTableRowBackground(
@@ -546,7 +558,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     widths
             );
 
-            rowY -= 20;
+            rowY -= TABLE_ROW_HEIGHT;
             alternate = !alternate;
         }
 
@@ -582,7 +594,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 widths
         );
 
-        float rowY = y - 20;
+        float rowY = y - TABLE_HEADER_HEIGHT;
         boolean alternate = false;
 
         for (PdfExportData.TransactionRow transaction : transactions) {
@@ -592,7 +604,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
                 rowY =
                         PAGE_SIZE.getHeight()
-                                - PAGE_MARGIN;
+                                - PAGE_MARGIN
+                                - TABLE_HEADER_HEIGHT;
 
                 drawTableHeader(
                         context.content(),
@@ -601,7 +614,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                         widths
                 );
 
-                rowY -= 20;
+                rowY -= TABLE_HEADER_HEIGHT;
             }
 
             drawTableRowBackground(
@@ -642,7 +655,7 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     widths
             );
 
-            rowY -= 20;
+            rowY -= TABLE_ROW_HEIGHT;
             alternate = !alternate;
         }
     }
@@ -667,21 +680,21 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
         setStrokingColor(content);
 
-        content.setLineWidth(0.7f);
+        content.setLineWidth(1.2f);
 
         content.moveTo(
                 PAGE_MARGIN,
-                y - 6
+                y - SPACE_TITLE_TO_DIVIDER
         );
 
         content.lineTo(
                 PAGE_SIZE.getWidth() - PAGE_MARGIN,
-                y - 6
+                y - SPACE_TITLE_TO_DIVIDER
         );
 
         content.stroke();
 
-        return y - 6;
+        return y - SPACE_TITLE_TO_DIVIDER;
     }
 
     private void drawEmptyMessage(
@@ -721,9 +734,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
         content.addRect(
                 x,
-                y - 20,
+                y - TABLE_HEADER_HEIGHT,
                 sum(widths),
-                20
+                TABLE_HEADER_HEIGHT
         );
 
         content.fill();
@@ -734,9 +747,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     content,
                     headers[i].toUpperCase(Locale.ENGLISH),
                     FONT_BOLD,
-                    6.5f,
-                    x + 5,
-                    y - 13,
+                    7.5f,
+                    x + 6,
+                    y - (TABLE_HEADER_HEIGHT / 2f) - 2.5f,
                     CARD_R,
                     CARD_G,
                     CARD_B
@@ -766,9 +779,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
         content.addRect(
                 PAGE_MARGIN,
-                y - 20,
+                y - TABLE_ROW_HEIGHT,
                 sum(widths),
-                20
+                TABLE_ROW_HEIGHT
         );
 
         content.fill();
@@ -813,9 +826,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     content,
                     value,
                     FONT_REGULAR,
-                    7,
-                    x + 5,
-                    y - 13,
+                    8,
+                    x + 6,
+                    y - (TABLE_ROW_HEIGHT / 2f) - 3f,
                     textR,
                     textG,
                     textB
@@ -826,16 +839,16 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
         setStrokingColor(content);
 
-        content.setLineWidth(0.3f);
+        content.setLineWidth(0.4f);
 
         content.moveTo(
                 PAGE_MARGIN,
-                y - 20
+                y - TABLE_ROW_HEIGHT
         );
 
         content.lineTo(
                 PAGE_MARGIN + sum(widths),
-                y - 20
+                y - TABLE_ROW_HEIGHT
         );
 
         content.stroke();
