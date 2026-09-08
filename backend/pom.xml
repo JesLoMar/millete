@@ -13,7 +13,7 @@
 
     <groupId>com.puntomartinez</groupId>
     <artifactId>millete</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
     <name>millete</name>
     <description>API gestión financiera familiar</description>
 
@@ -182,6 +182,9 @@
             <plugin>
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.puntomartinez.millete.MilleteApplication</mainClass>
+                </configuration>
             </plugin>
 
             <!-- Java compiler + annotation processors -->
