@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Eliminar toda referencia al bot de telegram.
 - Añadir el disparador de transacciones recurrentes.
 - Dejar lista la compilación nativa.
-- Mejorar el SEO (añadir robots.txt y sitemap.xml).
+- Mejorar el SEO (añadir robots.txt y sitemap.xml) y rendimiento al generarse como estático.
 
 ---
 
