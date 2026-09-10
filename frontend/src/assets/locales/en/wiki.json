@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Savings Goals",
       "description": "Define personal savings objectives, track your progress, and stay motivated to reach your financial goals.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Group Goals",
       "description": "Manage shared savings objectives with other people, divide contributions, and track collective progress.",
       "topics": [

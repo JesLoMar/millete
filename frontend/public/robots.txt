@@ -1,0 +1,20 @@
+# Millete - robots.txt
+User-agent: *
+Allow: /
+
+# Bloquear API backend
+Disallow: /api/
+
+# Bloquear rutas privadas
+Disallow: /dashboard
+Disallow: /transactions
+Disallow: /categories
+Disallow: /investments
+Disallow: /group-goals
+Disallow: /join-group-goal
+Disallow: /profile
+Disallow: /savings-goals
+Disallow: /notifications
+
+# Sitemap
+Sitemap: https://millete.online/sitemap.xml

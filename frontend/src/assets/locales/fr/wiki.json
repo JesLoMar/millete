@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Objectifs d'épargne",
       "description": "Définissez des objectifs d'épargne personnels, suivez votre progression et restez motivés pour atteindre vos buts financiers.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Objectifs de groupe",
       "description": "Gérez des objectifs d'épargne partagés avec d'autres personnes, répartissez les contributions et suivez la progression collective.",
       "topics": [
