@@ -15,6 +15,7 @@ public class SavingsGoalService implements
 CreateSavingsGoalUseCase,
 UpdateSavingsGoalUseCase,
 AddContributionToGoalUseCase,
+WithdrawFromGoalUseCase,
 ListSavingsGoalsUseCase,
 GetSavingsGoalUseCase,
 DeleteSavingsGoalUseCase {
@@ -69,7 +70,9 @@ public SavingsGoal update(UpdateSavingsGoalCommand command) {
 }
 
 @Override
-public SavingsGoal addContribution(AddContributionToGoalCommand command) {
+public SavingsGoal addContribution(
+        AddContributionToGoalCommand command
+) {
     SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(
                     command.goalId(),
                     command.userId()
@@ -87,6 +90,31 @@ public SavingsGoal addContribution(AddContributionToGoalCommand command) {
     }
 
     goal.addContribution(command.amount());
+
+    return savingsGoalRepository.save(goal);
+}
+
+@Override
+public SavingsGoal withdraw(
+        WithdrawFromGoalCommand command
+) {
+    SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(
+                    command.goalId(),
+                    command.userId()
+            )
+            .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                            "Objetivo de ahorro no encontrado."
+                    )
+            );
+
+    if (!goal.isActive()) {
+        throw new InvalidInputException(
+                "No se puede retirar dinero de un objetivo inactivo."
+        );
+    }
+
+    goal.withdraw(command.amount());
 
     return savingsGoalRepository.save(goal);
 }
@@ -125,7 +153,10 @@ public long countByUserIdAndFilters(
 }
 
 @Override
-public SavingsGoal getByIdAndUserId(UUID id, UUID userId) {
+public SavingsGoal getByIdAndUserId(
+        UUID id,
+        UUID userId
+) {
     return savingsGoalRepository.findByIdAndUserId(id, userId)
             .filter(SavingsGoal::isActive)
             .orElseThrow(() ->
@@ -136,7 +167,10 @@ public SavingsGoal getByIdAndUserId(UUID id, UUID userId) {
 }
 
 @Override
-public void deleteByIdAndUserId(UUID id, UUID userId) {
+public void deleteByIdAndUserId(
+        UUID id,
+        UUID userId
+) {
     SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(
                     id,
                     userId

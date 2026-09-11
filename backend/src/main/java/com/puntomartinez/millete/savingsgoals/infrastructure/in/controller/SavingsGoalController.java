@@ -12,10 +12,13 @@ import com.puntomartinez.millete.savingsgoals.domain.ports.in.GetSavingsGoalUseC
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.ListSavingsGoalsUseCase;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.UpdateSavingsGoalCommand;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.UpdateSavingsGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.WithdrawFromGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.WithdrawFromGoalUseCase;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.CreateSavingsGoalRequestDTO;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.SavingsGoalResponseDTO;
 import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.UpdateSavingsGoalRequestDTO;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.WithdrawRequestDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,7 @@ public class SavingsGoalController {
 private final CreateSavingsGoalUseCase createSavingsGoalUseCase;
 private final UpdateSavingsGoalUseCase updateSavingsGoalUseCase;
 private final AddContributionToGoalUseCase addContributionToGoalUseCase;
+private final WithdrawFromGoalUseCase withdrawFromGoalUseCase;
 private final ListSavingsGoalsUseCase listSavingsGoalsUseCase;
 private final GetSavingsGoalUseCase getSavingsGoalUseCase;
 private final DeleteSavingsGoalUseCase deleteSavingsGoalUseCase;
@@ -40,6 +44,7 @@ public SavingsGoalController(
         CreateSavingsGoalUseCase createSavingsGoalUseCase,
         UpdateSavingsGoalUseCase updateSavingsGoalUseCase,
         AddContributionToGoalUseCase addContributionToGoalUseCase,
+        WithdrawFromGoalUseCase withdrawFromGoalUseCase,
         ListSavingsGoalsUseCase listSavingsGoalsUseCase,
         GetSavingsGoalUseCase getSavingsGoalUseCase,
         DeleteSavingsGoalUseCase deleteSavingsGoalUseCase
@@ -47,6 +52,7 @@ public SavingsGoalController(
     this.createSavingsGoalUseCase = createSavingsGoalUseCase;
     this.updateSavingsGoalUseCase = updateSavingsGoalUseCase;
     this.addContributionToGoalUseCase = addContributionToGoalUseCase;
+    this.withdrawFromGoalUseCase = withdrawFromGoalUseCase;
     this.listSavingsGoalsUseCase = listSavingsGoalsUseCase;
     this.getSavingsGoalUseCase = getSavingsGoalUseCase;
     this.deleteSavingsGoalUseCase = deleteSavingsGoalUseCase;
@@ -181,6 +187,27 @@ public ResponseEntity<SavingsGoalResponseDTO> addContribution(
 
     SavingsGoal goal =
             addContributionToGoalUseCase.addContribution(command);
+
+    return ResponseEntity.ok(mapToResponse(goal));
+}
+
+@PatchMapping("/{id}/withdraw")
+public ResponseEntity<SavingsGoalResponseDTO> withdraw(
+        @PathVariable UUID id,
+        @Valid @RequestBody WithdrawRequestDTO request,
+        Authentication authentication
+) {
+    UUID userId = getUserId(authentication);
+
+    WithdrawFromGoalCommand command =
+            new WithdrawFromGoalCommand(
+                    id,
+                    userId,
+                    request.getAmount()
+            );
+
+    SavingsGoal goal =
+            withdrawFromGoalUseCase.withdraw(command);
 
     return ResponseEntity.ok(mapToResponse(goal));
 }

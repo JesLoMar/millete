@@ -381,19 +381,9 @@ public class DashboardService implements GetDashboardDataUseCase {
     ) {
         List<SavingsGoal> goals =
                 savingsGoalRepository.findAllByUserId(userId);
-
         List<SavingsGoalResponseDTO> goalDTOs =
                 goals.stream()
-                        .filter(goal ->
-                                "ACTIVE".equals(goal.getStatus())
-                                        || "PAUSED".equals(goal.getStatus()))
                         .sorted((a, b) -> {
-
-                            if (!a.getStatus().equals(b.getStatus())) {
-                                return "ACTIVE".equals(a.getStatus())
-                                        ? -1
-                                        : 1;
-                            }
 
                             int priorityCompare =
                                     comparePriority(
