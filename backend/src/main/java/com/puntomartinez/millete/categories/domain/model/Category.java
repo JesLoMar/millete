@@ -135,9 +135,9 @@ public class Category {
             );
         }
 
-        if (name.length() > 50) {
+        if (name.length() > 20) {
             throw new IllegalArgumentException(
-                    "El nombre de la categoría no puede superar los 50 caracteres"
+                    "El nombre de la categoría no puede superar los 20 caracteres"
             );
         }
     }

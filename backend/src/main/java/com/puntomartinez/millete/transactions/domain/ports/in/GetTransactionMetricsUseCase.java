@@ -1,12 +1,27 @@
 package com.puntomartinez.millete.transactions.domain.ports.in;
 
-import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionMetricsResponseDTO;
-
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface GetTransactionMetricsUseCase {
 
-    record MetricsCommand(UUID userId, String period) {}
+    record MetricsCommand(
+            UUID userId,
+            String period
+    ) {
+    }
 
-    TransactionMetricsResponseDTO getMetrics(MetricsCommand command);
+    record MetricsResult(
+            BigDecimal income,
+            BigDecimal expenses,
+            BigDecimal balance,
+            long count,
+            double incomeTrend,
+            double expensesTrend,
+            double balanceTrend,
+            double countTrend
+    ) {
+    }
+
+    MetricsResult getMetrics(MetricsCommand command);
 }

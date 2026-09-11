@@ -89,7 +89,7 @@ public class PlannedTransactionController {
         List<PlannedTransaction> list = listPlannedTransactionsUseCase.findAllByUserId(
                 userId, safePage, size, search, transactionType);
 
-        Map<UUID, CategoryInfo> categoryMap = categoryRepository.findByIdUsuario(userId).stream()
+        Map<UUID, CategoryInfo> categoryMap = categoryRepository.findByUserId(userId).stream()
                 .collect(Collectors.toMap(
                         Category::getId,
                         c -> new CategoryInfo(c.getName()),

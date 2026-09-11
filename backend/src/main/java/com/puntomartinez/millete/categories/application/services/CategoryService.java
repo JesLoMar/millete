@@ -53,6 +53,14 @@ public class CategoryService implements
     }
 
     @Override
+    public Category findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        return getCategory(id, userId);
+    }
+
+    @Override
     public List<Category> findAllByUserId(
             UUID userId,
             int page,
@@ -93,13 +101,6 @@ public class CategoryService implements
         );
 
         return categoryRepository.save(category);
-    }
-
-    public Category findByIdAndUserId(
-            UUID id,
-            UUID userId
-    ) {
-        return getCategory(id, userId);
     }
 
     @Override
