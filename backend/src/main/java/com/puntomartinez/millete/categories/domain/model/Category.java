@@ -1,51 +1,41 @@
 package com.puntomartinez.millete.categories.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@NoArgsConstructor
 @Getter
-@Setter
 public class Category {
-    private UUID id;
-    private UUID userId;
+
+    private final UUID id;
+    private final UUID userId;
     private String name;
     private String color;
     private BigDecimal budgetLimit;
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
 
-    public Category(UUID userId, String name, String color, BigDecimal budgetLimit) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la categoría es obligatorio");
-        }
-        if (color == null || !color.matches("^#[0-9A-Fa-f]{6}$")) {
-            throw new IllegalArgumentException("El color debe ser un hexadecimal válido (ej: #FF5733)");
-        }
-        if (budgetLimit != null && budgetLimit.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("El límite de presupuesto no puede ser negativo");
-        }
+    private Category(
+            UUID id,
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+        validateId(id);
+        validateUserId(userId);
+        validateName(name);
+        validateColor(color);
+        validateBudgetLimit(budgetLimit);
+        validateCreatedAt(createdAt);
+        validateModifiedAt(modifiedAt);
 
-        this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.name = name;
-        this.color = color;
-        this.budgetLimit = budgetLimit;
-        this.createdAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
-        this.active = true;
-    }
-
-    public Category(UUID id, UUID userId, String name, String color,
-                    BigDecimal budgetLimit, LocalDateTime createdAt,
-                    LocalDateTime modifiedAt, boolean active) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -56,25 +46,172 @@ public class Category {
         this.active = active;
     }
 
-    public void updateDetails(String nombre, String color, BigDecimal budgetLimit) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
-        }
-        if (color != null && !color.matches("^#[0-9A-Fa-f]{6}$")) {
-            throw new IllegalArgumentException("El color debe ser un hexadecimal válido");
-        }
-        if (budgetLimit != null && budgetLimit.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("El límite de presupuesto no puede ser negativo");
-        }
+    public static Category create(
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit
+    ) {
+        LocalDateTime now = LocalDateTime.now();
 
-        this.name = nombre;
+        return new Category(
+                UUID.randomUUID(),
+                userId,
+                name,
+                color,
+                budgetLimit,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static Category reconstitute(
+            UUID id,
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+        return new Category(
+                id,
+                userId,
+                name,
+                color,
+                budgetLimit,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+            String name,
+            String color,
+            BigDecimal budgetLimit
+    ) {
+        validateName(name);
+        validateColor(color);
+        validateBudgetLimit(budgetLimit);
+
+        this.name = name;
         this.color = color;
         this.budgetLimit = budgetLimit;
         this.modifiedAt = LocalDateTime.now();
     }
 
     public void deactivate() {
+        if (!this.active) {
+            return;
+        }
+
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
     }
+
+    private static void validateId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "El identificador de la categoría es obligatorio"
+            );
+        }
+    }
+
+    private static void validateUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException(
+                    "El identificador del usuario es obligatorio"
+            );
+        }
+    }
+
+    private static void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El nombre de la categoría es obligatorio"
+            );
+        }
+
+        if (name.length() > 50) {
+            throw new IllegalArgumentException(
+                    "El nombre de la categoría no puede superar los 50 caracteres"
+            );
+        }
+    }
+
+    private static void validateColor(String color) {
+        if (color == null || !color.matches("^#[0-9A-Fa-f]{6}$")) {
+            throw new IllegalArgumentException(
+                    "El color debe ser un hexadecimal válido (ej: #FF5733)"
+            );
+        }
+    }
+
+    private static void validateBudgetLimit(BigDecimal budgetLimit) {
+        if (budgetLimit != null
+                && budgetLimit.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "El límite de presupuesto no puede ser negativo"
+            );
+        }
+    }
+
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+        if (createdAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de creación es obligatoria"
+            );
+        }
+    }
+
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+        if (modifiedAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de modificación es obligatoria"
+            );
+        }
+    }
 }
+
+/*
+5. Las invariantes viven dentro del agregado
+
+Por ejemplo:
+
+validateName(name);
+validateColor(color);
+validateBudgetLimit(budgetLimit);
+
+Ya no dependemos únicamente de que el controller haya puesto @Valid.
+
+Eso es importante porque mañana podríamos crear una categoría desde:
+
+REST
+importación
+otro caso de uso
+un test
+un proceso batch
+
+y el dominio seguirá protegiéndose.
+
+Una decisión importante: userId
+
+He mantenido:
+
+private final UUID userId;
+
+porque en el modelo de negocio una categoría pertenece a un usuario y no debería poder cambiar de propietario mediante una actualización normal.
+
+Pero esto no impide la importación.
+
+Para importar datos de otro usuario, posteriormente tendremos un mecanismo explícito que cree/reconstituya la categoría con el userId del usuario destino.
+
+Es mucho mejor que hacer:
+
+category.setUserId(loggedInUserId);
+
+porque eso era una mutación arbitraria del agregado.
+*/

@@ -12,16 +12,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface JpaCategoryRepository extends JpaRepository<CategoryEntity, UUID>, JpaSpecificationExecutor<CategoryEntity> {
+public interface JpaCategoryRepository
+        extends JpaRepository<CategoryEntity, UUID>,
+                JpaSpecificationExecutor<CategoryEntity> {
 
     List<CategoryEntity> findByUserId(UUID userId);
 
-    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id AND c.userId = :userId AND c.active = true")
-    Optional<CategoryEntity> findByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
+    Optional<CategoryEntity> findByIdAndUserId(
+            UUID id,
+            UUID userId
+    );
 
-    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id AND c.userId = :userId AND c.active = true")
-    Optional<CategoryEntity> findActiveByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
-
-    @Query("SELECT c FROM CategoryEntity c WHERE c.userId = :userId AND c.budgetLimit IS NOT NULL AND c.active = true")
-    List<CategoryEntity> findCategoriesWithBudgetByUserId(@Param("userId") UUID userId);
+    @Query("""
+        SELECT c
+        FROM CategoryEntity c
+        WHERE c.userId = :userId
+          AND c.budgetLimit IS NOT NULL
+    """)
+    List<CategoryEntity> findCategoriesWithBudgetByUserId(
+            @Param("userId") UUID userId
+    );
 }

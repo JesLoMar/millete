@@ -4,18 +4,18 @@ import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
-import org.mapstruct.ObjectFactory;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CategoryEntityMapper {
 
     CategoryEntity toEntity(Category domain);
 
-    Category toDomain(CategoryEntity entity);
+    default Category toDomain(CategoryEntity entity) {
+        if (entity == null) {
+            return null;
+        }
 
-    @ObjectFactory
-    default Category createCategory(CategoryEntity entity) {
-        return new Category(
+        return Category.reconstitute(
                 entity.getId(),
                 entity.getUserId(),
                 entity.getName(),

@@ -12,4 +12,5 @@ public record CategoryResponseDTO(
         BigDecimal budgetLimit,
         LocalDateTime createdAt,
         boolean active
-) {}
+) {
+}

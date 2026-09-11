@@ -5,7 +5,8 @@ import java.util.UUID;
 
 public record RegisterCategoryCommand(
         UUID userId,
-        String nombre,
+        String name,
         String color,
         BigDecimal budgetLimit
-) {}
+) {
+}

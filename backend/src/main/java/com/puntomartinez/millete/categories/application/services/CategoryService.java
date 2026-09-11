@@ -8,8 +8,8 @@ import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryUseC
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryCommand;
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
-import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,24 +31,25 @@ public class CategoryService implements
             UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase
     ) {
         this.categoryRepository = categoryRepository;
-        this.unassignCategoryFromTransactionsUseCase = unassignCategoryFromTransactionsUseCase;
+        this.unassignCategoryFromTransactionsUseCase =
+                unassignCategoryFromTransactionsUseCase;
     }
 
     @Override
     public Category register(RegisterCategoryCommand command) {
-        Category newCategory = new Category(
+        Category category = Category.create(
                 command.userId(),
-                command.nombre(),
+                command.name(),
                 command.color(),
                 command.budgetLimit()
         );
 
-        return categoryRepository.save(newCategory);
+        return categoryRepository.save(category);
     }
 
     @Override
     public List<Category> findByUserId(UUID userId) {
-        return categoryRepository.findByIdUsuario(userId);
+        return categoryRepository.findByUserId(userId);
     }
 
     @Override
@@ -67,8 +68,14 @@ public class CategoryService implements
     }
 
     @Override
-    public long countByUserIdAndFilters(UUID userId, String search) {
-        return categoryRepository.countByUserIdAndFilters(userId, search);
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+        return categoryRepository.countByUserIdAndFilters(
+                userId,
+                search
+        );
     }
 
     @Override
@@ -77,13 +84,10 @@ public class CategoryService implements
             UUID userId,
             UpdateCategoryCommand command
     ) {
-        Category category = categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Categoría no encontrada")
-                );
+        Category category = getCategory(id, userId);
 
         category.updateDetails(
-                command.nombre(),
+                command.name(),
                 command.color(),
                 command.budgetLimit()
         );
@@ -91,24 +95,39 @@ public class CategoryService implements
         return categoryRepository.save(category);
     }
 
-    public Category findByIdAndUserId(UUID id, UUID userId) {
-        return categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Categoría no encontrada")
-                );
+    public Category findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        return getCategory(id, userId);
     }
 
     @Override
     @Transactional
-    public void deleteByIdAndUserId(UUID id, UUID userId) {
-        Category category = categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Categoría no encontrada")
-                );
+    public void deleteByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        Category category = getCategory(id, userId);
 
         category.deactivate();
         categoryRepository.save(category);
 
-        unassignCategoryFromTransactionsUseCase.unassignCategory(id, userId);
+        unassignCategoryFromTransactionsUseCase.unassignCategory(
+                id,
+                userId
+        );
+    }
+
+    private Category getCategory(
+            UUID id,
+            UUID userId
+    ) {
+        return categoryRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Categoría no encontrada"
+                        )
+                );
     }
 }

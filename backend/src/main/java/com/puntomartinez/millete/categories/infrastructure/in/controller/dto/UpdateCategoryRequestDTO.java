@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public record RegisterCategoryRequestDTO(
+public record UpdateCategoryRequestDTO(
 
         @NotBlank(message = "El nombre es obligatorio")
         @Size(

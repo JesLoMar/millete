@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.categories.infrastructure.in.controller;
 
-import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryCommand;
 import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryUseCase;
@@ -9,13 +9,14 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryComman
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.CategoryResponseDTO;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.RegisterCategoryRequestDTO;
+import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.UpdateCategoryRequestDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,10 +32,12 @@ public class CategoryController {
     private final GetCategoryUseCase getCategoryUseCase;
     private final DeleteCategoryUseCase deleteCategoryUseCase;
 
-    public CategoryController(RegisterCategoryUseCase registerCategoryUseCase,
-                              UpdateCategoryUseCase updateCategoryUseCase,
-                              GetCategoryUseCase getCategoryUseCase,
-                              DeleteCategoryUseCase deleteCategoryUseCase) {
+    public CategoryController(
+            RegisterCategoryUseCase registerCategoryUseCase,
+            UpdateCategoryUseCase updateCategoryUseCase,
+            GetCategoryUseCase getCategoryUseCase,
+            DeleteCategoryUseCase deleteCategoryUseCase
+    ) {
         this.registerCategoryUseCase = registerCategoryUseCase;
         this.updateCategoryUseCase = updateCategoryUseCase;
         this.getCategoryUseCase = getCategoryUseCase;
@@ -44,9 +47,10 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<CategoryResponseDTO> createCategory(
             @Valid @RequestBody RegisterCategoryRequestDTO request,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
+        UUID userId = getAuthenticatedUserId(authentication);
 
-        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         RegisterCategoryCommand command = new RegisterCategoryCommand(
                 userId,
                 request.name(),
@@ -55,7 +59,10 @@ public class CategoryController {
         );
 
         Category category = registerCategoryUseCase.register(command);
-        return new ResponseEntity<>(mapToResponse(category), HttpStatus.CREATED);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(mapToResponse(category));
     }
 
     @GetMapping
@@ -63,66 +70,98 @@ public class CategoryController {
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false) String search
+    ) {
+        UUID userId = getAuthenticatedUserId(authentication);
 
-        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
+        long totalElements =
+                getCategoryUseCase.countByUserIdAndFilters(userId, search);
 
-        long totalElements = getCategoryUseCase.countByUserIdAndFilters(userId, search);
-        int totalPages = (int) Math.ceil((double) totalElements / size);
-        int safePage = Math.min(page, Math.max(0, totalPages - 1));
+        int totalPages = (int) Math.ceil(
+                (double) totalElements / size
+        );
 
-        List<CategoryResponseDTO> content = getCategoryUseCase.findAllByUserId(userId, safePage, size, search)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+        int safePage = Math.min(
+                page,
+                Math.max(0, totalPages - 1)
+        );
 
-        return ResponseEntity.ok(new PaginatedResponseDTO<>(
-                content,
-                safePage,
-                totalPages,
-                totalElements,
-                size,
-                safePage == 0,
-                safePage >= totalPages - 1 || totalPages == 0
-        ));
+        List<CategoryResponseDTO> content =
+                getCategoryUseCase
+                        .findAllByUserId(
+                                userId,
+                                safePage,
+                                size,
+                                search
+                        )
+                        .stream()
+                        .map(this::mapToResponse)
+                        .toList();
+
+        return ResponseEntity.ok(
+                new PaginatedResponseDTO<>(
+                        content,
+                        safePage,
+                        totalPages,
+                        totalElements,
+                        size,
+                        safePage == 0,
+                        safePage >= totalPages - 1 || totalPages == 0
+                )
+        );
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> update(
             @PathVariable UUID id,
-            @Valid @RequestBody RegisterCategoryRequestDTO request,
-            Authentication authentication) {
+            @Valid @RequestBody UpdateCategoryRequestDTO request,
+            Authentication authentication
+    ) {
+        UUID userId = getAuthenticatedUserId(authentication);
 
-        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         UpdateCategoryCommand command = new UpdateCategoryCommand(
                 request.name(),
                 request.color(),
                 request.budgetLimit()
         );
 
-        Category c = updateCategoryUseCase.update(id, userId, command);
-        return ResponseEntity.ok(mapToResponse(c));
+        Category category = updateCategoryUseCase.update(
+                id,
+                userId,
+                command
+        );
+
+        return ResponseEntity.ok(mapToResponse(category));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
+        UUID userId = getAuthenticatedUserId(authentication);
 
-        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-        deleteCategoryUseCase.deleteByIdAndUserId(id, userId);
+        deleteCategoryUseCase.deleteByIdAndUserId(
+                id,
+                userId
+        );
+
         return ResponseEntity.noContent().build();
     }
 
-    private CategoryResponseDTO mapToResponse(Category c) {
+    private UUID getAuthenticatedUserId(Authentication authentication) {
+        return ((JwtUser) authentication.getPrincipal()).getId();
+    }
+
+    private CategoryResponseDTO mapToResponse(Category category) {
         return new CategoryResponseDTO(
-                c.getId(),
-                c.getUserId(),
-                c.getName(),
-                c.getColor(),
-                c.getBudgetLimit(),
-                c.getCreatedAt(),
-                c.isActive()
+                category.getId(),
+                category.getUserId(),
+                category.getName(),
+                category.getColor(),
+                category.getBudgetLimit(),
+                category.getCreatedAt(),
+                category.isActive()
         );
     }
 }

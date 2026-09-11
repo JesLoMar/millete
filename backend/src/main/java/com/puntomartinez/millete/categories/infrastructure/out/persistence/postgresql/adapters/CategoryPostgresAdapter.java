@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Repository
 public class CategoryPostgresAdapter implements CategoryRepository {
@@ -22,70 +21,105 @@ public class CategoryPostgresAdapter implements CategoryRepository {
     private final JpaCategoryRepository jpaRepository;
     private final CategoryEntityMapper mapper;
 
-    public CategoryPostgresAdapter(JpaCategoryRepository jpaRepository, CategoryEntityMapper mapper) {
+    public CategoryPostgresAdapter(
+            JpaCategoryRepository jpaRepository,
+            CategoryEntityMapper mapper
+    ) {
         this.jpaRepository = jpaRepository;
         this.mapper = mapper;
-    }
-
-    private Specification<CategoryEntity> buildSpecification(UUID userId, String search) {
-        Specification<CategoryEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
-
-        if (search != null && !search.isBlank()) {
-            String pattern = "%" + search.toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("name")), pattern));
-        }
-
-        return spec;
     }
 
     @Override
     public Category save(Category category) {
         CategoryEntity entity = mapper.toEntity(category);
         CategoryEntity savedEntity = jpaRepository.save(entity);
+
         return mapper.toDomain(savedEntity);
     }
 
     @Override
-    public Optional<Category> findById(UUID id) {
-        return jpaRepository.findById(id).map(mapper::toDomain);
+    public Optional<Category> findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        return jpaRepository.findByIdAndUserId(id, userId)
+                .map(mapper::toDomain);
     }
 
     @Override
-    public Optional<Category> findByIdAndUserId(UUID id, UUID userId) {
-        return jpaRepository.findByIdAndUserId(id, userId).map(mapper::toDomain);
-    }
-
-    @Override
-    public Optional<Category> findActiveByIdAndUserId(UUID id, UUID userId) {
-        return jpaRepository.findActiveByIdAndUserId(id, userId).map(mapper::toDomain);
-    }
-
-    @Override
-    public List<Category> findByIdUsuario(UUID userId) {
-        return jpaRepository.findByUserId(userId).stream()
+    public List<Category> findByUserId(UUID userId) {
+        return jpaRepository.findByUserId(userId)
+                .stream()
                 .map(mapper::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<Category> findCategoriesWithBudgetByUserId(UUID userId) {
-        return jpaRepository.findCategoriesWithBudgetByUserId(userId).stream()
+        return jpaRepository.findCategoriesWithBudgetByUserId(userId)
+                .stream()
                 .map(mapper::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public List<Category> findAllByUserId(UUID userId, int page, int size, String search) {
-        Specification<CategoryEntity> spec = buildSpecification(userId, search);
-        Page<CategoryEntity> result = jpaRepository.findAll(spec,
-                PageRequest.of(page, size, Sort.by("createdAt").descending()));
-        return result.getContent().stream()
+    public List<Category> findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+        Specification<CategoryEntity> specification =
+                buildSpecification(userId, search);
+
+        Page<CategoryEntity> result = jpaRepository.findAll(
+                specification,
+                PageRequest.of(
+                        page,
+                        size,
+                        Sort.by("createdAt").descending()
+                )
+        );
+
+        return result.getContent()
+                .stream()
                 .map(mapper::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public long countByUserIdAndFilters(UUID userId, String search) {
-        return jpaRepository.count(buildSpecification(userId, search));
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+        return jpaRepository.count(
+                buildSpecification(userId, search)
+        );
+    }
+
+    private Specification<CategoryEntity> buildSpecification(
+            UUID userId,
+            String search
+    ) {
+        Specification<CategoryEntity> specification =
+                (root, query, criteriaBuilder) ->
+                        criteriaBuilder.equal(
+                                root.get("userId"),
+                                userId
+                        );
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.toLowerCase() + "%";
+
+            specification = specification.and(
+                    (root, query, criteriaBuilder) ->
+                            criteriaBuilder.like(
+                                    criteriaBuilder.lower(root.get("name")),
+                                    pattern
+                            )
+            );
+        }
+
+        return specification;
     }
 }
