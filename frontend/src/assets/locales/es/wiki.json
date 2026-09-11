@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Metas de ahorro",
       "description": "Define objetivos personales de ahorro, haz seguimiento de tu progreso y mantén la motivación para alcanzar tus metas financieras.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Metas grupales",
       "description": "Gestiona objetivos de ahorro compartidos con otras personas, divide las aportaciones y haz seguimiento del progreso colectivo.",
       "topics": [

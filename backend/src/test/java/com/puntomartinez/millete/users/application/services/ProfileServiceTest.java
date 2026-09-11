@@ -69,7 +69,6 @@ class ProfileServiceTest {
     @DisplayName("Obtener perfil de usuario")
     void shouldGetProfile() {
         User user = createUser();
-        user.setTelegramChatId(12345678L);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
@@ -77,7 +76,6 @@ class ProfileServiceTest {
 
         assertThat(result.username()).isEqualTo("ana");
         assertThat(result.email()).isEqualTo("ana@mail.com");
-        assertThat(result.telegramChatId()).isEqualTo(12345678L);
     }
 
     @Test
@@ -275,19 +273,6 @@ class ProfileServiceTest {
         assertThatExceptionOfType(InvalidInputException.class)
                 .isThrownBy(() -> profileService.updatePreferences(userId, "{\"theme\":}"))
                 .withMessage("Formato de preferencias inválido");
-    }
-
-    @Test
-    @DisplayName("Desvincular Telegram")
-    void shouldUnlinkTelegram() {
-        User user = createUser();
-        user.setTelegramChatId(12345678L);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        profileService.unlinkTelegram(userId);
-
-        assertThat(user.getTelegramChatId()).isNull();
-        verify(userRepository).save(user);
     }
 
     @Test

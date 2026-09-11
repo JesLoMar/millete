@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Sparziele",
       "description": "Definieren Sie persönliche Sparziele, verfolgen Sie Ihren Fortschritt und bleiben Sie motiviert, Ihre finanziellen Ziele zu erreichen.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Gruppenziele",
       "description": "Verwalten Sie gemeinsame Sparziele mit anderen Personen, teilen Sie die Beiträge und verfolgen Sie den kollektiven Fortschritt.",
       "topics": [

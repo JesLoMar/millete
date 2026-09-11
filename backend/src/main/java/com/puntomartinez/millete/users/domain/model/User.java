@@ -13,7 +13,6 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private Long telegramChatId;
     private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;

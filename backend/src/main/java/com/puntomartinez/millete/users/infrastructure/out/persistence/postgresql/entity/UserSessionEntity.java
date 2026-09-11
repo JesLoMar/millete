@@ -18,8 +18,6 @@ public class UserSessionEntity {
     private UUID userId;
     @Column(name = "channel", nullable = false, length = 20)
     private String channel;
-    @Column(name = "telegram_chat_id")
-    private Long telegramChatId;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "active", nullable = false)

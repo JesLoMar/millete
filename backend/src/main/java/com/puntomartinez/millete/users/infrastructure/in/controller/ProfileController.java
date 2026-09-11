@@ -77,14 +77,6 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/telegram")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> unlinkTelegram(Authentication authentication) {
-        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-        profileUseCase.unlinkTelegram(jwtUser.getId());
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/sessions")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UserSessionResponseDTO>> getActiveSessions(Authentication authentication) {

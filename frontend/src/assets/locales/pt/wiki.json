@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Metas de economia",
       "description": "Defina objetivos pessoais de economia, acompanhe seu progresso e mantenha a motivação para alcançar suas metas financeiras.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Metas de grupo",
       "description": "Gerencie objetivos de economia compartilhados com outras pessoas, divida as contribuições e acompanhe o progresso coletivo.",
       "topics": [

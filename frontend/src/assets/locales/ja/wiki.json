@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "貯蓄目標",
       "description": "個人の貯蓄目標を設定し、進捗を追跡し、財務目標を達成するモチベーションを維持します。",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "グループ目標",
       "description": "他の人と共有する貯蓄目標を管理し、貢献を分担し、集合的な進捗を監視します。",
       "topics": [

@@ -84,7 +84,7 @@
         }
       ]
     },
-    "savingsGoals": {
+    "savings-goals": {
       "title": "Obiettivi di risparmio",
       "description": "Definisci obiettivi di risparmio personali, segui i tuoi progressi e mantieni la motivazione per raggiungere i tuoi traguardi finanziari.",
       "topics": [
@@ -98,7 +98,7 @@
         }
       ]
     },
-    "groupGoals": {
+    "group-goals": {
       "title": "Obiettivi di gruppo",
       "description": "Gestisci obiettivi di risparmio condivisi con altre persone, dividi i contributi e monitora il progresso collettivo.",
       "topics": [
