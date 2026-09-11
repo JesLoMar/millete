@@ -15,8 +15,8 @@ import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.Paginat
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -72,10 +72,15 @@ public class CategoryController {
             @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String search
     ) {
+        validatePagination(page, size);
+
         UUID userId = getAuthenticatedUserId(authentication);
 
         long totalElements =
-                getCategoryUseCase.countByUserIdAndFilters(userId, search);
+                getCategoryUseCase.countByUserIdAndFilters(
+                        userId,
+                        search
+                );
 
         int totalPages = (int) Math.ceil(
                 (double) totalElements / size
@@ -163,5 +168,19 @@ public class CategoryController {
                 category.getCreatedAt(),
                 category.isActive()
         );
+    }
+
+    private void validatePagination(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "Page must be greater than or equal to zero."
+            );
+        }
+
+        if (size <= 0) {
+            throw new IllegalArgumentException(
+                    "Size must be greater than zero."
+            );
+        }
     }
 }
