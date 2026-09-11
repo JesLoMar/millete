@@ -1,0 +1,427 @@
+# PLANIFICACIÓN Y TODO-LIST: MILLETE
+
+## IDEAS A CHOLÓN
+- [ ] Añadir sugerencias con IA. ChatGPT Finance.
+- [ ] Añadir escaneo de tickets para que se añada directamente la categoría compra o a lo que pertenezca y el dinero gastado.
+- [ ] Diseño propio mobile.
+- [ ] Importar movimientos con csv bancarios, investigar bancos más usados en España.
+- [ ] Llamar a la Yuli para que me ayude a crear paletas de colores, iconos y diseño en general.
+- [ ] Reducir el uso de dependencias en front.
+- [ ] Más tipos de monedas.
+- [ ] Añadir guardián de presupuesto.
+- [ ] Añadir pequeña guía para nuevos usuarios.
+- [ ] Revisar el flujo de confirmación de contraseña en información personal: aclarar por qué se pide en la sección superior y suavizar el cierre de sesión (actualmente si se introduce mal, desloguea agresivamente al usuario por seguridad).
+
+---
+
+
+La idea será: una tanda → un archivo → lo dejamos bien → entendemos por qué → siguiente archivo.
+
+Plan de refactorización por prioridad
+🟥 Tanda 1 — Fronteras arquitectónicas y reglas de negocio
+
+Es la más importante. Aquí queremos conseguir que ningún módulo manipule internamente el agregado de otro.
+
+Objetivo:
+
+Categories
+    ↓
+caso de uso/capacidad de Transactions
+    ↓
+Transactions
+    ↓
+TransactionRepository
+    ↓
+JPA
+
+En vez de:
+
+Categories
+    ↓
+TransactionRepository
+    ↓
+TransactionEntity
+
+Orden que propongo:
+
+TransactionRepository
+Redefinir el contrato para expresar la operación que realmente necesitamos: desasignar una categoría de las transacciones activas de un usuario.
+Puerto de entrada de Transactions para esa operación
+Crear UnassignCategoryFromTransactionsUseCase.
+TransactionService
+Implementar ese puerto y hacer que sea Transactions quien sea responsable de modificar sus transacciones.
+CategoryService
+Eliminar TransactionRepository, Transaction y toda manipulación directa de transacciones.
+
+CategoryService transaccionalidad
+Garantizar que:
+
+deactivate category
++
+unlink transactions
+
+sean una única operación atómica.
+
+Esta tanda arregla la cuestión arquitectónica más importante de las dos features.
+
+🟥 Tanda 2 — Dominio realmente encapsulado
+
+Después arreglamos los modelos de dominio.
+
+Category.java
+Transaction.java
+
+El objetivo será eliminar cosas como:
+
+@Setter
+@NoArgsConstructor
+@JsonIgnoreProperties
+
+y pasar de:
+
+transaction.setCategoryId(null);
+
+a comportamiento de dominio.
+
+También introduciremos claramente:
+
+crear
+reconstituir desde persistencia
+modificar
+desactivar
+
+El dominio dejará de ser básicamente un DTO con setters.
+
+🟥 Tanda 3 — Persistencia separada correctamente del dominio
+
+Aquí atacaremos:
+
+CategoryEntity
+CategoryEntityMapper
+TransactionEntity ← cuando me lo pases
+mapper de Transaction ← cuando me lo pases
+
+Objetivo:
+
+Domain
+    ↑
+    │ mapper
+    │
+Entity
+
+sin que JPA/Jackson/MapStruct contaminen el dominio.
+
+Y mantenemos tu decisión de:
+
+@SQLRestriction("active = true")
+
+porque encaja con vuestro ciclo de vida:
+
+ACTIVE
+   ↓
+INACTIVE
+   ↓
+hard delete programado
+🟧 Tanda 4 — Puertos de persistencia
+
+Después limpiamos:
+
+CategoryRepository
+JpaCategoryRepository
+CategoryPostgresAdapter
+TransactionRepository
+SpringDataTransactionRepository
+adapter de Transactions
+
+Aquí eliminaremos métodos redundantes como:
+
+findActiveByIdAndUserId()
+
+y métodos demasiado genéricos que no expresan una intención real.
+
+También revisaremos:
+
+findById()
+findByIdAndUserId()
+findAllByUserId()
+
+para decidir cuáles tienen sentido realmente.
+
+🟧 Tanda 5 — Casos de uso y contratos de entrada
+
+Aquí revisaremos:
+
+GetCategoryUseCase
+RegisterCategoryUseCase
+RegisterCategoryCommand
+UpdateCategoryUseCase
+UpdateCategoryCommand
+DeleteCategoryUseCase nuevo
+
+Y en Transactions:
+
+GetTransactionUseCase
+ListTransactionsUseCase
+RegisterTransactionUseCase
+UpdateTransactionUseCase
+DeleteTransactionUseCase
+GetTransactionMetricsUseCase
+
+Aquí vamos a distinguir muy bien entre:
+
+Application contract
+
+y:
+
+HTTP DTO
+
+Por ejemplo, ya hemos detectado esta violación:
+
+GetTransactionMetricsUseCase
+        ↓
+TransactionMetricsResponseDTO
+
+porque el puerto de dominio/application está importando Infrastructure.
+
+Eso lo corregiremos.
+
+🟨 Tanda 6 — Queries, paginación y eficiencia
+
+Aquí ya no estaremos arreglando una arquitectura rota, sino mejorándola.
+
+Por ejemplo, actualmente Transactions hace:
+
+findAllByUserId(...)
+    .stream()
+    .filter(...)
+
+para calcular cosas mensuales.
+
+Eso puede convertirse en consultas específicas.
+
+También revisaremos el patrón:
+
+findAll(...)
+count(...)
+
+y si merece la pena introducir algo como:
+
+CategoryPage
+TransactionPage
+
+en lugar de transportar lista + count por separado.
+
+🟨 Tanda 7 — Controller / DTOs / API
+
+Finalmente:
+
+RegisterCategoryRequestDTO
+DTO de update
+CategoryResponseDTO
+controllers
+mapeadores HTTP
+nombres
+códigos HTTP
+manejo de errores
+evitar que DTOs entren en Domain/Application.
+
+Aquí también podremos decidir si crear:
+
+CreateCategoryRequest
+UpdateCategoryRequest
+
+en lugar de reutilizar el mismo DTO.
+
+Una regla importante durante todo el proceso
+
+No vamos a hacer esto:
+
+"Como estamos haciendo Hexagonal, voy a crear 25 interfaces nuevas."
+
+Eso sería sobrearquitectura.
+
+La pregunta que vamos a hacernos siempre será:
+
+¿Qué responsabilidad tiene este componente y qué conocimiento debería quedar fuera de él?
+
+Por ejemplo:
+
+CategoryService
+
+puede perfectamente implementar:
+
+RegisterCategoryUseCase
+UpdateCategoryUseCase
+GetCategoryUseCase
+DeleteCategoryUseCase
+
+No necesitamos cuatro @Service.
+
+La frontera importante son los puertos, no la cantidad de clases.
+
+
+
+---
+
+## MEJORAS v0.1.3
+
+### 🔐 Seguridad
+- [x] Añadida cabecera Content-Security-Policy en nginx (verificada primero en modo Report-Only).
+- [x] Eliminado `dangerouslySetInnerHTML` del saludo del login → ahora usa `&lt;Trans&gt;` de i18next.
+- [x] `secureStorage` renombrado a `sessionCache` con contrato documentado: solo datos no sensibles.
+- [x] "Cerrar las demás sesiones" ya no envía el sessionId desde el cliente: el backend lo deriva de la cookie httpOnly.
+- [x] Validación de contraseña unificada (mínimo 8 caracteres) compartida entre registro y cambio de contraseña.
+- [x] Nombres de archivo de exportación saneados y con branding unificado (`millete_...`).
+
+### 🔑 Autenticación y sesiones
+- [x] El interceptor 401 distingue "sesión expirada" de "credenciales inválidas": escribir mal la contraseña ya no recarga la página ni pierde lo escrito.
+- [x] Logout forzado sin recarga completa: el interceptor emite `auth:logout` y la SPA redirige limpiamente.
+- [x] Eliminada la sesión "zombie" al perder conexión: ahora aparece una pantalla de error de conexión con reintento en vez de entrar con sesión inválida.
+- [x] Lista blanca de redirecciones post-login derivada de la fuente única de rutas (corregido el redirect a metas grupales, que nunca funcionaba).
+- [x] Corrección profunda de la tabla user_sessions y errores relativos a ella.
+- [x] Alineamiento de los ip limiting y bloqueadores de sesión.
+
+### 🌍 Internacionalización
+- [x] Atributo `lang` del documento sincronizado con el idioma activo (accesibilidad, WCAG 3.1.1).
+- [x] Completadas claves de traducción huérfanas en todos los idiomas.
+- [x] Corregidas claves mal referenciadas (`.` en vez de `:`) que se mostraban crudas: `savingsGoals.deleteGoalConfirmation`, `transactions.recurring.every`, `common:actions.remove`.
+- [x] Modal de edición de transacciones recurrentes: 8 claves inexistentes corregidas reutilizando las ya traducidas.
+- [x] Eliminados los fallbacks en español muertos (`t(...) || 'texto'`): añadidas las claves de error reales en los 7 idiomas.
+- [x] `EditGoalNameDialog` y `ImportModal` sin textos hardcodeados en español.
+- [x] Sidebar: interpolación nativa de i18next (eliminada la doble interpolación manual).
+- [x] Añadidas traducciones a los aria-labels.
+
+### 🐛 Corrección de bugs
+- [x] Notificaciones: abrir la campana ya no marca todo como leído. Click en la tarjeta = marcar como leída y navegar; la X (siempre visible) elimina la notificación del panel.
+- [x] Historial de contribuciones de metas grupales: ahora muestra el nombre real de quien aporta (antes siempre "Miembro").
+- [x] Rechazar una invitación ya no se muestra como un error: estado propio con icono y mensaje correctos.
+- [x] Modal de recurrentes: el selector de frecuencia aparecía vacío y enviaba valores incorrectos al backend (enums DAILY/MONTHLY vs DAYS/MONTHS).
+- [x] Fecha y saludo del header ya no quedan congelados: se recalculan al recuperar el foco; número de semana ISO-8601 real.
+- [x] Selector de periodo fantasma eliminado de la página de metas de ahorro.
+- [x] El borrador del modal de nombre de meta grupal ya no muestra valores antiguos al reabrirlo.
+- [x] Arreglado el selector de categorías en los modales de creación de transacciones.
+- [x] Arreglados los componentes primarios dialog, select y label.
+- [x] Eliminado el bug al borrar cuenta.
+- [x] Eliminado el icono del modal de editar categoría.
+
+### ⚡ Rendimiento y gestión de datos
+- [x] Mejoras en la muestra de información con cantidades de datos extremas (optimización de consultas y renderizado en transacciones, categorías, metas de ahorro, grupos de gastos compartidos, aportes y notificaciones).
+- [x] Invalidaciones de caché centralizadas en un único helper (antes, 9 query keys duplicadas en 6 mutaciones).
+- [x] Simplificada la lógica de aceptar/rechazar invitaciones (eliminadas invalidaciones y refetch redundantes).
+
+### 🎨 UX y diseño
+- [x] Autofill del navegador integrado con el sistema de temas (CSS puro con tokens; eliminado el hook JS con timers y colores hardcodeados).
+- [x] Un único sistema de toasts responsive (antes había dos instancias montadas a la vez).
+- [x] El modal de aportaciones se resetea al abrirse y permanece abierto si falla el guardado, para poder reintentar.
+- [x] `SavingsGoalCard` usa el formateador de moneda compartido (respeta idioma y moneda del usuario).
+- [x] Refinada la vista móvil del login: novedades recientes y guía accesibles también desde ahí.
+- [x] Añadida validación de URL en las metas de ahorro y botón para abrir el enlace introducido.
+- [x] Actualizadas las imágenes del Readme.md.
+
+---
+
+## MEJORAS v0.1.2
+
+- [x] Al editar la información de un usuario en una meta grupal, se debe comprobar tanto que el usuario no pueda bajar su rango de Admin -> Usuario a sí mismo si no hay otro administrador en la meta grupal.
+- [x] Arreglar bug del mensaje verde en metas grupales: el string/cálculo se queda estático y no reacciona cuando los porcentajes cambian o no suman 100.
+- [x] Corregir la clave de traducción `savingGoals.addFunds` en el frontend.
+- [x] Al clickar en la notificación debe llevar directamente a la zona de notificaciones (redirigir al componente/sección concreta, no solo a la página general).
+- [x] Hacer que el globo/alerta de notificación desaparezca automáticamente una vez abierto el desplegable (manteniendo el borrado manual de la lista como está ahora).
+- [x] Crear una paleta de colores oficial en modo oscuro.
+- [x] Optimizar la visibilidad del menú de 3 puntos en inversiones en dispositivos móviles (actualmente queda oculto por debajo del scroll y no es intuitivo).
+- [x] **Mitigar vulnerabilidad de signo en Transacciones (Defensa en profundidad):**
+- [x] **Mitigar riesgo de Inyección de Fórmulas en la exportación CSV:**
+- [x] **Migrar el almacenamiento del JWT de sessionStorage a Cookies Seguras (Mitigación XSS):**
+
+---
+
+## MEJORAS v0.1.1
+- [x] Arreglar la funcionalidad del notificationbell (`src\features\notifications\components\NotificationBell.tsx`) - (`src\shared\components\TopNav.tsx`)
+- [x] Diseño, creación e implementacion de la primera paleta de colores oficial.
+- [x] Mejorar la experiencia de usuario mediante micro-experiencias.
+- [x] Reducción del peso en el bundle JS inicial (gzip) de ~260 KB a ~176 KB **(-32%)**.
+- [x] Optimizar los tiempos de carga. **-33%** (de 2.1s a 1.4s).
+- [x] Reducción del peso de los iconos y recursos gráficos:
+  - `favicon-96x96.png` (14,7 kB) -> `favicon-96x96.webp` (2,51 kB)
+  - `web-app-icon.png` (264 kB) -> `web-app-icon.webp` (25,8 kB)
+  - `web-app-manifest-192x192.png` (35,8 kB) -> `web-app-manifest-192x192.webp` (5,63 kB)
+  - `web-app-manifest-512x512.png` (193 kB) -> `web-app-manifest-512x512.webp` (29,8 kB)
+  - **Total:** antes 507,5 kB -> ahora 63,74 kB | **(-87,44%)**
+- [x] Peso total de la carpeta "Frontend": Antes 2,69 MB -> Ahora 1,53 MB **(-43,12%)**
+- [x] Correcciones de lógica ligera en back.
+
+---
+
+## v0.1.0 [CAMBIOS EN BD]
+- [x] Añadir metas de ahorro.
+- [x] Reemplazo de dependencias shadcn, recharts y algo de radix con componentes propios.
+- [x] Persistencia de última ejecución en transacciones recurrentes.
+- [x] Añadir posibilidad de editar y borrar Group Goals.
+- [x] Aligerar proyecto (eliminados `.gitkeep`).
+- [x] Refactorización del ahora antiguo módulo "family" renombrado a "GoalContribution".
+- [x] Añadir endpoints y lógica necesaria a la API para hacer funcionar de buena forma el bot.
+- [x] Reducir las claves de traducción optimizando los textos.
+- [x] Exportar tambien en csv y pdf para visualizar en hoja de calculo.
+- [x] Integración con bot de telegram.
+- [x] Crear perfil de usuario y pestaña de settings.
+- [x] Eliminar la necesidad de correo, invitaciones por notificación in-app. Falta comprobar que funcione.
+- [x] Modificar el módulo de importación y exportación para soportar la exportacion e importación nativa de datos en la aplicación con el cambio a la 0.1.0.
+
+---
+
+## MEJORAS v0.0.4
+- [x] Añadir idioma Japonés.
+- [x] Eliminar restricciones de cuenta al exportar.
+
+---
+
+## MEJORAS v0.0.3
+- [x] Añadir seguridad contra ataques de fuerza bruta en el login. Ban a nivel de IP.
+- [x] Asegurar el diseño correcto de toda la web en navegadores safari.
+- [x] Arreglar algunos errores en los que se trataba de autenticar en pantallas incorrectas.
+- [x] Corregir la lógica de las peticiones e ignorar categorías y transacciones desactivadas.
+- [x] Añadir icono en las transacciones que, tras borrar una categoría, se hayan quedado sin.
+- [x] Corregir el mostrado del menu con los 3 puntitos de opciones en categorias, transacciones e inversiones.
+- [x] Añadir modales de confirmación de borrado en transacciones, transacciones recurrentes e inversiones.
+- [x] Mejora en los scripts de guardado.
+
+---
+
+## MEJORAS v0.0.2
+- [x] Limpieza de Logs de Depuración.
+- [x] Lógica de Transacciones Recurrentes: motor de cálculo temporal.
+- [x] Corrección de Versiones en `pom.xml`.
+- [x] Validación de Consistencia en Modo de Distribución Familiar.
+- [x] Unificación de Mappers a MapStruct.
+- [x] Mejorar y optimizar variables entre repositorios (`Dockerfile`, `docker-compose.yml`).
+- [x] Actualizar la info de la página del login.
+- [x] Añadir y diseñar wiki propia.
+- [x] Módulo de categorías ultra-robustos (IDOR, Bean Validation, regex, inmutabilidad).
+- [x] Añadir icono a la interfaz.
+- [x] Corregir errores de la pestaña Family.
+- [x] Mejoras en el apartado visual.
+
+---
+
+🟠 Bugs de lógica
+
+13. Mensajes de error en español hardcodeados en todo el backend
+Los mensajes de excepciones ("Credenciales inválidas", "Demasiados intentos...", el del rate limiter con String.formatted...) van directos al message que el front muestra tal cual (error.response?.data?.message). Tu app soporta 7 idiomas pero el backend siempre habla español. Lo correcto: el backend devuelve códigos de error (AUTH_INVALID_CREDENTIALS) y el front los traduce. Es un refactor con enjundia, pero al menos documenta el contrato.
+
+🟡 Seguridad / endurecimiento
+
+18. Scheduler sin lock distribuido (TransactionScheduler)
+@Scheduled en cada instancia: el día que escales a 2 réplicas, las transacciones planificadas se ejecutan dos veces (cargos duplicados). ShedLock o equivalente antes de escalar. También: sin timeout ni alertado si falla.
+
+19. importUserData parsea 10MB de JSON en memoria y escribe todo en una transacción
+El multipart cap de 10MB ayuda, pero objectMapper.readValue materializa todo el árbol y luego insertas miles de filas en una única @Transactional — una importación grande puede tardar minutos con la transacción abierta (locks) y un fallo al final lo revierte todo sin progreso. Considera streaming/batch. Y valida tamaño máximo de arrays, no solo del archivo.
+
+
+🔵 Menores / deuda
+GlobalExceptionHandler: los errores de validación devuelven validationErrors.toString() (formato {campo=msg, campo2=msg2} de Java) como string plano — el front no puede parsearlo. Devuelve el Map estructurado.
+El handler deja escapar ex.getMessage() en varias ramas de 400 — ok para validación, pero revisa que ningún mensaje interno (SQL, paths) llegue al cuerpo.
+checkLockStatus guarda sesiones sin modificarlas (saveSession(session) dentro del loop sin cambios) — escritura innecesaria por cada login.
+NotificationService/GroupGoalService: usan log.info con IDs — bien; pero el rate limiter escribe JSON a mano con formatted (frágil si el mensaje lleva comillas).
+Tests: tienes buena cobertura de servicios, pero no vi ni un test de seguridad (filtro JWT, rate limiter, constraint de sesiones). El bug #2 lo habría cazado un test de integración de "login dos veces".
+pom.xml — revisa que spring-boot-starter-actuator no esté expuesto sin seguridad si lo incluyes (no lo vi, bien).
+Flyway con baseline-on-migrate: true y solo V1+V2: correcto, pero el comentario del punto 2 sugiere que V2 introdujo la tabla de sesiones sin test de migración contra datos reales.

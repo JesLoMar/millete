@@ -23,31 +23,65 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     private final SpringDataTransactionRepository repository;
     private final TransactionEntityMapper mapper;
 
-    public TransactionPostgresAdapter(SpringDataTransactionRepository repository, TransactionEntityMapper mapper) {
+    public TransactionPostgresAdapter(
+            SpringDataTransactionRepository repository,
+            TransactionEntityMapper mapper
+    ) {
         this.repository = repository;
         this.mapper = mapper;
     }
 
-    private Specification<TransactionEntity> buildSpecification(UUID userId, String search, TransactionType type,
-                                                                LocalDateTime startDate, LocalDateTime endDate) {
-        Specification<TransactionEntity> spec = (root, query, cb) -> cb.equal(root.get("userId"), userId);
-        spec = spec.and((root, query, cb) -> cb.equal(root.get("active"), true));
+    private Specification<TransactionEntity> buildSpecification(
+            UUID userId,
+            String search,
+            TransactionType type,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        Specification<TransactionEntity> spec =
+                (root, query, cb) -> cb.equal(root.get("userId"), userId);
+
+        spec = spec.and(
+                (root, query, cb) -> cb.equal(root.get("active"), true)
+        );
 
         if (search != null && !search.isBlank()) {
             String pattern = "%" + search.toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("description")), pattern));
+
+            spec = spec.and(
+                    (root, query, cb) ->
+                            cb.like(
+                                    cb.lower(root.get("description")),
+                                    pattern
+                            )
+            );
         }
 
         if (type != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("type"), type.name()));
+            spec = spec.and(
+                    (root, query, cb) ->
+                            cb.equal(root.get("type"), type.name())
+            );
         }
 
         if (startDate != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("date"), startDate));
+            spec = spec.and(
+                    (root, query, cb) ->
+                            cb.greaterThanOrEqualTo(
+                                    root.get("date"),
+                                    startDate
+                            )
+            );
         }
 
         if (endDate != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("date"), endDate));
+            spec = spec.and(
+                    (root, query, cb) ->
+                            cb.lessThanOrEqualTo(
+                                    root.get("date"),
+                                    endDate
+                            )
+            );
         }
 
         return spec;
@@ -57,6 +91,7 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     public Transaction save(Transaction transaction) {
         TransactionEntity entityToSave = mapper.toEntity(transaction);
         TransactionEntity savedEntity = repository.save(entityToSave);
+
         return mapper.toDomain(savedEntity);
     }
 
@@ -74,7 +109,11 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findByUserIdAndDateBetween(UUID userId, LocalDateTime start, LocalDateTime end) {
+    public List<Transaction> findByUserIdAndDateBetween(
+            UUID userId,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
         return repository.findByUserIdAndDateBetween(userId, start, end).stream()
                 .map(mapper::toDomain)
                 .toList();
@@ -85,32 +124,78 @@ public class TransactionPostgresAdapter implements TransactionRepository {
         if (limit <= 0) {
             return List.of();
         }
-        return repository.findByUserIdAndActiveTrueOrderByDateDesc(userId, PageRequest.of(0, limit)).stream()
+
+        return repository.findByUserIdAndActiveTrueOrderByDateDesc(
+                        userId,
+                        PageRequest.of(0, limit)
+                )
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
-    public List<Transaction> findAllByCategoryId(UUID categoryId) {
-        return repository.findAllByCategoryId(categoryId).stream()
-                .map(mapper::toDomain)
-                .toList();
+    public void clearCategoryFromActiveTransactions(
+            UUID categoryId,
+            UUID userId,
+            LocalDateTime modifiedAt
+    ) {
+        repository.clearCategoryFromActiveTransactions(
+                categoryId,
+                userId,
+                modifiedAt
+        );
     }
 
     @Override
-    public List<Transaction> findAllByUserId(UUID userId, int page, int size, String search, TransactionType type,
-                                             LocalDateTime startDate, LocalDateTime endDate) {
-        Specification<TransactionEntity> spec = buildSpecification(userId, search, type, startDate, endDate);
-        Page<TransactionEntity> result = repository.findAll(spec,
-                PageRequest.of(page, size, Sort.by("date").descending()));
+    public List<Transaction> findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        Specification<TransactionEntity> spec =
+                buildSpecification(
+                        userId,
+                        search,
+                        type,
+                        startDate,
+                        endDate
+                );
+
+        Page<TransactionEntity> result = repository.findAll(
+                spec,
+                PageRequest.of(
+                        page,
+                        size,
+                        Sort.by("date").descending()
+                )
+        );
+
         return result.getContent().stream()
                 .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
-    public long countByUserIdAndFilters(UUID userId, String search, TransactionType type,
-                                        LocalDateTime startDate, LocalDateTime endDate) {
-        return repository.count(buildSpecification(userId, search, type, startDate, endDate));
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        return repository.count(
+                buildSpecification(
+                        userId,
+                        search,
+                        type,
+                        startDate,
+                        endDate
+                )
+        );
     }
 }

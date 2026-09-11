@@ -18,7 +18,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionService implements RegisterTransactionUseCase, ListTransactionsUseCase, DeleteTransactionUseCase, GetTransactionUseCase, UpdateTransactionUseCase {
+public class TransactionService implements
+        RegisterTransactionUseCase,
+        ListTransactionsUseCase,
+        DeleteTransactionUseCase,
+        GetTransactionUseCase,
+        UpdateTransactionUseCase,
+        UnassignCategoryFromTransactionsUseCase {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
@@ -89,6 +95,13 @@ public class TransactionService implements RegisterTransactionUseCase, ListTrans
         return new RegisterTransactionResult(savedTransaction, limitExceeded);
     }
 
+    @Override
+    public void unassignCategory(UUID categoryId, UUID userId) {
+    transactionRepository.clearCategoryFromActiveTransactions(
+            categoryId,
+            userId,
+            LocalDateTime.now()
+    );}
 
     @Override
     public List<Transaction> findAllByUserId(UUID userId) {

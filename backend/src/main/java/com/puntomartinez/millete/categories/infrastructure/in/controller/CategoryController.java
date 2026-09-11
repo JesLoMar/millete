@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.categories.infrastructure.in.controller;
 
-import com.puntomartinez.millete.categories.application.services.CategoryService;
+import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryCommand;
@@ -29,16 +29,16 @@ public class CategoryController {
     private final RegisterCategoryUseCase registerCategoryUseCase;
     private final UpdateCategoryUseCase updateCategoryUseCase;
     private final GetCategoryUseCase getCategoryUseCase;
-    private final CategoryService categoryService;
+    private final DeleteCategoryUseCase deleteCategoryUseCase;
 
     public CategoryController(RegisterCategoryUseCase registerCategoryUseCase,
                               UpdateCategoryUseCase updateCategoryUseCase,
                               GetCategoryUseCase getCategoryUseCase,
-                              CategoryService categoryService) {
+                              DeleteCategoryUseCase deleteCategoryUseCase) {
         this.registerCategoryUseCase = registerCategoryUseCase;
         this.updateCategoryUseCase = updateCategoryUseCase;
         this.getCategoryUseCase = getCategoryUseCase;
-        this.categoryService = categoryService;
+        this.deleteCategoryUseCase = deleteCategoryUseCase;
     }
 
     @PostMapping
@@ -110,7 +110,7 @@ public class CategoryController {
             Authentication authentication) {
 
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-        categoryService.delete(id, userId);
+        deleteCategoryUseCase.deleteByIdAndUserId(id, userId);
         return ResponseEntity.noContent().build();
     }
 
