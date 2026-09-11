@@ -15,40 +15,37 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SavingsGoalEntity {
 
-    @Id
-    @Column(name = "id")
-    private UUID id;
+@Id
+@Column(name = "id")
+private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+@Column(name = "user_id", nullable = false)
+private UUID userId;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+@Column(name = "name", nullable = false, length = 100)
+private String name;
 
-    @Column(name = "target_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal targetAmount;
+@Column(name = "target_amount", nullable = false, precision = 12, scale = 2)
+private BigDecimal targetAmount;
 
-    @Column(name = "current_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal currentAmount;
+@Column(name = "current_amount", nullable = false, precision = 12, scale = 2)
+private BigDecimal currentAmount;
 
-    @Column(name = "deadline")
-    private LocalDate deadline;
+@Column(name = "deadline")
+private LocalDate deadline;
 
-    @Column(name = "priority", nullable = false, length = 10)
-    private String priority;
+@Column(name = "priority", nullable = false, length = 10)
+private String priority;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+@Column(name = "link", length = 500)
+private String link;
 
-    @Column(name = "link", length = 500)
-    private String link;
+@Column(name = "created_at", nullable = false)
+private LocalDateTime createdAt;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+@Column(name = "modified_at", nullable = false)
+private LocalDateTime modifiedAt;
 
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
-
-    @Column(name = "active", nullable = false)
-    private boolean active;
+@Column(name = "active", nullable = false)
+private boolean active;
 }

@@ -12,7 +12,7 @@ public final class LinkSanitizer {
     private LinkSanitizer() {
     }
 
-    public static String sanitize(String link) {
+    public static String normalizeAndValidate(String link) {
         if (link == null || link.isBlank()) {
             return null;
         }
@@ -24,20 +24,33 @@ public final class LinkSanitizer {
         }
 
         if (candidate.length() > MAX_LINK_LENGTH) {
-            throw new InvalidInputException("El enlace no puede exceder 500 caracteres.");
+            throw new InvalidInputException(
+                    "El enlace no puede exceder 500 caracteres."
+            );
         }
 
         try {
             URI uri = new URI(candidate);
+
             String scheme = uri.getScheme();
-            boolean validScheme = scheme != null
-                    && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"));
+
+            boolean validScheme =
+                    scheme != null
+                            && (scheme.equalsIgnoreCase("http")
+                            || scheme.equalsIgnoreCase("https"));
+
             if (!validScheme || uri.getHost() == null) {
-                throw new InvalidInputException("El enlace debe ser una URL válida (http o https).");
+                throw new InvalidInputException(
+                        "El enlace debe ser una URL válida (http o https)."
+                );
             }
+
             return candidate;
+
         } catch (URISyntaxException e) {
-            throw new InvalidInputException("El enlace debe ser una URL válida (http o https).");
+            throw new InvalidInputException(
+                    "El enlace debe ser una URL válida (http o https)."
+            );
         }
     }
 }

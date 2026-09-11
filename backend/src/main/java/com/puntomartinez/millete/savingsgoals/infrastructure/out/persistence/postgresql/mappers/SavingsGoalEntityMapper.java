@@ -6,6 +6,22 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface SavingsGoalEntityMapper {
-    SavingsGoalEntity toEntity(SavingsGoal domain);
-    SavingsGoal toDomain(SavingsGoalEntity entity);
+
+SavingsGoalEntity toEntity(SavingsGoal domain);
+
+default SavingsGoal toDomain(SavingsGoalEntity entity) {
+    return SavingsGoal.reconstitute(
+            entity.getId(),
+            entity.getUserId(),
+            entity.getName(),
+            entity.getTargetAmount(),
+            entity.getCurrentAmount(),
+            entity.getDeadline(),
+            entity.getPriority(),
+            entity.getLink(),
+            entity.getCreatedAt(),
+            entity.getModifiedAt(),
+            entity.isActive()
+    );
+}
 }

@@ -5,19 +5,33 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record UpdateSavingsGoalCommand(
-        UUID id,
-        UUID userId,
-        String name,
-        BigDecimal targetAmount,
-        LocalDate deadline,
-        String priority,
-        String status,
-        String link
+UUID id,
+UUID userId,
+String name,
+BigDecimal targetAmount,
+LocalDate deadline,
+String priority,
+String link
 ) {
-    public UpdateSavingsGoalCommand {
-        if (id == null) throw new IllegalArgumentException("id es obligatorio.");
-        if (userId == null) throw new IllegalArgumentException("userId es obligatorio.");
-        if (status != null && !status.matches("^(ACTIVE|PAUSED|COMPLETED|CANCELLED)$"))
-            throw new IllegalArgumentException("status inválido.");
+
+public UpdateSavingsGoalCommand {
+    if (id == null) {
+        throw new IllegalArgumentException(
+                "id es obligatorio."
+        );
     }
+
+    if (userId == null) {
+        throw new IllegalArgumentException(
+                "userId es obligatorio."
+        );
+    }
+
+    if (deadline != null
+            && !deadline.isAfter(LocalDate.now())) {
+        throw new IllegalArgumentException(
+                "deadline debe ser posterior a hoy."
+        );
+    }
+}
 }

@@ -1,186 +1,309 @@
 package com.puntomartinez.millete.savingsgoals.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class SavingsGoal {
 
-    private UUID id;
-    private UUID userId;
+    private final UUID id;
+    private final UUID userId;
+
     private String name;
     private BigDecimal targetAmount;
     private BigDecimal currentAmount;
     private LocalDate deadline;
     private String priority;
-    private String status;
     private String link;
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
 
-    public SavingsGoal() {
-        this.id = UUID.randomUUID();
-        this.currentAmount = BigDecimal.ZERO;
-        this.priority = "MEDIUM";
-        this.status = "ACTIVE";
-        this.createdAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
-        this.active = true;
-    }
-
-    public SavingsGoal(UUID id, UUID userId, String name, BigDecimal targetAmount,
-                       BigDecimal currentAmount, LocalDate deadline, String priority,
-                       String status, String link, LocalDateTime createdAt,
-                       LocalDateTime modifiedAt, boolean active) {
+    private SavingsGoal(
+            UUID id,
+            UUID userId,
+            String name,
+            BigDecimal targetAmount,
+            BigDecimal currentAmount,
+            LocalDate deadline,
+            String priority,
+            String link,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+        validateUserId(userId);
         validateName(name);
         validateTargetAmount(targetAmount);
         validateCurrentAmount(currentAmount);
         validateDeadline(deadline);
         validatePriority(priority);
-        validateStatus(status);
 
-        this.id = (id != null) ? id : UUID.randomUUID();
+        this.id = id;
         this.userId = userId;
         this.name = name;
         this.targetAmount = targetAmount;
-        this.currentAmount = (currentAmount != null) ? currentAmount : BigDecimal.ZERO;
+        this.currentAmount = currentAmount;
         this.deadline = deadline;
-        this.priority = (priority != null) ? priority : "MEDIUM";
-        this.status = (status != null) ? status : "ACTIVE";
+        this.priority = priority;
         this.link = link;
-        this.createdAt = (createdAt != null) ? createdAt : LocalDateTime.now();
-        this.modifiedAt = (modifiedAt != null) ? modifiedAt : LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
         this.active = active;
     }
 
-    public void updateDetails(String name, BigDecimal targetAmount, LocalDate deadline,
-                              String priority, String status, String link) {
+    public static SavingsGoal create(
+            UUID userId,
+            String name,
+            BigDecimal targetAmount,
+            LocalDate deadline,
+            String priority,
+            String link
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+
+        return new SavingsGoal(
+                UUID.randomUUID(),
+                userId,
+                name,
+                targetAmount,
+                BigDecimal.ZERO,
+                deadline,
+                priority != null ? priority : "MEDIUM",
+                link,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static SavingsGoal reconstitute(
+            UUID id,
+            UUID userId,
+            String name,
+            BigDecimal targetAmount,
+            BigDecimal currentAmount,
+            LocalDate deadline,
+            String priority,
+            String link,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+        validateId(id);
+        validateCreatedAt(createdAt);
+        validateModifiedAt(modifiedAt);
+
+        return new SavingsGoal(
+                id,
+                userId,
+                name,
+                targetAmount,
+                currentAmount,
+                deadline,
+                priority,
+                link,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+            String name,
+            BigDecimal targetAmount,
+            LocalDate deadline,
+            String priority,
+            String link
+    ) {
         if (name != null) {
             validateName(name);
             this.name = name;
         }
+
         if (targetAmount != null) {
             validateTargetAmount(targetAmount);
             this.targetAmount = targetAmount;
         }
+
         if (deadline != null) {
             validateDeadline(deadline);
             this.deadline = deadline;
         }
+
         if (priority != null) {
             validatePriority(priority);
             this.priority = priority;
         }
-        if (status != null) {
-            validateStatus(status);
-            this.status = status;
-        }
+
         if (link != null) {
             this.link = link;
         }
+
         this.modifiedAt = LocalDateTime.now();
-        recalculateStatus();
     }
 
     public void addContribution(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("La contribución debe ser mayor que cero.");
-        }
+        validatePositiveAmount(
+                amount,
+                "La contribución debe ser mayor que cero."
+        );
+
         this.currentAmount = this.currentAmount.add(amount);
         this.modifiedAt = LocalDateTime.now();
-        recalculateStatus();
+    }
+
+    public void withdraw(BigDecimal amount) {
+        validatePositiveAmount(
+                amount,
+                "La cantidad a retirar debe ser mayor que cero."
+        );
+
+        if (this.currentAmount.compareTo(amount) < 0) {
+            throw new IllegalArgumentException(
+                    "No se puede retirar más dinero del disponible en el objetivo."
+            );
+        }
+
+        this.currentAmount = this.currentAmount.subtract(amount);
+        this.modifiedAt = LocalDateTime.now();
     }
 
     public void deactivate() {
+        if (!this.active) {
+            return;
+        }
+
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
-        if (!"COMPLETED".equals(this.status) && !"CANCELLED".equals(this.status)) {
-            this.status = "CANCELLED";
+    }
+
+    private static void validatePositiveAmount(
+            BigDecimal amount,
+            String message
+    ) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(message);
         }
     }
 
-    private void recalculateStatus() {
-        if ("ACTIVE".equals(this.status) || "PAUSED".equals(this.status)) {
-            if (this.currentAmount.compareTo(this.targetAmount) >= 0) {
-                this.status = "COMPLETED";
-            }
+    private static void validateId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "El id del objetivo de ahorro es obligatorio."
+            );
         }
     }
 
-    private void validateName(String name) {
+    private static void validateUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException(
+                    "El usuario del objetivo de ahorro es obligatorio."
+            );
+        }
+    }
+
+    private static void validateName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("El nombre del objetivo de ahorro es obligatorio.");
+            throw new IllegalArgumentException(
+                    "El nombre del objetivo de ahorro es obligatorio."
+            );
         }
     }
 
-    private void validateTargetAmount(BigDecimal targetAmount) {
-        if (targetAmount == null || targetAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El monto objetivo debe ser mayor que cero.");
+    private static void validateTargetAmount(BigDecimal targetAmount) {
+        if (targetAmount == null
+                || targetAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "El monto objetivo debe ser mayor que cero."
+            );
         }
     }
 
-    private void validateCurrentAmount(BigDecimal currentAmount) {
-        if (currentAmount != null && currentAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("El monto actual no puede ser negativo.");
+    private static void validateCurrentAmount(BigDecimal currentAmount) {
+        if (currentAmount == null
+                || currentAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "El monto actual no puede ser negativo."
+            );
         }
     }
 
-    private void validateDeadline(LocalDate deadline) {
+    private static void validateDeadline(LocalDate deadline) {
         if (deadline != null && !deadline.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("La fecha límite debe ser posterior a hoy.");
+            throw new IllegalArgumentException(
+                    "La fecha límite debe ser posterior a hoy."
+            );
         }
     }
 
-    private void validatePriority(String priority) {
-        if (priority != null && !priority.matches("^(LOW|MEDIUM|HIGH)$")) {
-            throw new IllegalArgumentException("Prioridad inválida. Valores permitidos: LOW, MEDIUM, HIGH.");
+    private static void validatePriority(String priority) {
+        if (priority == null
+                || !priority.matches("^(LOW|MEDIUM|HIGH)$")) {
+            throw new IllegalArgumentException(
+                    "Prioridad inválida. Valores permitidos: LOW, MEDIUM, HIGH."
+            );
         }
     }
 
-    private void validateStatus(String status) {
-        if (status != null && !status.matches("^(ACTIVE|PAUSED|COMPLETED|CANCELLED)$")) {
-            throw new IllegalArgumentException("Estado inválido. Valores permitidos: ACTIVE, PAUSED, COMPLETED, CANCELLED.");
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+        if (createdAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de creación es obligatoria."
+            );
         }
     }
 
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+        if (modifiedAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de modificación es obligatoria."
+            );
+        }
+    }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public UUID getUserId() {
+        return userId;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public BigDecimal getTargetAmount() { return targetAmount; }
-    public void setTargetAmount(BigDecimal targetAmount) { this.targetAmount = targetAmount; }
+    public BigDecimal getTargetAmount() {
+        return targetAmount;
+    }
 
-    public BigDecimal getCurrentAmount() { return currentAmount; }
-    public void setCurrentAmount(BigDecimal currentAmount) { this.currentAmount = currentAmount; }
+    public BigDecimal getCurrentAmount() {
+        return currentAmount;
+    }
 
-    public LocalDate getDeadline() { return deadline; }
-    public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+    public LocalDate getDeadline() {
+        return deadline;
+    }
 
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
+    public String getPriority() {
+        return priority;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getLink() {
+        return link;
+    }
 
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
 
-    public LocalDateTime getModifiedAt() { return modifiedAt; }
-    public void setModifiedAt(LocalDateTime modifiedAt) { this.modifiedAt = modifiedAt; }
-
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public boolean isActive() {
+        return active;
+    }
 }
