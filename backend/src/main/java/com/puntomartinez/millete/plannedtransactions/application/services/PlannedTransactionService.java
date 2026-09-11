@@ -3,22 +3,21 @@ package com.puntomartinez.millete.plannedtransactions.application.services;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction.FrequencyType;
-import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
-import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -36,61 +35,68 @@ public class PlannedTransactionService implements
     private final CategoryRepository categoryRepository;
     private final RegisterTransactionUseCase registerTransactionUseCase;
 
-    public PlannedTransactionService(PlannedTransactionRepository plannedTransactionRepository,
-                                     CategoryRepository categoryRepository,
-                                     RegisterTransactionUseCase registerTransactionUseCase) {
+    public PlannedTransactionService(
+            PlannedTransactionRepository plannedTransactionRepository,
+            CategoryRepository categoryRepository,
+            RegisterTransactionUseCase registerTransactionUseCase
+    ) {
         this.plannedTransactionRepository = plannedTransactionRepository;
         this.categoryRepository = categoryRepository;
         this.registerTransactionUseCase = registerTransactionUseCase;
     }
 
-
     @Override
-    public PlannedTransaction register(RegisterPlannedTransactionCommand command) {
+    public PlannedTransaction register(
+            RegisterPlannedTransactionCommand command
+    ) {
         if (command.categoryId() != null) {
-            // findByIdAndUserId: valida existencia Y propiedad — una categoría de otro
-            // usuario responde 404 igual que una inexistente (no revela que el UUID existe)
-            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
-                    .orElseThrow(() -> new ResourceNotFoundException("The specified category does not exist."));
+            categoryRepository.findByIdAndUserId(
+                            command.categoryId(),
+                            command.userId()
+                    )
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "The specified category does not exist."
+                            )
+                    );
         }
 
-        UUID newId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now();
+        PlannedTransaction plannedTransaction =
+                PlannedTransaction.create(
+                        command.userId(),
+                        command.categoryId(),
+                        command.amount(),
+                        command.type(),
+                        command.description(),
+                        command.frequencyType(),
+                        command.frequencyInterval(),
+                        command.startDate(),
+                        command.endDate()
+                );
 
-        PlannedTransaction newPlannedTransaction = new PlannedTransaction(
-                newId,
-                command.userId(),
-                command.categoryId(),
-                command.amount(),
-                command.type(),
-                command.description(),
-                command.frequencyType(),
-                command.frequencyInterval(),
-                command.startDate(),
-                command.endDate(),
-                now,
-                now,
-                true,
-                null
-        );
-
-        return plannedTransactionRepository.save(newPlannedTransaction);
+        return plannedTransactionRepository.save(plannedTransaction);
     }
-
 
     @Override
     @Transactional
     public synchronized void processScheduledTasks() {
         LocalDate today = LocalDate.now();
 
-        List<PlannedTransaction> templates = plannedTransactionRepository.findAllActive();
+        List<PlannedTransaction> templates =
+                plannedTransactionRepository.findAllActive();
 
         for (PlannedTransaction template : templates) {
-            LocalDate pendingDate = getNextPendingExecutionDate(template, today);
+            LocalDate pendingDate =
+                    getNextPendingExecutionDate(template, today);
 
             while (pendingDate != null) {
-                log.info("Executing recurring transaction: {} ({}€) for user {} scheduled for {}",
-                        template.getDescription(), template.getAmount(), template.getUserId(), pendingDate);
+                log.info(
+                        "Executing recurring transaction: {} ({}€) for user {} scheduled for {}",
+                        template.getDescription(),
+                        template.getAmount(),
+                        template.getUserId(),
+                        pendingDate
+                );
 
                 RegisterTransactionUseCase.RegisterTransactionCommand command =
                         new RegisterTransactionUseCase.RegisterTransactionCommand(
@@ -104,85 +110,126 @@ public class PlannedTransactionService implements
 
                 registerTransactionUseCase.register(command);
 
-                template.setLastExecutedDate(pendingDate);
+                template.markAsExecuted(pendingDate);
+
                 plannedTransactionRepository.save(template);
 
-                pendingDate = getNextPendingExecutionDate(template, today);
+                pendingDate =
+                        getNextPendingExecutionDate(template, today);
             }
         }
     }
 
-
     @Override
-    public PlannedTransaction update(UUID id, UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand command) {
-        PlannedTransaction tx = plannedTransactionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Planned transaction not found."));
+    public PlannedTransaction update(
+            UUID id,
+            UpdatePlannedTransactionCommand command
+    ) {
+        PlannedTransaction plannedTransaction =
+                plannedTransactionRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Planned transaction not found."
+                                )
+                        );
 
-        if (!tx.getUserId().equals(command.userId())) {
-            throw new ForbiddenOperationException("You do not have permission to edit this transaction.");
+        if (!plannedTransaction.getUserId().equals(command.userId())) {
+            throw new ForbiddenOperationException(
+                    "You do not have permission to edit this transaction."
+            );
         }
 
         if (command.categoryId() != null) {
-            // Misma regla que en register: existencia + propiedad
-            categoryRepository.findByIdAndUserId(command.categoryId(), command.userId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category does not exist."));
+            categoryRepository.findByIdAndUserId(
+                            command.categoryId(),
+                            command.userId()
+                    )
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Category does not exist."
+                            )
+                    );
         }
 
-        boolean recurrenceChanged = !tx.getStartDate().equals(command.startDate()) ||
-                tx.getFrequencyType() != command.frequencyType() ||
-                !tx.getFrequencyInterval().equals(command.frequencyInterval());
+        plannedTransaction.updateDetails(
+                command.categoryId(),
+                command.amount(),
+                command.type(),
+                command.description(),
+                command.frequencyType(),
+                command.frequencyInterval(),
+                command.startDate(),
+                command.endDate()
+        );
 
-        tx.setAmount(command.amount());
-        tx.setType(command.type());
-        tx.setDescription(command.description());
-        tx.setCategoryId(command.categoryId());
-        tx.setFrequencyType(command.frequencyType());
-        tx.setFrequencyInterval(command.frequencyInterval());
-        tx.setStartDate(command.startDate());
-        tx.setEndDate(command.endDate());
-        tx.setModifiedAt(LocalDateTime.now());
-
-        if (recurrenceChanged) {
-            tx.setLastExecutedDate(null);
-        }
-
-        return plannedTransactionRepository.save(tx);
+        return plannedTransactionRepository.save(plannedTransaction);
     }
 
-
     @Override
-    public void deleteByIdAndUserId(UUID id, UUID userId) {
-        PlannedTransaction tx = plannedTransactionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Planned transaction not found."));
+    public void deleteByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        PlannedTransaction plannedTransaction =
+                plannedTransactionRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Planned transaction not found."
+                                )
+                        );
 
-        if (!tx.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("You do not have permission to delete this transaction.");
+        if (!plannedTransaction.getUserId().equals(userId)) {
+            throw new ForbiddenOperationException(
+                    "You do not have permission to delete this transaction."
+            );
         }
 
-        tx.setActive(false);
-        tx.setModifiedAt(LocalDateTime.now());
-        plannedTransactionRepository.save(tx);
+        plannedTransaction.deactivate();
+
+        plannedTransactionRepository.save(plannedTransaction);
     }
 
     public List<PlannedTransaction> findByUserId(UUID userId) {
-        return plannedTransactionRepository.findAllByUserId(userId).stream()
+        return plannedTransactionRepository.findAllByUserId(userId)
+                .stream()
                 .filter(PlannedTransaction::isActive)
                 .toList();
     }
 
     @Override
-    public List<PlannedTransaction> findAllByUserId(UUID userId, int page, int size, String search,
-                                                    TransactionType type) {
-        return plannedTransactionRepository.findAllByUserId(userId, page, size, search, type);
+    public List<PlannedTransaction> findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type
+    ) {
+        return plannedTransactionRepository.findAllByUserId(
+                userId,
+                page,
+                size,
+                search,
+                type
+        );
     }
 
     @Override
-    public long countByUserIdAndFilters(UUID userId, String search, TransactionType type) {
-        return plannedTransactionRepository.countByUserIdAndFilters(userId, search, type);
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type
+    ) {
+        return plannedTransactionRepository.countByUserIdAndFilters(
+                userId,
+                search,
+                type
+        );
     }
 
-
-    private LocalDate getNextPendingExecutionDate(PlannedTransaction template, LocalDate today) {
+    private LocalDate getNextPendingExecutionDate(
+            PlannedTransaction template,
+            LocalDate today
+    ) {
         LocalDate start = template.getStartDate();
         LocalDate end = template.getEndDate();
 
@@ -194,33 +241,72 @@ public class PlannedTransactionService implements
         LocalDate nextExecution = start;
 
         if (baseDate != null) {
-            long periodsToBase = calculatePeriodsPassed(start, baseDate, template.getFrequencyType(), template.getFrequencyInterval());
-            nextExecution = addPeriods(start, periodsToBase, template.getFrequencyType(), template.getFrequencyInterval());
+            long periodsToBase =
+                    calculatePeriodsPassed(
+                            start,
+                            baseDate,
+                            template.getFrequencyType(),
+                            template.getFrequencyInterval()
+                    );
+
+            nextExecution =
+                    addPeriods(
+                            start,
+                            periodsToBase,
+                            template.getFrequencyType(),
+                            template.getFrequencyInterval()
+                    );
 
             while (!nextExecution.isAfter(baseDate)) {
                 periodsToBase++;
-                nextExecution = addPeriods(start, periodsToBase, template.getFrequencyType(), template.getFrequencyInterval());
+
+                nextExecution =
+                        addPeriods(
+                                start,
+                                periodsToBase,
+                                template.getFrequencyType(),
+                                template.getFrequencyInterval()
+                        );
             }
         }
 
-        if (!nextExecution.isAfter(today) && (end == null || !nextExecution.isAfter(end))) {
+        if (!nextExecution.isAfter(today)
+                && (end == null || !nextExecution.isAfter(end))) {
             return nextExecution;
         }
 
         return null;
     }
 
-    private long calculatePeriodsPassed(LocalDate start, LocalDate target, FrequencyType type, int interval) {
+    private long calculatePeriodsPassed(
+            LocalDate start,
+            LocalDate target,
+            FrequencyType type,
+            int interval
+    ) {
         return switch (type) {
-            case DAYS -> ChronoUnit.DAYS.between(start, target) / interval;
-            case WEEKS -> ChronoUnit.WEEKS.between(start, target) / interval;
-            case MONTHS -> ChronoUnit.MONTHS.between(start, target) / interval;
-            case YEARS -> ChronoUnit.YEARS.between(start, target) / interval;
+            case DAYS ->
+                    ChronoUnit.DAYS.between(start, target) / interval;
+
+            case WEEKS ->
+                    ChronoUnit.WEEKS.between(start, target) / interval;
+
+            case MONTHS ->
+                    ChronoUnit.MONTHS.between(start, target) / interval;
+
+            case YEARS ->
+                    ChronoUnit.YEARS.between(start, target) / interval;
         };
     }
 
-    private LocalDate addPeriods(LocalDate start, long periods, FrequencyType type, int interval) {
+    private LocalDate addPeriods(
+            LocalDate start,
+            long periods,
+            FrequencyType type,
+            int interval
+    ) {
         long totalUnits = periods * interval;
+
         return switch (type) {
             case DAYS -> start.plusDays(totalUnits);
             case WEEKS -> start.plusWeeks(totalUnits);

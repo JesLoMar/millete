@@ -1,7 +1,13 @@
 package com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,8 +18,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class PlannedTransactionEntity {
 
     @Id
@@ -26,7 +30,12 @@ public class PlannedTransactionEntity {
     @Column(name = "category_id")
     private UUID categoryId;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @Column(
+            name = "amount",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
     private BigDecimal amount;
 
     @Column(name = "type", nullable = false, length = 20)
@@ -50,7 +59,11 @@ public class PlannedTransactionEntity {
     @Column(name = "last_executed_date")
     private LocalDate lastExecutedDate;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private LocalDateTime createdAt;
 
     @Column(name = "modified_at", nullable = false)

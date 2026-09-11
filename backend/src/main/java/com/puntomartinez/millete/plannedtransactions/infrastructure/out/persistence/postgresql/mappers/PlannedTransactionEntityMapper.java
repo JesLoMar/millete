@@ -12,12 +12,28 @@ import org.mapstruct.Named;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface PlannedTransactionEntityMapper {
 
-    @Mapping(target = "type", source = "type", qualifiedByName = "mapTransactionTypeToString")
-    @Mapping(target = "frequencyType", source = "frequencyType", qualifiedByName = "mapFrequencyTypeToString")
+    @Mapping(
+            target = "type",
+            source = "type",
+            qualifiedByName = "mapTransactionTypeToString"
+    )
+    @Mapping(
+            target = "frequencyType",
+            source = "frequencyType",
+            qualifiedByName = "mapFrequencyTypeToString"
+    )
     PlannedTransactionEntity toEntity(PlannedTransaction domain);
 
-    @Mapping(target = "type", source = "type", qualifiedByName = "mapStringToTransactionType")
-    @Mapping(target = "frequencyType", source = "frequencyType", qualifiedByName = "mapStringToFrequencyType")
+    @Mapping(
+            target = "type",
+            source = "type",
+            qualifiedByName = "mapStringToTransactionType"
+    )
+    @Mapping(
+            target = "frequencyType",
+            source = "frequencyType",
+            qualifiedByName = "mapStringToFrequencyType"
+    )
     PlannedTransaction toDomain(PlannedTransactionEntity entity);
 
     @Named("mapTransactionTypeToString")
@@ -32,11 +48,15 @@ public interface PlannedTransactionEntityMapper {
 
     @Named("mapStringToTransactionType")
     default TransactionType mapStringToTransactionType(String type) {
-        return type != null ? TransactionType.valueOf(type) : null;
+        return type != null
+                ? TransactionType.valueOf(type)
+                : null;
     }
 
     @Named("mapStringToFrequencyType")
     default FrequencyType mapStringToFrequencyType(String type) {
-        return type != null ? FrequencyType.valueOf(type) : null;
+        return type != null
+                ? FrequencyType.valueOf(type)
+                : null;
     }
 }
