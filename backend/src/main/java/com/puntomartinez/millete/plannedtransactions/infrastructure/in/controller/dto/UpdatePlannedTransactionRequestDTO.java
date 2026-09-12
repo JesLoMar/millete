@@ -5,6 +5,7 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction.Transacti
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 

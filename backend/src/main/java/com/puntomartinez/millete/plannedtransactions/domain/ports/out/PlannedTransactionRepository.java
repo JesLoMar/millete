@@ -9,30 +9,33 @@ import java.util.UUID;
 
 public interface PlannedTransactionRepository {
 
-    PlannedTransaction save(
-            PlannedTransaction plannedTransaction
-    );
+PlannedTransaction save(
+        PlannedTransaction plannedTransaction
+);
 
-    Optional<PlannedTransaction> findById(UUID id);
+Optional<PlannedTransaction> findById(UUID id);
 
-    List<PlannedTransaction> findAllByUserId(UUID userId);
+List<PlannedTransaction> findAllByUserId(
+        UUID userId
+);
 
-    List<PlannedTransaction> findAllActive(
-            int page,
-            int size
-    );
+List<PlannedTransaction> findAllActive(
+        int page,
+        int size
+);
 
-    List<PlannedTransaction> findAllByUserId(
-            UUID userId,
-            int page,
-            int size,
-            String search,
-            TransactionType type
-    );
+List<PlannedTransaction> findAllByUserId(
+        UUID userId,
+        int page,
+        int size,
+        String search,
+        TransactionType type
+);
 
-    long countByUserIdAndFilters(
-            UUID userId,
-            String search,
-            TransactionType type
-    );
+long countByUserIdAndFilters(
+        UUID userId,
+        String search,
+        TransactionType type
+);
+
 }

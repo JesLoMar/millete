@@ -12,14 +12,15 @@ import java.util.UUID;
 
 @Repository
 public interface JpaPlannedTransactionRepository
-        extends JpaRepository<PlannedTransactionEntity, UUID>,
-                JpaSpecificationExecutor<PlannedTransactionEntity> {
+extends JpaRepository<PlannedTransactionEntity, UUID>,
+JpaSpecificationExecutor<PlannedTransactionEntity> {
 
-    List<PlannedTransactionEntity> findAllByUserIdOrderByStartDateDesc(
-            UUID userId
-    );
+List<PlannedTransactionEntity> findAllByUserIdOrderByStartDateDesc(
+        UUID userId
+);
 
-    Page<PlannedTransactionEntity> findByActiveTrue(
-            Pageable pageable
-    );
+Page<PlannedTransactionEntity> findByActiveTrue(
+        Pageable pageable
+);
+
 }

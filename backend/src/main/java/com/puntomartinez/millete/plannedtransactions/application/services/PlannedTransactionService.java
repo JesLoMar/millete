@@ -21,313 +21,314 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class PlannedTransactionService implements
-        RegisterPlannedTransactionUseCase,
-        ProcessPlannedTransactionsUseCase,
-        UpdatePlannedTransactionUseCase,
-        DeletePlannedTransactionUseCase,
-        ListPlannedTransactionsUseCase {
+RegisterPlannedTransactionUseCase,
+ProcessPlannedTransactionsUseCase,
+UpdatePlannedTransactionUseCase,
+DeletePlannedTransactionUseCase,
+ListPlannedTransactionsUseCase {
 
-    private static final int SCHEDULER_BATCH_SIZE = 500;
+private static final int SCHEDULER_BATCH_SIZE = 500;
 
-    private final PlannedTransactionRepository plannedTransactionRepository;
-    private final PlannedTransactionExecutionService executionService;
+private final PlannedTransactionRepository plannedTransactionRepository;
+private final PlannedTransactionExecutionService executionService;
 
-    @Override
-    public PlannedTransaction register(
-            RegisterPlannedTransactionCommand command
-    ) {
-        PlannedTransaction plannedTransaction =
-                PlannedTransaction.create(
-                        command.userId(),
-                        command.categoryId(),
-                        command.amount(),
-                        command.type(),
-                        command.description(),
-                        command.frequencyType(),
-                        command.frequencyInterval(),
-                        command.startDate(),
-                        command.endDate()
+@Override
+public PlannedTransaction register(
+        RegisterPlannedTransactionCommand command
+) {
+    PlannedTransaction plannedTransaction =
+            PlannedTransaction.create(
+                    command.userId(),
+                    command.categoryId(),
+                    command.amount(),
+                    command.type(),
+                    command.description(),
+                    command.frequencyType(),
+                    command.frequencyInterval(),
+                    command.startDate(),
+                    command.endDate()
+            );
+
+    return plannedTransactionRepository.save(
+            plannedTransaction
+    );
+}
+
+@Override
+public synchronized void processScheduledTasks() {
+    LocalDate today = LocalDate.now();
+
+    int page = 0;
+
+    while (true) {
+        List<PlannedTransaction> templates =
+                plannedTransactionRepository.findAllActive(
+                        page,
+                        SCHEDULER_BATCH_SIZE
                 );
 
-        return plannedTransactionRepository.save(
-                plannedTransaction
-        );
-    }
+        if (templates.isEmpty()) {
+            break;
+        }
 
-    @Override
-    public synchronized void processScheduledTasks() {
-        LocalDate today = LocalDate.now();
+        for (PlannedTransaction template : templates) {
 
-        int page = 0;
-
-        while (true) {
-            List<PlannedTransaction> templates =
-                    plannedTransactionRepository.findAllActive(
-                            page,
-                            SCHEDULER_BATCH_SIZE
+            LocalDate pendingDate =
+                    getNextPendingExecutionDate(
+                            template,
+                            today
                     );
 
-            if (templates.isEmpty()) {
-                break;
-            }
+            while (pendingDate != null) {
 
-            for (PlannedTransaction template : templates) {
+                try {
+                    executionService.execute(
+                            template,
+                            pendingDate
+                    );
 
-                LocalDate pendingDate =
+                } catch (Exception e) {
+                    log.error(
+                            "Error ejecutando la transacción recurrente {} " +
+                                    "para la fecha {}. Se reintentará en la próxima " +
+                                    "ejecución del scheduler.",
+                            template.getId(),
+                            pendingDate,
+                            e
+                    );
+
+                    break;
+                }
+
+                pendingDate =
                         getNextPendingExecutionDate(
                                 template,
                                 today
                         );
-
-                while (pendingDate != null) {
-
-                    try {
-                        executionService.execute(
-                                template,
-                                pendingDate
-                        );
-
-                    } catch (Exception e) {
-                        log.error(
-                                "Error ejecutando la transacción recurrente {} " +
-                                        "para la fecha {}. Se reintentará en la próxima " +
-                                        "ejecución del scheduler.",
-                                template.getId(),
-                                pendingDate,
-                                e
-                        );
-
-                        break;
-                    }
-
-                    pendingDate =
-                            getNextPendingExecutionDate(
-                                    template,
-                                    today
-                            );
-                }
             }
-
-            if (templates.size() < SCHEDULER_BATCH_SIZE) {
-                break;
-            }
-
-            page++;
-        }
-    }
-
-    @Override
-    public PlannedTransaction update(
-            UUID id,
-            UUID userId,
-            UpdatePlannedTransactionCommand command
-    ) {
-        PlannedTransaction plannedTransaction =
-                plannedTransactionRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Transacción recurrente no encontrada"
-                                )
-                        );
-
-        validateOwnership(
-                plannedTransaction,
-                userId
-        );
-
-        plannedTransaction.updateDetails(
-                command.amount(),
-                command.type(),
-                command.description(),
-                command.frequencyType(),
-                command.frequencyInterval()
-        );
-
-        return plannedTransactionRepository.save(
-                plannedTransaction
-        );
-    }
-
-    @Override
-    public void deleteByIdAndUserId(
-            UUID id,
-            UUID userId
-    ) {
-        PlannedTransaction plannedTransaction =
-                plannedTransactionRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Transacción recurrente no encontrada"
-                                )
-                        );
-
-        validateOwnership(
-                plannedTransaction,
-                userId
-        );
-
-        plannedTransaction.deactivate();
-
-        plannedTransactionRepository.save(
-                plannedTransaction
-        );
-    }
-
-    @Override
-    public List<PlannedTransaction> findAllByUserId(
-            UUID userId,
-            int page,
-            int size,
-            String search,
-            TransactionType type
-    ) {
-        return plannedTransactionRepository.findAllByUserId(
-                userId,
-                page,
-                size,
-                search,
-                type
-        );
-    }
-
-    @Override
-    public long countByUserIdAndFilters(
-            UUID userId,
-            String search,
-            TransactionType type
-    ) {
-        return plannedTransactionRepository.countByUserIdAndFilters(
-                userId,
-                search,
-                type
-        );
-    }
-
-    public PlannedTransaction findByIdAndUserId(
-            UUID id,
-            UUID userId
-    ) {
-        PlannedTransaction plannedTransaction =
-                plannedTransactionRepository.findById(id)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Transacción recurrente no encontrada"
-                                )
-                        );
-
-        validateOwnership(
-                plannedTransaction,
-                userId
-        );
-
-        return plannedTransaction;
-    }
-
-    private LocalDate getNextPendingExecutionDate(
-            PlannedTransaction template,
-            LocalDate today
-    ) {
-        LocalDate startDate =
-                template.getStartDate();
-
-        LocalDate endDate =
-                template.getEndDate();
-
-        LocalDate lastExecutedDate =
-                template.getLastExecutedDate();
-
-        if (startDate.isAfter(today)) {
-            return null;
         }
 
-        LocalDate nextExecution;
+        if (templates.size() < SCHEDULER_BATCH_SIZE) {
+            break;
+        }
 
-        if (lastExecutedDate == null) {
-            nextExecution = startDate;
-        } else {
-            nextExecution =
-                    addFrequency(
-                            template,
-                            lastExecutedDate
+        page++;
+    }
+}
+
+@Override
+public PlannedTransaction update(
+        UUID id,
+        UUID userId,
+        UpdatePlannedTransactionCommand command
+) {
+    PlannedTransaction plannedTransaction =
+            plannedTransactionRepository.findById(id)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Transacción recurrente no encontrada"
+                            )
                     );
-        }
 
-        if (nextExecution.isAfter(today)) {
-            return null;
-        }
+    validateOwnership(
+            plannedTransaction,
+            userId
+    );
 
-        if (endDate != null &&
-                nextExecution.isAfter(endDate)) {
-            return null;
-        }
+    plannedTransaction.updateDetails(
+            command.amount(),
+            command.type(),
+            command.description(),
+            command.frequencyType(),
+            command.frequencyInterval()
+    );
 
-        return nextExecution;
+    return plannedTransactionRepository.save(
+            plannedTransaction
+    );
+}
+
+@Override
+public void deleteByIdAndUserId(
+        UUID id,
+        UUID userId
+) {
+    PlannedTransaction plannedTransaction =
+            plannedTransactionRepository.findById(id)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Transacción recurrente no encontrada"
+                            )
+                    );
+
+    validateOwnership(
+            plannedTransaction,
+            userId
+    );
+
+    plannedTransaction.deactivate();
+
+    plannedTransactionRepository.save(
+            plannedTransaction
+    );
+}
+
+@Override
+public List<PlannedTransaction> findAllByUserId(
+        UUID userId,
+        int page,
+        int size,
+        String search,
+        TransactionType type
+) {
+    return plannedTransactionRepository.findAllByUserId(
+            userId,
+            page,
+            size,
+            search,
+            type
+    );
+}
+
+@Override
+public long countByUserIdAndFilters(
+        UUID userId,
+        String search,
+        TransactionType type
+) {
+    return plannedTransactionRepository.countByUserIdAndFilters(
+            userId,
+            search,
+            type
+    );
+}
+
+public PlannedTransaction findByIdAndUserId(
+        UUID id,
+        UUID userId
+) {
+    PlannedTransaction plannedTransaction =
+            plannedTransactionRepository.findById(id)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Transacción recurrente no encontrada"
+                            )
+                    );
+
+    validateOwnership(
+            plannedTransaction,
+            userId
+    );
+
+    return plannedTransaction;
+}
+
+private LocalDate getNextPendingExecutionDate(
+        PlannedTransaction template,
+        LocalDate today
+) {
+    LocalDate startDate =
+            template.getStartDate();
+
+    LocalDate endDate =
+            template.getEndDate();
+
+    LocalDate lastExecutedDate =
+            template.getLastExecutedDate();
+
+    if (startDate.isAfter(today)) {
+        return null;
     }
 
-    private LocalDate addFrequency(
-            PlannedTransaction template,
-            LocalDate baseDate
-    ) {
-        PlannedTransaction.FrequencyType frequencyType =
-                template.getFrequencyType();
+    LocalDate nextExecution;
 
-        Integer frequencyInterval =
-                template.getFrequencyInterval();
-
-        LocalDate startDate =
-                template.getStartDate();
-
-        return switch (frequencyType) {
-
-            case DAYS ->
-                    baseDate.plusDays(frequencyInterval);
-
-            case WEEKS ->
-                    baseDate.plusWeeks(frequencyInterval);
-
-            case MONTHS -> {
-                YearMonth targetMonth =
-                        YearMonth.from(baseDate)
-                                .plusMonths(frequencyInterval);
-
-                int dayOfMonth =
-                        Math.min(
-                                startDate.getDayOfMonth(),
-                                targetMonth.lengthOfMonth()
-                        );
-
-                yield targetMonth.atDay(dayOfMonth);
-            }
-
-            case YEARS -> {
-                int targetYear =
-                        baseDate.getYear() + frequencyInterval;
-
-                YearMonth targetMonth =
-                        YearMonth.of(
-                                targetYear,
-                                startDate.getMonth()
-                        );
-
-                int dayOfMonth =
-                        Math.min(
-                                startDate.getDayOfMonth(),
-                                targetMonth.lengthOfMonth()
-                        );
-
-                yield targetMonth.atDay(dayOfMonth);
-            }
-        };
+    if (lastExecutedDate == null) {
+        nextExecution = startDate;
+    } else {
+        nextExecution =
+                addFrequency(
+                        template,
+                        lastExecutedDate
+                );
     }
 
-    private void validateOwnership(
-            PlannedTransaction plannedTransaction,
-            UUID userId
-    ) {
-        if (!plannedTransaction.getUserId().equals(userId)) {
-            throw new IllegalArgumentException(
-                    "La transacción recurrente no pertenece al usuario"
-            );
+    if (nextExecution.isAfter(today)) {
+        return null;
+    }
+
+    if (endDate != null &&
+            nextExecution.isAfter(endDate)) {
+        return null;
+    }
+
+    return nextExecution;
+}
+
+private LocalDate addFrequency(
+        PlannedTransaction template,
+        LocalDate baseDate
+) {
+    PlannedTransaction.FrequencyType frequencyType =
+            template.getFrequencyType();
+
+    Integer frequencyInterval =
+            template.getFrequencyInterval();
+
+    LocalDate startDate =
+            template.getStartDate();
+
+    return switch (frequencyType) {
+
+        case DAYS ->
+                baseDate.plusDays(frequencyInterval);
+
+        case WEEKS ->
+                baseDate.plusWeeks(frequencyInterval);
+
+        case MONTHS -> {
+            YearMonth targetMonth =
+                    YearMonth.from(baseDate)
+                            .plusMonths(frequencyInterval);
+
+            int dayOfMonth =
+                    Math.min(
+                            startDate.getDayOfMonth(),
+                            targetMonth.lengthOfMonth()
+                    );
+
+            yield targetMonth.atDay(dayOfMonth);
         }
+
+        case YEARS -> {
+            int targetYear =
+                    baseDate.getYear() + frequencyInterval;
+
+            YearMonth targetMonth =
+                    YearMonth.of(
+                            targetYear,
+                            startDate.getMonth()
+                    );
+
+            int dayOfMonth =
+                    Math.min(
+                            startDate.getDayOfMonth(),
+                            targetMonth.lengthOfMonth()
+                    );
+
+            yield targetMonth.atDay(dayOfMonth);
+        }
+    };
+}
+
+private void validateOwnership(
+        PlannedTransaction plannedTransaction,
+        UUID userId
+) {
+    if (!plannedTransaction.getUserId().equals(userId)) {
+        throw new IllegalArgumentException(
+                "La transacción recurrente no pertenece al usuario"
+        );
     }
+}
+
 }
