@@ -1,20 +1,19 @@
-package com.puntomartinez.millete.plannedtransactions.application.service;
+package com.puntomartinez.millete.plannedtransactions.application.services;
 
-import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
-import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessScheduledTasksUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
-import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,24 +22,20 @@ import java.util.UUID;
 @Slf4j
 public class PlannedTransactionService implements
         RegisterPlannedTransactionUseCase,
-        ProcessScheduledTasksUseCase,
+        ProcessPlannedTransactionsUseCase,
         UpdatePlannedTransactionUseCase,
         DeletePlannedTransactionUseCase,
         ListPlannedTransactionsUseCase {
 
+    private static final int SCHEDULER_BATCH_SIZE = 500;
+
     private final PlannedTransactionRepository plannedTransactionRepository;
-    private final CategoryRepository categoryRepository;
     private final PlannedTransactionExecutionService executionService;
 
     @Override
     public PlannedTransaction register(
             RegisterPlannedTransactionCommand command
     ) {
-        validateCategoryBelongsToUser(
-                command.categoryId(),
-                command.userId()
-        );
-
         PlannedTransaction plannedTransaction =
                 PlannedTransaction.create(
                         command.userId(),
@@ -54,51 +49,70 @@ public class PlannedTransactionService implements
                         command.endDate()
                 );
 
-        return plannedTransactionRepository.save(plannedTransaction);
+        return plannedTransactionRepository.save(
+                plannedTransaction
+        );
     }
 
     @Override
     public synchronized void processScheduledTasks() {
         LocalDate today = LocalDate.now();
 
-        List<PlannedTransaction> templates =
-                plannedTransactionRepository.findAllActive();
+        int page = 0;
 
-        for (PlannedTransaction template : templates) {
-
-            LocalDate pendingDate =
-                    getNextPendingExecutionDate(
-                            template,
-                            today
+        while (true) {
+            List<PlannedTransaction> templates =
+                    plannedTransactionRepository.findAllActive(
+                            page,
+                            SCHEDULER_BATCH_SIZE
                     );
 
-            while (pendingDate != null) {
+            if (templates.isEmpty()) {
+                break;
+            }
 
-                try {
-                    executionService.execute(
-                            template,
-                            pendingDate
-                    );
+            for (PlannedTransaction template : templates) {
 
-                } catch (Exception e) {
-
-                    log.error(
-                            "Error ejecutando la transacción recurrente {} " +
-                            "para la fecha {}. Se reintentará en la próxima " +
-                            "ejecución del scheduler.",
-                            template.getId(),
-                            pendingDate,
-                            e
-                    );
-                    break;
-                }
-
-                pendingDate =
+                LocalDate pendingDate =
                         getNextPendingExecutionDate(
                                 template,
                                 today
                         );
+
+                while (pendingDate != null) {
+
+                    try {
+                        executionService.execute(
+                                template,
+                                pendingDate
+                        );
+
+                    } catch (Exception e) {
+                        log.error(
+                                "Error ejecutando la transacción recurrente {} " +
+                                        "para la fecha {}. Se reintentará en la próxima " +
+                                        "ejecución del scheduler.",
+                                template.getId(),
+                                pendingDate,
+                                e
+                        );
+
+                        break;
+                    }
+
+                    pendingDate =
+                            getNextPendingExecutionDate(
+                                    template,
+                                    today
+                            );
+                }
             }
+
+            if (templates.size() < SCHEDULER_BATCH_SIZE) {
+                break;
+            }
+
+            page++;
         }
     }
 
@@ -116,11 +130,10 @@ public class PlannedTransactionService implements
                                 )
                         );
 
-        if (!plannedTransaction.getUserId().equals(userId)) {
-            throw new IllegalArgumentException(
-                    "La transacción recurrente no pertenece al usuario"
-            );
-        }
+        validateOwnership(
+                plannedTransaction,
+                userId
+        );
 
         plannedTransaction.updateDetails(
                 command.amount(),
@@ -130,11 +143,13 @@ public class PlannedTransactionService implements
                 command.frequencyInterval()
         );
 
-        return plannedTransactionRepository.save(plannedTransaction);
+        return plannedTransactionRepository.save(
+                plannedTransaction
+        );
     }
 
     @Override
-    public void delete(
+    public void deleteByIdAndUserId(
             UUID id,
             UUID userId
     ) {
@@ -146,25 +161,48 @@ public class PlannedTransactionService implements
                                 )
                         );
 
-        if (!plannedTransaction.getUserId().equals(userId)) {
-            throw new IllegalArgumentException(
-                    "La transacción recurrente no pertenece al usuario"
-            );
-        }
+        validateOwnership(
+                plannedTransaction,
+                userId
+        );
 
         plannedTransaction.deactivate();
 
-        plannedTransactionRepository.save(plannedTransaction);
+        plannedTransactionRepository.save(
+                plannedTransaction
+        );
     }
 
     @Override
     public List<PlannedTransaction> findAllByUserId(
-            UUID userId
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type
     ) {
-        return plannedTransactionRepository.findAllByUserId(userId);
+        return plannedTransactionRepository.findAllByUserId(
+                userId,
+                page,
+                size,
+                search,
+                type
+        );
     }
 
     @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type
+    ) {
+        return plannedTransactionRepository.countByUserIdAndFilters(
+                userId,
+                search,
+                type
+        );
+    }
+
     public PlannedTransaction findByIdAndUserId(
             UUID id,
             UUID userId
@@ -177,11 +215,10 @@ public class PlannedTransactionService implements
                                 )
                         );
 
-        if (!plannedTransaction.getUserId().equals(userId)) {
-            throw new IllegalArgumentException(
-                    "La transacción recurrente no pertenece al usuario"
-            );
-        }
+        validateOwnership(
+                plannedTransaction,
+                userId
+        );
 
         return plannedTransaction;
     }
@@ -190,8 +227,12 @@ public class PlannedTransactionService implements
             PlannedTransaction template,
             LocalDate today
     ) {
-        LocalDate startDate = template.getStartDate();
-        LocalDate endDate = template.getEndDate();
+        LocalDate startDate =
+                template.getStartDate();
+
+        LocalDate endDate =
+                template.getEndDate();
+
         LocalDate lastExecutedDate =
                 template.getLastExecutedDate();
 
@@ -204,11 +245,11 @@ public class PlannedTransactionService implements
         if (lastExecutedDate == null) {
             nextExecution = startDate;
         } else {
-            nextExecution = addFrequency(
-                    lastExecutedDate,
-                    template.getFrequencyType(),
-                    template.getFrequencyInterval()
-            );
+            nextExecution =
+                    addFrequency(
+                            template,
+                            lastExecutedDate
+                    );
         }
 
         if (nextExecution.isAfter(today)) {
@@ -224,44 +265,68 @@ public class PlannedTransactionService implements
     }
 
     private LocalDate addFrequency(
-            LocalDate baseDate,
-            PlannedTransaction.FrequencyType frequencyType,
-            Integer frequencyInterval
+            PlannedTransaction template,
+            LocalDate baseDate
     ) {
+        PlannedTransaction.FrequencyType frequencyType =
+                template.getFrequencyType();
+
+        Integer frequencyInterval =
+                template.getFrequencyInterval();
+
+        LocalDate startDate =
+                template.getStartDate();
+
         return switch (frequencyType) {
-            case DAILY ->
+
+            case DAYS ->
                     baseDate.plusDays(frequencyInterval);
 
-            case WEEKLY ->
+            case WEEKS ->
                     baseDate.plusWeeks(frequencyInterval);
 
-            case MONTHLY ->
-                    baseDate.plusMonths(frequencyInterval);
+            case MONTHS -> {
+                YearMonth targetMonth =
+                        YearMonth.from(baseDate)
+                                .plusMonths(frequencyInterval);
 
-            case YEARLY ->
-                    baseDate.plusYears(frequencyInterval);
+                int dayOfMonth =
+                        Math.min(
+                                startDate.getDayOfMonth(),
+                                targetMonth.lengthOfMonth()
+                        );
+
+                yield targetMonth.atDay(dayOfMonth);
+            }
+
+            case YEARS -> {
+                int targetYear =
+                        baseDate.getYear() + frequencyInterval;
+
+                YearMonth targetMonth =
+                        YearMonth.of(
+                                targetYear,
+                                startDate.getMonth()
+                        );
+
+                int dayOfMonth =
+                        Math.min(
+                                startDate.getDayOfMonth(),
+                                targetMonth.lengthOfMonth()
+                        );
+
+                yield targetMonth.atDay(dayOfMonth);
+            }
         };
     }
 
-    private void validateCategoryBelongsToUser(
-            UUID categoryId,
+    private void validateOwnership(
+            PlannedTransaction plannedTransaction,
             UUID userId
     ) {
-        if (categoryId == null) {
+        if (!plannedTransaction.getUserId().equals(userId)) {
             throw new IllegalArgumentException(
-                    "La categoría es obligatoria"
-            );
-        }
-
-        boolean belongsToUser =
-                categoryRepository.existsByIdAndUserId(
-                        categoryId,
-                        userId
-                );
-
-        if (!belongsToUser) {
-            throw new IllegalArgumentException(
-                    "La categoría no pertenece al usuario"
+                    "La transacción recurrente no pertenece al usuario"
             );
         }
     }

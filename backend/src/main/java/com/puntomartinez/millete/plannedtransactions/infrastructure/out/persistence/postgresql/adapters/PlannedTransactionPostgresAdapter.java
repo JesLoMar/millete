@@ -95,7 +95,9 @@ public class PlannedTransactionPostgresAdapter
     }
 
     @Override
-    public List<PlannedTransaction> findAllByUserId(UUID userId) {
+    public List<PlannedTransaction> findAllByUserId(
+            UUID userId
+    ) {
         return repository
                 .findAllByUserIdOrderByStartDateDesc(userId)
                 .stream()
@@ -104,8 +106,19 @@ public class PlannedTransactionPostgresAdapter
     }
 
     @Override
-    public List<PlannedTransaction> findAllActive() {
-        return repository.findByActiveTrue()
+    public List<PlannedTransaction> findAllActive(
+            int page,
+            int size
+    ) {
+        return repository
+                .findByActiveTrue(
+                        PageRequest.of(
+                                page,
+                                size,
+                                Sort.by("id").ascending()
+                        )
+                )
+                .getContent()
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

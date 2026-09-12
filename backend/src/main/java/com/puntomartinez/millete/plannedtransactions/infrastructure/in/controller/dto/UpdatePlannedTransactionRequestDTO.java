@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 
 public record UpdatePlannedTransactionRequestDTO(
         @NotBlank(message = "La descripción no puede estar vacía")
+        @Size(max = 50,message = "La descripción no puede superar los 50 caracteres")
         String description,
 
         @NotNull(message = "El tipo es obligatorio")

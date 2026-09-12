@@ -5,6 +5,7 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction.Transacti
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public record RegisterPlannedTransactionRequestDTO(
         TransactionType type,
 
         @NotBlank(message = "La descripción no puede estar vacía")
+        @Size(max = 50,message = "La descripción no puede superar los 50 caracteres")
         String description,
 
         @NotNull(message = "El tipo de frecuencia es obligatorio")

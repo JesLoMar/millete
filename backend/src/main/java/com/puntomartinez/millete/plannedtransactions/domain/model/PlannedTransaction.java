@@ -35,10 +35,10 @@ public class PlannedTransaction {
     private LocalDate lastExecutedDate;
 
     public enum FrequencyType {
-        DAILY,
-        WEEKLY,
-        MONTHLY,
-        YEARLY
+        DAYS,
+        WEEKS,
+        MONTHS,
+        YEARS
     }
 
     private PlannedTransaction() {

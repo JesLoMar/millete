@@ -1,4 +1,4 @@
-package com.puntomartinez.millete.plannedtransactions.application.service;
+package com.puntomartinez.millete.plannedtransactions.application.services;
 
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;

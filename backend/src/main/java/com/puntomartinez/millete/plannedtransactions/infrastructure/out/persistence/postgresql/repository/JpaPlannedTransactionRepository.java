@@ -1,6 +1,8 @@
 package com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.repository;
 
 import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.entity.PlannedTransactionEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -17,5 +19,7 @@ public interface JpaPlannedTransactionRepository
             UUID userId
     );
 
-    List<PlannedTransactionEntity> findByActiveTrue();
+    Page<PlannedTransactionEntity> findByActiveTrue(
+            Pageable pageable
+    );
 }
