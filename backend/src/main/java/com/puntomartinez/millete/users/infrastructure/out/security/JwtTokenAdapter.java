@@ -26,21 +26,6 @@ public class JwtTokenAdapter implements TokenProvider {
     }
 
     @Override
-    public String generateToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expirationTime);
-
-        return Jwts.builder()
-                .subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("username", user.getUsername())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(key)
-                .compact();
-    }
-
-    @Override
     public String generateToken(User user, UUID sessionId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);

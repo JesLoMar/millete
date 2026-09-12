@@ -1,13 +1,11 @@
 package com.puntomartinez.millete.users.domain.model;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Setter
 public class User {
     private final UUID id;
     private String username;
@@ -22,14 +20,14 @@ public class User {
                 LocalDateTime createdAt, LocalDateTime modifiedAt,
                 boolean active, boolean anonymized) {
 
-
         boolean hasUsername = username != null && !username.isBlank();
         boolean hasEmail = email != null && !email.isBlank();
 
         if (!hasUsername && !hasEmail) {
-            throw new IllegalArgumentException("El usuario debe tener al menos un email o un nombre de usuario");
+            throw new IllegalArgumentException(
+                    "El usuario debe tener al menos un email o un nombre de usuario"
+            );
         }
-
 
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("La contraseña es obligatoria");
@@ -45,9 +43,8 @@ public class User {
         this.anonymized = anonymized;
     }
 
-
     public void anonymize() {
-        this.username = "user_" + this.id.toString().substring(0, 8);
+        this.username = "user_" + this.id;
         this.email = "anon_" + this.id + "@familybudget.internal";
         this.password = "ANONYMIZED";
         this.anonymized = true;
@@ -55,10 +52,26 @@ public class User {
         this.modifiedAt = LocalDateTime.now();
     }
 
+    public void updateProfile(String newUsername, String newEmail) {
+        boolean hasUsername = newUsername != null && !newUsername.isBlank();
+        boolean hasEmail = newEmail != null && !newEmail.isBlank();
+
+        if (!hasUsername && !hasEmail) {
+            throw new IllegalArgumentException(
+                    "El usuario debe tener al menos un email o un nombre de usuario"
+            );
+        }
+
+        this.username = hasUsername ? newUsername : null;
+        this.email = hasEmail ? newEmail : null;
+        this.modifiedAt = LocalDateTime.now();
+    }
+
     public void updatePassword(String newHashedPassword) {
         if (newHashedPassword == null || newHashedPassword.isBlank()) {
             throw new IllegalArgumentException("La nueva contraseña no es válida");
         }
+
         this.password = newHashedPassword;
         this.modifiedAt = LocalDateTime.now();
     }
@@ -69,7 +82,8 @@ public class User {
     }
 
     public boolean hasValidIdentity() {
-        return (username != null && !username.isBlank()) || (email != null && !email.isBlank());
+        return (username != null && !username.isBlank())
+                || (email != null && !email.isBlank());
     }
 
     public String getPrimaryIdentifier() {

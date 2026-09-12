@@ -42,6 +42,7 @@ public class ProfileService implements ManageProfileUseCase {
     public UserProfileDTO getProfile(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         return new UserProfileDTO(
                 user.getId(),
                 user.getUsername(),
@@ -56,33 +57,49 @@ public class ProfileService implements ManageProfileUseCase {
     public void updateProfile(UUID userId, UpdateProfileCommand command) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         if (!passwordHasher.matches(command.currentPassword(), user.getPassword())) {
             throw new AuthenticationFailedException("Contraseña incorrecta");
         }
-        if (command.newUsername() != null && !command.newUsername().isBlank()) {
-            if (!command.newUsername().equals(user.getUsername())) {
-                userRepository.findByUsername(command.newUsername()).ifPresent(u -> {
-                    if (!u.getId().equals(userId)) {
-                        throw new ResourceAlreadyExistsException("El nombre de usuario ya está en uso");
-                    }
-                });
-            }
-            user.setUsername(command.newUsername());
-        }
-        if (command.newEmail() != null && !command.newEmail().isBlank()) {
-            if (!command.newEmail().equals(user.getEmail())) {
-                if (!command.newEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-                    throw new InvalidInputException("Formato de email inválido");
+
+        if (command.newUsername() != null
+                && !command.newUsername().equals(user.getUsername())) {
+
+            userRepository.findByUsername(command.newUsername()).ifPresent(u -> {
+                if (!u.getId().equals(userId)) {
+                    throw new ResourceAlreadyExistsException(
+                            "El nombre de usuario ya está en uso"
+                    );
                 }
-                userRepository.findByEmail(command.newEmail()).ifPresent(u -> {
-                    if (!u.getId().equals(userId)) {
-                        throw new ResourceAlreadyExistsException("El email ya está registrado");
-                    }
-                });
-            }
-            user.setEmail(command.newEmail());
+            });
         }
-        user.setModifiedAt(LocalDateTime.now());
+
+        if (command.newEmail() != null
+                && !command.newEmail().equals(user.getEmail())) {
+
+            if (!command.newEmail().matches(
+                    "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                throw new InvalidInputException("Formato de email inválido");
+            }
+
+            userRepository.findByEmail(command.newEmail()).ifPresent(u -> {
+                if (!u.getId().equals(userId)) {
+                    throw new ResourceAlreadyExistsException(
+                            "El email ya está registrado"
+                    );
+                }
+            });
+        }
+
+        String username = command.newUsername() != null
+                ? command.newUsername()
+                : user.getUsername();
+
+        String email = command.newEmail() != null
+                ? command.newEmail()
+                : user.getEmail();
+
+        user.updateProfile(username, email);
         userRepository.save(user);
     }
 
@@ -91,14 +108,26 @@ public class ProfileService implements ManageProfileUseCase {
     public void changePassword(UUID userId, ChangePasswordCommand command) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         if (!passwordHasher.matches(command.currentPassword(), user.getPassword())) {
             throw new AuthenticationFailedException("Contraseña actual incorrecta");
         }
-        user.setPassword(passwordHasher.hashPassword(command.newPassword()));
-        user.setModifiedAt(LocalDateTime.now());
+
+        if (command.newPassword() == null
+                || command.newPassword().length() < 8
+                || command.newPassword().length() > 100) {
+            throw new InvalidInputException(
+                    "La nueva contraseña debe tener entre 8 y 100 caracteres"
+            );
+        }
+
+        user.updatePassword(passwordHasher.hashPassword(command.newPassword()));
         userRepository.save(user);
 
-        userSessionRepository.deactivateAllOtherSessions(userId, command.currentSessionId());
+        userSessionRepository.deactivateAllOtherSessions(
+                userId,
+                command.currentSessionId()
+        );
     }
 
     @Override
@@ -112,9 +141,13 @@ public class ProfileService implements ManageProfileUseCase {
     @Transactional
     public void updatePreferences(UUID userId, String preferencesJson) {
         String trimmed = preferencesJson != null ? preferencesJson.trim() : "{}";
+
         if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
-            throw new InvalidInputException("Las preferencias deben ser un objeto JSON válido");
+            throw new InvalidInputException(
+                    "Las preferencias deben ser un objeto JSON válido"
+            );
         }
+
         try {
             new com.fasterxml.jackson.databind.ObjectMapper().readTree(trimmed);
         } catch (Exception e) {
@@ -129,6 +162,7 @@ public class ProfileService implements ManageProfileUseCase {
                     newPrefs.setCreatedAt(LocalDateTime.now());
                     return newPrefs;
                 });
+
         preferences.setPreferencesJson(trimmed);
         preferences.setModifiedAt(LocalDateTime.now());
         userPreferencesRepository.save(preferences);
@@ -144,9 +178,13 @@ public class ProfileService implements ManageProfileUseCase {
     public void closeSession(UUID userId, UUID sessionIdToClose) {
         UserSession session = userSessionRepository.findById(sessionIdToClose)
                 .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
+
         if (!session.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("No puedes cerrar una sesión que no te pertenece");
+            throw new ForbiddenOperationException(
+                    "No puedes cerrar una sesión que no te pertenece"
+            );
         }
+
         session.setActive(false);
         session.setModifiedAt(LocalDateTime.now());
         userSessionRepository.save(session);
@@ -163,9 +201,11 @@ public class ProfileService implements ManageProfileUseCase {
     public void deactivateAccount(UUID userId, String password) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         if (!passwordHasher.matches(password, user.getPassword())) {
             throw new AuthenticationFailedException("Contraseña incorrecta");
         }
+
         user.anonymize();
         userRepository.save(user);
         userSessionRepository.deactivateAllSessions(userId);

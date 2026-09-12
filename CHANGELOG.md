@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.2.0] - 2026-xx-xx
 
-- 1. Hacer más robusto y sólido el backend actual de la aplicación refactorizando para alinearlo con una arquitectura hexagonal y ddd correcta antes de empezar a añadir cambios.
+- Refactorización y revisión del código hasta la fecha para alinearlo con una arquitectura hexagonal y ddd correcta antes de empezar a añadir cambios.
 
 ---
 

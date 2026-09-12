@@ -13,7 +13,7 @@
 
     <groupId>com.puntomartinez</groupId>
     <artifactId>millete</artifactId>
-    <version>0.1.3</version>
+    <version>0.2.0</version>
     <name>millete</name>
     <description>API gestión financiera familiar</description>
 

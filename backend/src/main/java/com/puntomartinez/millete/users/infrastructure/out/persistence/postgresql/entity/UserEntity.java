@@ -2,6 +2,7 @@ package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresq
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,28 +14,28 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserEntity {
 
-    @Id
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+@Id
+@Column(name = "id", updatable = false, nullable = false)
+private UUID id;
 
-    @Column(name = "username", unique = true, nullable = false)
-    private String username;
+@Column(name = "username", unique = true)
+private String username;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
+@Column(name = "email", unique = true)
+private String email;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+@Column(name = "password", nullable = false)
+private String password;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+@Column(name = "created_at", nullable = false, updatable = false)
+private LocalDateTime createdAt;
 
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+@Column(name = "modified_at", nullable = false)
+private LocalDateTime modifiedAt;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+@Column(name = "active", nullable = false)
+private boolean active;
 
-    @Column(name = "anonymized", nullable = false)
-    private boolean anonymized;
+@Column(name = "anonymized", nullable = false)
+private boolean anonymized;
 }

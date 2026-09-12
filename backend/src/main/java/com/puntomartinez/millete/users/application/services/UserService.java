@@ -4,7 +4,6 @@ import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
-import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
 import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
@@ -21,24 +20,28 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
 
     private final UserRepository userRepository;
     private final PasswordHasherPort passwordHasher;
-    private final TokenProvider tokenProvider;
     private final AccountLockService accountLockService;
 
     private final String dummyPasswordHash;
 
     public UserService(UserRepository userRepository,
                        PasswordHasherPort passwordHasher,
-                       TokenProvider tokenProvider,
                        AccountLockService accountLockService) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
-        this.tokenProvider = tokenProvider;
         this.accountLockService = accountLockService;
         this.dummyPasswordHash = passwordHasher.hashPassword(UUID.randomUUID().toString());
     }
 
     @Override
     public User register(RegisterUserCommand command) {
+        if (command.rawPassword() == null
+                || command.rawPassword().length() < 8
+                || command.rawPassword().length() > 100) {
+            throw new InvalidInputException(
+                    "La contraseña debe tener entre 8 y 100 caracteres"
+            );
+        }
         boolean hasUsername = command.username() != null && !command.username().isBlank();
         boolean hasEmail = command.email() != null && !command.email().isBlank();
         if (!hasUsername && !hasEmail) {
