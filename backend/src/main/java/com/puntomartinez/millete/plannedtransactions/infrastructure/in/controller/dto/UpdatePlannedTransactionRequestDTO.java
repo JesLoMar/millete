@@ -7,32 +7,23 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
 
 public record UpdatePlannedTransactionRequestDTO(
-        UUID categoryId,
-
-        @NotNull(message = "La cantidad es obligatoria")
-        @Positive(message = "La cantidad debe ser mayor que cero")
-        BigDecimal amount,
+        @NotBlank(message = "La descripción no puede estar vacía")
+        String description,
 
         @NotNull(message = "El tipo es obligatorio")
         TransactionType type,
 
-        @NotBlank(message = "La descripción no puede estar vacía")
-        String description,
+        @NotNull(message = "La cantidad es obligatoria")
+        @Positive(message = "La cantidad debe ser mayor que cero")
+        BigDecimal amount,
 
         @NotNull(message = "El tipo de frecuencia es obligatorio")
         FrequencyType frequencyType,
 
         @NotNull(message = "El intervalo de frecuencia es obligatorio")
         @Positive(message = "El intervalo debe ser al menos 1")
-        Integer frequencyInterval,
-
-        @NotNull(message = "La fecha de inicio es obligatoria")
-        LocalDate startDate,
-
-        LocalDate endDate
+        Integer frequencyInterval
 ) {
 }
