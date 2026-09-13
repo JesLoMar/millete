@@ -15,25 +15,23 @@ public interface JpaGoalUnitRepository
     @Query(value = """
             SELECT gu
             FROM GoalUnitEntity gu
+            JOIN GoalMemberEntity gm
+              ON gm.goalId = gu.id
+             AND gm.userId = :userId
+             AND gm.active = true
             WHERE gu.active = true
-              AND gu.id IN (
-                  SELECT gm.goalId
-                  FROM GoalMemberEntity gm
-                  WHERE gm.userId = :userId
-                    AND gm.active = true
-              )
-            ORDER BY gu.name
+            ORDER BY
+                CASE WHEN gm.role = 'ADMIN' THEN 0 ELSE 1 END,
+                LOWER(gu.name)
             """,
             countQuery = """
                     SELECT COUNT(gu)
                     FROM GoalUnitEntity gu
+                    JOIN GoalMemberEntity gm
+                      ON gm.goalId = gu.id
+                     AND gm.userId = :userId
+                     AND gm.active = true
                     WHERE gu.active = true
-                      AND gu.id IN (
-                          SELECT gm.goalId
-                          FROM GoalMemberEntity gm
-                          WHERE gm.userId = :userId
-                            AND gm.active = true
-                      )
                     """)
     Page<GoalUnitEntity> findActiveByUserId(
             @Param("userId") UUID userId,
@@ -52,6 +50,6 @@ public interface JpaGoalUnitRepository
               )
             """)
     long countActiveByUserId(
-            @Param("userId") UUID userId
+            UUID userId
     );
 }

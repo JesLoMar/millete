@@ -9,7 +9,6 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRep
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
-
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -106,9 +105,10 @@ public class GroupGoalCommandService implements
             );
         }
 
-        if (member.isAdmin()) {
+        if (member.isActive() && member.isAdmin()) {
             long adminCount = goalMemberRepository.findByGoalId(goalId)
                     .stream()
+                    .filter(GoalMember::isActive)
                     .filter(GoalMember::isAdmin)
                     .count();
 
@@ -150,11 +150,13 @@ public class GroupGoalCommandService implements
             );
         }
 
-        if (member.isAdmin()
+        if (member.isActive()
+                && member.isAdmin()
                 && command.role() == GoalRole.MEMBER) {
 
             long adminCount = goalMemberRepository.findByGoalId(goalId)
                     .stream()
+                    .filter(GoalMember::isActive)
                     .filter(GoalMember::isAdmin)
                     .count();
 

@@ -24,7 +24,8 @@ Security fixes are backported to all actively maintained versions:
 
 | Version | Supported | Notes |
 |---------|:---------:|-------|
-| 0.1.x   | ✅        | Current stable — all security fixes |
+| 0.2.x   | ✅        | Current stable — all security fixes |
+| 0.1.x   | ⚠️        | No security updates |
 | 0.0.x   | ⚠️        | No security updates |
 
 ---

@@ -108,7 +108,6 @@ public class GroupGoalQueryService implements
 
         List<GoalSummary> summaries = goals.stream()
                 .map(goal -> {
-
                     List<GoalMember> goalMembers =
                             membersByGoal.getOrDefault(
                                     goal.getId(),
@@ -127,17 +126,6 @@ public class GroupGoalQueryService implements
                             goalMembers.size(),
                             admin
                     );
-                })
-                .sorted((left, right) -> {
-                    if (left.admin() != right.admin()) {
-                        return Boolean.compare(
-                                right.admin(),
-                                left.admin()
-                        );
-                    }
-
-                    return left.name()
-                            .compareToIgnoreCase(right.name());
                 })
                 .toList();
 
@@ -166,22 +154,38 @@ public class GroupGoalQueryService implements
                 goalContributionRepository.findByGoalId(goalId);
 
         Map<UUID, UserLookupPort.UserInfo> usersById =
-                findUsersForGoal(members, contributions);
+                findUsersForGoal(
+                        members,
+                        contributions
+                );
+
+        boolean requesterIsAdmin =
+                requester.isAdmin();
 
         List<GetGoalDetailUseCase.Member> memberResults =
                 members.stream()
-                        .map(member ->
-                                new GetGoalDetailUseCase.Member(
-                                        member.getId(),
-                                        member.getUserId(),
-                                        resolveUserName(
-                                                member.getUserId(),
-                                                usersById
-                                        ),
-                                        member.getRole().name(),
-                                        member.getSalary(),
-                                        member.getCustomPercentage()
-                                ))
+                        .map(member -> {
+
+                            boolean canViewFinancialData =
+                                    requesterIsAdmin
+                                            || member.getUserId().equals(userId);
+
+                            return new GetGoalDetailUseCase.Member(
+                                    member.getId(),
+                                    member.getUserId(),
+                                    resolveUserName(
+                                            member.getUserId(),
+                                            usersById
+                                    ),
+                                    member.getRole().name(),
+                                    canViewFinancialData
+                                            ? member.getSalary()
+                                            : null,
+                                    canViewFinancialData
+                                            ? member.getCustomPercentage()
+                                            : null
+                            );
+                        })
                         .toList();
 
         List<GetGoalDetailUseCase.Contribution> contributionResults =
@@ -215,7 +219,7 @@ public class GroupGoalQueryService implements
                 goalUnit.getName(),
                 goalUnit.getMonthlyTarget(),
                 goalUnit.getDistributionMode().name(),
-                requester.isAdmin(),
+                requesterIsAdmin,
                 memberResults,
                 contributionResults,
                 totals

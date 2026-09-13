@@ -248,42 +248,49 @@ public class GroupGoalController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{goalId}/contributions")
-    public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContributions(
-            @PathVariable UUID goalId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "60") int size,
-            Authentication authentication) {
+@GetMapping("/{goalId}/contributions")
+public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContributions(
+        @PathVariable UUID goalId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "60") int size,
+        Authentication authentication) {
 
-        UUID userId = getUserId(authentication);
+    UUID userId = getUserId(authentication);
 
-        GetContributionHistoryUseCase.ContributionHistory pageResult =
-                getContributionHistoryUseCase.getContributionHistory(
-                        goalId,
-                        userId,
-                        page,
-                        size
-                );
+    GetContributionHistoryUseCase.ContributionHistory pageResult =
+            getContributionHistoryUseCase.getContributionHistory(
+                    goalId,
+                    userId,
+                    page,
+                    size
+            );
 
-        List<GoalContributionDTO> response =
-                pageResult.contributions()
-                        .stream()
-                        .map(this::mapContribution)
-                        .toList();
+    int totalPages = pageResult.totalPages();
 
-        return ResponseEntity.ok(
-                new PaginatedResponseDTO<>(
-                        response,
-                        page,
-                        pageResult.totalPages(),
-                        pageResult.totalElements(),
-                        size,
-                        page == 0,
-                        page >= pageResult.totalPages() - 1
-                                || pageResult.totalPages() == 0
-                )
-        );
-    }
+    int safePage = Math.min(
+            Math.max(page, 0),
+            Math.max(0, totalPages - 1)
+    );
+
+    List<GoalContributionDTO> response =
+            pageResult.contributions()
+                    .stream()
+                    .map(this::mapContribution)
+                    .toList();
+
+    return ResponseEntity.ok(
+            new PaginatedResponseDTO<>(
+                    response,
+                    safePage,
+                    totalPages,
+                    pageResult.totalElements(),
+                    size,
+                    safePage == 0,
+                    safePage >= totalPages - 1
+                            || totalPages == 0
+            )
+    );
+}
 
     @PostMapping("/{goalId}/contributions")
     public ResponseEntity<Void> addContribution(

@@ -6,11 +6,11 @@ import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postg
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalUnitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -34,6 +34,18 @@ public class GoalPostgresAdapter implements GoalUnitRepository {
     }
 
     @Override
+    public List<GoalUnit> findByIds(Set<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return jpaRepository.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GoalUnit> findByUserId(
             UUID userId,
             int page,
@@ -42,11 +54,7 @@ public class GoalPostgresAdapter implements GoalUnitRepository {
         return jpaRepository
                 .findActiveByUserId(
                         userId,
-                        PageRequest.of(
-                                page,
-                                size,
-                                Sort.by("name")
-                        )
+                        PageRequest.of(page, size)
                 )
                 .stream()
                 .map(mapper::toDomain)
