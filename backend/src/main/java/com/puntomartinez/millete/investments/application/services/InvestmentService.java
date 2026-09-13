@@ -2,21 +2,28 @@ package com.puntomartinez.millete.investments.application.services;
 
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
+import com.puntomartinez.millete.investments.domain.ports.in.DeleteInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.ListInvestmentsUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentPriceUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentUseCase;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
-import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
-public class InvestmentService implements RegisterInvestmentUseCase, ListInvestmentsUseCase, UpdateInvestmentPriceUseCase {
+public class InvestmentService implements
+        RegisterInvestmentUseCase,
+        ListInvestmentsUseCase,
+        GetInvestmentUseCase,
+        UpdateInvestmentPriceUseCase,
+        DeleteInvestmentUseCase,
+        UpdateInvestmentUseCase {
 
     private final InvestmentRepository investmentRepository;
 
@@ -24,30 +31,27 @@ public class InvestmentService implements RegisterInvestmentUseCase, ListInvestm
         this.investmentRepository = investmentRepository;
     }
 
-
     @Override
     public Investment register(RegisterInvestmentCommand command) {
-        UUID newId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now();
-
-        Investment investment = new Investment(
-                newId,
+        Investment investment = Investment.create(
                 command.userId(),
                 command.assetName(),
                 command.ticker(),
                 command.quantity(),
                 command.purchasePrice(),
-                command.purchasePrice(),
                 command.type(),
-                command.purchaseDate(),
-                now,
-                now,
-                true
+                command.purchaseDate()
         );
 
         return investmentRepository.save(investment);
     }
 
+    @Override
+    public Investment getById(UUID id, UUID userId) {
+        return investmentRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Inversión no encontrada."));
+    }
 
     @Override
     public List<Investment> findAllByUserId(UUID userId) {
@@ -55,30 +59,76 @@ public class InvestmentService implements RegisterInvestmentUseCase, ListInvestm
     }
 
     @Override
-    public List<Investment> findAllByUserId(UUID userId, int page, int size, String search, InvestmentType type) {
-        return investmentRepository.findAllByUserId(userId, page, size, search, type);
+    public List<Investment> findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            InvestmentType type) {
+
+        return investmentRepository.findAllByUserId(
+                userId,
+                page,
+                size,
+                search,
+                type
+        );
     }
 
     @Override
-    public long countByUserIdAndFilters(UUID userId, String search, InvestmentType type) {
-        return investmentRepository.countByUserIdAndFilters(userId, search, type);
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            InvestmentType type) {
+
+        return investmentRepository.countByUserIdAndFilters(
+                userId,
+                search,
+                type
+        );
     }
 
-
     @Override
-    public Investment updatePrice(UUID id, UUID userId, BigDecimal newPrice) {
+    public Investment updatePrice(
+            UUID id,
+            UUID userId,
+            BigDecimal newPrice) {
 
-        Investment investment = investmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Inversión no encontrada."));
-
-
-        if (!investment.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("No tienes permiso para actualizar esta inversión.");
-        }
-
+        Investment investment = investmentRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Inversión no encontrada."));
 
         investment.updateCurrentPrice(newPrice);
 
+        return investmentRepository.save(investment);
+    }
+
+    @Override
+    public void delete(UUID id, UUID userId) {
+        Investment investment = investmentRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Inversión no encontrada."));
+
+        investment.deactivate();
+
+        investmentRepository.save(investment);
+    }
+
+    @Override
+    public Investment update(UpdateInvestmentCommand command) {
+        Investment investment = investmentRepository
+                .findByIdAndUserId(command.id(), command.userId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Inversión no encontrada."));
+
+        investment.updateDetails(
+                command.assetName(),
+                command.ticker(),
+                command.quantity(),
+                command.purchasePrice(),
+                command.type(),
+                command.purchaseDate()
+        );
 
         return investmentRepository.save(investment);
     }

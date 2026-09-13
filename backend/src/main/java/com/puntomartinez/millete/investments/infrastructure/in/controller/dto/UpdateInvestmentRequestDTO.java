@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record RegisterInvestmentRequestDTO(
+public record UpdateInvestmentRequestDTO(
 
         @NotBlank(message = "El nombre del activo es obligatorio")
         @Size(
@@ -37,5 +37,6 @@ public record RegisterInvestmentRequestDTO(
 
         @NotNull(message = "La fecha de compra es obligatoria")
         LocalDateTime purchaseDate
+
 ) {
 }

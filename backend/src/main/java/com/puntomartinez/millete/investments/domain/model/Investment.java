@@ -1,27 +1,18 @@
 package com.puntomartinez.millete.investments.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@NoArgsConstructor
-@Getter
-@Setter
 public class Investment {
 
     public enum InvestmentType {
         STOCK, CRYPTO, FUND, REAL_ESTATE, OTHER
     }
 
-    private UUID id;
-    private UUID userId;
+    private final UUID id;
+    private final UUID userId;
     private String assetName;
     private String ticker;
     private BigDecimal quantity;
@@ -29,33 +20,123 @@ public class Investment {
     private BigDecimal currentPrice;
     private InvestmentType type;
     private LocalDateTime purchaseDate;
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
 
-    public Investment(UUID id, UUID userId, String assetName, String ticker,
-                      BigDecimal quantity, BigDecimal purchasePrice, BigDecimal currentPrice,
-                      InvestmentType type, LocalDateTime purchaseDate,
-                      LocalDateTime createdAt, LocalDateTime modifiedAt, boolean active) {
+    private Investment(
+            UUID id,
+            UUID userId,
+            String assetName,
+            String ticker,
+            BigDecimal quantity,
+            BigDecimal purchasePrice,
+            BigDecimal currentPrice,
+            InvestmentType type,
+            LocalDateTime purchaseDate,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active) {
 
-        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor que cero.");
-        }
-
-        this.id = id;
-        this.userId = userId;
-        this.assetName = assetName;
-        this.ticker = ticker;
-        this.quantity = quantity;
-        this.purchasePrice = purchasePrice;
-        this.currentPrice = currentPrice != null ? currentPrice : purchasePrice;
-        this.type = type;
-        this.purchaseDate = purchaseDate;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+        this.id = requireId(id);
+        this.userId = requireUserId(userId);
+        this.assetName = requireAssetName(assetName);
+        this.ticker = normalizeTicker(ticker, type);
+        this.quantity = requirePositive(quantity, "La cantidad debe ser mayor que cero.");
+        this.purchasePrice = requirePositive(
+                purchasePrice,
+                "El precio de compra debe ser mayor que cero."
+        );
+        this.currentPrice = requireNonNegative(
+                currentPrice,
+                "El precio actual no puede ser negativo."
+        );
+        this.type = requireType(type);
+        this.purchaseDate = requirePurchaseDate(purchaseDate);
+        this.createdAt = requireDate(createdAt, "La fecha de creación es obligatoria.");
+        this.modifiedAt = requireDate(modifiedAt, "La fecha de modificación es obligatoria.");
         this.active = active;
     }
 
+    public static Investment create(
+            UUID userId,
+            String assetName,
+            String ticker,
+            BigDecimal quantity,
+            BigDecimal purchasePrice,
+            InvestmentType type,
+            LocalDateTime purchaseDate) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        return new Investment(
+                UUID.randomUUID(),
+                userId,
+                assetName,
+                ticker,
+                quantity,
+                purchasePrice,
+                purchasePrice,
+                type,
+                purchaseDate,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static Investment reconstitute(
+            UUID id,
+            UUID userId,
+            String assetName,
+            String ticker,
+            BigDecimal quantity,
+            BigDecimal purchasePrice,
+            BigDecimal currentPrice,
+            InvestmentType type,
+            LocalDateTime purchaseDate,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active) {
+
+        return new Investment(
+                id,
+                userId,
+                assetName,
+                ticker,
+                quantity,
+                purchasePrice,
+                currentPrice,
+                type,
+                purchaseDate,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+        String assetName,
+        String ticker,
+        BigDecimal quantity,
+        BigDecimal purchasePrice,
+        InvestmentType type,
+        LocalDateTime purchaseDate) {
+
+    this.assetName = requireAssetName(assetName);
+    this.ticker = normalizeTicker(ticker, type);
+    this.quantity = requirePositive(
+            quantity,
+            "La cantidad debe ser mayor que cero."
+    );
+    this.purchasePrice = requirePositive(
+            purchasePrice,
+            "El precio de compra debe ser mayor que cero."
+    );
+    this.type = requireType(type);
+    this.purchaseDate = requirePurchaseDate(purchaseDate);
+    this.modifiedAt = LocalDateTime.now();
+}
 
     public BigDecimal getInvestedCapital() {
         return quantity.multiply(purchasePrice);
@@ -71,22 +152,189 @@ public class Investment {
 
     public BigDecimal getReturnOnInvestmentPercentage() {
         BigDecimal invested = getInvestedCapital();
-        if (invested.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+
+        if (invested.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
 
         BigDecimal profit = getProfitOrLoss();
-        return profit.divide(invested, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+
+        return profit
+                .divide(invested, 4, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"));
     }
 
-
     public void updateCurrentPrice(BigDecimal newPrice) {
-        if (newPrice != null && newPrice.compareTo(BigDecimal.ZERO) >= 0) {
-            this.currentPrice = newPrice;
-            this.modifiedAt = LocalDateTime.now();
+        if (newPrice == null) {
+            throw new IllegalArgumentException("El precio actual es obligatorio.");
         }
+
+        if (newPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "El precio actual no puede ser negativo."
+            );
+        }
+
+        this.currentPrice = newPrice;
+        this.modifiedAt = LocalDateTime.now();
     }
 
     public void deactivate() {
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
+    }
+
+    private static UUID requireId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("El id de la inversión es obligatorio.");
+        }
+
+        return id;
+    }
+
+    private static UUID requireUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("El usuario es obligatorio.");
+        }
+
+        return userId;
+    }
+
+    private static String requireAssetName(String assetName) {
+        if (assetName == null || assetName.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El nombre del activo es obligatorio."
+            );
+        }
+
+        return assetName.trim();
+    }
+
+    private static InvestmentType requireType(InvestmentType type) {
+        if (type == null) {
+            throw new IllegalArgumentException(
+                    "El tipo de inversión es obligatorio."
+            );
+        }
+
+        return type;
+    }
+
+    private static LocalDateTime requirePurchaseDate(LocalDateTime purchaseDate) {
+        if (purchaseDate == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de compra es obligatoria."
+            );
+        }
+
+        return purchaseDate;
+    }
+
+    private static LocalDateTime requireDate(
+            LocalDateTime value,
+            String message) {
+
+        if (value == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return value;
+    }
+
+    private static BigDecimal requirePositive(
+            BigDecimal value,
+            String message) {
+
+        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return value;
+    }
+
+    private static BigDecimal requireNonNegative(
+            BigDecimal value,
+            String message) {
+
+        if (value == null || value.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return value;
+    }
+
+    private static String normalizeTicker(
+            String ticker,
+            InvestmentType type) {
+
+        String normalizedTicker =
+                ticker == null || ticker.isBlank()
+                        ? null
+                        : ticker.trim().toUpperCase();
+
+        if (requiresTicker(type)
+                && (normalizedTicker == null || normalizedTicker.isBlank())) {
+
+            throw new IllegalArgumentException(
+                    "El ticker es obligatorio para inversiones de tipo "
+                            + type + "."
+            );
+        }
+
+        return normalizedTicker;
+    }
+
+    private static boolean requiresTicker(InvestmentType type) {
+        return type == InvestmentType.STOCK
+                || type == InvestmentType.CRYPTO
+                || type == InvestmentType.FUND;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public String getAssetName() {
+        return assetName;
+    }
+
+    public String getTicker() {
+        return ticker;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getPurchasePrice() {
+        return purchasePrice;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public InvestmentType getType() {
+        return type;
+    }
+
+    public LocalDateTime getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 }
