@@ -3,6 +3,7 @@ package com.puntomartinez.millete.shared.infrastructure.config.filter;
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -46,38 +47,61 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = extractJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.isTokenValid(jwt)) {
-                String userId = tokenProvider.extractUserId(jwt);
-                String sessionIdStr = tokenProvider.getClaim(jwt, "sessionId");
-
-                if (sessionIdStr == null || !userSessionRepository.existsByIdAndActiveTrue(UUID.fromString(sessionIdStr))) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    String email = tokenProvider.getClaim(jwt, "email");
-                    String username = tokenProvider.getClaim(jwt, "username");
-                    JwtUser jwtUser = new JwtUser(UUID.fromString(userId), username, email);
-
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            jwtUser,
-                            null,
-                            Collections.emptyList()
-                    );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    request.setAttribute("sessionId", UUID.fromString(sessionIdStr));
-                }
+                authenticateRequest(request, jwt, response);
             }
-        } catch (Exception ex) {
-            logger.error("JWT Authentication failed: " + ex.getMessage(), ex);
+        } catch (JwtException | IllegalArgumentException ex) {
+            logger.warn("Invalid JWT authentication data: " + ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
+    private void authenticateRequest(
+            HttpServletRequest request,
+            String jwt,
+            HttpServletResponse response) {
+
+        String userId = tokenProvider.extractUserId(jwt);
+        String sessionIdStr = tokenProvider.getClaim(jwt, "sessionId");
+
+        if (userId == null || sessionIdStr == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        UUID userUuid = UUID.fromString(userId);
+        UUID sessionId = UUID.fromString(sessionIdStr);
+
+        if (!userSessionRepository.existsByIdAndActiveTrue(sessionId)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            String email = tokenProvider.getClaim(jwt, "email");
+            String username = tokenProvider.getClaim(jwt, "username");
+
+            JwtUser jwtUser = new JwtUser(userUuid, username, email);
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            jwtUser,
+                            null,
+                            Collections.emptyList()
+                    );
+
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+            request.setAttribute("sessionId", sessionId);
+        }
+    }
+
     private String extractJwtFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookieName.equals(cookie.getName())) {
@@ -85,6 +109,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
+
         return null;
     }
 }

@@ -2,7 +2,6 @@ package com.puntomartinez.millete.shared.infrastructure.in.controller.advice;
 
 import com.puntomartinez.millete.shared.domain.exception.*;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.ErrorResponseDTO;
-import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,12 +65,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleSpringAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         log.warn("Acceso denegado (Spring Security): {}", ex.getMessage());
         return buildResponse(HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta acción.", request.getRequestURI());
-    }
-
-    @ExceptionHandler(AccountLockedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleAccountLockedException(AccountLockedException ex, HttpServletRequest request) {
-        log.warn("Cuenta bloqueada: {}", ex.getMessage());
-        return buildResponse(HttpStatus.LOCKED, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(DomainException.class)

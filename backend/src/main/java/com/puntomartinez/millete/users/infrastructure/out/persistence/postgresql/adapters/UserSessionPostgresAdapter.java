@@ -4,7 +4,7 @@ import com.puntomartinez.millete.users.domain.model.UserSession;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
 import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity.UserSessionEntity;
 import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers.UserSessionEntityMapper;
-import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.repository.SpringDataUserSessionRepository;
+import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.repository.JpaUserSessionRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.UUID;
 @Component
 public class UserSessionPostgresAdapter implements UserSessionRepository {
 
-    private final SpringDataUserSessionRepository repository;
+    private final JpaUserSessionRepository repository;
     private final UserSessionEntityMapper mapper;
 
-    public UserSessionPostgresAdapter(SpringDataUserSessionRepository repository, UserSessionEntityMapper mapper) {
+    public UserSessionPostgresAdapter(JpaUserSessionRepository repository, UserSessionEntityMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }

@@ -11,7 +11,7 @@ import com.puntomartinez.millete.shared.infrastructure.config.NativeRuntimeHints
 @SpringBootApplication
 public class MilleteApplication {
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		SpringApplication.run(MilleteApplication.class, args);
 	}
 

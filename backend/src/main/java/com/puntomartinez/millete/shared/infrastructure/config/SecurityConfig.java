@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,10 +20,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
-
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @Configuration
 @EnableWebSecurity
@@ -75,8 +72,17 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Cookie"));
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Cookie"
+        ));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 
@@ -84,13 +90,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            throw new UsernameNotFoundException("Use JWT authentication");
-        };
     }
 
     @Bean

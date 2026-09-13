@@ -7,11 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface SpringDataUserSessionRepository extends JpaRepository<UserSessionEntity, UUID> {
+public interface JpaUserSessionRepository extends JpaRepository<UserSessionEntity, UUID> {
     List<UserSessionEntity> findByUserIdAndChannel(UUID userId, String channel);
 
     boolean existsByIdAndActiveTrue(UUID id);
