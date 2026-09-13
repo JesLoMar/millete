@@ -33,8 +33,8 @@ public class GoalMember {
         this.goalId = requireGoalId(goalId);
         this.userId = requireUserId(userId);
         this.role = requireRole(role);
-        this.salary = salary;
-        this.customPercentage = customPercentage;
+        this.salary = requireSalary(salary);
+        this.customPercentage = requireCustomPercentage(customPercentage);
         this.joinedAt = requireDate(
                 joinedAt,
                 "La fecha de incorporación es obligatoria."
@@ -131,11 +131,11 @@ public class GoalMember {
         }
 
         if (salary != null) {
-            this.salary = salary;
+            this.salary = requireSalary(salary);
         }
 
         if (customPercentage != null) {
-            this.customPercentage = customPercentage;
+            this.customPercentage = requireCustomPercentage(customPercentage);
         }
 
         this.modifiedAt = LocalDateTime.now();
@@ -190,6 +190,37 @@ public class GoalMember {
             );
         }
         return role;
+    }
+
+    private static BigDecimal requireSalary(BigDecimal salary) {
+        if (salary == null) {
+            return null;
+        }
+
+        if (salary.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "El salario no puede ser negativo."
+            );
+        }
+
+        return salary;
+    }
+
+    private static BigDecimal requireCustomPercentage(
+            BigDecimal customPercentage) {
+
+        if (customPercentage == null) {
+            return null;
+        }
+
+        if (customPercentage.compareTo(BigDecimal.ZERO) < 0
+                || customPercentage.compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException(
+                    "El porcentaje personalizado debe estar entre 0 y 100."
+            );
+        }
+
+        return customPercentage;
     }
 
     private static LocalDateTime requireDate(

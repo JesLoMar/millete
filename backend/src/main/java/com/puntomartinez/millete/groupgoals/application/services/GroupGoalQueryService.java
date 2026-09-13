@@ -10,10 +10,9 @@ import com.puntomartinez.millete.groupgoals.domain.ports.in.ListGoalsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import com.puntomartinez.millete.users.domain.model.User;
-import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -37,7 +38,7 @@ public class GroupGoalQueryService implements
     private final GoalUnitRepository goalUnitRepository;
     private final GoalMemberRepository goalMemberRepository;
     private final GoalContributionRepository goalContributionRepository;
-    private final UserRepository userRepository;
+    private final UserLookupPort userLookupPort;
 
     @Override
     public Map<UUID, BigDecimal> calculateContributions(
@@ -161,21 +162,27 @@ public class GroupGoalQueryService implements
         List<GoalMember> members =
                 goalMemberRepository.findByGoalId(goalId);
 
+        List<GoalContribution> contributions =
+                goalContributionRepository.findByGoalId(goalId);
+
+        Map<UUID, UserLookupPort.UserInfo> usersById =
+                findUsersForGoal(members, contributions);
+
         List<GetGoalDetailUseCase.Member> memberResults =
                 members.stream()
                         .map(member ->
                                 new GetGoalDetailUseCase.Member(
                                         member.getId(),
                                         member.getUserId(),
-                                        resolveUserName(member.getUserId()),
+                                        resolveUserName(
+                                                member.getUserId(),
+                                                usersById
+                                        ),
                                         member.getRole().name(),
                                         member.getSalary(),
                                         member.getCustomPercentage()
                                 ))
                         .toList();
-
-        List<GoalContribution> contributions =
-                goalContributionRepository.findByGoalId(goalId);
 
         List<GetGoalDetailUseCase.Contribution> contributionResults =
                 contributions.stream()
@@ -184,7 +191,8 @@ public class GroupGoalQueryService implements
                                         contribution.getId(),
                                         contribution.getUserId(),
                                         resolveUserName(
-                                                contribution.getUserId()
+                                                contribution.getUserId(),
+                                                usersById
                                         ),
                                         contribution.getAmount(),
                                         contribution.getDate()
@@ -249,6 +257,13 @@ public class GroupGoalQueryService implements
                         size
                 );
 
+        Set<UUID> userIds = contributions.stream()
+                .map(GoalContribution::getUserId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Map<UUID, UserLookupPort.UserInfo> usersById =
+                userLookupPort.findByIds(userIds);
+
         List<GetContributionHistoryUseCase.Contribution> result =
                 contributions.stream()
                         .map(contribution ->
@@ -256,7 +271,8 @@ public class GroupGoalQueryService implements
                                         contribution.getId(),
                                         contribution.getUserId(),
                                         resolveUserName(
-                                                contribution.getUserId()
+                                                contribution.getUserId(),
+                                                usersById
                                         ),
                                         contribution.getAmount(),
                                         contribution.getDate()
@@ -268,6 +284,37 @@ public class GroupGoalQueryService implements
                 totalElements,
                 totalPages
         );
+    }
+
+    private Map<UUID, UserLookupPort.UserInfo> findUsersForGoal(
+            List<GoalMember> members,
+            List<GoalContribution> contributions) {
+
+        Set<UUID> userIds = new HashSet<>();
+
+        members.forEach(member ->
+                userIds.add(member.getUserId())
+        );
+
+        contributions.forEach(contribution ->
+                userIds.add(contribution.getUserId())
+        );
+
+        return userLookupPort.findByIds(userIds);
+    }
+
+    private String resolveUserName(
+            UUID userId,
+            Map<UUID, UserLookupPort.UserInfo> usersById) {
+
+        UserLookupPort.UserInfo user =
+                usersById.get(userId);
+
+        if (user == null || user.username() == null) {
+            return "Usuario";
+        }
+
+        return user.username();
     }
 
     private GoalUnit getGoal(UUID goalId) {
@@ -297,12 +344,6 @@ public class GroupGoalQueryService implements
         }
 
         return member;
-    }
-
-    private String resolveUserName(UUID userId) {
-        return userRepository.findById(userId)
-                .map(User::getUsername)
-                .orElse("Usuario");
     }
 
     private int calculateTotalPages(

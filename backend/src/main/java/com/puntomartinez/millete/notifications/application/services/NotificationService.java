@@ -47,13 +47,24 @@ public class NotificationService implements
     @Override
     @Transactional(readOnly = true)
     public List<Notification> getUserNotifications(UUID userId, int limit) {
-        return notificationRepository.findActiveByUserIdOrderByCreatedAtDesc(userId, limit);
+        return notificationRepository
+                .findActiveByUserIdOrderByCreatedAtDesc(userId, limit);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PaginatedNotifications getUserNotificationsPage(UUID userId, int page, int size) {
-        var pageResult = notificationRepository.findActiveByUserIdPaginated(userId, page, size);
+    public PaginatedNotifications getUserNotificationsPage(
+            UUID userId,
+            int page,
+            int size) {
+
+        var pageResult =
+                notificationRepository.findActiveByUserIdPaginated(
+                        userId,
+                        page,
+                        size
+                );
+
         return new PaginatedNotifications(
                 pageResult.getContent(),
                 pageResult.getNumber(),
@@ -72,12 +83,35 @@ public class NotificationService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Notification> findUserNotificationsByTypeAndMetadataValue(
+            UUID userId,
+            String type,
+            String metadataKey,
+            String metadataValue) {
+
+        return notificationRepository
+                .findActiveByUserIdAndTypeAndMetadataValue(
+                        userId,
+                        type,
+                        metadataKey,
+                        metadataValue
+                );
+    }
+
+    @Override
     public void markAsRead(UUID userId, UUID notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
+        Notification notification =
+                notificationRepository.findById(notificationId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Notificación no encontrada"
+                                ));
 
         if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("No tienes permiso para modificar esta notificación");
+            throw new ForbiddenOperationException(
+                    "No tienes permiso para modificar esta notificación"
+            );
         }
 
         notification.markAsRead();
@@ -85,12 +119,21 @@ public class NotificationService implements
     }
 
     @Override
-    public void markAsActioned(UUID userId, UUID notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
+    public void markAsActioned(
+            UUID userId,
+            UUID notificationId) {
+
+        Notification notification =
+                notificationRepository.findById(notificationId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Notificación no encontrada"
+                                ));
 
         if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("No tienes permiso para modificar esta notificación");
+            throw new ForbiddenOperationException(
+                    "No tienes permiso para modificar esta notificación"
+            );
         }
 
         notification.markAsActioned();
@@ -98,12 +141,21 @@ public class NotificationService implements
     }
 
     @Override
-    public void delete(UUID userId, UUID notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
+    public void delete(
+            UUID userId,
+            UUID notificationId) {
+
+        Notification notification =
+                notificationRepository.findById(notificationId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Notificación no encontrada"
+                                ));
 
         if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException("No tienes permiso para eliminar esta notificación");
+            throw new ForbiddenOperationException(
+                    "No tienes permiso para eliminar esta notificación"
+            );
         }
 
         notification.softDelete();

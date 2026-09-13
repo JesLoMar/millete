@@ -13,6 +13,13 @@ public interface GetNotificationsUseCase {
 
     long getUnreadCount(UUID userId);
 
+    List<Notification> findUserNotificationsByTypeAndMetadataValue(
+            UUID userId,
+            String type,
+            String metadataKey,
+            String metadataValue
+    );
+
     record PaginatedNotifications(
             List<Notification> content,
             int currentPage,

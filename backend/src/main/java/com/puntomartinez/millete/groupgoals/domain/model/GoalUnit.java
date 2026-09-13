@@ -29,7 +29,7 @@ public class GoalUnit {
 
         this.id = requireId(id);
         this.name = requireName(name);
-        this.monthlyTarget = monthlyTarget;
+        this.monthlyTarget = requireMonthlyTarget(monthlyTarget);
         this.distributionMode = requireDistributionMode(distributionMode);
         this.createdAt = requireDate(
                 createdAt,
@@ -90,7 +90,7 @@ public class GoalUnit {
         }
 
         if (monthlyTarget != null) {
-            this.monthlyTarget = monthlyTarget;
+            this.monthlyTarget = requireMonthlyTarget(monthlyTarget);
         }
 
         if (distributionMode != null) {
@@ -164,42 +164,42 @@ public class GoalUnit {
             }
 
             case CUSTOM -> {
-    BigDecimal totalPercentage = members.stream()
-            .map(GoalMember::getCustomPercentage)
-            .filter(java.util.Objects::nonNull)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalPercentage = members.stream()
+                        .map(GoalMember::getCustomPercentage)
+                        .filter(java.util.Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    boolean allMembersHavePercentage = members.stream()
-            .allMatch(member -> member.getCustomPercentage() != null);
+                boolean allMembersHavePercentage = members.stream()
+                        .allMatch(member -> member.getCustomPercentage() != null);
 
-    if (!allMembersHavePercentage) {
-        throw new IllegalStateException(
-                "Todos los miembros deben tener un porcentaje personalizado."
-        );
-    }
+                if (!allMembersHavePercentage) {
+                    throw new IllegalStateException(
+                            "Todos los miembros deben tener un porcentaje personalizado."
+                    );
+                }
 
-    if (totalPercentage.compareTo(new BigDecimal("100")) != 0) {
-        throw new IllegalStateException(
-                "Los porcentajes personalizados deben sumar 100%."
-        );
-    }
+                if (totalPercentage.compareTo(new BigDecimal("100")) != 0) {
+                    throw new IllegalStateException(
+                            "Los porcentajes personalizados deben sumar 100%."
+                    );
+                }
 
-    for (GoalMember member : members) {
-        BigDecimal percentage = member.getCustomPercentage()
-                .divide(
-                        new BigDecimal("100"),
-                        4,
-                        RoundingMode.HALF_UP
-                );
+                for (GoalMember member : members) {
+                    BigDecimal percentage = member.getCustomPercentage()
+                            .divide(
+                                    new BigDecimal("100"),
+                                    4,
+                                    RoundingMode.HALF_UP
+                            );
 
-        contributions.put(
-                member.getUserId(),
-                monthlyTarget
-                        .multiply(percentage)
-                        .setScale(2, RoundingMode.HALF_UP)
-        );
-    }
-}
+                    contributions.put(
+                            member.getUserId(),
+                            monthlyTarget
+                                    .multiply(percentage)
+                                    .setScale(2, RoundingMode.HALF_UP)
+                    );
+                }
+            }
         }
 
         return contributions;
@@ -226,6 +226,24 @@ public class GoalUnit {
             );
         }
         return name.trim();
+    }
+
+    private static BigDecimal requireMonthlyTarget(
+            BigDecimal monthlyTarget) {
+
+        if (monthlyTarget == null) {
+            throw new IllegalArgumentException(
+                    "El objetivo mensual es obligatorio."
+            );
+        }
+
+        if (monthlyTarget.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "El objetivo mensual no puede ser negativo."
+            );
+        }
+
+        return monthlyTarget;
     }
 
     private static DistributionMode requireDistributionMode(
