@@ -1,10 +1,11 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
 
-@Getter
-@Setter
-public class InviteMemberRequestDTO {
-    private String identifier;
+public record InviteMemberRequestDTO(
+
+        @NotBlank(message = "El identificador del usuario es obligatorio.")
+        String identifier
+
+) {
 }

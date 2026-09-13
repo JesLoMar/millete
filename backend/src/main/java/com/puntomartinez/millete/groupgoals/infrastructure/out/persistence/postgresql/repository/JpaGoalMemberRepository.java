@@ -12,6 +12,5 @@ public interface JpaGoalMemberRepository extends JpaRepository<GoalMemberEntity,
     Optional<GoalMemberEntity> findByGoalIdAndUserId(UUID goalId, UUID userId);
     List<GoalMemberEntity> findByGoalIdAndActiveTrue(UUID goalId);
     List<GoalMemberEntity> findByUserIdAndActiveTrue(UUID userId);
-    void deleteByGoalIdAndUserId(UUID goalId, UUID userId);
     List<GoalMemberEntity> findByGoalIdInAndActiveTrue(Collection<UUID> goalIds);
 }

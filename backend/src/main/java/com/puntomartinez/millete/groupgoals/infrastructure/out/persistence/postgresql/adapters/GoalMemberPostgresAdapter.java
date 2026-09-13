@@ -44,11 +44,6 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
     }
 
     @Override
-    public void deleteByGoalIdAndUserId(UUID goalId, UUID userId) {
-        jpaRepository.deleteByGoalIdAndUserId(goalId, userId);
-    }
-
-    @Override
     public List<GoalMember> findByUserId(UUID userId) {
         return jpaRepository.findByUserIdAndActiveTrue(userId).stream()
                 .map(mapper::toDomain)

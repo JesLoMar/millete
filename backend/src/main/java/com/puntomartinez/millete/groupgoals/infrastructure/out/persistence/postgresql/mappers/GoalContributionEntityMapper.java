@@ -6,6 +6,19 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface GoalContributionEntityMapper {
-    GoalContributionEntity toEntity(GoalContribution domain);
-    GoalContribution toDomain(GoalContributionEntity entity);
+
+    GoalContributionEntity toEntity(GoalContribution contribution);
+
+    default GoalContribution toDomain(GoalContributionEntity entity) {
+        return GoalContribution.reconstitute(
+                entity.getId(),
+                entity.getGoalId(),
+                entity.getUserId(),
+                entity.getAmount(),
+                entity.getDate(),
+                entity.getCreatedAt(),
+                entity.getModifiedAt(),
+                entity.isActive()
+        );
+    }
 }

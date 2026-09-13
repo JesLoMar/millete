@@ -29,23 +29,32 @@ public class GoalPostgresAdapter implements GoalUnitRepository {
 
     @Override
     public Optional<GoalUnit> findById(UUID id) {
-        return jpaRepository.findById(id).map(mapper::toDomain);
+        return jpaRepository.findById(id)
+                .map(mapper::toDomain);
     }
 
     @Override
-    public void deleteById(UUID id) {
-        jpaRepository.deleteById(id);
-    }
+    public List<GoalUnit> findByUserId(
+            UUID userId,
+            int page,
+            int size) {
 
-    @Override
-    public List<GoalUnit> findByUserId(UUID userId, int page, int size) {
-        return jpaRepository.findActiveByUserId(userId, PageRequest.of(page, size, Sort.by("name"))).stream()
+        return jpaRepository
+                .findActiveByUserId(
+                        userId,
+                        PageRequest.of(
+                                page,
+                                size,
+                                Sort.by("name")
+                        )
+                )
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
     public long countByUserId(UUID userId) {
-        return jpaRepository.findActiveByUserId(userId, PageRequest.of(0, 1)).getTotalElements();
+        return jpaRepository.countActiveByUserId(userId);
     }
 }

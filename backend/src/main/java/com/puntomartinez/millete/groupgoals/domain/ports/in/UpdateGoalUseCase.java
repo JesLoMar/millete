@@ -1,17 +1,19 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
 import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public interface CreateGoalUnitUseCase {
+public interface UpdateGoalUseCase {
 
-    GoalUnit create(UUID adminUserId, CreateGoalUnitCommand command);
+    void update(
+            UUID goalId,
+            UUID userId,
+            UpdateGoalCommand command
+    );
 
-    record CreateGoalUnitCommand(
-            UUID adminUserId,
+    record UpdateGoalCommand(
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode

@@ -12,7 +12,6 @@ public interface GoalMemberRepository {
     Optional<GoalMember> findById(UUID id);
     Optional<GoalMember> findByGoalIdAndUserId(UUID goalId, UUID userId);
     List<GoalMember> findByGoalId(UUID goalId);
-    void deleteByGoalIdAndUserId(UUID goalId, UUID userId);
     List<GoalMember> findByUserId(UUID userId);
     List<GoalMember> findByGoalIdIn(Collection<UUID> goalIds);
 }

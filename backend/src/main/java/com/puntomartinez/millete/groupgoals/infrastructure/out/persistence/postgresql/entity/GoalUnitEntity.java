@@ -2,6 +2,7 @@ package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.post
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "goal_units")
+@SQLRestriction("active = true")
 @Getter
 @Setter
 @NoArgsConstructor

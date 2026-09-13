@@ -9,24 +9,49 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
 
-public interface JpaGoalUnitRepository extends JpaRepository<GoalUnitEntity, UUID> {
+public interface JpaGoalUnitRepository
+        extends JpaRepository<GoalUnitEntity, UUID> {
 
     @Query(value = """
-            SELECT gu FROM GoalUnitEntity gu
+            SELECT gu
+            FROM GoalUnitEntity gu
             WHERE gu.active = true
               AND gu.id IN (
-                  SELECT gm.goalId FROM GoalMemberEntity gm
-                  WHERE gm.userId = :userId AND gm.active = true
+                  SELECT gm.goalId
+                  FROM GoalMemberEntity gm
+                  WHERE gm.userId = :userId
+                    AND gm.active = true
               )
             ORDER BY gu.name
             """,
             countQuery = """
-                    SELECT count(gu) FROM GoalUnitEntity gu
+                    SELECT COUNT(gu)
+                    FROM GoalUnitEntity gu
                     WHERE gu.active = true
                       AND gu.id IN (
-                          SELECT gm.goalId FROM GoalMemberEntity gm
-                          WHERE gm.userId = :userId AND gm.active = true
+                          SELECT gm.goalId
+                          FROM GoalMemberEntity gm
+                          WHERE gm.userId = :userId
+                            AND gm.active = true
                       )
                     """)
-    Page<GoalUnitEntity> findActiveByUserId(@Param("userId") UUID userId, Pageable pageable);
+    Page<GoalUnitEntity> findActiveByUserId(
+            @Param("userId") UUID userId,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT COUNT(gu)
+            FROM GoalUnitEntity gu
+            WHERE gu.active = true
+              AND gu.id IN (
+                  SELECT gm.goalId
+                  FROM GoalMemberEntity gm
+                  WHERE gm.userId = :userId
+                    AND gm.active = true
+              )
+            """)
+    long countActiveByUserId(
+            @Param("userId") UUID userId
+    );
 }

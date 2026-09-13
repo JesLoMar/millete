@@ -8,7 +8,6 @@ import java.util.UUID;
 public interface GoalUnitRepository {
     GoalUnit save(GoalUnit goalUnit);
     Optional<GoalUnit> findById(UUID id);
-    void deleteById(UUID id);
     List<GoalUnit> findByUserId(UUID userId, int page, int size);
     long countByUserId(UUID userId);
 }
