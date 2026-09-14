@@ -56,7 +56,6 @@ public record PdfExportData(
             double progress,
             LocalDate deadline,
             String priority,
-            String status,
             String link
     ) {}
 }

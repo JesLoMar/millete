@@ -36,9 +36,6 @@ public class Migration001to010 implements DataMigration {
                 snapshot.plannedTransactions(),
                 snapshot.investments(),
                 snapshot.savingsGoals(),
-                null,
-                null,
-                null,
                 null
         );
     }

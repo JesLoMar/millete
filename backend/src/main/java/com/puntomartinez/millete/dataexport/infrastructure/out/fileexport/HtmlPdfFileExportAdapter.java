@@ -1,8 +1,7 @@
 package com.puntomartinez.millete.dataexport.infrastructure.out.fileexport;
 
-import com.puntomartinez.millete.dataexport.domain.model.ExportData;
 import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
-import com.puntomartinez.millete.dataexport.domain.ports.out.FileExportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.FilePdfExportPort;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -14,13 +13,12 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
 @Component("pdfFileExportAdapter")
-public class HtmlPdfFileExportAdapter implements FileExportPort {
+public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
     private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
 
@@ -30,7 +28,6 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
     private static final float HEADER_HEIGHT = 72f;
 
-    // Espaciados verticales reutilizables para mantener un ritmo consistente
     private static final float SPACE_AFTER_HEADER = 20f;
     private static final float SPACE_AFTER_SUMMARY = 26f;
     private static final float SPACE_TITLE_TO_DIVIDER = 8f;
@@ -91,16 +88,6 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
             );
 
     @Override
-    public byte[] generateZip(ExportData exportData) {
-        return new byte[0];
-    }
-
-    @Override
-    public byte[] generateCsv(ExportData exportData, String entityType) {
-        return new byte[0];
-    }
-
-    @Override
     public byte[] generatePdf(PdfExportData data) {
         try (
                 PDDocument document = new PDDocument();
@@ -109,19 +96,21 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
             PDPage page = new PDPage(PAGE_SIZE);
             document.addPage(page);
 
-            try (PDPageContentStream content =
-                         new PDPageContentStream(document, page)) {
-
+            try (
+                    PDPageContentStream content =
+                            new PDPageContentStream(document, page)
+            ) {
                 drawBackground(content);
                 drawHeader(content, data);
-                float summaryBottomY = drawSummary(content, data.summary());
 
-                PdfPageContext context = new PdfPageContext(
-                        document,
-                        content
-                );
+                float summaryBottomY =
+                        drawSummary(content, data.summary());
 
-                float y = summaryBottomY - SPACE_AFTER_SUMMARY;
+                PdfPageContext context =
+                        new PdfPageContext(document, content);
+
+                float y =
+                        summaryBottomY - SPACE_AFTER_SUMMARY;
 
                 if (!data.investments().isEmpty()) {
                     y = drawInvestments(
@@ -492,7 +481,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 50
         };
 
-        float tableY = y - SPACE_DIVIDER_TO_CONTENT;
+        float tableY =
+                y - SPACE_DIVIDER_TO_CONTENT;
 
         drawTableHeader(
                 context.content(),
@@ -501,7 +491,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 widths
         );
 
-        float rowY = tableY - TABLE_HEADER_HEIGHT;
+        float rowY =
+                tableY - TABLE_HEADER_HEIGHT;
+
         boolean alternate = false;
 
         for (PdfExportData.InvestmentRow investment : investments) {
@@ -594,7 +586,9 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                 widths
         );
 
-        float rowY = y - TABLE_HEADER_HEIGHT;
+        float rowY =
+                y - TABLE_HEADER_HEIGHT;
+
         boolean alternate = false;
 
         for (PdfExportData.TransactionRow transaction : transactions) {
@@ -624,9 +618,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
                     alternate
             );
 
-            String amount = formatEuro(
-                    transaction.amount()
-            );
+            String amount =
+                    formatEuro(transaction.amount());
 
             if ("Ingreso".equals(transaction.type())) {
                 amount = "+" + amount;
@@ -798,10 +791,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
         for (int i = 0; i < values.length; i++) {
 
-            String value = truncate(
-                    values[i],
-                    widths[i]
-            );
+            String value =
+                    truncate(values[i], widths[i]);
 
             int textR = TEXT_COLOR_R;
             int textG = TEXT_COLOR_G;
@@ -809,7 +800,8 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
 
             if (i == values.length - 1) {
 
-                String originalValue = safe(values[i]);
+                String originalValue =
+                        safe(values[i]);
 
                 if (originalValue.startsWith("+")) {
                     textR = GREEN_R;
@@ -943,12 +935,10 @@ public class HtmlPdfFileExportAdapter implements FileExportPort {
             return "0";
         }
 
-        return value
-                .setScale(
-                        decimals,
-                        java.math.RoundingMode.HALF_UP
-                )
-                .toPlainString();
+        return value.setScale(
+                decimals,
+                java.math.RoundingMode.HALF_UP
+        ).toPlainString();
     }
 
     private static String formatDecimal(double value) {

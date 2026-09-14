@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,6 +35,19 @@ public class GoalContributionPostgresAdapter
     public List<GoalContribution> findByGoalId(UUID goalId) {
         return jpaRepository
                 .findByGoalIdAndActiveTrueOrderByDateDesc(goalId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GoalContribution> findByGoalIdIn(Collection<UUID> goalIds) {
+        if (goalIds == null || goalIds.isEmpty()) {
+            return List.of();
+        }
+
+        return jpaRepository
+                .findByGoalIdInAndActiveTrueOrderByDateDesc(goalIds)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

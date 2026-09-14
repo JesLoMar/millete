@@ -2,15 +2,6 @@ package com.puntomartinez.millete.dataexport.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
-import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
-import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.users.domain.model.UserPreferences;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,35 +12,29 @@ public record UserDataSnapshot(
         SnapshotMetadata metadata,
 
         @JsonProperty("categories")
-        List<Category> categories,
+        List<CategorySnapshot> categories,
 
         @JsonProperty("transactions")
-        List<Transaction> transactions,
+        List<TransactionSnapshot> transactions,
 
         @JsonProperty("plannedTransactions")
-        List<PlannedTransaction> plannedTransactions,
+        List<PlannedTransactionSnapshot> plannedTransactions,
 
         @JsonProperty("investments")
-        List<Investment> investments,
+        List<InvestmentSnapshot> investments,
 
         @JsonProperty("savingsGoals")
-        List<SavingsGoal> savingsGoals,
+        List<SavingsGoalSnapshot> savingsGoals,
 
         @JsonProperty("userPreferences")
-        UserPreferences userPreferences,
-
-        @JsonProperty("goalUnits")
-        List<GoalUnit> goalUnits,
-
-        @JsonProperty("goalMembers")
-        List<GoalMember> goalMembers,
-
-        @JsonProperty("goalContributions")
-        List<GoalContribution> goalContributions
+        UserPreferencesSnapshot userPreferences
 ) {
+
     public UserDataSnapshot {
         if (metadata == null) {
-            throw new IllegalArgumentException("El metadata del snapshot es obligatorio");
+            throw new IllegalArgumentException(
+                    "El metadata del snapshot es obligatorio"
+            );
         }
     }
 

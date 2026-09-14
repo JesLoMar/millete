@@ -55,7 +55,6 @@ public record ExportData(
             double progress,
             LocalDate deadline,
             String priority,
-            String status,
             String link
     ) {}
 }

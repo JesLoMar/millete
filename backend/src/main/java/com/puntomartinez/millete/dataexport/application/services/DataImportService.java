@@ -2,27 +2,16 @@ package com.puntomartinez.millete.dataexport.application.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
-import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
-import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
-import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
-import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.users.domain.model.UserPreferences;
-import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.InvestmentImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.PlannedTransactionImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.SavingsGoalImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.TransactionImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.TransactionImportVerificationPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.UserPreferencesImportPort;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,38 +26,37 @@ import java.util.UUID;
 @Service
 public class DataImportService {
 
-    private final CategoryRepository categoryRepository;
-    private final TransactionRepository transactionRepository;
-    private final PlannedTransactionRepository plannedTransactionRepository;
-    private final InvestmentRepository investmentRepository;
-    private final SavingsGoalRepository savingsGoalRepository;
-    private final UserPreferencesRepository userPreferencesRepository;
-    private final GoalUnitRepository goalUnitRepository;
-    private final GoalMemberRepository goalMemberRepository;
-    private final GoalContributionRepository goalContributionRepository;
+    private final CategoryImportPort categoryImportPort;
+    private final TransactionImportPort transactionImportPort;
+    private final PlannedTransactionImportPort plannedTransactionImportPort;
+    private final InvestmentImportPort investmentImportPort;
+    private final SavingsGoalImportPort savingsGoalImportPort;
+    private final UserPreferencesImportPort userPreferencesImportPort;
+    private final TransactionImportVerificationPort transactionImportVerificationPort;
     private final MigrationChain migrationChain;
     private final ObjectMapper objectMapper;
 
     public DataImportService(
-            CategoryRepository categoryRepository,
-            TransactionRepository transactionRepository,
-            PlannedTransactionRepository plannedTransactionRepository,
-            InvestmentRepository investmentRepository,
-            SavingsGoalRepository savingsGoalRepository,
-            UserPreferencesRepository userPreferencesRepository,
-            GoalUnitRepository goalUnitRepository,
-            GoalMemberRepository goalMemberRepository,
-            GoalContributionRepository goalContributionRepository,
+            CategoryImportPort categoryImportPort,
+            TransactionImportPort transactionImportPort,
+            PlannedTransactionImportPort plannedTransactionImportPort,
+            InvestmentImportPort investmentImportPort,
+            SavingsGoalImportPort savingsGoalImportPort,
+            UserPreferencesImportPort userPreferencesImportPort,
+            TransactionImportVerificationPort transactionImportVerificationPort,
             MigrationChain migrationChain) {
-        this.categoryRepository = categoryRepository;
-        this.transactionRepository = transactionRepository;
-        this.plannedTransactionRepository = plannedTransactionRepository;
-        this.investmentRepository = investmentRepository;
-        this.savingsGoalRepository = savingsGoalRepository;
-        this.userPreferencesRepository = userPreferencesRepository;
-        this.goalUnitRepository = goalUnitRepository;
-        this.goalMemberRepository = goalMemberRepository;
-        this.goalContributionRepository = goalContributionRepository;
+
+        this.categoryImportPort = categoryImportPort;
+        this.transactionImportPort = transactionImportPort;
+        this.plannedTransactionImportPort =
+                plannedTransactionImportPort;
+        this.investmentImportPort =
+                investmentImportPort;
+        this.savingsGoalImportPort =
+                savingsGoalImportPort;
+        this.userPreferencesImportPort = userPreferencesImportPort;
+        this.transactionImportVerificationPort =
+                transactionImportVerificationPort;
         this.migrationChain = migrationChain;
 
         this.objectMapper = new ObjectMapper();
@@ -77,420 +64,154 @@ public class DataImportService {
     }
 
     @Transactional
-    public String importUserData(MultipartFile file, UUID loggedInUserId) {
+    public String importUserData(
+            MultipartFile file,
+            UUID loggedInUserId) {
+
         try (InputStream inputStream = file.getInputStream()) {
 
             log.debug("Leyendo archivo de importación...");
-            UserDataSnapshot snapshot = objectMapper.readValue(inputStream, UserDataSnapshot.class);
-            log.info("Archivo leído. v{}", snapshot.metadata().version());
+
+            UserDataSnapshot snapshot =
+                    objectMapper.readValue(
+                            inputStream,
+                            UserDataSnapshot.class
+                    );
+
+            log.info(
+                    "Archivo leído. v{}",
+                    snapshot.metadata().version()
+            );
 
             snapshot = validateAndMigrate(snapshot);
 
+            Map<UUID, UUID> categoryIdMap =
+                    categoryImportPort.importCategories(
+                            snapshot.categories(),
+                            loggedInUserId
+                    );
 
-            sanitizeSnapshot(snapshot, loggedInUserId);
+            int totalImported =
+                    categoryIdMap.size();
 
-            Map<UUID, UUID> categoryIdMap = new HashMap<>();
-            Map<UUID, UUID> goalIdMap = new HashMap<>();
+            totalImported +=
+                    transactionImportPort.importTransactions(
+                            snapshot.transactions(),
+                            loggedInUserId,
+                            categoryIdMap
+                    );
 
-            int totalImported = importCategories(snapshot, loggedInUserId, categoryIdMap);
-            totalImported += importTransactions(snapshot, loggedInUserId, categoryIdMap);
-            totalImported += importPlannedTransactions(snapshot, loggedInUserId, categoryIdMap);
-            totalImported += importInvestments(snapshot, loggedInUserId);
-            totalImported += importSavingsGoals(snapshot, loggedInUserId);
-            totalImported += importUserPreferences(snapshot, loggedInUserId);
-            totalImported += importGroupGoals(snapshot, loggedInUserId, goalIdMap);
+            totalImported +=
+                    plannedTransactionImportPort.importPlannedTransactions(
+                            snapshot.plannedTransactions(),
+                            loggedInUserId,
+                            categoryIdMap
+                    );
 
+            totalImported +=
+                    investmentImportPort.importInvestments(
+                            snapshot.investments(),
+                            loggedInUserId
+                    );
 
-            verifyImportedTransactions(loggedInUserId, categoryIdMap);
+            totalImported +=
+                    savingsGoalImportPort.importSavingsGoals(
+                            snapshot.savingsGoals(),
+                            loggedInUserId
+                    );
+
+            totalImported += importUserPreferences(
+                    snapshot,
+                    loggedInUserId
+            );
+
+            transactionImportVerificationPort
+                    .verifyImportedTransactions(
+                            loggedInUserId
+                    );
 
             String summary = String.format(
                     "Importación exitosa. %d registros importados. v%s",
-                    totalImported, ExportVersion.CURRENT);
+                    totalImported,
+                    ExportVersion.CURRENT
+            );
 
             log.info(summary);
+
             return summary;
 
         } catch (Exception e) {
-            log.error("Error al importar: {}", e.getMessage(), e);
+            log.error(
+                    "Error al importar: {}",
+                    e.getMessage(),
+                    e
+            );
+
             throw new InvalidInputException(
                     "Error al importar el archivo. Asegúrate de que sea compatible con v"
-                            + ExportVersion.CURRENT, e);
+                            + ExportVersion.CURRENT,
+                    e
+            );
         }
     }
 
+    private UserDataSnapshot validateAndMigrate(
+            UserDataSnapshot snapshot) {
 
-    private UserDataSnapshot validateAndMigrate(UserDataSnapshot snapshot) {
-        ExportVersion fileVersion = ExportVersion.fromString(snapshot.metadata().version());
+        ExportVersion fileVersion =
+                ExportVersion.fromString(
+                        snapshot.metadata().version()
+                );
 
-        if (!fileVersion.isCompatibleWith(ExportVersion.CURRENT)) {
+        if (!fileVersion.isCompatibleWith(
+                ExportVersion.CURRENT)) {
+
             throw new InvalidInputException(
-                    String.format("Versión incompatible. Archivo v%s, sistema v%s.",
-                            fileVersion, ExportVersion.CURRENT));
+                    String.format(
+                            "Versión incompatible. Archivo v%s, sistema v%s.",
+                            fileVersion,
+                            ExportVersion.CURRENT
+                    )
+            );
         }
 
-        if (fileVersion.needsMigration(ExportVersion.CURRENT)) {
-            log.warn("Migrando de v{} a v{}", fileVersion, ExportVersion.CURRENT);
+        if (fileVersion.needsMigration(
+                ExportVersion.CURRENT)) {
+
+            log.warn(
+                    "Migrando de v{} a v{}",
+                    fileVersion,
+                    ExportVersion.CURRENT
+            );
+
             return migrationChain.migrateToLatest(snapshot);
         }
 
-        log.debug("v{} compatible", fileVersion);
+        log.debug(
+                "v{} compatible",
+                fileVersion
+        );
+
         return snapshot;
     }
 
+    private int importUserPreferences(
+            UserDataSnapshot snapshot,
+            UUID loggedInUserId) {
 
-    private void sanitizeSnapshot(UserDataSnapshot snapshot, UUID loggedInUserId) {
-        if (snapshot.categories() != null) {
-            for (Category cat : snapshot.categories()) {
-                cat.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.transactions() != null) {
-            for (Transaction tx : snapshot.transactions()) {
-                tx.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.plannedTransactions() != null) {
-            for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
-                ptx.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.investments() != null) {
-            for (Investment inv : snapshot.investments()) {
-                inv.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.savingsGoals() != null) {
-            for (SavingsGoal sg : snapshot.savingsGoals()) {
-                sg.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.goalMembers() != null) {
-            for (GoalMember gm : snapshot.goalMembers()) {
-                gm.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.goalContributions() != null) {
-            for (GoalContribution gc : snapshot.goalContributions()) {
-                gc.setUserId(loggedInUserId);
-            }
-        }
-        if (snapshot.userPreferences() != null) {
-            snapshot.userPreferences().setUserId(loggedInUserId);
-        }
-        log.debug("Snapshot sanitizado con userId destino: {}", loggedInUserId);
-    }
-
-
-    private int importCategories(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
-        if (snapshot.categories() == null || snapshot.categories().isEmpty()) {
-            return 0;
-        }
-
-
-        Map<String, Category> existingByName = new HashMap<>();
-        for (Category existing : categoryRepository.findByIdUsuario(loggedInUserId)) {
-            if (existing.isActive()) {
-                existingByName.put(existing.getName().toLowerCase(), existing);
-            }
-        }
-
-        int count = 0;
-        for (Category cat : snapshot.categories()) {
-
-            if (!cat.isActive()) {
-                log.debug("Categoría inactiva omitida: {}", cat.getName());
-                continue;
-            }
-
-            String nameLower = cat.getName().toLowerCase();
-            Category existing = existingByName.get(nameLower);
-
-            if (existing != null) {
-
-                existing.setColor(cat.getColor());
-                existing.setBudgetLimit(cat.getBudgetLimit());
-                existing.setModifiedAt(java.time.LocalDateTime.now());
-                categoryRepository.save(existing);
-                categoryIdMap.put(cat.getId(), existing.getId());
-                log.debug("Categoría reutilizada: {} -> {}", cat.getName(), existing.getId());
-            } else {
-
-                UUID newId = UUID.randomUUID();
-                categoryIdMap.put(cat.getId(), newId);
-                Category safeCat = new Category(
-                        newId, loggedInUserId, cat.getName(), cat.getColor(),
-                        cat.getBudgetLimit(), cat.getCreatedAt(), cat.getModifiedAt(), cat.isActive()
-                );
-                categoryRepository.save(safeCat);
-                existingByName.put(nameLower, safeCat);
-                count++;
-            }
-        }
-        log.debug("Categorías importadas: {} (nuevas: {})", snapshot.categories().size(), count);
-        return count;
-    }
-
-    private int importTransactions(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
-        if (snapshot.transactions() == null || snapshot.transactions().isEmpty()) {
-            return 0;
-        }
-
-        int count = 0;
-        for (Transaction tx : snapshot.transactions()) {
-
-            if (!tx.isActive()) {
-                continue;
-            }
-
-            UUID newCategoryId = null;
-            if (tx.getCategoryId() != null) {
-                newCategoryId = categoryIdMap.get(tx.getCategoryId());
-                if (newCategoryId == null) {
-                    log.warn("Transacción {} referencia categoría {} no encontrada en el mapa. Se importará sin categoría.",
-                            tx.getId(), tx.getCategoryId());
-                }
-            }
-
-            Transaction safeTx = new Transaction(
-                    UUID.randomUUID(), loggedInUserId, newCategoryId, tx.getAmount(),
-                    tx.getDate(), tx.getType(), tx.getDescription(),
-                    tx.getCreatedAt(), tx.getModifiedAt(), tx.isActive()
-            );
-            transactionRepository.save(safeTx);
-            count++;
-        }
-        log.debug("Transacciones: {}", count);
-        return count;
-    }
-
-    private int importPlannedTransactions(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
-        if (snapshot.plannedTransactions() == null || snapshot.plannedTransactions().isEmpty()) {
-            return 0;
-        }
-
-        int count = 0;
-        for (PlannedTransaction ptx : snapshot.plannedTransactions()) {
-
-            if (!ptx.isActive()) {
-                continue;
-            }
-
-            UUID newCategoryId = null;
-            if (ptx.getCategoryId() != null) {
-                newCategoryId = categoryIdMap.get(ptx.getCategoryId());
-                if (newCategoryId == null) {
-                    log.warn("Transacción recurrente {} referencia categoría {} no encontrada en el mapa. Se importará sin categoría.",
-                            ptx.getId(), ptx.getCategoryId());
-                }
-            }
-
-            PlannedTransaction safePtx = new PlannedTransaction(
-                    UUID.randomUUID(), loggedInUserId, newCategoryId, ptx.getAmount(),
-                    ptx.getType(), ptx.getDescription(), ptx.getFrequencyType(),
-                    ptx.getFrequencyInterval(), ptx.getStartDate(), ptx.getEndDate(),
-                    ptx.getCreatedAt(), ptx.getModifiedAt(), ptx.isActive(), ptx.getLastExecutedDate()
-            );
-            plannedTransactionRepository.save(safePtx);
-            count++;
-        }
-        log.debug("Transacciones programadas: {}", count);
-        return count;
-    }
-
-    private int importInvestments(UserDataSnapshot snapshot, UUID loggedInUserId) {
-        if (snapshot.investments() == null || snapshot.investments().isEmpty()) {
-            return 0;
-        }
-
-        int count = 0;
-        for (Investment inv : snapshot.investments()) {
-
-            if (!inv.isActive()) {
-                continue;
-            }
-
-            Investment safeInv = new Investment(
-                    UUID.randomUUID(), loggedInUserId, inv.getAssetName(), inv.getTicker(),
-                    inv.getQuantity(), inv.getPurchasePrice(), inv.getCurrentPrice(),
-                    inv.getType(), inv.getPurchaseDate(),
-                    inv.getCreatedAt(), inv.getModifiedAt(), inv.isActive()
-            );
-            investmentRepository.save(safeInv);
-            count++;
-        }
-        log.debug("Inversiones: {}", count);
-        return count;
-    }
-
-    private int importSavingsGoals(UserDataSnapshot snapshot, UUID loggedInUserId) {
-        if (snapshot.savingsGoals() == null || snapshot.savingsGoals().isEmpty()) {
-            return 0;
-        }
-
-        int count = 0;
-        for (SavingsGoal sg : snapshot.savingsGoals()) {
-            if (!sg.isActive()) {
-                continue;
-            }
-
-            SavingsGoal safeSg = new SavingsGoal(
-                    UUID.randomUUID(), loggedInUserId, sg.getName(),
-                    sg.getTargetAmount(), sg.getCurrentAmount(), sg.getDeadline(),
-                    sg.getPriority(), sg.getStatus(), sg.getLink(),
-                    sg.getCreatedAt(), sg.getModifiedAt(), sg.isActive()
-            );
-            savingsGoalRepository.save(safeSg);
-            count++;
-        }
-        log.debug("Metas de ahorro: {}", count);
-        return count;
-    }
-
-    private int importUserPreferences(UserDataSnapshot snapshot, UUID loggedInUserId) {
         if (snapshot.userPreferences() == null) {
             return 0;
         }
 
-        UserPreferences prefs = snapshot.userPreferences();
+        userPreferencesImportPort.save(
+                snapshot.userPreferences(),
+                loggedInUserId
+        );
 
-        UserPreferences existing = userPreferencesRepository.findByUserId(loggedInUserId).orElse(null);
-        if (existing != null) {
-            existing.setPreferencesJson(prefs.getPreferencesJson());
-            existing.setModifiedAt(java.time.LocalDateTime.now());
-            userPreferencesRepository.save(existing);
-            log.debug("Preferencias de usuario actualizadas");
-        } else {
-            UserPreferences newPrefs = new UserPreferences(
-                    UUID.randomUUID(), loggedInUserId, prefs.getPreferencesJson()
-            );
-            newPrefs.setCreatedAt(prefs.getCreatedAt());
-            newPrefs.setModifiedAt(prefs.getModifiedAt());
-            userPreferencesRepository.save(newPrefs);
-            log.debug("Preferencias de usuario creadas");
-        }
+        log.debug(
+                "Preferencias de usuario importadas"
+        );
+
         return 1;
-    }
-
-    private int importGroupGoals(UserDataSnapshot snapshot, UUID loggedInUserId, Map<UUID, UUID> goalIdMap) {
-        if (snapshot.goalUnits() == null || snapshot.goalUnits().isEmpty()) {
-            return 0;
-        }
-
-        int count = 0;
-
-
-        for (GoalUnit goalUnit : snapshot.goalUnits()) {
-            if (!goalUnit.isActive()) {
-                continue;
-            }
-
-            UUID oldGoalId = goalUnit.getId();
-            UUID newGoalId = UUID.randomUUID();
-            goalIdMap.put(oldGoalId, newGoalId);
-
-            GoalUnit safeGoalUnit = new GoalUnit();
-            safeGoalUnit.setId(newGoalId);
-            safeGoalUnit.setName(goalUnit.getName());
-            safeGoalUnit.setMonthlyTarget(goalUnit.getMonthlyTarget());
-            safeGoalUnit.setDistributionMode(goalUnit.getDistributionMode());
-            safeGoalUnit.setCreatedAt(goalUnit.getCreatedAt());
-            safeGoalUnit.setModifiedAt(goalUnit.getModifiedAt());
-            safeGoalUnit.setActive(goalUnit.isActive());
-            safeGoalUnit.setMembers(null);
-
-            goalUnitRepository.save(safeGoalUnit);
-            count++;
-        }
-        log.debug("GoalUnits importadas: {}", count);
-
-
-        int memberCount = 0;
-        if (snapshot.goalMembers() != null) {
-            for (GoalMember gm : snapshot.goalMembers()) {
-                if (!gm.isActive()) {
-                    continue;
-                }
-
-                UUID newGoalId = goalIdMap.get(gm.getGoalId());
-                if (newGoalId == null) {
-                    log.warn("GoalMember {} referencia GoalUnit {} no encontrada en el mapa. Se omitirá.",
-                            gm.getId(), gm.getGoalId());
-                    continue;
-                }
-
-                GoalMember safeGm = new GoalMember();
-                safeGm.setId(UUID.randomUUID());
-                safeGm.setGoalId(newGoalId);
-                safeGm.setUserId(loggedInUserId);
-                safeGm.setRole(gm.getRole());
-                safeGm.setSalary(gm.getSalary());
-                safeGm.setCustomPercentage(gm.getCustomPercentage());
-                safeGm.setJoinedAt(gm.getJoinedAt());
-                safeGm.setCreatedAt(gm.getCreatedAt());
-                safeGm.setModifiedAt(gm.getModifiedAt());
-                safeGm.setActive(gm.isActive());
-
-                goalMemberRepository.save(safeGm);
-                memberCount++;
-            }
-        }
-        log.debug("GoalMembers importados: {}", memberCount);
-        count += memberCount;
-
-
-        int contributionCount = 0;
-        if (snapshot.goalContributions() != null) {
-            for (GoalContribution gc : snapshot.goalContributions()) {
-                if (!gc.isActive()) {
-                    continue;
-                }
-
-                UUID newGoalId = goalIdMap.get(gc.getGoalId());
-                if (newGoalId == null) {
-                    log.warn("GoalContribution {} referencia GoalUnit {} no encontrada en el mapa. Se omitirá.",
-                            gc.getId(), gc.getGoalId());
-                    continue;
-                }
-
-                GoalContribution safeGc = new GoalContribution();
-                safeGc.setId(UUID.randomUUID());
-                safeGc.setGoalId(newGoalId);
-                safeGc.setUserId(loggedInUserId);
-                safeGc.setAmount(gc.getAmount());
-                safeGc.setDate(gc.getDate());
-                safeGc.setCreatedAt(gc.getCreatedAt());
-                safeGc.setModifiedAt(gc.getModifiedAt());
-                safeGc.setActive(gc.isActive());
-
-                goalContributionRepository.save(safeGc);
-                contributionCount++;
-            }
-        }
-        log.debug("GoalContributions importadas: {}", contributionCount);
-        count += contributionCount;
-
-        return count;
-    }
-
-
-    private void verifyImportedTransactions(UUID loggedInUserId, Map<UUID, UUID> categoryIdMap) {
-
-        var allTransactions = transactionRepository.findAllByUserId(loggedInUserId);
-        int orphanCount = 0;
-        for (Transaction tx : allTransactions) {
-            if (tx.getCategoryId() != null) {
-                boolean resolvable = categoryRepository.findActiveByIdAndUserId(tx.getCategoryId(), loggedInUserId).isPresent();
-                if (!resolvable) {
-                    orphanCount++;
-                    log.warn("Transacción {} tiene categoría {} no resoluble para el usuario {}",
-                            tx.getId(), tx.getCategoryId(), loggedInUserId);
-                }
-            }
-        }
-        if (orphanCount > 0) {
-            log.warn("{} transacciones tienen categorías no resueltas tras la importación", orphanCount);
-        } else {
-            log.debug("Todas las transacciones tienen categorías resolubles correctamente");
-        }
     }
 }
