@@ -14,13 +14,18 @@ import java.util.UUID;
 @Repository
 public interface JpaCategoryRepository
         extends JpaRepository<CategoryEntity, UUID>,
-                JpaSpecificationExecutor<CategoryEntity> {
+        JpaSpecificationExecutor<CategoryEntity> {
 
     List<CategoryEntity> findByUserId(UUID userId);
 
     Optional<CategoryEntity> findByIdAndUserId(
             UUID id,
             UUID userId
+    );
+
+    List<CategoryEntity> findByUserIdAndIdIn(
+            UUID userId,
+            List<UUID> categoryIds
     );
 
     @Query("""

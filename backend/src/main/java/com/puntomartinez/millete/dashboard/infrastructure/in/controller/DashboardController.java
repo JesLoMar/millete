@@ -28,60 +28,69 @@ public class DashboardController {
     public ResponseEntity<DashboardMetricsResponseDTO> getMetrics(
             @RequestParam(defaultValue = "month") String period,
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getMetrics(getUserId(authentication), period));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getMetrics(
+                        getUserId(authentication),
+                        period
+                )
+        );
     }
 
     @GetMapping("/history")
     public ResponseEntity<DashboardHistoryResponseDTO> getHistory(
             @RequestParam(defaultValue = "month") String period,
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getHistory(getUserId(authentication), period));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getHistory(
+                        getUserId(authentication),
+                        period
+                )
+        );
     }
 
     @GetMapping("/categories")
     public ResponseEntity<DashboardCategoriesResponseDTO> getCategories(
             @RequestParam(defaultValue = "month") String period,
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getCategories(getUserId(authentication), period));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getCategories(
+                        getUserId(authentication),
+                        period
+                )
+        );
     }
 
     @GetMapping("/budgets")
     public ResponseEntity<DashboardBudgetsResponseDTO> getBudgets(
             @RequestParam(defaultValue = "month") String period,
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getBudgets(getUserId(authentication), period));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getBudgets(
+                        getUserId(authentication),
+                        period
+                )
+        );
     }
 
     @GetMapping("/recent-transactions")
     public ResponseEntity<DashboardTransactionsResponseDTO> getRecentTransactions(
             @RequestParam(defaultValue = "5") int limit,
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getRecentTransactions(getUserId(authentication), limit));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getRecentTransactions(
+                        getUserId(authentication),
+                        limit
+                )
+        );
     }
 
     @GetMapping("/savings-goals")
-    public ResponseEntity<DashboardGoalsResponseDTO> getSavingsGoals(Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getSavingsGoals(getUserId(authentication)));
-    }
-
-    @GetMapping("/investments/metrics")
-    public ResponseEntity<InvestmentMetricsResponseDTO> getInvestmentMetrics(
-            @RequestParam(defaultValue = "month") String period,
+    public ResponseEntity<DashboardGoalsResponseDTO> getSavingsGoals(
             Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getInvestmentMetrics(getUserId(authentication), period));
-    }
-
-    @GetMapping("/investments/evolution")
-    public ResponseEntity<InvestmentEvolutionResponseDTO> getInvestmentEvolution(
-            @RequestParam(defaultValue = "month") String period,
-            Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getInvestmentEvolution(getUserId(authentication), period));
-    }
-
-    @GetMapping("/investments/distribution")
-    public ResponseEntity<InvestmentDistributionResponseDTO> getInvestmentDistribution(
-            @RequestParam(defaultValue = "month") String period,
-            Authentication authentication) {
-        return ResponseEntity.ok(getDashboardDataUseCase.getInvestmentDistribution(getUserId(authentication), period));
+        return ResponseEntity.ok(
+                getDashboardDataUseCase.getSavingsGoals(
+                        getUserId(authentication)
+                )
+        );
     }
 }

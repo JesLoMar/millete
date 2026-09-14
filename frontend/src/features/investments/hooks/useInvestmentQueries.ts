@@ -34,6 +34,7 @@ export function useInvestmentQueries(options: UseInvestmentsOptions) {
         page: String(page),
         size: String(SERVER_SIZE),
       })
+
       if (search.trim()) params.set("search", search.trim())
       if (type !== "all") params.set("type", type)
 
@@ -51,41 +52,62 @@ export function useInvestmentQueries(options: UseInvestmentsOptions) {
     enabled,
   })
 
-  const { data: metricsData, isLoading: metricsIsLoading } = useQuery<InvestmentMetricsData>({
-    queryKey: ['investmentMetrics', period],
-    queryFn: async () => {
-      const response = await apiClient.get(`dashboard/investments/metrics?period=${period}`)
-      return response.data
-    },
-    retry: 1,
-    staleTime: 30_000,
-  })
+  const { data: metricsData, isLoading: metricsIsLoading } =
+    useQuery<InvestmentMetricsData>({
+      queryKey: ["investmentMetrics", period],
+      queryFn: async () => {
+        const response = await apiClient.get(
+          `investments/metrics?period=${period}`
+        )
+        return response.data
+      },
+      retry: 1,
+      staleTime: 30_000,
+    })
 
-  const { data: evolutionData, isLoading: evolutionIsLoading } = useQuery<EvolutionResponse>({
-    queryKey: ['investmentEvolution', period],
-    queryFn: async () => {
-      const res = await apiClient.get(`dashboard/investments/evolution?period=${period}`)
-      return res.data
-    },
-    retry: 1,
-    staleTime: 30_000,
-  })
+  const { data: evolutionData, isLoading: evolutionIsLoading } =
+    useQuery<EvolutionResponse>({
+      queryKey: ["investmentEvolution", period],
+      queryFn: async () => {
+        const res = await apiClient.get(
+          `investments/evolution?period=${period}`
+        )
+        return res.data
+      },
+      retry: 1,
+      staleTime: 30_000,
+    })
 
-  const { data: distributionData, isLoading: distributionIsLoading } = useQuery<DistributionResponse>({
-    queryKey: ['investmentDistribution', period],
-    queryFn: async () => {
-      const response = await apiClient.get(`dashboard/investments/distribution?period=${period}`)
-      return response.data
-    },
-    retry: 1,
-    staleTime: 30_000,
-  })
+  const { data: distributionData, isLoading: distributionIsLoading } =
+    useQuery<DistributionResponse>({
+      queryKey: ["investmentDistribution", period],
+      queryFn: async () => {
+        const response = await apiClient.get(
+          `investments/distribution?period=${period}`
+        )
+        return response.data
+      },
+      retry: 1,
+      staleTime: 30_000,
+    })
 
   return {
-    investments: { data: pagination, isLoading: pagination.isLoading },
-    metrics: { data: metricsData, isLoading: metricsIsLoading },
-    evolution: { data: evolutionData, isLoading: evolutionIsLoading },
-    distribution: { data: distributionData, isLoading: distributionIsLoading },
+    investments: {
+      data: pagination,
+      isLoading: pagination.isLoading
+    },
+    metrics: {
+      data: metricsData,
+      isLoading: metricsIsLoading
+    },
+    evolution: {
+      data: evolutionData,
+      isLoading: evolutionIsLoading
+    },
+    distribution: {
+      data: distributionData,
+      isLoading: distributionIsLoading
+    },
     serverSize: SERVER_SIZE,
     displaySize: DISPLAY_SIZE,
   }

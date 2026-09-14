@@ -1,4 +1,4 @@
-package com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto;
+package com.puntomartinez.millete.investments.infrastructure.in.controller.dto;
 
 import java.math.BigDecimal;
 

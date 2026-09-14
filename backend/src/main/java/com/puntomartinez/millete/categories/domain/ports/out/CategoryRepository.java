@@ -17,6 +17,11 @@ public interface CategoryRepository {
 
     List<Category> findByUserId(UUID userId);
 
+    List<Category> findByIdsAndUserId(
+            UUID userId,
+            List<UUID> categoryIds
+    );
+
     List<Category> findCategoriesWithBudgetByUserId(UUID userId);
 
     List<Category> findAllByUserId(
