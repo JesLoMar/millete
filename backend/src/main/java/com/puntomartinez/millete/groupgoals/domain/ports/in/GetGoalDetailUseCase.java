@@ -1,7 +1,6 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,15 +22,6 @@ public interface GetGoalDetailUseCase {
     ) {
     }
 
-    record Contribution(
-            UUID id,
-            UUID userId,
-            String userName,
-            BigDecimal amount,
-            LocalDateTime date
-    ) {
-    }
-
     record GoalDetail(
             UUID id,
             String name,
@@ -39,7 +29,6 @@ public interface GetGoalDetailUseCase {
             String distributionMode,
             boolean admin,
             List<Member> members,
-            List<Contribution> contributions,
             Map<UUID, BigDecimal> contributionTotals
     ) {
     }

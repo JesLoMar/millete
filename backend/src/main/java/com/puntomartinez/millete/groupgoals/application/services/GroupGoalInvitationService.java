@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -133,11 +134,12 @@ public class GroupGoalInvitationService implements
     public List<ListPendingInvitationsUseCase.InvitationResult> getPendingInvitations(
             UUID userId) {
 
-        List<GoalInvitation> invitations =
+                List<GoalInvitation> invitations =
                 goalInvitationRepository
-                        .findByInvitedUserIdAndStatus(
+                        .findActiveAndNotExpiredByInvitedUserIdAndStatus(
                                 userId,
-                                InvitationStatus.PENDING
+                                InvitationStatus.PENDING,
+                                LocalDateTime.now()
                         );
 
         Set<UUID> inviterIds = new HashSet<>();

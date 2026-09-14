@@ -20,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -150,14 +150,8 @@ public class GroupGoalQueryService implements
         List<GoalMember> members =
                 goalMemberRepository.findByGoalId(goalId);
 
-        List<GoalContribution> contributions =
-                goalContributionRepository.findByGoalId(goalId);
-
         Map<UUID, UserLookupPort.UserInfo> usersById =
-                findUsersForGoal(
-                        members,
-                        contributions
-                );
+                findUsersForMembers(members);
 
         boolean requesterIsAdmin =
                 requester.isAdmin();
@@ -188,31 +182,8 @@ public class GroupGoalQueryService implements
                         })
                         .toList();
 
-        List<GetGoalDetailUseCase.Contribution> contributionResults =
-                contributions.stream()
-                        .map(contribution ->
-                                new GetGoalDetailUseCase.Contribution(
-                                        contribution.getId(),
-                                        contribution.getUserId(),
-                                        resolveUserName(
-                                                contribution.getUserId(),
-                                                usersById
-                                        ),
-                                        contribution.getAmount(),
-                                        contribution.getDate()
-                                ))
-                        .toList();
-
-        Map<UUID, BigDecimal> totals =
-                new HashMap<>();
-
-        for (GoalContribution contribution : contributions) {
-            totals.merge(
-                    contribution.getUserId(),
-                    contribution.getAmount(),
-                    BigDecimal::add
-            );
-        }
+        Map<UUID, BigDecimal> contributionTotals =
+                goalContributionRepository.sumByUserId(goalId);
 
         return new GoalDetail(
                 goalUnit.getId(),
@@ -221,8 +192,7 @@ public class GroupGoalQueryService implements
                 goalUnit.getDistributionMode().name(),
                 requesterIsAdmin,
                 memberResults,
-                contributionResults,
-                totals
+                contributionTotals
         );
     }
 
@@ -263,7 +233,7 @@ public class GroupGoalQueryService implements
 
         Set<UUID> userIds = contributions.stream()
                 .map(GoalContribution::getUserId)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         Map<UUID, UserLookupPort.UserInfo> usersById =
                 userLookupPort.findByIds(userIds);
@@ -290,19 +260,12 @@ public class GroupGoalQueryService implements
         );
     }
 
-    private Map<UUID, UserLookupPort.UserInfo> findUsersForGoal(
-            List<GoalMember> members,
-            List<GoalContribution> contributions) {
+    private Map<UUID, UserLookupPort.UserInfo> findUsersForMembers(
+            List<GoalMember> members) {
 
-        Set<UUID> userIds = new HashSet<>();
-
-        members.forEach(member ->
-                userIds.add(member.getUserId())
-        );
-
-        contributions.forEach(contribution ->
-                userIds.add(contribution.getUserId())
-        );
+        Set<UUID> userIds = members.stream()
+                .map(GoalMember::getUserId)
+                .collect(Collectors.toSet());
 
         return userLookupPort.findByIds(userIds);
     }

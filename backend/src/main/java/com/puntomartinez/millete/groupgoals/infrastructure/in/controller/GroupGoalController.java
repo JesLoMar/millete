@@ -248,49 +248,49 @@ public class GroupGoalController {
         return ResponseEntity.noContent().build();
     }
 
-@GetMapping("/{goalId}/contributions")
-public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContributions(
-        @PathVariable UUID goalId,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "60") int size,
-        Authentication authentication) {
+    @GetMapping("/{goalId}/contributions")
+    public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContributions(
+            @PathVariable UUID goalId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "60") int size,
+            Authentication authentication) {
 
-    UUID userId = getUserId(authentication);
+        UUID userId = getUserId(authentication);
 
-    GetContributionHistoryUseCase.ContributionHistory pageResult =
-            getContributionHistoryUseCase.getContributionHistory(
-                    goalId,
-                    userId,
-                    page,
-                    size
-            );
+        GetContributionHistoryUseCase.ContributionHistory pageResult =
+                getContributionHistoryUseCase.getContributionHistory(
+                        goalId,
+                        userId,
+                        page,
+                        size
+                );
 
-    int totalPages = pageResult.totalPages();
+        int totalPages = pageResult.totalPages();
 
-    int safePage = Math.min(
-            Math.max(page, 0),
-            Math.max(0, totalPages - 1)
-    );
+        int safePage = Math.min(
+                Math.max(page, 0),
+                Math.max(0, totalPages - 1)
+        );
 
-    List<GoalContributionDTO> response =
-            pageResult.contributions()
-                    .stream()
-                    .map(this::mapContribution)
-                    .toList();
+        List<GoalContributionDTO> response =
+                pageResult.contributions()
+                        .stream()
+                        .map(this::mapContribution)
+                        .toList();
 
-    return ResponseEntity.ok(
-            new PaginatedResponseDTO<>(
-                    response,
-                    safePage,
-                    totalPages,
-                    pageResult.totalElements(),
-                    size,
-                    safePage == 0,
-                    safePage >= totalPages - 1
-                            || totalPages == 0
-            )
-    );
-}
+        return ResponseEntity.ok(
+                new PaginatedResponseDTO<>(
+                        response,
+                        safePage,
+                        totalPages,
+                        pageResult.totalElements(),
+                        size,
+                        safePage == 0,
+                        safePage >= totalPages - 1
+                                || totalPages == 0
+                )
+        );
+    }
 
     @PostMapping("/{goalId}/contributions")
     public ResponseEntity<Void> addContribution(
@@ -417,20 +417,6 @@ public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContribution
                         ))
                         .toList();
 
-        List<GoalContributionDTO> contributions =
-                detail.contributions()
-                        .stream()
-                        .map(contribution ->
-                                new GoalContributionDTO(
-                                        contribution.id(),
-                                        contribution.userId(),
-                                        contribution.userName(),
-                                        contribution.amount(),
-                                        contribution.date()
-                                )
-                        )
-                        .toList();
-
         return new GoalDetailResponseDTO(
                 detail.id(),
                 detail.name(),
@@ -438,7 +424,6 @@ public ResponseEntity<PaginatedResponseDTO<GoalContributionDTO>> getContribution
                 detail.distributionMode(),
                 detail.admin(),
                 members,
-                contributions,
                 detail.contributionTotals()
         );
     }
