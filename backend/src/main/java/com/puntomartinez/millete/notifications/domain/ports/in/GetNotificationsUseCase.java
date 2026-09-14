@@ -1,25 +1,33 @@
 package com.puntomartinez.millete.notifications.domain.ports.in;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface GetNotificationsUseCase {
 
-    List<Notification> getUserNotifications(UUID userId, int limit);
+    List<Notification> getUserNotifications(
+            UUID userId,
+            int limit
+    );
 
-    PaginatedNotifications getUserNotificationsPage(UUID userId, int page, int size);
+    PaginatedNotifications getUserNotificationsPage(
+            UUID userId,
+            int page,
+            int size
+    );
 
     long getUnreadCount(UUID userId);
 
     Optional<Notification> findUserNotificationByTypeAndMetadataValue(
-        UUID userId,
-        String type,
-        String metadataKey,
-        String metadataValue
-);
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue
+    );
 
     record PaginatedNotifications(
             List<Notification> content,

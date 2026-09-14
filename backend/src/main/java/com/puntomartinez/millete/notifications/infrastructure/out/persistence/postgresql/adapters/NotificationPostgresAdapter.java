@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.adapters;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase.PaginatedNotifications;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.entity.NotificationEntity;
@@ -87,20 +88,19 @@ public class NotificationPostgresAdapter
     }
 
     @Override
-public Optional<Notification>
-findActiveByUserIdAndTypeAndMetadataValue(
-        UUID userId,
-        String type,
-        String metadataKey,
-        String metadataValue) {
+    public Optional<Notification> findActiveByUserIdAndTypeAndMetadataValue(
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue) {
 
-    return jpaRepository
-            .findByUserIdAndActiveTrueAndTypeAndMetadataValue(
-                    userId,
-                    type,
-                    metadataKey,
-                    metadataValue
-            )
-            .map(mapper::toDomain);
-}
+        return jpaRepository
+                .findByUserIdAndActiveTrueAndTypeAndMetadataValue(
+                        userId,
+                        type.name(),
+                        metadataKey,
+                        metadataValue
+                )
+                .map(mapper::toDomain);
+    }
 }

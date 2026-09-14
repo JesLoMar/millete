@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.notifications.application.services;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.ports.in.*;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
@@ -84,7 +85,7 @@ public class NotificationService implements
     @Transactional(readOnly = true)
     public Optional<Notification> findUserNotificationByTypeAndMetadataValue(
             UUID userId,
-            String type,
+            NotificationType type,
             String metadataKey,
             String metadataValue) {
 

@@ -20,34 +20,36 @@ public class Notification {
     private boolean active;
 
     private Notification(
-            UUID id,
-            UUID userId,
-            NotificationType type,
-            String title,
-            String message,
-            Map<String, Object> metadata,
-            boolean read,
-            boolean actionRequired,
-            LocalDateTime actionedAt,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt,
-            boolean active) {
+        UUID id,
+        UUID userId,
+        NotificationType type,
+        String title,
+        String message,
+        Map<String, Object> metadata,
+        boolean read,
+        boolean actionRequired,
+        LocalDateTime actionedAt,
+        LocalDateTime createdAt,
+        LocalDateTime expiresAt,
+        boolean active) {
 
-        validateRequiredFields(id, userId, type, title, createdAt);
+    validateRequiredFields(id, userId, type, title, createdAt);
 
-        this.id = id;
-        this.userId = userId;
-        this.type = type;
-        this.title = title;
-        this.message = message;
-        this.metadata = metadata;
-        this.read = read;
-        this.actionRequired = actionRequired;
-        this.actionedAt = actionedAt;
-        this.createdAt = createdAt;
-        this.expiresAt = expiresAt;
-        this.active = active;
-    }
+    this.id = id;
+    this.userId = userId;
+    this.type = type;
+    this.title = title;
+    this.message = message;
+    this.metadata = metadata == null
+            ? null
+            : Map.copyOf(metadata);
+    this.read = read;
+    this.actionRequired = actionRequired;
+    this.actionedAt = actionedAt;
+    this.createdAt = createdAt;
+    this.expiresAt = expiresAt;
+    this.active = active;
+}
 
     public static Notification create(
             UUID userId,

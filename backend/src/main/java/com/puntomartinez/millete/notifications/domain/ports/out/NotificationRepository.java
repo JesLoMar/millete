@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.notifications.domain.ports.out;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase.PaginatedNotifications;
 
 import java.util.List;
@@ -13,16 +14,23 @@ public interface NotificationRepository {
 
     Optional<Notification> findById(UUID id);
 
-    List<Notification> findActiveByUserIdOrderByCreatedAtDesc(UUID userId, int limit);
+    List<Notification> findActiveByUserIdOrderByCreatedAtDesc(
+            UUID userId,
+            int limit
+    );
 
-    PaginatedNotifications findActiveByUserIdPaginated(UUID userId, int page, int size);
+    PaginatedNotifications findActiveByUserIdPaginated(
+            UUID userId,
+            int page,
+            int size
+    );
 
     long countUnreadByUserId(UUID userId);
 
     Optional<Notification> findActiveByUserIdAndTypeAndMetadataValue(
-        UUID userId,
-        String type,
-        String metadataKey,
-        String metadataValue
-);
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue
+    );
 }
