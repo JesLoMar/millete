@@ -4,6 +4,7 @@ import com.puntomartinez.millete.notifications.domain.model.Notification;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 public interface GetNotificationsUseCase {
 
@@ -13,12 +14,12 @@ public interface GetNotificationsUseCase {
 
     long getUnreadCount(UUID userId);
 
-    List<Notification> findUserNotificationsByTypeAndMetadataValue(
-            UUID userId,
-            String type,
-            String metadataKey,
-            String metadataValue
-    );
+    Optional<Notification> findUserNotificationByTypeAndMetadataValue(
+        UUID userId,
+        String type,
+        String metadataKey,
+        String metadataValue
+);
 
     record PaginatedNotifications(
             List<Notification> content,

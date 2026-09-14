@@ -2,7 +2,6 @@ package com.puntomartinez.millete.groupgoals.infrastructure.out.notifications;
 
 import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationNotificationPort;
-import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase;
 import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase;
@@ -10,7 +9,6 @@ import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationA
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,17 +53,13 @@ public void markInvitationNotificationAsActioned(
         UUID userId,
         UUID invitationId) {
 
-    List<Notification> notifications =
-            getNotificationsUseCase
-                    .findUserNotificationsByTypeAndMetadataValue(
-                            userId,
-                            NotificationType.GOAL_INVITATION.name(),
-                            "invitationId",
-                            invitationId.toString()
-                    );
-
-    notifications.stream()
-            .findFirst()
+    getNotificationsUseCase
+            .findUserNotificationByTypeAndMetadataValue(
+                    userId,
+                    NotificationType.GOAL_INVITATION.name(),
+                    "invitationId",
+                    invitationId.toString()
+            )
             .ifPresent(notification ->
                     markNotificationAsActionedUseCase
                             .markAsActioned(

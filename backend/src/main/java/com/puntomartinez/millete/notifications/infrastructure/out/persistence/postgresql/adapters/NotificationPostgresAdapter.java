@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.adapters;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase.PaginatedNotifications;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.entity.NotificationEntity;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.mappers.NotificationEntityMapper;
@@ -55,17 +56,28 @@ public class NotificationPostgresAdapter
     }
 
     @Override
-    public Page<Notification> findActiveByUserIdPaginated(
+    public PaginatedNotifications findActiveByUserIdPaginated(
             UUID userId,
             int page,
             int size) {
 
-        return jpaRepository
-                .findAllByUserIdAndActiveTrueOrderByCreatedAtDesc(
-                        userId,
-                        PageRequest.of(page, size)
-                )
-                .map(mapper::toDomain);
+        Page<Notification> pageResult =
+                jpaRepository
+                        .findAllByUserIdAndActiveTrueOrderByCreatedAtDesc(
+                                userId,
+                                PageRequest.of(page, size)
+                        )
+                        .map(mapper::toDomain);
+
+        return new PaginatedNotifications(
+                pageResult.getContent(),
+                pageResult.getNumber(),
+                pageResult.getTotalPages(),
+                pageResult.getTotalElements(),
+                pageResult.getSize(),
+                pageResult.isFirst(),
+                pageResult.isLast()
+        );
     }
 
     @Override
@@ -75,22 +87,20 @@ public class NotificationPostgresAdapter
     }
 
     @Override
-    public List<Notification>
-    findActiveByUserIdAndTypeAndMetadataValue(
-            UUID userId,
-            String type,
-            String metadataKey,
-            String metadataValue) {
+public Optional<Notification>
+findActiveByUserIdAndTypeAndMetadataValue(
+        UUID userId,
+        String type,
+        String metadataKey,
+        String metadataValue) {
 
-        return jpaRepository
-                .findByUserIdAndActiveTrueAndTypeAndMetadataValue(
-                        userId,
-                        type,
-                        metadataKey,
-                        metadataValue
-                )
-                .stream()
-                .map(mapper::toDomain)
-                .toList();
-    }
+    return jpaRepository
+            .findByUserIdAndActiveTrueAndTypeAndMetadataValue(
+                    userId,
+                    type,
+                    metadataKey,
+                    metadataValue
+            )
+            .map(mapper::toDomain);
+}
 }

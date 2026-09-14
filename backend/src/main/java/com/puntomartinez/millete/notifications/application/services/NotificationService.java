@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,32 +23,41 @@ public class NotificationService implements
         MarkNotificationAsActionedUseCase,
         DeleteNotificationUseCase {
 
+    private static final int DEFAULT_NOTIFICATION_LIMIT = 25;
+    private static final int MAX_NOTIFICATION_LIMIT = 100;
+
     private final NotificationRepository notificationRepository;
 
     @Override
     public Notification create(CreateNotificationCommand command) {
-        Notification notification = Notification.builder()
-                .id(UUID.randomUUID())
-                .userId(command.userId())
-                .type(command.type())
-                .title(command.title())
-                .message(command.message())
-                .metadata(command.metadata())
-                .read(false)
-                .actionRequired(command.actionRequired())
-                .createdAt(LocalDateTime.now())
-                .expiresAt(command.expiresAt())
-                .active(true)
-                .build();
+        Notification notification = Notification.create(
+                command.userId(),
+                command.type(),
+                command.title(),
+                command.message(),
+                command.metadata(),
+                command.actionRequired(),
+                command.expiresAt()
+        );
 
         return notificationRepository.save(notification);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(UUID userId, int limit) {
+    public List<Notification> getUserNotifications(
+            UUID userId,
+            int limit) {
+
+        int safeLimit = limit <= 0
+                ? DEFAULT_NOTIFICATION_LIMIT
+                : Math.min(limit, MAX_NOTIFICATION_LIMIT);
+
         return notificationRepository
-                .findActiveByUserIdOrderByCreatedAtDesc(userId, limit);
+                .findActiveByUserIdOrderByCreatedAtDesc(
+                        userId,
+                        safeLimit
+                );
     }
 
     @Override
@@ -58,21 +67,10 @@ public class NotificationService implements
             int page,
             int size) {
 
-        var pageResult =
-                notificationRepository.findActiveByUserIdPaginated(
-                        userId,
-                        page,
-                        size
-                );
-
-        return new PaginatedNotifications(
-                pageResult.getContent(),
-                pageResult.getNumber(),
-                pageResult.getTotalPages(),
-                pageResult.getTotalElements(),
-                pageResult.getSize(),
-                pageResult.isFirst(),
-                pageResult.isLast()
+        return notificationRepository.findActiveByUserIdPaginated(
+                userId,
+                page,
+                size
         );
     }
 
@@ -84,7 +82,7 @@ public class NotificationService implements
 
     @Override
     @Transactional(readOnly = true)
-    public List<Notification> findUserNotificationsByTypeAndMetadataValue(
+    public Optional<Notification> findUserNotificationByTypeAndMetadataValue(
             UUID userId,
             String type,
             String metadataKey,
@@ -100,7 +98,10 @@ public class NotificationService implements
     }
 
     @Override
-    public void markAsRead(UUID userId, UUID notificationId) {
+    public void markAsRead(
+            UUID userId,
+            UUID notificationId) {
+
         Notification notification =
                 notificationRepository.findById(notificationId)
                         .orElseThrow(() ->
