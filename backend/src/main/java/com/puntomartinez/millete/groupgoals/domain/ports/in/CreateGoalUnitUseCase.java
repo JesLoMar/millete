@@ -11,8 +11,7 @@ public interface CreateGoalUnitUseCase {
     GoalUnit create(UUID adminUserId, CreateGoalUnitCommand command);
 
     record CreateGoalUnitCommand(
-            UUID adminUserId,
-            String name,
+            String name, 
             BigDecimal monthlyTarget,
             DistributionMode distributionMode
     ) {

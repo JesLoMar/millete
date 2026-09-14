@@ -30,4 +30,9 @@ public interface JpaGoalInvitationRepository
             UUID invitedUserId,
             String status
     );
+
+    List<GoalInvitationEntity> findByGoalIdAndStatusAndActiveTrue(
+            UUID goalId,
+            String status
+    );
 }

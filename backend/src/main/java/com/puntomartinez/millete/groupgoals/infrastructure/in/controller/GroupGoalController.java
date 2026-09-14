@@ -146,7 +146,6 @@ public class GroupGoalController {
 
         CreateGoalUnitUseCase.CreateGoalUnitCommand command =
                 new CreateGoalUnitUseCase.CreateGoalUnitCommand(
-                        userId,
                         request.name(),
                         request.monthlyTarget(),
                         request.distributionMode()

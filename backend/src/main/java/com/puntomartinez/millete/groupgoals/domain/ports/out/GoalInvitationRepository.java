@@ -33,4 +33,9 @@ public interface GoalInvitationRepository {
             UUID invitedUserId,
             InvitationStatus status
     );
+
+    List<GoalInvitation> findActiveByGoalIdAndStatus(
+            UUID goalId,
+            InvitationStatus status
+    );
 }

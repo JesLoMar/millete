@@ -87,4 +87,19 @@ public class GoalInvitationPostgresAdapter
                 )
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public List<GoalInvitation> findActiveByGoalIdAndStatus(
+            UUID goalId,
+            InvitationStatus status) {
+
+        return jpaRepository
+                .findByGoalIdAndStatusAndActiveTrue(
+                        goalId,
+                        status.name()
+                )
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }

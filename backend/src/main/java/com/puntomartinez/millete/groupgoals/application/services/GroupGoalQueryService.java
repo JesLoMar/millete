@@ -271,18 +271,26 @@ public class GroupGoalQueryService implements
     }
 
     private String resolveUserName(
-            UUID userId,
-            Map<UUID, UserLookupPort.UserInfo> usersById) {
+        UUID userId,
+        Map<UUID, UserLookupPort.UserInfo> usersById) {
 
-        UserLookupPort.UserInfo user =
-                usersById.get(userId);
+    UserLookupPort.UserInfo user =
+            usersById.get(userId);
 
-        if (user == null || user.username() == null) {
-            return "Usuario";
-        }
+    if (user == null) {
+        return "Usuario";
+    }
 
+    if (user.username() != null && !user.username().isBlank()) {
         return user.username();
     }
+
+    if (user.email() != null && !user.email().isBlank()) {
+        return user.email();
+    }
+
+    return "Usuario";
+}
 
     private GoalUnit getGoal(UUID goalId) {
         return goalUnitRepository.findById(goalId)

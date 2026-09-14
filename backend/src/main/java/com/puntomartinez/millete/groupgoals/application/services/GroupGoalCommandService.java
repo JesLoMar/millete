@@ -4,8 +4,11 @@ import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
@@ -29,6 +32,7 @@ public class GroupGoalCommandService implements
     private final GoalUnitRepository goalUnitRepository;
     private final GoalMemberRepository goalMemberRepository;
     private final GoalContributionRepository goalContributionRepository;
+    private final GoalInvitationRepository goalInvitationRepository;
 
     @Override
     @Transactional
@@ -216,6 +220,16 @@ public class GroupGoalCommandService implements
         for (GoalMember member : goalMemberRepository.findByGoalId(goalId)) {
             member.deactivate();
             goalMemberRepository.save(member);
+        }
+
+        for (GoalInvitation invitation :
+                goalInvitationRepository.findActiveByGoalIdAndStatus(
+                        goalId,
+                        InvitationStatus.PENDING
+                )) {
+
+            invitation.deactivate();
+            goalInvitationRepository.save(invitation);
         }
     }
 
