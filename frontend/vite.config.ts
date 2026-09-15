@@ -17,6 +17,12 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       open: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+      },
     },
     build: {
       minify: 'terser',

@@ -14,6 +14,329 @@
 
 ---
 
+Quiero que revises la documentación del refactor arquitectónico del backend de mi aplicación Millete.
+
+Contexto:
+
+Millete es una aplicación de finanzas personales desarrollada con Java + Spring. El backend se ha refactorizado buscando principalmente:
+
+* Arquitectura Hexagonal / Ports & Adapters.
+* DDD.
+* Separación clara entre dominio, aplicación e infraestructura.
+* Dependencias orientadas hacia dentro.
+* Protección de las reglas de negocio dentro del dominio.
+* Evitar que application/domain dependan directamente de JPA, Spring o infraestructura.
+* Reducir acoplamiento innecesario entre módulos/bounded contexts.
+
+La primera pasada de refactor se hizo módulo por módulo. El objetivo NO era añadir funcionalidad, sino mejorar la arquitectura existente sin cambiar el comportamiento funcional de la aplicación.
+
+Módulos revisados:
+
+* users
+* shared
+* categories
+* transactions
+* groupgoals
+* dashboard
+* notifications
+* dataexport
+
+Ahora quiero revisar la DOCUMENTACIÓN de ese trabajo.
+
+IMPORTANTE:
+
+No quiero que vuelvas a auditar el código como si tuvieras que refactorizarlo otra vez.
+
+Quiero que compruebes si la documentación refleja correctamente:
+
+1. Qué problemas arquitectónicos se detectaron.
+2. Qué problemas se solucionaron.
+3. Qué problemas se detectaron pero se decidió deliberadamente NO solucionar.
+4. Por qué se decidió no solucionarlos.
+5. Qué decisiones son temporales y cuáles son decisiones conscientes de diseño.
+6. Qué deuda técnica queda pendiente.
+7. Qué cosas NO deben volver a plantearse como problemas en una futura revisión salvo que haya cambiado el contexto.
+
+Quiero evitar especialmente que dentro de unos meses alguien lea la documentación y piense:
+
+"Esto se nos olvidó arreglar"
+
+cuando en realidad fue una decisión consciente.
+
+### Problemas/decisiones que quiero que compruebes explícitamente
+
+#### 1. Naming de puertos
+
+En el proyecto existen nombres como:
+
+* `...Repository`
+* `...Port`
+
+para diferentes output ports.
+
+Se detectó la inconsistencia, pero se decidió deliberadamente NO renombrarlos durante esta pasada porque el beneficio no compensaba el coste y el riesgo de hacer cambios puramente cosméticos.
+
+La documentación debe dejar claro que:
+
+* La inconsistencia existe.
+* Fue detectada.
+* No es un problema arquitectónico crítico.
+* Se decidió mantenerla deliberadamente.
+* No debe considerarse un fallo pendiente urgente.
+
+#### 2. ObjectMapper en dataexport
+
+Se estudió la posibilidad de inyectar `ObjectMapper` como bean de Spring.
+
+El proyecto no tenía un bean disponible que pudiera utilizarse directamente y añadir configuración global únicamente para resolver este caso no compensaba.
+
+Por ello `DataImportService` mantiene la creación/configuración local del `ObjectMapper`, incluyendo `JavaTimeModule`.
+
+La documentación debe explicar que:
+
+* Se evaluó la alternativa.
+* No se consideró necesario introducir configuración global solo por esto.
+* La solución actual es deliberada.
+* Podría revisarse en el futuro si el proyecto empieza a centralizar configuración de Jackson.
+
+No presentarlo como un incumplimiento grave de Hexagonal Architecture.
+
+#### 3. Carga completa del export en memoria
+
+El export de datos construye un snapshot completo del usuario.
+
+Se detectó que `exportAllUserData` carga todos los datos en memoria.
+
+Se decidió NO optimizarlo porque:
+
+* El volumen actual de datos por usuario es pequeño.
+* La complejidad adicional no compensa actualmente.
+* No existe evidencia de un problema real de rendimiento.
+
+Debe documentarse como una posible optimización futura condicionada al crecimiento del volumen de datos.
+
+No como bug actual.
+
+#### 4. Queries secuenciales en dataexport
+
+El proceso de exportación realiza varias consultas independientes para obtener los diferentes tipos de datos.
+
+Se consideró la posibilidad de optimizar/parallelizar parte de estas consultas.
+
+Se decidió no hacerlo porque:
+
+* No existe actualmente un cuello de botella demostrado.
+* Añadir paralelismo aumenta complejidad.
+* La prioridad era arquitectura y mantenibilidad, no microoptimización.
+
+Debe aparecer como posible optimización futura, no como deuda crítica.
+
+#### 5. `MigrationChain` y logging
+
+`MigrationChain` utiliza actualmente `System.out.println` para informar del proceso de migración.
+
+Se detectó.
+
+No se modificó porque es una cuestión menor y no justificaba ampliar el alcance de esta pasada.
+
+Debe aparecer como mejora menor pendiente.
+
+No presentarlo como un problema de arquitectura central.
+
+#### 6. `ExportVersion.CURRENT`
+
+La versión del formato de exportación es independiente de la versión de la aplicación.
+
+Debe quedar documentado claramente.
+
+Durante esta revisión se añadió una migración:
+
+`0.1.0 → 0.2.0`
+
+para normalizar los importes de `PlannedTransaction`, ya que versiones antiguas podían contener gastos como valores negativos mientras que el modelo actual exige importes positivos.
+
+La cadena actual debe entenderse como:
+
+`0.0.1 → 0.1.0 → 0.2.0`
+
+La documentación debe explicar esta decisión porque es importante para futuras migraciones.
+
+#### 7. Importación como restore completo
+
+La importación NO está diseñada como sincronización ni como merge de datos.
+
+Es un mecanismo de restauración/importación pensado para cuentas vacías.
+
+Por ello:
+
+* No se implementó detección sofisticada de duplicados.
+* No se implementó una estrategia de merge.
+* Los IDs no necesitan conservarse.
+* La importación puede generar nuevos UUID.
+* La atomicidad mediante una única transacción es intencionada.
+
+Esto es MUY IMPORTANTE:
+
+No quiero que la documentación presente la ausencia de detección de duplicados como una deuda técnica.
+
+Es una consecuencia deliberada del modelo de importación.
+
+#### 8. Transacción única durante import
+
+`DataImportService.importUserData()` utiliza una única transacción para todo el restore.
+
+Se consideró si una transacción tan grande podía ser problemática, pero se decidió mantenerla porque la importación debe ser atómica:
+
+* O se restaura todo.
+* O no se restaura nada.
+
+No documentarlo como un problema pendiente salvo que en el futuro cambie radicalmente el volumen de datos.
+
+#### 9. GroupGoals no forma parte del export/import
+
+Los group goals son funcionalidad online y no forman parte del dump de datos personales exportable/importable.
+
+No debe documentarse como funcionalidad olvidada.
+
+Es una decisión funcional deliberada.
+
+#### 10. PDF export
+
+`HtmlPdfFileExportAdapter` es relativamente grande y contiene bastante lógica relacionada con la generación del PDF.
+
+Se detectó que podría dividirse/refactorizarse más.
+
+No se hizo porque:
+
+* No era un problema arquitectónico crítico.
+* El objetivo de esta pasada era principalmente corregir acoplamientos y responsabilidades importantes.
+* Dividirlo ahora habría aumentado el alcance sin un beneficio proporcional.
+
+Debe aparecer como deuda técnica menor/posible mejora futura.
+
+#### 11. CSV sanitization
+
+Existe sanitización para evitar que valores CSV puedan interpretarse como fórmulas.
+
+Debe quedar documentada como una medida de seguridad deliberada.
+
+No debe eliminarse o simplificarse en futuras limpiezas sin analizar antes el riesgo de CSV Formula Injection.
+
+#### 12. UserDataSnapshot como formato de intercambio
+
+Aunque `UserDataSnapshot` representa muchos tipos de datos, se decidió mantenerlo porque es precisamente el modelo de intercambio del sistema de export/import.
+
+No debe tratarse como si fuera una violación arquitectónica por el mero hecho de contener múltiples snapshots.
+
+La separación importante conseguida durante el refactor fue evitar que los servicios de dataexport dependieran directamente de las entidades/repositorios de otros bounded contexts.
+
+#### 13. Arquitectura frente a optimización
+
+La prioridad de esta primera pasada fue:
+
+1. Dependencias incorrectas.
+2. Acoplamiento entre bounded contexts.
+3. Violaciones de Hexagonal Architecture.
+4. Lógica de negocio fuera del dominio.
+5. Responsabilidades mal ubicadas.
+6. Problemas que podían producir errores reales.
+7. Después, optimizaciones y limpieza.
+
+La documentación debe respetar esta jerarquía.
+
+No quiero que una pequeña inconsistencia de naming o una posible optimización aparezca al mismo nivel que una dependencia directa entre application y persistence.
+
+---
+
+### Qué quiero que produzcas
+
+Revisa la documentación y dime:
+
+### A. Problemas que están correctamente documentados
+
+Lista los puntos donde la documentación explica bien:
+
+* problema
+* impacto
+* solución
+* motivo de la decisión
+
+### B. Problemas solucionados que faltan
+
+Detecta problemas que realmente se solucionaron durante el refactor pero que no aparecen o aparecen demasiado vagamente en la documentación.
+
+### C. Decisiones deliberadas que faltan
+
+Comprueba especialmente todos los puntos anteriores.
+
+Para cada uno que falte, indica qué debería añadirse a la documentación.
+
+### D. Deuda técnica real
+
+Separa claramente:
+
+* deuda técnica real
+* mejoras opcionales
+* optimizaciones futuras
+* decisiones conscientes que NO son deuda
+
+No mezcles las cuatro categorías.
+
+### E. Riesgos futuros
+
+Indica qué decisiones podrían convertirse en problemas si cambia alguna condición.
+
+Ejemplo:
+
+"cargar todo el export en memoria es aceptable mientras el volumen de datos por usuario sea pequeño; si crece significativamente, habría que estudiar streaming/paginación."
+
+Quiero este tipo de criterio contextual, no recomendaciones genéricas.
+
+### F. Auditoría de consistencia
+
+Comprueba que la documentación no diga cosas contradictorias como:
+
+* afirmar que algo está pendiente cuando ya se solucionó
+* afirmar que algo es un bug cuando fue una decisión deliberada
+* afirmar que algo es una violación arquitectónica cuando se decidió conscientemente mantenerlo
+* mezclar versión de aplicación (`appVersion`) con versión del formato de exportación (`ExportVersion`)
+* presentar GroupGoals como parte del sistema de export/import
+* afirmar que la importación es un sistema de sincronización cuando realmente es un restore completo
+
+### G. Segunda pasada futura
+
+Finalmente, propón una pequeña sección llamada:
+
+"Qué revisar en una segunda pasada"
+
+pero SOLO incluyendo cosas que realmente merezcan una nueva revisión.
+
+No quiero una lista infinita de mejoras teóricas.
+
+Prioriza por:
+
+* impacto
+* probabilidad
+* coste
+* beneficio
+
+Y distingue claramente entre:
+
+`Alta prioridad`
+`Media prioridad`
+`Baja prioridad / solo si aparece un problema real`
+
+### Regla importante
+
+No propongas refactorizar algo simplemente porque "podría estar más limpio".
+
+La pregunta debe ser:
+
+"¿Existe suficiente beneficio arquitectónico, de mantenibilidad, rendimiento o seguridad como para justificar cambiarlo?"
+
+Si la respuesta es no, considéralo una decisión válida y documentable.
+
+El objetivo de esta documentación es que sirva como memoria técnica del proyecto y permita entender POR QUÉ ciertas cosas están como están, no conseguir una arquitectura teóricamente perfecta.
 
 
 ---

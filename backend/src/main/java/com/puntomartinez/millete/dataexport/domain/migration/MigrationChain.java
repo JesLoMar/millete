@@ -23,6 +23,7 @@ public class MigrationChain {
 
     private void registerMigrations() {
         migrations.add(new Migration001to010());
+        migrations.add(new Migration010to020());
     }
 
     public UserDataSnapshot migrateToLatest(UserDataSnapshot snapshot) {
