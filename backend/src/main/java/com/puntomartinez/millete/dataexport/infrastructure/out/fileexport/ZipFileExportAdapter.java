@@ -119,7 +119,6 @@ public class ZipFileExportAdapter
                             "progress",
                             "deadline",
                             "priority",
-                            "status",
                             "link"
                     },
                     data.savingsGoals(),
@@ -265,7 +264,6 @@ public class ZipFileExportAdapter
                             "progress",
                             "deadline",
                             "priority",
-                            "status",
                             "link"
                     );
 

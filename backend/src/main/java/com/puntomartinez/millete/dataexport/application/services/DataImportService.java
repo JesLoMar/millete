@@ -3,6 +3,7 @@ package com.puntomartinez.millete.dataexport.application.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
+import com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
@@ -85,14 +86,17 @@ public class DataImportService {
 
             snapshot = validateAndMigrate(snapshot);
 
-            Map<UUID, UUID> categoryIdMap =
+            CategoryImportResult categoryImportResult =
                     categoryImportPort.importCategories(
                             snapshot.categories(),
                             loggedInUserId
                     );
 
+            Map<UUID, UUID> categoryIdMap =
+                    categoryImportResult.categoryIdMap();
+
             int totalImported =
-                    categoryIdMap.size();
+                    categoryImportResult.importedCount();
 
             totalImported +=
                     transactionImportPort.importTransactions(

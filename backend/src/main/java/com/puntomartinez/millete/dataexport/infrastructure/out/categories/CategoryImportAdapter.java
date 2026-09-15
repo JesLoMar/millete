@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.out.categories;
 
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult;
 import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
 import org.springframework.stereotype.Component;
@@ -23,15 +24,19 @@ public class CategoryImportAdapter implements CategoryImportPort {
     }
 
     @Override
-    public Map<UUID, UUID> importCategories(
+    public CategoryImportResult importCategories(
             List<CategorySnapshot> categories,
             UUID userId
     ) {
 
-        Map<UUID, UUID> categoryIdMap = new HashMap<>();
+        Map<UUID, UUID> categoryIdMap =
+                new HashMap<>();
 
         if (categories == null || categories.isEmpty()) {
-            return categoryIdMap;
+            return new CategoryImportResult(
+                    categoryIdMap,
+                    0
+            );
         }
 
         Map<String, Category> existingByName =
@@ -47,6 +52,8 @@ public class CategoryImportAdapter implements CategoryImportPort {
                 );
             }
         }
+
+        int importedCount = 0;
 
         for (CategorySnapshot category : categories) {
 
@@ -104,9 +111,14 @@ public class CategoryImportAdapter implements CategoryImportPort {
                         nameLower,
                         importedCategory
                 );
+
+                importedCount++;
             }
         }
 
-        return categoryIdMap;
+        return new CategoryImportResult(
+                categoryIdMap,
+                importedCount
+        );
     }
 }
