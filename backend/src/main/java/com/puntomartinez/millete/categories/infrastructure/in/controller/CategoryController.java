@@ -10,6 +10,7 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCas
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.CategoryResponseDTO;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.RegisterCategoryRequestDTO;
 import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.UpdateCategoryRequestDTO;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
@@ -26,6 +27,8 @@ import java.util.UUID;
 @RequestMapping("/api/v1/categories")
 @Validated
 public class CategoryController {
+
+    private static final int MAX_PAGE_SIZE = 200;
 
     private final RegisterCategoryUseCase registerCategoryUseCase;
     private final UpdateCategoryUseCase updateCategoryUseCase;
@@ -72,7 +75,7 @@ public class CategoryController {
             @RequestParam(defaultValue = "50") int size,
             @RequestParam(required = false) String search
     ) {
-        validatePagination(page, size);
+        validatePaginationParams(page, size);
 
         UUID userId = getAuthenticatedUserId(authentication);
 
@@ -86,16 +89,20 @@ public class CategoryController {
                 (double) totalElements / size
         );
 
-        int safePage = Math.min(
-                page,
-                Math.max(0, totalPages - 1)
-        );
+        int maxValidPage = Math.max(0, totalPages - 1);
+        if (page > maxValidPage) {
+            throw new InvalidInputException(
+                    "La página solicitada (" + page
+                            + ") está fuera de rango. Página máxima disponible: "
+                            + maxValidPage + "."
+            );
+        }
 
         List<CategoryResponseDTO> content =
                 getCategoryUseCase
                         .findAllByUserId(
                                 userId,
-                                safePage,
+                                page,
                                 size,
                                 search
                         )
@@ -106,12 +113,12 @@ public class CategoryController {
         return ResponseEntity.ok(
                 new PaginatedResponseDTO<>(
                         content,
-                        safePage,
+                        page,
                         totalPages,
                         totalElements,
                         size,
-                        safePage == 0,
-                        safePage >= totalPages - 1 || totalPages == 0
+                        page == 0,
+                        page >= totalPages - 1 || totalPages == 0
                 )
         );
     }
@@ -170,16 +177,21 @@ public class CategoryController {
         );
     }
 
-    private void validatePagination(int page, int size) {
+    private void validatePaginationParams(int page, int size) {
         if (page < 0) {
-            throw new IllegalArgumentException(
-                    "Page must be greater than or equal to zero."
+            throw new InvalidInputException(
+                    "La página debe ser mayor o igual que 0."
             );
         }
-
         if (size <= 0) {
-            throw new IllegalArgumentException(
-                    "Size must be greater than zero."
+            throw new InvalidInputException(
+                    "El tamaño de página debe ser mayor que 0."
+            );
+        }
+        if (size > MAX_PAGE_SIZE) {
+            throw new InvalidInputException(
+                    "El tamaño de página no puede superar "
+                            + MAX_PAGE_SIZE + "."
             );
         }
     }

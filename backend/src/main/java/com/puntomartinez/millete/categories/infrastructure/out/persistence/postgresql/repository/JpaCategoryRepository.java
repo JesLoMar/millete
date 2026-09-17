@@ -18,10 +18,7 @@ public interface JpaCategoryRepository
 
     List<CategoryEntity> findByUserId(UUID userId);
 
-    Optional<CategoryEntity> findByIdAndUserId(
-            UUID id,
-            UUID userId
-    );
+    Optional<CategoryEntity> findByIdAndUserId(UUID id, UUID userId);
 
     List<CategoryEntity> findByUserIdAndIdIn(
             UUID userId,
@@ -33,8 +30,35 @@ public interface JpaCategoryRepository
         FROM CategoryEntity c
         WHERE c.userId = :userId
           AND c.budgetLimit IS NOT NULL
+          AND c.active = true
     """)
     List<CategoryEntity> findCategoriesWithBudgetByUserId(
             @Param("userId") UUID userId
+    );
+
+    @Query("""
+        SELECT COUNT(c)
+        FROM CategoryEntity c
+        WHERE c.userId = :userId
+          AND LOWER(c.name) = LOWER(:name)
+          AND c.active = true
+    """)
+    long countActiveByUserIdAndName(
+            @Param("userId") UUID userId,
+            @Param("name") String name
+    );
+
+    @Query("""
+        SELECT COUNT(c)
+        FROM CategoryEntity c
+        WHERE c.userId = :userId
+          AND LOWER(c.name) = LOWER(:name)
+          AND c.active = true
+          AND c.id != :excludeId
+    """)
+    long countActiveByUserIdAndNameExcludingId(
+            @Param("userId") UUID userId,
+            @Param("name") String name,
+            @Param("excludeId") UUID excludeId
     );
 }

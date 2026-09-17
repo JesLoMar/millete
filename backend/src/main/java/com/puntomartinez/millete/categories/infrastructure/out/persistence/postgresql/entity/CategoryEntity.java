@@ -27,13 +27,13 @@ public class CategoryEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 20)
     private String name;
 
     @Column(nullable = false, length = 7)
     private String color;
 
-    @Column(name = "budget_limit")
+    @Column(name = "budget_limit", precision = 12, scale = 2)
     private BigDecimal budgetLimit;
 
     @Column(name = "created_at", nullable = false)

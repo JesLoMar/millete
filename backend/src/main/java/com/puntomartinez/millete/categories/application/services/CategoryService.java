@@ -8,8 +8,10 @@ import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryUseC
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryCommand;
 import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,9 @@ public class CategoryService implements
         UpdateCategoryUseCase,
         GetCategoryUseCase,
         DeleteCategoryUseCase {
+
+    private static final String CATEGORY_NAME_UNIQUE_INDEX =
+            "idx_categories_user_name_active";
 
     private final CategoryRepository categoryRepository;
     private final UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase;
@@ -37,6 +42,16 @@ public class CategoryService implements
 
     @Override
     public Category register(RegisterCategoryCommand command) {
+        if (categoryRepository.existsActiveByUserIdAndName(
+                command.userId(),
+                command.name()
+        )) {
+            throw new ResourceAlreadyExistsException(
+                    "Ya existe una categoría con el nombre '"
+                            + command.name() + "'."
+            );
+        }
+
         Category category = Category.create(
                 command.userId(),
                 command.name(),
@@ -44,7 +59,19 @@ public class CategoryService implements
                 command.budgetLimit()
         );
 
-        return categoryRepository.save(category);
+        try {
+            return categoryRepository.save(category);
+        } catch (DataIntegrityViolationException ex) {
+            if (isDuplicateCategoryNameViolation(ex)) {
+                throw new ResourceAlreadyExistsException(
+                        "Ya existe una categoría con el nombre '"
+                                + command.name() + "'.",
+                        ex
+                );
+            }
+
+            throw ex;
+        }
     }
 
     @Override
@@ -94,13 +121,36 @@ public class CategoryService implements
     ) {
         Category category = getCategory(id, userId);
 
+        if (categoryRepository.existsActiveByUserIdAndNameExcludingId(
+                userId,
+                command.name(),
+                id
+        )) {
+            throw new ResourceAlreadyExistsException(
+                    "Ya existe otra categoría con el nombre '"
+                            + command.name() + "'."
+            );
+        }
+
         category.updateDetails(
                 command.name(),
                 command.color(),
                 command.budgetLimit()
         );
 
-        return categoryRepository.save(category);
+        try {
+            return categoryRepository.save(category);
+        } catch (DataIntegrityViolationException ex) {
+            if (isDuplicateCategoryNameViolation(ex)) {
+                throw new ResourceAlreadyExistsException(
+                        "Ya existe otra categoría con el nombre '"
+                                + command.name() + "'.",
+                        ex
+                );
+            }
+
+            throw ex;
+        }
     }
 
     @Override
@@ -130,5 +180,24 @@ public class CategoryService implements
                                 "Categoría no encontrada"
                         )
                 );
+    }
+
+    private boolean isDuplicateCategoryNameViolation(
+            DataIntegrityViolationException ex
+    ) {
+        Throwable current = ex;
+
+        while (current != null) {
+            String message = current.getMessage();
+
+            if (message != null
+                    && message.contains(CATEGORY_NAME_UNIQUE_INDEX)) {
+                return true;
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
     }
 }

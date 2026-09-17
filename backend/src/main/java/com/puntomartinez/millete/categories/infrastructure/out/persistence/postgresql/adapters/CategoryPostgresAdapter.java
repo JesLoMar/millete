@@ -111,6 +111,30 @@ public class CategoryPostgresAdapter implements CategoryRepository {
         );
     }
 
+    @Override
+    public boolean existsActiveByUserIdAndName(
+            UUID userId,
+            String name
+    ) {
+        return jpaRepository.countActiveByUserIdAndName(
+                userId,
+                name
+        ) > 0;
+    }
+
+    @Override
+    public boolean existsActiveByUserIdAndNameExcludingId(
+            UUID userId,
+            String name,
+            UUID excludeId
+    ) {
+        return jpaRepository.countActiveByUserIdAndNameExcludingId(
+                userId,
+                name,
+                excludeId
+        ) > 0;
+    }
+
     private Specification<CategoryEntity> buildSpecification(
             UUID userId,
             String search
@@ -121,6 +145,13 @@ public class CategoryPostgresAdapter implements CategoryRepository {
                                 root.get("userId"),
                                 userId
                         );
+
+        specification = specification.and(
+                (root, query, criteriaBuilder) ->
+                        criteriaBuilder.isTrue(
+                                root.get("active")
+                        )
+        );
 
         if (search != null && !search.isBlank()) {
             String pattern = "%" + search.toLowerCase() + "%";
