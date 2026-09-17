@@ -1,5 +1,7 @@
 package com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto;
 
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,10 +14,9 @@ public record SavingsGoalResponseDTO(
         BigDecimal targetAmount,
         BigDecimal currentAmount,
         LocalDate deadline,
-        String priority,
+        GoalPriority priority,
         String link,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
         boolean active
-) {
-}
+) {}

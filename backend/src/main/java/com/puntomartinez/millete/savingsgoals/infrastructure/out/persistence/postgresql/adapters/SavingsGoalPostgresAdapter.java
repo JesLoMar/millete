@@ -18,111 +18,104 @@ import java.util.UUID;
 @Repository
 public class SavingsGoalPostgresAdapter implements SavingsGoalRepository {
 
-private final JpaSavingsGoalRepository jpaRepository;
-private final SavingsGoalEntityMapper mapper;
+    private final JpaSavingsGoalRepository jpaRepository;
+    private final SavingsGoalEntityMapper mapper;
 
-public SavingsGoalPostgresAdapter(
-        JpaSavingsGoalRepository jpaRepository,
-        SavingsGoalEntityMapper mapper
-) {
-    this.jpaRepository = jpaRepository;
-    this.mapper = mapper;
-}
+    public SavingsGoalPostgresAdapter(
+            JpaSavingsGoalRepository jpaRepository,
+            SavingsGoalEntityMapper mapper
+    ) {
+        this.jpaRepository = jpaRepository;
+        this.mapper = mapper;
+    }
 
-@Override
-public SavingsGoal save(SavingsGoal savingsGoal) {
-    SavingsGoalEntity entity = mapper.toEntity(savingsGoal);
+    @Override
+    public SavingsGoal save(SavingsGoal savingsGoal) {
+        SavingsGoalEntity entity = mapper.toEntity(savingsGoal);
+        SavingsGoalEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
+    }
 
-    SavingsGoalEntity savedEntity = jpaRepository.save(entity);
+    @Override
+    public Optional<SavingsGoal> findById(UUID id) {
+        return jpaRepository.findById(id)
+                .map(mapper::toDomain);
+    }
 
-    return mapper.toDomain(savedEntity);
-}
+    @Override
+    public Optional<SavingsGoal> findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+        return jpaRepository.findByIdAndUserId(id, userId)
+                .map(mapper::toDomain);
+    }
 
-@Override
-public Optional<SavingsGoal> findById(UUID id) {
-    return jpaRepository.findById(id)
-            .map(mapper::toDomain);
-}
+    @Override
+    public List<SavingsGoal> findAllByUserId(UUID userId) {
+        return jpaRepository
+                .findAllByUserId(userId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 
-@Override
-public Optional<SavingsGoal> findByIdAndUserId(
-        UUID id,
-        UUID userId
-) {
-    return jpaRepository.findByIdAndUserId(id, userId)
-            .map(mapper::toDomain);
-}
+    @Override
+    public List<SavingsGoal> findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+        Specification<SavingsGoalEntity> spec =
+                buildSpecification(userId, search);
 
-@Override
-public List<SavingsGoal> findAllByUserId(UUID userId) {
-    return jpaRepository
-            .findAllByUserIdAndActiveTrue(userId)
-            .stream()
-            .map(mapper::toDomain)
-            .toList();
-}
-
-private Specification<SavingsGoalEntity> buildSpecification(
-        UUID userId,
-        String search
-) {
-    Specification<SavingsGoalEntity> spec =
-            (root, query, cb) ->
-                    cb.equal(root.get("userId"), userId);
-
-    spec = spec.and(
-            (root, query, cb) ->
-                    cb.equal(root.get("active"), true)
-    );
-
-    if (search != null && !search.isBlank()) {
-        String pattern = "%" + search.toLowerCase() + "%";
-
-        spec = spec.and(
-                (root, query, cb) ->
-                        cb.like(
-                                cb.lower(root.get("name")),
-                                pattern
+        Page<SavingsGoalEntity> result =
+                jpaRepository.findAll(
+                        spec,
+                        PageRequest.of(
+                                page,
+                                size,
+                                Sort.by("createdAt").descending()
                         )
+                );
+
+        return result.getContent()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+        return jpaRepository.count(
+                buildSpecification(userId, search)
         );
     }
 
-    return spec;
-}
+    private Specification<SavingsGoalEntity> buildSpecification(
+            UUID userId,
+            String search
+    ) {
+        Specification<SavingsGoalEntity> spec =
+                (root, query, cb) ->
+                        cb.equal(root.get("userId"), userId);
 
-@Override
-public List<SavingsGoal> findAllByUserId(
-        UUID userId,
-        int page,
-        int size,
-        String search
-) {
-    Specification<SavingsGoalEntity> spec =
-            buildSpecification(userId, search);
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.toLowerCase() + "%";
 
-    Page<SavingsGoalEntity> result =
-            jpaRepository.findAll(
-                    spec,
-                    PageRequest.of(
-                            page,
-                            size,
-                            Sort.by("createdAt").descending()
-                    )
+            spec = spec.and(
+                    (root, query, cb) ->
+                            cb.like(
+                                    cb.lower(root.get("name")),
+                                    pattern
+                            )
             );
+        }
 
-    return result.getContent()
-            .stream()
-            .map(mapper::toDomain)
-            .toList();
-}
-
-@Override
-public long countByUserIdAndFilters(
-        UUID userId,
-        String search
-) {
-    return jpaRepository.count(
-            buildSpecification(userId, search)
-    );
-}
+        return spec;
+    }
 }
