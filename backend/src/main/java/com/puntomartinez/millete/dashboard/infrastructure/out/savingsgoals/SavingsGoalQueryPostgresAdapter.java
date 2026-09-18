@@ -34,7 +34,9 @@ public class SavingsGoalQueryPostgresAdapter implements SavingsGoalQueryPort {
                 savingsGoal.getTargetAmount(),
                 savingsGoal.getCurrentAmount(),
                 savingsGoal.getDeadline(),
-                savingsGoal.getPriority(),
+                savingsGoal.getPriority() != null
+                        ? savingsGoal.getPriority().name()
+                        : null,
                 savingsGoal.getCreatedAt()
         );
     }

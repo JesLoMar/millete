@@ -6,6 +6,7 @@ import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.Cate
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardCategoriesResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DashboardCategoryService {
 
     private final TransactionQueryPort transactionQueryPort;
@@ -43,10 +45,8 @@ public class DashboardCategoryService {
                         .toList();
 
         BigDecimal totalExpenses = BigDecimal.ZERO;
-
         Map<UUID, BigDecimal> amountByCategory = new HashMap<>();
         Map<UUID, Integer> countByCategory = new HashMap<>();
-
         BigDecimal orphanAmount = BigDecimal.ZERO;
         int orphanCount = 0;
 
@@ -61,15 +61,10 @@ public class DashboardCategoryService {
             }
 
             amountByCategory.merge(
-                    tx.categoryId(),
-                    amount,
-                    BigDecimal::add
+                    tx.categoryId(), amount, BigDecimal::add
             );
-
             countByCategory.merge(
-                    tx.categoryId(),
-                    1,
-                    Integer::sum
+                    tx.categoryId(), 1, Integer::sum
             );
         }
 
@@ -96,8 +91,7 @@ public class DashboardCategoryService {
             if (category == null) {
                 orphanAmount = orphanAmount.add(amount);
                 orphanCount += countByCategory.getOrDefault(
-                        categoryId,
-                        0
+                        categoryId, 0
                 );
                 continue;
             }
@@ -106,14 +100,8 @@ public class DashboardCategoryService {
                     new CategoryExpenseItemResponseDTO(
                             category.name(),
                             amount,
-                            calculatePercentage(
-                                    amount,
-                                    totalExpenses
-                            ),
-                            countByCategory.getOrDefault(
-                                    categoryId,
-                                    0
-                            )
+                            calculatePercentage(amount, totalExpenses),
+                            countByCategory.getOrDefault(categoryId, 0)
                     )
             );
         }
@@ -124,8 +112,7 @@ public class DashboardCategoryService {
                             "Sin categoría",
                             orphanAmount,
                             calculatePercentage(
-                                    orphanAmount,
-                                    totalExpenses
+                                    orphanAmount, totalExpenses
                             ),
                             orphanCount
                     )
@@ -138,28 +125,16 @@ public class DashboardCategoryService {
 
         return new DashboardCategoriesResponseDTO(
                 totalExpenses,
-                groupSmallCategories(
-                        categoryItems,
-                        totalExpenses
-                )
+                groupSmallCategories(categoryItems, totalExpenses)
         );
     }
 
-    private double calculatePercentage(
-            BigDecimal part,
-            BigDecimal total
-    ) {
+    private double calculatePercentage(BigDecimal part, BigDecimal total) {
         if (total.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
-
-        return part
-                .multiply(new BigDecimal("100"))
-                .divide(
-                        total,
-                        1,
-                        RoundingMode.HALF_UP
-                )
+        return part.multiply(new BigDecimal("100"))
+                .divide(total, 1, RoundingMode.HALF_UP)
                 .doubleValue();
     }
 
@@ -169,17 +144,12 @@ public class DashboardCategoryService {
     ) {
         List<CategoryExpenseItemResponseDTO> mainCategories =
                 new ArrayList<>();
-
-        BigDecimal othersAmount =
-                BigDecimal.ZERO;
-
+        BigDecimal othersAmount = BigDecimal.ZERO;
         int othersCount = 0;
 
         for (CategoryExpenseItemResponseDTO item : categories) {
             if (item.percentage() < 5.0) {
-                othersAmount =
-                        othersAmount.add(item.amount());
-
+                othersAmount = othersAmount.add(item.amount());
                 othersCount += item.transactionCount();
             } else {
                 mainCategories.add(item);
@@ -187,12 +157,9 @@ public class DashboardCategoryService {
         }
 
         if (othersAmount.compareTo(BigDecimal.ZERO) > 0) {
-            double othersPercentage =
-                    calculatePercentage(
-                            othersAmount,
-                            totalExpenses
-                    );
-
+            double othersPercentage = calculatePercentage(
+                    othersAmount, totalExpenses
+            );
             mainCategories.add(
                     new CategoryExpenseItemResponseDTO(
                             "Otros",
