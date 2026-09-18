@@ -19,7 +19,8 @@ public interface UpdatePlannedTransactionUseCase {
             TransactionType type,
             String description,
             PlannedTransaction.FrequencyType frequencyType,
-            Integer frequencyInterval
+            Integer frequencyInterval,
+            UUID categoryId
     ) {
     }
 }

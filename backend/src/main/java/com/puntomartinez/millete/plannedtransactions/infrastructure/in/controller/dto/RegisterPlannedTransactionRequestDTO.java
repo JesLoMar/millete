@@ -15,13 +15,17 @@ public record RegisterPlannedTransactionRequestDTO(
         UUID categoryId,
 
         @NotNull(message = "La cantidad es obligatoria")
+        @Positive(message = "La cantidad debe ser mayor que cero")
         BigDecimal amount,
 
         @NotNull(message = "El tipo es obligatorio")
         TransactionType type,
 
         @NotBlank(message = "La descripción no puede estar vacía")
-        @Size(max = 50,message = "La descripción no puede superar los 50 caracteres")
+        @Size(
+                max = 50,
+                message = "La descripción no puede superar los 50 caracteres"
+        )
         String description,
 
         @NotNull(message = "El tipo de frecuencia es obligatorio")
@@ -35,4 +39,5 @@ public record RegisterPlannedTransactionRequestDTO(
         LocalDate startDate,
 
         LocalDate endDate
-) {}
+) {
+}

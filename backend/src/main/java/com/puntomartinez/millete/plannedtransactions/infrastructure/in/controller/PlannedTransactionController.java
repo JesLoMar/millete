@@ -1,14 +1,12 @@
 package com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller;
 
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
-import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase.RegisterPlannedTransactionCommand;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.out.CategoryDisplayPort;
 import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.PlannedTransactionResponseDTO;
 import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.RegisterPlannedTransactionRequestDTO;
 import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.UpdatePlannedTransactionRequestDTO;
@@ -30,128 +28,129 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/planned-transactions")
 public class PlannedTransactionController {
 
-private final RegisterPlannedTransactionUseCase registerUseCase;
-private final ListPlannedTransactionsUseCase listPlannedTransactionsUseCase;
-private final UpdatePlannedTransactionUseCase updateUseCase;
-private final DeletePlannedTransactionUseCase deleteUseCase;
-private final GetCategoryUseCase getCategoryUseCase;
+    private static final String UNCATEGORIZED_LABEL = "Sin categoría";
 
-public PlannedTransactionController(
-        RegisterPlannedTransactionUseCase registerUseCase,
-        ListPlannedTransactionsUseCase listPlannedTransactionsUseCase,
-        UpdatePlannedTransactionUseCase updateUseCase,
-        DeletePlannedTransactionUseCase deleteUseCase,
-        GetCategoryUseCase getCategoryUseCase
-) {
-    this.registerUseCase = registerUseCase;
-    this.listPlannedTransactionsUseCase = listPlannedTransactionsUseCase;
-    this.updateUseCase = updateUseCase;
-    this.deleteUseCase = deleteUseCase;
-    this.getCategoryUseCase = getCategoryUseCase;
-}
+    private final RegisterPlannedTransactionUseCase registerUseCase;
+    private final ListPlannedTransactionsUseCase listPlannedTransactionsUseCase;
+    private final UpdatePlannedTransactionUseCase updateUseCase;
+    private final DeletePlannedTransactionUseCase deleteUseCase;
+    private final CategoryDisplayPort categoryDisplayPort;
 
-@PostMapping
-public ResponseEntity<PlannedTransactionResponseDTO> registerPlannedTransaction(
-        @Valid @RequestBody RegisterPlannedTransactionRequestDTO request,
-        Authentication authentication
-) {
-    UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
+    public PlannedTransactionController(
+            RegisterPlannedTransactionUseCase registerUseCase,
+            ListPlannedTransactionsUseCase listPlannedTransactionsUseCase,
+            UpdatePlannedTransactionUseCase updateUseCase,
+            DeletePlannedTransactionUseCase deleteUseCase,
+            CategoryDisplayPort categoryDisplayPort
+    ) {
+        this.registerUseCase = registerUseCase;
+        this.listPlannedTransactionsUseCase = listPlannedTransactionsUseCase;
+        this.updateUseCase = updateUseCase;
+        this.deleteUseCase = deleteUseCase;
+        this.categoryDisplayPort = categoryDisplayPort;
+    }
 
-    RegisterPlannedTransactionCommand command =
-            new RegisterPlannedTransactionCommand(
-                    userId,
-                    request.categoryId(),
-                    request.amount(),
-                    request.type(),
-                    request.description(),
-                    request.frequencyType(),
-                    request.frequencyInterval(),
-                    request.startDate(),
-                    request.endDate()
+    @PostMapping
+    public ResponseEntity<PlannedTransactionResponseDTO> registerPlannedTransaction(
+            @Valid @RequestBody RegisterPlannedTransactionRequestDTO request,
+            Authentication authentication
+    ) {
+        UUID userId =
+                ((JwtUser) authentication.getPrincipal()).getId();
+
+        RegisterPlannedTransactionCommand command =
+                new RegisterPlannedTransactionCommand(
+                        userId,
+                        request.categoryId(),
+                        request.amount(),
+                        request.type(),
+                        request.description(),
+                        request.frequencyType(),
+                        request.frequencyInterval(),
+                        request.startDate(),
+                        request.endDate()
+                );
+
+        PlannedTransaction savedTransaction =
+                registerUseCase.register(command);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(mapToResponse(savedTransaction, userId));
+    }
+
+    @GetMapping
+    public ResponseEntity<PaginatedResponseDTO<PlannedTransactionResponseDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) TransactionType type,
+            Authentication authentication
+    ) {
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "La página debe ser mayor o igual que 0."
             );
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException(
+                    "El tamaño de página debe ser mayor que 0."
+            );
+        }
 
-    PlannedTransaction savedTransaction =
-            registerUseCase.register(command);
+        UUID userId =
+                ((JwtUser) authentication.getPrincipal()).getId();
 
-    return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(mapToResponse(savedTransaction, userId));
-}
+        long totalElements =
+                listPlannedTransactionsUseCase.countByUserIdAndFilters(
+                        userId,
+                        search,
+                        type
+                );
 
-@GetMapping
-public ResponseEntity<PaginatedResponseDTO<PlannedTransactionResponseDTO>> getAll(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "50") int size,
-        @RequestParam(required = false) String search,
-        @RequestParam(required = false) TransactionType type,
-        Authentication authentication
-) {
-    if (page < 0) {
-        throw new IllegalArgumentException(
-                "La página debe ser mayor o igual que 0."
+        int totalPages =
+                (int) Math.ceil((double) totalElements / size);
+
+        int safePage =
+                Math.min(page, Math.max(0, totalPages - 1));
+
+        List<PlannedTransaction> list =
+                listPlannedTransactionsUseCase.findAllByUserId(
+                        userId,
+                        safePage,
+                        size,
+                        search,
+                        type
+                );
+
+        Map<UUID, CategoryDisplayPort.CategoryDisplay> categoryMap =
+                categoryDisplayPort.findByUserId(userId)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                CategoryDisplayPort.CategoryDisplay::id,
+                                display -> display,
+                                (first, second) -> first
+                        ));
+
+        List<PlannedTransactionResponseDTO> content =
+                list.stream()
+                        .map(tx -> mapToResponse(tx, categoryMap))
+                        .toList();
+
+        return ResponseEntity.ok(
+                new PaginatedResponseDTO<>(
+                        content,
+                        safePage,
+                        totalPages,
+                        totalElements,
+                        size,
+                        safePage == 0,
+                        safePage >= totalPages - 1 || totalPages == 0
+                )
         );
     }
 
-    if (size <= 0) {
-        throw new IllegalArgumentException(
-                "El tamaño de página debe ser mayor que 0."
-        );
-    }
-
-    UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
-
-    long totalElements =
-            listPlannedTransactionsUseCase.countByUserIdAndFilters(
-                    userId,
-                    search,
-                    type
-            );
-
-    int totalPages =
-            (int) Math.ceil((double) totalElements / size);
-
-    int safePage =
-            Math.min(page, Math.max(0, totalPages - 1));
-
-    List<PlannedTransaction> list =
-            listPlannedTransactionsUseCase.findAllByUserId(
-                    userId,
-                    safePage,
-                    size,
-                    search,
-                    type
-            );
-
-    Map<UUID, CategoryInfo> categoryMap =
-            getCategoryUseCase.findByUserId(userId)
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Category::getId,
-                            category -> new CategoryInfo(
-                                    category.getName()
-                            ),
-                            (first, second) -> first
-                    ));
-
-    List<PlannedTransactionResponseDTO> content =
-            list.stream()
-                    .map(tx -> mapToResponse(tx, categoryMap))
-                    .toList();
-
-    return ResponseEntity.ok(
-            new PaginatedResponseDTO<>(
-                    content,
-                    safePage,
-                    totalPages,
-                    totalElements,
-                    size,
-                    safePage == 0,
-                    safePage >= totalPages - 1 || totalPages == 0
-            )
-    );
-}
-
-@PutMapping("/{id}")
+    @PutMapping("/{id}")
 public ResponseEntity<PlannedTransactionResponseDTO> updatePlannedTransaction(
         @PathVariable UUID id,
         @Valid @RequestBody UpdatePlannedTransactionRequestDTO request,
@@ -165,7 +164,8 @@ public ResponseEntity<PlannedTransactionResponseDTO> updatePlannedTransaction(
                     request.type(),
                     request.description(),
                     request.frequencyType(),
-                    request.frequencyInterval()
+                    request.frequencyInterval(),
+                    request.categoryId()
             );
 
     PlannedTransaction updated =
@@ -176,88 +176,78 @@ public ResponseEntity<PlannedTransactionResponseDTO> updatePlannedTransaction(
     );
 }
 
-@DeleteMapping("/{id}")
-public ResponseEntity<Void> deletePlannedTransaction(
-        @PathVariable UUID id,
-        Authentication authentication
-) {
-    UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePlannedTransaction(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        UUID userId =
+                ((JwtUser) authentication.getPrincipal()).getId();
 
-    deleteUseCase.deleteByIdAndUserId(id, userId);
+        deleteUseCase.deleteByIdAndUserId(id, userId);
 
-    return ResponseEntity.noContent().build();
-}
-
-private record CategoryInfo(String name) {
-}
-
-private CategoryInfo resolveCategoryInfo(
-        UUID categoryId,
-        UUID userId
-) {
-    if (categoryId == null) {
-        return new CategoryInfo("Sin categoría");
+        return ResponseEntity.noContent().build();
     }
 
-    try {
-        Category category =
-                getCategoryUseCase.findByIdAndUserId(
-                        categoryId,
+    private CategoryDisplayPort.CategoryDisplay resolveCategoryDisplay(
+            UUID categoryId,
+            UUID userId
+    ) {
+        if (categoryId == null) {
+            return null;
+        }
+
+        return categoryDisplayPort
+                .findByIdAndUserId(categoryId, userId)
+                .orElse(null);
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            UUID userId
+    ) {
+        CategoryDisplayPort.CategoryDisplay display =
+                resolveCategoryDisplay(
+                        tx.getCategoryId(),
                         userId
                 );
 
-        return new CategoryInfo(
-                category.getName()
+        return mapToResponse(tx, display);
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            Map<UUID, CategoryDisplayPort.CategoryDisplay> categoryMap
+    ) {
+        CategoryDisplayPort.CategoryDisplay display =
+                tx.getCategoryId() != null
+                        ? categoryMap.get(tx.getCategoryId())
+                        : null;
+
+        return mapToResponse(tx, display);
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            CategoryDisplayPort.CategoryDisplay display
+    ) {
+        String categoryName = display != null
+                ? display.name()
+                : UNCATEGORIZED_LABEL;
+
+        return new PlannedTransactionResponseDTO(
+                tx.getId(),
+                tx.getCategoryId(),
+                categoryName,
+                tx.getAmount(),
+                tx.getType(),
+                tx.getDescription(),
+                tx.getFrequencyType(),
+                tx.getFrequencyInterval(),
+                tx.getStartDate(),
+                tx.getEndDate(),
+                tx.getLastExecutedDate(),
+                tx.isActive()
         );
-
-    } catch (ResourceNotFoundException e) {
-        return new CategoryInfo("Sin categoría");
     }
-}
-
-private PlannedTransactionResponseDTO mapToResponse(
-        PlannedTransaction tx,
-        UUID userId
-) {
-    return mapToResponse(
-            tx,
-            resolveCategoryInfo(tx.getCategoryId(), userId)
-    );
-}
-
-private PlannedTransactionResponseDTO mapToResponse(
-        PlannedTransaction tx,
-        Map<UUID, CategoryInfo> categoryMap
-) {
-    CategoryInfo info =
-            tx.getCategoryId() != null
-                    ? categoryMap.get(tx.getCategoryId())
-                    : null;
-
-    if (info == null) {
-        info = new CategoryInfo("Sin categoría");
-    }
-
-    return mapToResponse(tx, info);
-}
-
-private PlannedTransactionResponseDTO mapToResponse(
-        PlannedTransaction tx,
-        CategoryInfo info
-) {
-    return new PlannedTransactionResponseDTO(
-            tx.getId(),
-            tx.getCategoryId(),
-            info.name(),
-            tx.getAmount(),
-            tx.getType(),
-            tx.getDescription(),
-            tx.getFrequencyType(),
-            tx.getFrequencyInterval(),
-            tx.getStartDate(),
-            tx.getEndDate(),
-            tx.getLastExecutedDate(),
-            tx.isActive()
-    );
-}
 }

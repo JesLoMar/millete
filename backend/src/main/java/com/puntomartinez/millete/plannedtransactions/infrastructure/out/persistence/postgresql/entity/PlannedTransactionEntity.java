@@ -71,4 +71,7 @@ public class PlannedTransactionEntity {
 
     @Column(name = "active", nullable = false)
     private boolean active;
+
+    @Column(name = "failure_count", nullable = false)
+    private int failureCount;
 }
