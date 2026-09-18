@@ -4,6 +4,8 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction.Transacti
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,12 +17,14 @@ public record UpdateTransactionRequestDTO(
         BigDecimal amount,
 
         @NotNull(message = "La fecha es obligatoria")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         LocalDateTime date,
 
         @NotNull(message = "El tipo de transacción es obligatorio")
         TransactionType type,
 
         @NotBlank(message = "La descripción no puede estar vacía")
+        @Size(max = 50, message = "La descripción no puede superar los 50 caracteres")
         String description,
 
         UUID categoryId

@@ -3,6 +3,7 @@ package com.puntomartinez.millete.transactions.domain.ports.out;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,8 @@ public interface TransactionRepository {
     Transaction save(Transaction transaction);
 
     Optional<Transaction> findById(UUID id);
+
+    Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
     List<Transaction> findAllByUserId(UUID userId);
 
@@ -50,4 +53,17 @@ public interface TransactionRepository {
             LocalDateTime startDate,
             LocalDateTime endDate
     );
+
+    TransactionAggregates getAggregatesByUserIdAndDateBetween(
+            UUID userId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+    record TransactionAggregates(
+            BigDecimal totalIncome,
+            BigDecimal totalExpense,
+            long count
+    ) {
+    }
 }

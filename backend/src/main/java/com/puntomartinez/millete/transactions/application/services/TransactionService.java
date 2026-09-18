@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.transactions.application.services;
 
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
-import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
@@ -12,10 +12,13 @@ import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactio
 import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository.TransactionAggregates;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +43,7 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional
     public RegisterTransactionUseCase.RegisterTransactionResult register(
             RegisterTransactionUseCase.RegisterTransactionCommand command
     ) {
@@ -76,6 +80,7 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional
     public void unassignCategory(
             UUID categoryId,
             UUID userId
@@ -88,11 +93,13 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Transaction> findAllByUserId(UUID userId) {
         return transactionRepository.findAllByUserId(userId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Transaction> findAllByUserId(
             UUID userId,
             int page,
@@ -114,6 +121,7 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long countByUserIdAndFilters(
             UUID userId,
             String search,
@@ -131,27 +139,21 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Transaction getByIdAndUserId(
             UUID id,
             UUID userId
     ) {
-        Transaction transaction = transactionRepository.findById(id)
+        return transactionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Transaction not found."
                         )
                 );
-
-        if (!transaction.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException(
-                    "You do not have permission to view this transaction."
-            );
-        }
-
-        return transaction;
     }
 
     @Override
+    @Transactional
     public Transaction update(
             UUID id,
             UpdateTransactionUseCase.UpdateTransactionCommand command
@@ -178,6 +180,7 @@ public class TransactionService implements
     }
 
     @Override
+    @Transactional
     public void deleteByIdAndUserId(
             UUID id,
             UUID userId
@@ -185,7 +188,6 @@ public class TransactionService implements
         Transaction transaction = getByIdAndUserId(id, userId);
 
         transaction.deactivate();
-
         transactionRepository.save(transaction);
     }
 
@@ -220,26 +222,15 @@ public class TransactionService implements
                 .plusMonths(1)
                 .minusNanos(1);
 
-        List<Transaction> monthTransactions =
-                transactionRepository.findByUserIdAndDateBetween(
+        TransactionAggregates aggregates =
+                transactionRepository.getAggregatesByUserIdAndDateBetween(
                         userId,
                         startOfMonth,
                         endOfMonth
                 );
 
-        BigDecimal totalIncome = monthTransactions.stream()
-                .filter(transaction ->
-                        transaction.getType() == TransactionType.INCOME
-                )
-                .map(Transaction::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalExpense = monthTransactions.stream()
-                .filter(transaction ->
-                        transaction.getType() == TransactionType.EXPENSE
-                )
-                .map(Transaction::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalIncome = aggregates.totalIncome();
+        BigDecimal totalExpense = aggregates.totalExpense();
 
         BigDecimal limit = totalIncome.multiply(
                 new BigDecimal("0.70")

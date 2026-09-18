@@ -1,9 +1,11 @@
 package com.puntomartinez.millete.transactions.infrastructure.in.controller;
 
 import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import com.puntomartinez.millete.transactions.application.services.TransactionPeriodService;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.in.*;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase.RegisterTransactionCommand;
@@ -18,9 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,8 +38,8 @@ public class TransactionController {
     private final UpdateTransactionUseCase updateTransactionUseCase;
     private final ListTransactionsUseCase listTransactionsUseCase;
     private final GetTransactionMetricsUseCase transactionMetricsUseCase;
-
     private final GetCategoryUseCase getCategoryUseCase;
+    private final TransactionPeriodService transactionPeriodService;
 
     @GetMapping("/metrics")
     public ResponseEntity<TransactionMetricsResponseDTO> getMetrics(
@@ -86,7 +86,9 @@ public class TransactionController {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
 
         Transaction.TransactionType transactionType = parseType(type);
-        LocalDateTime[] range = getDateRange(period);
+
+        LocalDateTime[] range =
+                transactionPeriodService.getDateRange(period);
 
         long totalElements =
                 listTransactionsUseCase.countByUserIdAndFilters(
@@ -345,74 +347,22 @@ public class TransactionController {
                     type.toUpperCase(Locale.ROOT)
             );
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(
-                    "Invalid transaction type: " + type
+            throw new InvalidInputException(
+                    "Tipo de transacción no válido: " + type
             );
         }
-    }
-
-    private LocalDateTime[] getDateRange(String period) {
-        LocalDateTime now = LocalDateTime.now();
-
-        return switch (period.toLowerCase(Locale.ROOT)) {
-            case "week" -> new LocalDateTime[]{
-                    now.with(DayOfWeek.MONDAY)
-                            .withHour(0)
-                            .withMinute(0)
-                            .withSecond(0)
-                            .withNano(0),
-
-                    now.with(DayOfWeek.SUNDAY)
-                            .withHour(23)
-                            .withMinute(59)
-                            .withSecond(59)
-                            .withNano(999_999_999)
-            };
-
-            case "month" -> new LocalDateTime[]{
-                    now.withDayOfMonth(1)
-                            .withHour(0)
-                            .withMinute(0)
-                            .withSecond(0)
-                            .withNano(0),
-
-                    now.with(TemporalAdjusters.lastDayOfMonth())
-                            .withHour(23)
-                            .withMinute(59)
-                            .withSecond(59)
-                            .withNano(999_999_999)
-            };
-
-            case "year" -> new LocalDateTime[]{
-                    now.withDayOfYear(1)
-                            .withHour(0)
-                            .withMinute(0)
-                            .withSecond(0)
-                            .withNano(0),
-
-                    now.with(TemporalAdjusters.lastDayOfYear())
-                            .withHour(23)
-                            .withMinute(59)
-                            .withSecond(59)
-                            .withNano(999_999_999)
-            };
-
-            default -> throw new IllegalArgumentException(
-                    "Invalid period: " + period
-            );
-        };
     }
 
     private void validatePagination(int page, int size) {
         if (page < 0) {
-            throw new IllegalArgumentException(
-                    "Page must be greater than or equal to zero."
+            throw new InvalidInputException(
+                    "La página debe ser mayor o igual que 0."
             );
         }
 
         if (size <= 0) {
-            throw new IllegalArgumentException(
-                    "Size must be greater than zero."
+            throw new InvalidInputException(
+                    "El tamaño de página debe ser mayor que 0."
             );
         }
     }

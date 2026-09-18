@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +48,6 @@ public class TransactionPostgresAdapter implements TransactionRepository {
 
         if (search != null && !search.isBlank()) {
             String pattern = "%" + search.toLowerCase() + "%";
-
             spec = spec.and(
                     (root, query, cb) ->
                             cb.like(
@@ -91,13 +91,18 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     public Transaction save(Transaction transaction) {
         TransactionEntity entityToSave = mapper.toEntity(transaction);
         TransactionEntity savedEntity = repository.save(entityToSave);
-
         return mapper.toDomain(savedEntity);
     }
 
     @Override
     public Optional<Transaction> findById(UUID id) {
         return repository.findById(id)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<Transaction> findByIdAndUserId(UUID id, UUID userId) {
+        return repository.findByIdAndUserId(id, userId)
                 .map(mapper::toDomain);
     }
 
@@ -124,7 +129,6 @@ public class TransactionPostgresAdapter implements TransactionRepository {
         if (limit <= 0) {
             return List.of();
         }
-
         return repository.findByUserIdAndActiveTrueOrderByDateDesc(
                         userId,
                         PageRequest.of(0, limit)
@@ -196,6 +200,37 @@ public class TransactionPostgresAdapter implements TransactionRepository {
                         startDate,
                         endDate
                 )
+        );
+    }
+
+    @Override
+    public TransactionAggregates getAggregatesByUserIdAndDateBetween(
+            UUID userId,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+        Object[] result = repository.getAggregatesByUserIdAndDateBetween(
+                userId,
+                start,
+                end
+        );
+
+        BigDecimal totalIncome = result[0] != null
+                ? new BigDecimal(result[0].toString())
+                : BigDecimal.ZERO;
+
+        BigDecimal totalExpense = result[1] != null
+                ? new BigDecimal(result[1].toString())
+                : BigDecimal.ZERO;
+
+        long count = result[2] != null
+                ? Long.parseLong(result[2].toString())
+                : 0L;
+
+        return new TransactionAggregates(
+                totalIncome,
+                totalExpense,
+                count
         );
     }
 }

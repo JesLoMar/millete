@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.transactions.domain.model;
 
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -8,6 +9,8 @@ import java.util.UUID;
 
 @Getter
 public class Transaction {
+
+    private static final int MAX_DESCRIPTION_LENGTH = 50;
 
     private final UUID id;
     private final UUID userId;
@@ -67,7 +70,6 @@ public class Transaction {
             String description
     ) {
         LocalDateTime now = LocalDateTime.now();
-
         return new Transaction(
                 UUID.randomUUID(),
                 userId,
@@ -132,7 +134,6 @@ public class Transaction {
         if (this.categoryId == null) {
             return;
         }
-
         this.categoryId = null;
         this.modifiedAt = LocalDateTime.now();
     }
@@ -141,14 +142,13 @@ public class Transaction {
         if (!this.active) {
             return;
         }
-
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
     }
 
     private static void validateId(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "El identificador de la transacción es obligatorio"
             );
         }
@@ -156,7 +156,7 @@ public class Transaction {
 
     private static void validateUserId(UUID userId) {
         if (userId == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "El identificador del usuario es obligatorio"
             );
         }
@@ -164,7 +164,7 @@ public class Transaction {
 
     private static void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "La cantidad debe ser mayor que cero."
             );
         }
@@ -172,7 +172,7 @@ public class Transaction {
 
     private static void validateDate(LocalDateTime date) {
         if (date == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "La fecha de la transacción es obligatoria"
             );
         }
@@ -180,23 +180,29 @@ public class Transaction {
 
     private static void validateType(TransactionType type) {
         if (type == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "El tipo de transacción es obligatorio"
             );
         }
     }
 
     private static void validateDescription(String description) {
-        if (description != null && description.length() > 50) {
-            throw new IllegalArgumentException(
-                    "La descripción no puede superar los 50 caracteres"
+        if (description == null || description.isBlank()) {
+            throw new InvalidInputException(
+                    "La descripción de la transacción es obligatoria"
+            );
+        }
+        if (description.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new InvalidInputException(
+                    "La descripción no puede superar los "
+                            + MAX_DESCRIPTION_LENGTH + " caracteres"
             );
         }
     }
 
     private static void validateCreatedAt(LocalDateTime createdAt) {
         if (createdAt == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "La fecha de creación es obligatoria"
             );
         }
@@ -204,7 +210,7 @@ public class Transaction {
 
     private static void validateModifiedAt(LocalDateTime modifiedAt) {
         if (modifiedAt == null) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"
             );
         }
