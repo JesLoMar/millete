@@ -1,15 +1,17 @@
 package com.puntomartinez.millete.users.infrastructure.in.controller;
 
 import com.puntomartinez.millete.shared.infrastructure.config.CookieAuthFactory;
+import com.puntomartinez.millete.shared.infrastructure.config.filter.LoginRateLimitFilter;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.users.domain.model.User;
-import com.puntomartinez.millete.users.domain.ports.in.AuthenticateUserCommand;
-import com.puntomartinez.millete.users.domain.ports.in.AuthenticateUserUseCase;
-import com.puntomartinez.millete.users.domain.ports.in.AuthenticationResult;
+import com.puntomartinez.millete.users.domain.model.UserSession;
 import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.ManageUserSessionUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.infrastructure.in.controller.dto.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -29,23 +31,29 @@ import java.util.UUID;
 public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
-    private final AuthenticateUserUseCase authenticateUserUseCase;
+    private final LoginUserUseCase loginUserUseCase;
     private final GetUserDataUseCase getUserDataUseCase;
+    private final TokenProvider tokenProvider;
     private final ManageUserSessionUseCase manageUserSessionUseCase;
     private final CookieAuthFactory cookieAuthFactory;
+    private final LoginRateLimitFilter loginRateLimitFilter;
 
     public AuthController(
             RegisterUserUseCase registerUserUseCase,
-            AuthenticateUserUseCase authenticateUserUseCase,
+            LoginUserUseCase loginUserUseCase,
             GetUserDataUseCase getUserDataUseCase,
+            TokenProvider tokenProvider,
             ManageUserSessionUseCase manageUserSessionUseCase,
-            CookieAuthFactory cookieAuthFactory
+            CookieAuthFactory cookieAuthFactory,
+            LoginRateLimitFilter loginRateLimitFilter
     ) {
         this.registerUserUseCase = registerUserUseCase;
-        this.authenticateUserUseCase = authenticateUserUseCase;
+        this.loginUserUseCase = loginUserUseCase;
         this.getUserDataUseCase = getUserDataUseCase;
+        this.tokenProvider = tokenProvider;
         this.manageUserSessionUseCase = manageUserSessionUseCase;
         this.cookieAuthFactory = cookieAuthFactory;
+        this.loginRateLimitFilter = loginRateLimitFilter;
     }
 
     @PostMapping("/register")
@@ -77,19 +85,29 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(
             @Valid @RequestBody LoginRequestDTO request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-        AuthenticateUserCommand command =
-                new AuthenticateUserCommand(
+        LoginUserUseCase.LoginUserCommand command =
+                new LoginUserUseCase.LoginUserCommand(
                         request.identifier(),
                         request.password()
                 );
 
-        AuthenticationResult result =
-                authenticateUserUseCase.authenticate(command);
+        User user = loginUserUseCase.login(command);
 
-        ResponseCookie cookie =
-                cookieAuthFactory.createJwtCookie(result.jwt());
+        // Resetear el rate limit tras login exitoso (Bug 11)
+        String clientIp = LoginRateLimitFilter.resolveClientIp(httpRequest);
+        loginRateLimitFilter.resetForIp(clientIp);
+
+        UserSession session = manageUserSessionUseCase.createSession(
+                user.getId(),
+                UserSession.CHANNEL_WEB
+        );
+
+        String jwt = tokenProvider.generateToken(user, session.getId());
+
+        ResponseCookie cookie = cookieAuthFactory.createJwtCookie(jwt);
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         Map<String, String> body = new HashMap<>();

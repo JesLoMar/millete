@@ -31,7 +31,9 @@ public class SavingsGoalExportAdapter implements SavingsGoalExportPort {
                                 savingsGoal.getTargetAmount(),
                                 savingsGoal.getCurrentAmount(),
                                 savingsGoal.getDeadline(),
-                                savingsGoal.getPriority(),
+                                savingsGoal.getPriority() != null
+                                        ? savingsGoal.getPriority().name()
+                                        : null,
                                 savingsGoal.getLink(),
                                 savingsGoal.getCreatedAt(),
                                 savingsGoal.getModifiedAt(),

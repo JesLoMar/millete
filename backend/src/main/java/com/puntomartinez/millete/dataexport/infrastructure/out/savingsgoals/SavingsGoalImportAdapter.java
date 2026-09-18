@@ -4,6 +4,7 @@ import com.puntomartinez.millete.dataexport.domain.model.SavingsGoalSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.SavingsGoalImportPort;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public class SavingsGoalImportAdapter
     @Override
     public int importSavingsGoals(
             List<SavingsGoalSnapshot> savingsGoals,
-            UUID userId) {
-
+            UUID userId
+    ) {
         if (savingsGoals == null || savingsGoals.isEmpty()) {
             return 0;
         }
@@ -33,10 +34,13 @@ public class SavingsGoalImportAdapter
         int count = 0;
 
         for (SavingsGoalSnapshot savingsGoal : savingsGoals) {
-
             if (!savingsGoal.active()) {
                 continue;
             }
+
+            GoalPriority priority = savingsGoal.priority() != null
+                    ? GoalPriority.valueOf(savingsGoal.priority())
+                    : GoalPriority.MEDIUM;
 
             SavingsGoal importedSavingsGoal =
                     SavingsGoal.reconstitute(
@@ -46,7 +50,7 @@ public class SavingsGoalImportAdapter
                             savingsGoal.targetAmount(),
                             savingsGoal.currentAmount(),
                             savingsGoal.deadline(),
-                            savingsGoal.priority(),
+                            priority,
                             savingsGoal.link(),
                             savingsGoal.createdAt(),
                             savingsGoal.modifiedAt(),
@@ -56,7 +60,6 @@ public class SavingsGoalImportAdapter
             savingsGoalRepository.save(
                     importedSavingsGoal
             );
-
             count++;
         }
 

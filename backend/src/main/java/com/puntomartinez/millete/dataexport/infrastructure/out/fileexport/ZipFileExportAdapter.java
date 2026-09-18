@@ -14,18 +14,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Adaptador dual que implementa tanto FileZipExportPort como
+ * FileCsvExportPort.
+ *
+ * <p>DECISIÓN DE DISEÑO: Esta clase implementa dos puertos porque
+ * el ZIP contiene internamente archivos CSV. Es una decisión
+ * pragmática: el ZIP es simplemente un contenedor de CSVs, por
+ * lo que la lógica de generación CSV se reusa directamente.
+ * No refactorizar en dos clases separadas sin una razón de peso.</p>
+ */
 @Component("zipFileExportAdapter")
 public class ZipFileExportAdapter
         implements FileZipExportPort, FileCsvExportPort {
 
-    private static final String FORMULA_PREFIXES = "=+-@\t\r";
+    private static final String FORMULA_PREFIXES = "=+-@\t\r\n";
 
     @Override
     public byte[] generateZip(ExportData data) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-
             writeCsvToZip(
                     zos,
                     "categories.csv",
@@ -161,13 +170,11 @@ public class ZipFileExportAdapter
                         )
         ) {
             switch (entityType.toLowerCase()) {
-
                 case "categories" -> {
                     csv.printRecord(
                             "name",
                             "budget_limit"
                     );
-
                     if (data.categories() != null) {
                         for (var row : data.categories()) {
                             csv.printRecord(
@@ -177,7 +184,6 @@ public class ZipFileExportAdapter
                         }
                     }
                 }
-
                 case "transactions" -> {
                     csv.printRecord(
                             "category_name",
@@ -186,7 +192,6 @@ public class ZipFileExportAdapter
                             "type",
                             "description"
                     );
-
                     if (data.transactions() != null) {
                         for (var row : data.transactions()) {
                             csv.printRecord(
@@ -199,7 +204,6 @@ public class ZipFileExportAdapter
                         }
                     }
                 }
-
                 case "planned_transactions" -> {
                     csv.printRecord(
                             "category_name",
@@ -212,7 +216,6 @@ public class ZipFileExportAdapter
                             "end_date",
                             "last_executed_date"
                     );
-
                     if (data.plannedTransactions() != null) {
                         for (var row : data.plannedTransactions()) {
                             csv.printRecord(
@@ -229,7 +232,6 @@ public class ZipFileExportAdapter
                         }
                     }
                 }
-
                 case "investments" -> {
                     csv.printRecord(
                             "asset_name",
@@ -240,7 +242,6 @@ public class ZipFileExportAdapter
                             "type",
                             "purchase_date"
                     );
-
                     if (data.investments() != null) {
                         for (var row : data.investments()) {
                             csv.printRecord(
@@ -255,7 +256,6 @@ public class ZipFileExportAdapter
                         }
                     }
                 }
-
                 case "savings_goals", "savingsgoals" -> {
                     csv.printRecord(
                             "name",
@@ -266,7 +266,6 @@ public class ZipFileExportAdapter
                             "priority",
                             "link"
                     );
-
                     if (data.savingsGoals() != null) {
                         for (var row : data.savingsGoals()) {
                             csv.printRecord(
@@ -281,7 +280,6 @@ public class ZipFileExportAdapter
                         }
                     }
                 }
-
                 default -> throw new IllegalArgumentException(
                         "Tipo de entidad no válido: " + entityType
                 );
@@ -310,7 +308,6 @@ public class ZipFileExportAdapter
             java.util.List<T> rows,
             RowWriter<T> writer
     ) throws IOException {
-
         zos.putNextEntry(new ZipEntry(fileName));
 
         ByteArrayOutputStream csvBaos =
@@ -333,7 +330,6 @@ public class ZipFileExportAdapter
                     writer.write(csv, row);
                 }
             }
-
             csv.flush();
         }
 
@@ -341,13 +337,26 @@ public class ZipFileExportAdapter
         zos.closeEntry();
     }
 
+    /**
+     * Sanitiza un campo CSV para prevenir CSV injection.
+     *
+     * <p>Se aplica trim previo y se detectan caracteres peligrosos
+     * al inicio del valor: {@code = + - @ \t \r \n}. Si se detecta
+     * alguno, se prefija con comilla simple para neutralizar la
+     * fórmula en herramientas como Excel.</p>
+     */
     private String sanitizeCsvField(String value) {
         if (value == null || value.isBlank()) {
             return value;
         }
 
-        char first = value.charAt(0);
+        String trimmed = value.stripLeading();
 
+        if (trimmed.isEmpty()) {
+            return value;
+        }
+
+        char first = trimmed.charAt(0);
         if (FORMULA_PREFIXES.indexOf(first) >= 0) {
             return "'" + value;
         }

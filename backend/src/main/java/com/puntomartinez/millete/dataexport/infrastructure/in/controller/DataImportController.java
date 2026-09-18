@@ -13,6 +13,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Controller de importación de datos.
+ *
+ * <p>LÍMITE DE TAMAÑO: El tamaño máximo se controla en dos niveles:
+ * <ul>
+ *   <li>Spring: {@code spring.servlet.multipart.max-file-size=50MB}
+ *       y {@code spring.servlet.multipart.max-request-size=50MB}
+ *       en application.properties.</li>
+ *   <li>Service: validación adicional en DataImportService.</li>
+ * </ul>
+ * </p>
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/data")
@@ -24,14 +36,16 @@ public class DataImportController {
         this.dataImportService = dataImportService;
     }
 
-    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(
+            value = "/import",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ResponseEntity<Map<String, Object>> importData(
             @RequestParam("file") MultipartFile file,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = ((JwtUser) authentication.getPrincipal()).getId();
         log.info("Solicitud de importación para usuario: {}", userId);
-
 
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -42,9 +56,9 @@ public class DataImportController {
                     ));
         }
 
-
         String originalFilename = file.getOriginalFilename();
-        if (originalFilename != null && !originalFilename.toLowerCase().endsWith(".json")) {
+        if (originalFilename != null
+                && !originalFilename.toLowerCase().endsWith(".json")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(
                             "success", false,
@@ -54,22 +68,20 @@ public class DataImportController {
         }
 
         try {
-
             String summary = dataImportService.importUserData(file, userId);
-
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", summary
             ));
-
         } catch (RuntimeException e) {
-
             log.error("Error en importación: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(
                             "success", false,
                             "error", "ERROR_IMPORTACION",
-                            "message", "Error al importar el archivo. Verifica el formato y la versión."
+                            "message", e.getMessage() != null
+                                    ? e.getMessage()
+                                    : "Error al importar el archivo."
                     ));
         }
     }

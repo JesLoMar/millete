@@ -17,18 +17,18 @@ public class Migration001to010 implements DataMigration {
 
     @Override
     public String description() {
-        return "Añade soporte para UserPreferences, GoalUnit, GoalMember y GoalContribution";
+        return "Añade soporte para UserPreferences";
     }
 
     @Override
     public UserDataSnapshot migrate(UserDataSnapshot snapshot) {
+        UserDataSnapshot.SnapshotMetadata updatedMetadata =
+                new UserDataSnapshot.SnapshotMetadata(
+                        toVersion().toString(),
+                        snapshot.metadata().exportDate(),
+                        snapshot.metadata().appVersion()
+                );
 
-
-        UserDataSnapshot.SnapshotMetadata updatedMetadata = new UserDataSnapshot.SnapshotMetadata(
-                toVersion().toString(),
-                snapshot.metadata().exportDate(),
-                snapshot.metadata().appVersion()
-        );
         return new UserDataSnapshot(
                 updatedMetadata,
                 snapshot.categories(),

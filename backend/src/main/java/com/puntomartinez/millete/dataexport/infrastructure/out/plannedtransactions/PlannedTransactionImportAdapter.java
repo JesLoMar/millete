@@ -28,8 +28,8 @@ public class PlannedTransactionImportAdapter
     public int importPlannedTransactions(
             List<PlannedTransactionSnapshot> plannedTransactions,
             UUID userId,
-            Map<UUID, UUID> categoryIdMap) {
-
+            Map<UUID, UUID> categoryIdMap
+    ) {
         if (plannedTransactions == null
                 || plannedTransactions.isEmpty()) {
             return 0;
@@ -39,15 +39,12 @@ public class PlannedTransactionImportAdapter
 
         for (PlannedTransactionSnapshot plannedTransaction :
                 plannedTransactions) {
-
             if (!plannedTransaction.active()) {
                 continue;
             }
 
             UUID newCategoryId = null;
-
             if (plannedTransaction.categoryId() != null) {
-
                 newCategoryId =
                         categoryIdMap.get(
                                 plannedTransaction.categoryId()
@@ -73,13 +70,13 @@ public class PlannedTransactionImportAdapter
                             plannedTransaction.createdAt(),
                             plannedTransaction.modifiedAt(),
                             plannedTransaction.active(),
-                            plannedTransaction.lastExecutedDate()
+                            plannedTransaction.lastExecutedDate(),
+                            0
                     );
 
             plannedTransactionRepository.save(
                     importedPlannedTransaction
             );
-
             count++;
         }
 

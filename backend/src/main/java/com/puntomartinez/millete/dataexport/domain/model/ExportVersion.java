@@ -2,22 +2,40 @@ package com.puntomartinez.millete.dataexport.domain.model;
 
 import java.util.regex.Pattern;
 
-public record ExportVersion(int major, int minor, int patch) implements Comparable<ExportVersion> {
+/**
+ * Versión del formato de exportación de datos.
+ *
+ * <p>CONTRATO: Al añadir una nueva migración en MigrationChain,
+ * actualizar {@link #CURRENT} al {@code toVersion()} de la última
+ * migración registrada. MigrationChain.validateChain() detectará
+ * al arrancar si hay inconsistencia.</p>
+ */
+public record ExportVersion(
+        int major,
+        int minor,
+        int patch
+) implements Comparable<ExportVersion> {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$");
+    private static final Pattern VERSION_PATTERN =
+            Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$");
 
-
-    public static final ExportVersion CURRENT = new ExportVersion(0, 2, 0);
+    public static final ExportVersion CURRENT =
+            new ExportVersion(0, 2, 0);
 
     public static ExportVersion fromString(String version) {
         if (version == null || version.isBlank()) {
-            throw new IllegalArgumentException("La versión no puede ser nula o vacía");
+            throw new IllegalArgumentException(
+                    "La versión no puede ser nula o vacía"
+            );
         }
 
         var matcher = VERSION_PATTERN.matcher(version.trim());
+
         if (!matcher.matches()) {
             throw new IllegalArgumentException(
-                    "Formato de versión inválido: '" + version + "'");
+                    "Formato de versión inválido: '"
+                            + version + "'"
+            );
         }
 
         return new ExportVersion(
@@ -27,11 +45,9 @@ public record ExportVersion(int major, int minor, int patch) implements Comparab
         );
     }
 
-
     public boolean isCompatibleWith(ExportVersion other) {
         return this.major == other.major;
     }
-
 
     public boolean needsMigration(ExportVersion target) {
         return this.compareTo(target) < 0;
@@ -44,10 +60,12 @@ public record ExportVersion(int major, int minor, int patch) implements Comparab
 
     @Override
     public int compareTo(ExportVersion other) {
-        int majorCompare = Integer.compare(this.major, other.major);
+        int majorCompare =
+                Integer.compare(this.major, other.major);
         if (majorCompare != 0) return majorCompare;
 
-        int minorCompare = Integer.compare(this.minor, other.minor);
+        int minorCompare =
+                Integer.compare(this.minor, other.minor);
         if (minorCompare != 0) return minorCompare;
 
         return Integer.compare(this.patch, other.patch);

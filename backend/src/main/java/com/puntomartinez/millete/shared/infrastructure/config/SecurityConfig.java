@@ -27,44 +27,42 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
 
     @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173}")
     private List<String> allowedOrigins;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
+                           LoginRateLimitFilter loginRateLimitFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.loginRateLimitFilter = loginRateLimitFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // CSRF deshabilitado CONSCIENTEMENTE: la autenticación usa JWT en cookie
-                // httpOnly + SameSite=Strict, que el navegador no adjunta en peticiones
-                // cross-site → el vector CSRF clásico no aplica. Además la API es stateless
-                // (no hay sesión de servidor).
-                //
-                // CONTRATO: si algún día el front y el back se separan en dominios distintos
-                // (hoy lo enmascara el proxy nginx, que los sirve same-origin), habrá que
-                // relajar SameSite a Lax y entonces SÍ hace falta protección CSRF
-                // (token sincronizado). No quites este comentario sin revisar esa decisión.
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(loginRateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // CSRF deshabilitado CONSCIENTEMENTE: la autenticación usa JWT en cookie
+            // httpOnly + SameSite=Strict, que el navegador no adjunta en peticiones
+            // cross-site → el vector CSRF clásico no aplica. Además la API es stateless
+            // (no hay sesión de servidor).
+            //
+            // CONTRATO: si algún día el front y el back se separan en dominios distintos
+            // (hoy lo enmascara el proxy nginx, que los sirve same-origin), habrá que
+            // relajar SameSite a Lax y entonces SÍ hace falta protección CSRF
+            // (token sincronizado). No quites este comentario sin revisar esa decisión.
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public LoginRateLimitFilter loginRateLimitFilter() {
-        return new LoginRateLimitFilter();
     }
 
     @Bean
@@ -88,7 +86,6 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 

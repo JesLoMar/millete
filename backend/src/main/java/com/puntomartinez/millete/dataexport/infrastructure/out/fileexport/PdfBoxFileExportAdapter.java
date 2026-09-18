@@ -17,17 +17,28 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Generador de PDF financiero usando Apache PDFBox directamente.
+ *
+ * <p>PAGINACIÓN: Las tablas de inversiones y transacciones soportan
+ * múltiples páginas. Cuando el cursor vertical baja del umbral (55px
+ * desde el borde inferior), {@code PdfPageContext.startNewPage()}
+ * cierra el stream actual, crea una nueva página con fondo y vuelve
+ * a dibujar la cabecera de la tabla antes de continuar con las filas.</p>
+ *
+ * <p>Los textos del PDF están en inglés de forma intencional para
+ * mantener consistencia con formatos financieros internacionales.
+ * Si se internacionaliza la app, externalizar strings a
+ * messages.properties.</p>
+ */
 @Component("pdfFileExportAdapter")
-public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
+public class PdfBoxFileExportAdapter implements FilePdfExportPort {
 
     private static final PDRectangle PAGE_SIZE = PDRectangle.A4;
-
     private static final float PAGE_MARGIN = 28f;
     private static final float CONTENT_WIDTH =
             PAGE_SIZE.getWidth() - (PAGE_MARGIN * 2);
-
     private static final float HEADER_HEIGHT = 72f;
-
     private static final float SPACE_AFTER_HEADER = 20f;
     private static final float SPACE_AFTER_SUMMARY = 26f;
     private static final float SPACE_TITLE_TO_DIVIDER = 8f;
@@ -38,45 +49,35 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
     private static final PDType1Font FONT_REGULAR =
             new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-
     private static final PDType1Font FONT_BOLD =
             new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-
     private static final PDType1Font FONT_ITALIC =
             new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE);
 
     private static final int TEXT_COLOR_R = 61;
     private static final int TEXT_COLOR_G = 43;
     private static final int TEXT_COLOR_B = 31;
-
     private static final int MUTED_COLOR_R = 140;
     private static final int MUTED_COLOR_G = 123;
     private static final int MUTED_COLOR_B = 107;
-
     private static final int BACKGROUND_R = 247;
     private static final int BACKGROUND_G = 228;
     private static final int BACKGROUND_B = 197;
-
     private static final int CARD_R = 255;
     private static final int CARD_G = 242;
     private static final int CARD_B = 217;
-
     private static final int GREEN_R = 27;
     private static final int GREEN_G = 77;
     private static final int GREEN_B = 62;
-
     private static final int RED_R = 194;
     private static final int RED_G = 59;
     private static final int RED_B = 34;
-
     private static final int ORANGE_R = 192;
     private static final int ORANGE_G = 96;
     private static final int ORANGE_B = 24;
-
     private static final int LINE_R = 217;
     private static final int LINE_G = 200;
     private static final int LINE_B = 160;
-
     private static final int ALTERNATE_ROW_R = 245;
     private static final int ALTERNATE_ROW_G = 222;
     private static final int ALTERNATE_ROW_B = 179;
@@ -124,13 +125,11 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                             "Active Investments",
                             y
                     );
-
                     drawEmptyMessage(
                             context.content(),
                             "No active investments at this time.",
                             y - SPACE_DIVIDER_TO_CONTENT
                     );
-
                     y -= SPACE_DIVIDER_TO_CONTENT + 30;
                 }
 
@@ -169,21 +168,18 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
     private static void drawBackground(
             PDPageContentStream content
     ) throws IOException {
-
         setNonStrokingColor(
                 content,
                 BACKGROUND_R,
                 BACKGROUND_G,
                 BACKGROUND_B
         );
-
         content.addRect(
                 0,
                 0,
                 PAGE_SIZE.getWidth(),
                 PAGE_SIZE.getHeight()
         );
-
         content.fill();
     }
 
@@ -191,7 +187,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             PDPageContentStream content,
             PdfExportData data
     ) throws IOException {
-
         float x = PAGE_MARGIN;
         float y = PAGE_SIZE.getHeight() - PAGE_MARGIN;
 
@@ -201,14 +196,12 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                 CARD_G,
                 CARD_B
         );
-
         content.addRect(
                 x,
                 y - HEADER_HEIGHT,
                 CONTENT_WIDTH,
                 HEADER_HEIGHT
         );
-
         content.fill();
 
         setNonStrokingColor(
@@ -217,14 +210,12 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                 ORANGE_G,
                 ORANGE_B
         );
-
         content.addRect(
                 x,
                 y - HEADER_HEIGHT,
                 4,
                 HEADER_HEIGHT
         );
-
         content.fill();
 
         drawText(
@@ -264,7 +255,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             PDPageContentStream content,
             PdfExportData.Summary summary
     ) throws IOException {
-
         float y =
                 PAGE_SIZE.getHeight()
                         - PAGE_MARGIN
@@ -274,7 +264,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
         float gap = 8;
         float cardWidth =
                 (CONTENT_WIDTH - (gap * 3)) / 4;
-
         float cardHeight = 68;
         float rowGap = 8;
 
@@ -405,21 +394,18 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             int valueG,
             int valueB
     ) throws IOException {
-
         setNonStrokingColor(
                 content,
                 CARD_R,
                 CARD_G,
                 CARD_B
         );
-
         content.addRect(
                 x,
                 y - height,
                 width,
                 height
         );
-
         content.fill();
 
         drawText(
@@ -452,7 +438,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             List<PdfExportData.InvestmentRow> investments,
             float y
     ) throws IOException {
-
         y = drawSectionTitle(
                 context.content(),
                 "Active Investments",
@@ -493,26 +478,21 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
         float rowY =
                 tableY - TABLE_HEADER_HEIGHT;
-
         boolean alternate = false;
 
         for (PdfExportData.InvestmentRow investment : investments) {
-
             if (rowY < 55) {
                 context.startNewPage();
-
                 rowY =
                         PAGE_SIZE.getHeight()
                                 - PAGE_MARGIN
                                 - TABLE_HEADER_HEIGHT;
-
                 drawTableHeader(
                         context.content(),
                         rowY,
                         headers,
                         widths
                 );
-
                 rowY -= TABLE_HEADER_HEIGHT;
             }
 
@@ -562,7 +542,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             List<PdfExportData.TransactionRow> transactions,
             float y
     ) throws IOException {
-
         String[] headers = {
                 "Date",
                 "Category",
@@ -588,26 +567,21 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
         float rowY =
                 y - TABLE_HEADER_HEIGHT;
-
         boolean alternate = false;
 
         for (PdfExportData.TransactionRow transaction : transactions) {
-
             if (rowY < 55) {
                 context.startNewPage();
-
                 rowY =
                         PAGE_SIZE.getHeight()
                                 - PAGE_MARGIN
                                 - TABLE_HEADER_HEIGHT;
-
                 drawTableHeader(
                         context.content(),
                         rowY,
                         headers,
                         widths
                 );
-
                 rowY -= TABLE_HEADER_HEIGHT;
             }
 
@@ -658,7 +632,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             String title,
             float y
     ) throws IOException {
-
         drawText(
                 content,
                 title,
@@ -672,19 +645,15 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
         );
 
         setStrokingColor(content);
-
         content.setLineWidth(1.2f);
-
         content.moveTo(
                 PAGE_MARGIN,
                 y - SPACE_TITLE_TO_DIVIDER
         );
-
         content.lineTo(
                 PAGE_SIZE.getWidth() - PAGE_MARGIN,
                 y - SPACE_TITLE_TO_DIVIDER
         );
-
         content.stroke();
 
         return y - SPACE_TITLE_TO_DIVIDER;
@@ -695,7 +664,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             String message,
             float y
     ) throws IOException {
-
         drawText(
                 content,
                 message,
@@ -715,7 +683,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             String[] headers,
             float[] widths
     ) throws IOException {
-
         float x = PAGE_MARGIN;
 
         setNonStrokingColor(
@@ -724,18 +691,15 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                 GREEN_G,
                 GREEN_B
         );
-
         content.addRect(
                 x,
                 y - TABLE_HEADER_HEIGHT,
                 sum(widths),
                 TABLE_HEADER_HEIGHT
         );
-
         content.fill();
 
         for (int i = 0; i < headers.length; i++) {
-
             drawText(
                     content,
                     headers[i].toUpperCase(Locale.ENGLISH),
@@ -747,7 +711,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                     CARD_G,
                     CARD_B
             );
-
             x += widths[i];
         }
     }
@@ -758,7 +721,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             float[] widths,
             boolean alternate
     ) throws IOException {
-
         if (!alternate) {
             return;
         }
@@ -769,14 +731,12 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                 ALTERNATE_ROW_G,
                 ALTERNATE_ROW_B
         );
-
         content.addRect(
                 PAGE_MARGIN,
                 y - TABLE_ROW_HEIGHT,
                 sum(widths),
                 TABLE_ROW_HEIGHT
         );
-
         content.fill();
     }
 
@@ -786,11 +746,9 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             String[] values,
             float[] widths
     ) throws IOException {
-
         float x = PAGE_MARGIN;
 
         for (int i = 0; i < values.length; i++) {
-
             String value =
                     truncate(values[i], widths[i]);
 
@@ -799,7 +757,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             int textB = TEXT_COLOR_B;
 
             if (i == values.length - 1) {
-
                 String originalValue =
                         safe(values[i]);
 
@@ -825,24 +782,19 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
                     textG,
                     textB
             );
-
             x += widths[i];
         }
 
         setStrokingColor(content);
-
         content.setLineWidth(0.4f);
-
         content.moveTo(
                 PAGE_MARGIN,
                 y - TABLE_ROW_HEIGHT
         );
-
         content.lineTo(
                 PAGE_MARGIN + sum(widths),
                 y - TABLE_ROW_HEIGHT
         );
-
         content.stroke();
     }
 
@@ -857,17 +809,14 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             int g,
             int b
     ) throws IOException {
-
         content.beginText();
         content.setFont(font, size);
-
         setNonStrokingColor(
                 content,
                 r,
                 g,
                 b
         );
-
         content.newLineAtOffset(x, y);
         content.showText(safe(text));
         content.endText();
@@ -879,7 +828,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             int g,
             int b
     ) throws IOException {
-
         content.setNonStrokingColor(
                 colorComponent(r),
                 colorComponent(g),
@@ -890,7 +838,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
     private static void setStrokingColor(
             PDPageContentStream content
     ) throws IOException {
-
         content.setStrokingColor(
                 colorComponent(LINE_R),
                 colorComponent(LINE_G),
@@ -906,7 +853,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
         if (value == null) {
             return "0€";
         }
-
         return String.format(
                 Locale.ENGLISH,
                 "%,.2f€",
@@ -918,9 +864,7 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
         if (value == null) {
             return "0€";
         }
-
         String formatted = formatEuro(value);
-
         return value.compareTo(BigDecimal.ZERO) >= 0
                 ? "+" + formatted
                 : formatted;
@@ -930,11 +874,9 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             BigDecimal value,
             int decimals
     ) {
-
         if (value == null) {
             return "0";
         }
-
         return value.setScale(
                 decimals,
                 java.math.RoundingMode.HALF_UP
@@ -955,11 +897,9 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
     private static float sum(float[] values) {
         float result = 0;
-
         for (float value : values) {
             result += value;
         }
-
         return result;
     }
 
@@ -967,15 +907,12 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
             String value,
             float width
     ) {
-
         String safeValue = safe(value);
-
         float maxChars =
                 Math.max(
                         4,
                         width / (7 * 0.55f)
                 );
-
         int maxLength = (int) maxChars;
 
         if (safeValue.length() <= maxLength) {
@@ -989,7 +926,6 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
     }
 
     private static final class PdfPageContext {
-
         private final PDDocument document;
         private PDPageContentStream content;
 
@@ -1007,15 +943,12 @@ public class HtmlPdfFileExportAdapter implements FilePdfExportPort {
 
         private void startNewPage() throws IOException {
             content.close();
-
             PDPage page = new PDPage(PAGE_SIZE);
             document.addPage(page);
-
             content = new PDPageContentStream(
                     document,
                     page
             );
-
             drawBackground(content);
         }
     }

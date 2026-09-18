@@ -22,6 +22,26 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 
+/**
+ * Filtro de autenticación JWT basado en cookie httpOnly.
+ *
+ * <p>DEPENDENCIA CON 'users': Este filtro depende de TokenProvider y
+ * UserSessionRepository del módulo 'users'. Esto es intencional porque
+ * el filtro es intrínsecamente parte del sistema de identidad. El módulo
+ * 'shared' actúa como kernel de autenticación y necesita conocer los
+ * puertos de identidad.</p>
+ *
+ * <p>VARIABLES DE ENTORNO:
+ * <ul>
+ *   <li>{@code jwt.cookie-name} — Nombre de la cookie JWT.
+ *       Default: {@code __Host-ms_token}. Si usa prefijo {@code __Host-},
+ *       la cookie DEBE servirse con Secure y Path=/ (validado en
+ *       CookieAuthFactory).</li>
+ *   <li>{@code jwt.cookie-secure} — Default: {@code true}.</li>
+ *   <li>{@code jwt.cookie-same-site} — Default: {@code Strict}.</li>
+ * </ul>
+ * </p>
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -30,8 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final String cookieName;
 
     public JwtAuthenticationFilter(TokenProvider tokenProvider,
-                                   UserSessionRepository userSessionRepository,
-                                   @Value("${jwt.cookie-name}") String cookieName) {
+                                    UserSessionRepository userSessionRepository,
+                                    @Value("${jwt.cookie-name}") String cookieName) {
         this.tokenProvider = tokenProvider;
         this.userSessionRepository = userSessionRepository;
         this.cookieName = cookieName;
@@ -101,7 +121,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String extractJwtFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookieName.equals(cookie.getName())) {
@@ -109,7 +128,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         return null;
     }
 }
