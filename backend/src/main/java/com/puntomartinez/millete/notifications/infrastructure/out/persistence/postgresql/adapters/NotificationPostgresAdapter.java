@@ -2,7 +2,7 @@ package com.puntomartinez.millete.notifications.infrastructure.out.persistence.p
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
-import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase.PaginatedNotifications;
+import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.entity.NotificationEntity;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.mappers.NotificationEntityMapper;
@@ -10,8 +10,10 @@ import com.puntomartinez.millete.notifications.infrastructure.out.persistence.po
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,27 +31,42 @@ public class NotificationPostgresAdapter
         NotificationEntity entity =
                 mapper.toEntity(notification);
 
-        return mapper.toDomain(
-                jpaRepository.save(entity)
-        );
+        NotificationEntity savedEntity =
+                jpaRepository.save(entity);
+
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
-    public Optional<Notification> findById(UUID id) {
+    public Optional<Notification> findActiveAndNotExpiredByIdAndUserId(
+            UUID id,
+            UUID userId,
+            LocalDateTime now
+    ) {
         return jpaRepository
-                .findById(id)
+                .findActiveAndNotExpiredByIdAndUserId(
+                        id,
+                        userId,
+                        now
+                )
                 .map(mapper::toDomain);
     }
 
     @Override
-    public List<Notification> findActiveByUserIdOrderByCreatedAtDesc(
+    public List<Notification> findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
             UUID userId,
-            int limit) {
-
+            int limit,
+            LocalDateTime now
+    ) {
         return jpaRepository
-                .findByUserIdAndActiveTrueOrderByCreatedAtDesc(
+                .findActiveAndNotExpiredByUserId(
                         userId,
-                        PageRequest.of(0, limit)
+                        now,
+                        PageRequest.of(
+                                0,
+                                limit,
+                                Sort.by("createdAt").descending()
+                        )
                 )
                 .stream()
                 .map(mapper::toDomain)
@@ -57,16 +74,22 @@ public class NotificationPostgresAdapter
     }
 
     @Override
-    public PaginatedNotifications findActiveByUserIdPaginated(
+    public PaginatedNotifications findActiveAndNotExpiredByUserIdPaginated(
             UUID userId,
             int page,
-            int size) {
-
+            int size,
+            LocalDateTime now
+    ) {
         Page<Notification> pageResult =
                 jpaRepository
-                        .findAllByUserIdAndActiveTrueOrderByCreatedAtDesc(
+                        .findActiveAndNotExpiredByUserIdPage(
                                 userId,
-                                PageRequest.of(page, size)
+                                now,
+                                PageRequest.of(
+                                        page,
+                                        size,
+                                        Sort.by("createdAt").descending()
+                                )
                         )
                         .map(mapper::toDomain);
 
@@ -82,9 +105,15 @@ public class NotificationPostgresAdapter
     }
 
     @Override
-    public long countUnreadByUserId(UUID userId) {
+    public long countUnreadActiveAndNotExpiredByUserId(
+            UUID userId,
+            LocalDateTime now
+    ) {
         return jpaRepository
-                .countByUserIdAndActiveTrueAndReadFalse(userId);
+                .countUnreadActiveAndNotExpiredByUserId(
+                        userId,
+                        now
+                );
     }
 
     @Override
@@ -92,8 +121,8 @@ public class NotificationPostgresAdapter
             UUID userId,
             NotificationType type,
             String metadataKey,
-            String metadataValue) {
-
+            String metadataValue
+    ) {
         return jpaRepository
                 .findByUserIdAndActiveTrueAndTypeAndMetadataValue(
                         userId,

@@ -2,14 +2,16 @@ package com.puntomartinez.millete.notifications.application.services;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
+import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
 import com.puntomartinez.millete.notifications.domain.ports.in.*;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
-import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +28,7 @@ public class NotificationService implements
 
     private static final int DEFAULT_NOTIFICATION_LIMIT = 25;
     private static final int MAX_NOTIFICATION_LIMIT = 100;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final NotificationRepository notificationRepository;
 
@@ -48,16 +51,17 @@ public class NotificationService implements
     @Transactional(readOnly = true)
     public List<Notification> getUserNotifications(
             UUID userId,
-            int limit) {
-
+            int limit
+    ) {
         int safeLimit = limit <= 0
                 ? DEFAULT_NOTIFICATION_LIMIT
                 : Math.min(limit, MAX_NOTIFICATION_LIMIT);
 
         return notificationRepository
-                .findActiveByUserIdOrderByCreatedAtDesc(
+                .findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
                         userId,
-                        safeLimit
+                        safeLimit,
+                        LocalDateTime.now()
                 );
     }
 
@@ -66,19 +70,27 @@ public class NotificationService implements
     public PaginatedNotifications getUserNotificationsPage(
             UUID userId,
             int page,
-            int size) {
+            int size
+    ) {
+        validatePaginationParams(page, size);
 
-        return notificationRepository.findActiveByUserIdPaginated(
-                userId,
-                page,
-                size
-        );
+        return notificationRepository
+                .findActiveAndNotExpiredByUserIdPaginated(
+                        userId,
+                        page,
+                        size,
+                        LocalDateTime.now()
+                );
     }
 
     @Override
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId) {
-        return notificationRepository.countUnreadByUserId(userId);
+        return notificationRepository
+                .countUnreadActiveAndNotExpiredByUserId(
+                        userId,
+                        LocalDateTime.now()
+                );
     }
 
     @Override
@@ -87,8 +99,8 @@ public class NotificationService implements
             UUID userId,
             NotificationType type,
             String metadataKey,
-            String metadataValue) {
-
+            String metadataValue
+    ) {
         return notificationRepository
                 .findActiveByUserIdAndTypeAndMetadataValue(
                         userId,
@@ -101,66 +113,92 @@ public class NotificationService implements
     @Override
     public void markAsRead(
             UUID userId,
-            UUID notificationId) {
+            UUID notificationId
+    ) {
+        Notification notification = notificationRepository
+                .findActiveAndNotExpiredByIdAndUserId(
+                        notificationId,
+                        userId,
+                        LocalDateTime.now()
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Notificación no encontrada."
+                        )
+                );
 
-        Notification notification =
-                notificationRepository.findById(notificationId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Notificación no encontrada"
-                                ));
+        boolean changed = notification.markAsRead();
 
-        if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException(
-                    "No tienes permiso para modificar esta notificación"
-            );
+        if (changed) {
+            notificationRepository.save(notification);
         }
-
-        notification.markAsRead();
-        notificationRepository.save(notification);
     }
 
     @Override
-    public void markAsActioned(
+    public boolean markAsActioned(
             UUID userId,
-            UUID notificationId) {
+            UUID notificationId
+    ) {
+        Notification notification = notificationRepository
+                .findActiveAndNotExpiredByIdAndUserId(
+                        notificationId,
+                        userId,
+                        LocalDateTime.now()
+                )
+                .orElse(null);
 
-        Notification notification =
-                notificationRepository.findById(notificationId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Notificación no encontrada"
-                                ));
-
-        if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException(
-                    "No tienes permiso para modificar esta notificación"
-            );
+        if (notification == null) {
+            return false;
         }
 
-        notification.markAsActioned();
-        notificationRepository.save(notification);
+        boolean changed = notification.markAsActioned();
+
+        if (changed) {
+            notificationRepository.save(notification);
+        }
+
+        return true;
     }
 
     @Override
     public void delete(
             UUID userId,
-            UUID notificationId) {
-
-        Notification notification =
-                notificationRepository.findById(notificationId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Notificación no encontrada"
-                                ));
-
-        if (!notification.getUserId().equals(userId)) {
-            throw new ForbiddenOperationException(
-                    "No tienes permiso para eliminar esta notificación"
-            );
-        }
+            UUID notificationId
+    ) {
+        Notification notification = notificationRepository
+                .findActiveAndNotExpiredByIdAndUserId(
+                        notificationId,
+                        userId,
+                        LocalDateTime.now()
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Notificación no encontrada."
+                        )
+                );
 
         notification.softDelete();
         notificationRepository.save(notification);
+    }
+
+    private void validatePaginationParams(int page, int size) {
+        if (page < 0) {
+            throw new InvalidInputException(
+                    "La página debe ser mayor o igual que 0."
+            );
+        }
+
+        if (size <= 0) {
+            throw new InvalidInputException(
+                    "El tamaño de página debe ser mayor que 0."
+            );
+        }
+
+        if (size > MAX_PAGE_SIZE) {
+            throw new InvalidInputException(
+                    "El tamaño de página no puede superar "
+                            + MAX_PAGE_SIZE + "."
+            );
+        }
     }
 }

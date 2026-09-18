@@ -1,6 +1,5 @@
 package com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.repository;
 
-import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.entity.NotificationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,20 +17,18 @@ import java.util.UUID;
 public interface JpaNotificationRepository
         extends JpaRepository<NotificationEntity, UUID> {
 
-    List<NotificationEntity>
-    findByUserIdAndActiveTrueOrderByCreatedAtDesc(
-            UUID userId,
-            Pageable pageable
-    );
-
-    Page<NotificationEntity>
-    findAllByUserIdAndActiveTrueOrderByCreatedAtDesc(
-            UUID userId,
-            Pageable pageable
-    );
-
-    long countByUserIdAndActiveTrueAndReadFalse(
-            UUID userId
+    @Query("""
+            SELECT n
+            FROM NotificationEntity n
+            WHERE n.id = :id
+              AND n.userId = :userId
+              AND n.active = true
+              AND (n.expiresAt IS NULL OR n.expiresAt > :now)
+            """)
+    Optional<NotificationEntity> findActiveAndNotExpiredByIdAndUserId(
+            @Param("id") UUID id,
+            @Param("userId") UUID userId,
+            @Param("now") LocalDateTime now
     );
 
     @Query("""
@@ -38,11 +36,38 @@ public interface JpaNotificationRepository
             FROM NotificationEntity n
             WHERE n.userId = :userId
               AND n.active = true
-              AND n.type = :type
+              AND (n.expiresAt IS NULL OR n.expiresAt > :now)
             """)
-    List<NotificationEntity> findByUserIdAndActiveTrueAndType(
+    List<NotificationEntity> findActiveAndNotExpiredByUserId(
             @Param("userId") UUID userId,
-            @Param("type") NotificationType type
+            @Param("now") LocalDateTime now,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT n
+            FROM NotificationEntity n
+            WHERE n.userId = :userId
+              AND n.active = true
+              AND (n.expiresAt IS NULL OR n.expiresAt > :now)
+            """)
+    Page<NotificationEntity> findActiveAndNotExpiredByUserIdPage(
+            @Param("userId") UUID userId,
+            @Param("now") LocalDateTime now,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT COUNT(n)
+            FROM NotificationEntity n
+            WHERE n.userId = :userId
+              AND n.active = true
+              AND n.read = false
+              AND (n.expiresAt IS NULL OR n.expiresAt > :now)
+            """)
+    long countUnreadActiveAndNotExpiredByUserId(
+            @Param("userId") UUID userId,
+            @Param("now") LocalDateTime now
     );
 
     @Query(
@@ -58,8 +83,7 @@ public interface JpaNotificationRepository
                     """,
             nativeQuery = true
     )
-    Optional<NotificationEntity>
-    findByUserIdAndActiveTrueAndTypeAndMetadataValue(
+    Optional<NotificationEntity> findByUserIdAndActiveTrueAndTypeAndMetadataValue(
             @Param("userId") UUID userId,
             @Param("type") String type,
             @Param("metadataKey") String metadataKey,

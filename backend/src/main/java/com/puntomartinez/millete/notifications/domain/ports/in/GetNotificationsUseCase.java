@@ -2,6 +2,7 @@ package com.puntomartinez.millete.notifications.domain.ports.in;
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
+import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +29,4 @@ public interface GetNotificationsUseCase {
             String metadataKey,
             String metadataValue
     );
-
-    record PaginatedNotifications(
-            List<Notification> content,
-            int currentPage,
-            int totalPages,
-            long totalElements,
-            int size,
-            boolean first,
-            boolean last) {
-    }
 }

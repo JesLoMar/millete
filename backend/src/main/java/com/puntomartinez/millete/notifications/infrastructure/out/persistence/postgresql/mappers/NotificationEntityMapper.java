@@ -2,12 +2,19 @@ package com.puntomartinez.millete.notifications.infrastructure.out.persistence.p
 
 import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.infrastructure.out.persistence.postgresql.entity.NotificationEntity;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 
-@Component
-public class NotificationEntityMapper {
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface NotificationEntityMapper {
 
-    public Notification toDomain(NotificationEntity entity) {
+    NotificationEntity toEntity(Notification domain);
+
+    default Notification toDomain(NotificationEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
         return Notification.reconstitute(
                 entity.getId(),
                 entity.getUserId(),
@@ -22,24 +29,5 @@ public class NotificationEntityMapper {
                 entity.getExpiresAt(),
                 entity.isActive()
         );
-    }
-
-    public NotificationEntity toEntity(Notification notification) {
-        NotificationEntity entity = new NotificationEntity();
-
-        entity.setId(notification.getId());
-        entity.setUserId(notification.getUserId());
-        entity.setType(notification.getType());
-        entity.setTitle(notification.getTitle());
-        entity.setMessage(notification.getMessage());
-        entity.setMetadata(notification.getMetadata());
-        entity.setRead(notification.isRead());
-        entity.setActionRequired(notification.isActionRequired());
-        entity.setActionedAt(notification.getActionedAt());
-        entity.setCreatedAt(notification.getCreatedAt());
-        entity.setExpiresAt(notification.getExpiresAt());
-        entity.setActive(notification.isActive());
-
-        return entity;
     }
 }
