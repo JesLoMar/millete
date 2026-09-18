@@ -24,7 +24,12 @@ public class GoalUnitEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(name = "monthly_target", precision = 12, scale = 2)
+    @Column(
+        name = "monthly_target",
+        nullable = false,
+        precision = 12,
+        scale = 2
+    )
     private BigDecimal monthlyTarget;
 
     @Column(name = "distribution_mode", nullable = false, length = 20)

@@ -1,175 +1,139 @@
 package com.puntomartinez.millete.groupgoals.application.services;
 
+import com.puntomartinez.millete.groupgoals.domain.model.ContributionType;
+import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
-import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class GroupGoalCommandService implements
         CreateGoalUnitUseCase,
         UpdateGoalUseCase,
         DeleteGoalUnitUseCase,
         UpdateMemberUseCase,
         DeleteMemberUseCase,
-        AddContributionUseCase {
+        AddContributionUseCase,
+        WithdrawContributionUseCase,
+        LeaveGoalUseCase {
 
     private final GoalUnitRepository goalUnitRepository;
     private final GoalMemberRepository goalMemberRepository;
     private final GoalContributionRepository goalContributionRepository;
     private final GoalInvitationRepository goalInvitationRepository;
 
+    public GroupGoalCommandService(
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
+            GoalInvitationRepository goalInvitationRepository
+    ) {
+        this.goalUnitRepository = goalUnitRepository;
+        this.goalMemberRepository = goalMemberRepository;
+        this.goalContributionRepository = goalContributionRepository;
+        this.goalInvitationRepository = goalInvitationRepository;
+    }
+
     @Override
     @Transactional
-    public GoalUnit create(UUID adminUserId, CreateGoalUnitCommand command) {
-        GoalUnit goalUnit = GoalUnit.create(
+    public GoalUnit create(CreateGoalUnitCommand command) {
+        GoalUnit goal = GoalUnit.create(
                 command.name(),
                 command.monthlyTarget(),
                 command.distributionMode()
         );
 
-        goalUnitRepository.save(goalUnit);
+        GoalUnit saved = goalUnitRepository.save(goal);
 
-        GoalMember adminMember = GoalMember.create(
-                goalUnit.getId(),
-                adminUserId,
+        GoalMember admin = GoalMember.create(
+                saved.getId(),
+                command.creatorUserId(),
                 GoalRole.ADMIN,
                 null
         );
+        goalMemberRepository.save(admin);
 
-        goalMemberRepository.save(adminMember);
-
-        return goalUnit;
+        return saved;
     }
 
     @Override
     @Transactional
-    public void update(
+    public GoalUnit update(
             UUID goalId,
             UUID userId,
-            UpdateGoalCommand command) {
+            UpdateGoalCommand command
+    ) {
+        GoalUnit goal = getActiveGoal(goalId);
+        requireAdmin(goalId, userId);
 
-        GoalMember requester = getMember(goalId, userId);
-
-        if (!requester.isAdmin()) {
-            throw new ForbiddenOperationException(
-                    "Solo un administrador puede modificar la meta."
-            );
-        }
-
-        GoalUnit goalUnit = getGoal(goalId);
-
-        goalUnit.updateDetails(
+        goal.updateDetails(
                 command.name(),
                 command.monthlyTarget(),
                 command.distributionMode()
         );
 
-        goalUnitRepository.save(goalUnit);
+        return goalUnitRepository.save(goal);
     }
 
     @Override
     @Transactional
-    public void deleteMember(
-            UUID goalId,
-            UUID memberId,
-            UUID userId) {
+    public void deleteGoalUnit(UUID goalId, UUID userId) {
+        getActiveGoal(goalId);
+        requireAdmin(goalId, userId);
 
-        GoalMember requester = getMember(goalId, userId);
+        goalUnitRepository.findById(goalId).ifPresent(goal -> {
+            goal.deactivate();
+            goalUnitRepository.save(goal);
+        });
 
-        if (!requester.isAdmin()) {
-            throw new ForbiddenOperationException(
-                    "Solo un administrador puede eliminar miembros."
-            );
-        }
-
-        GoalMember member = goalMemberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "El miembro no existe."
-                ));
-
-        if (!goalId.equals(member.getGoalId())) {
-            throw new ForbiddenOperationException(
-                    "El miembro no pertenece a esta meta."
-            );
-        }
-
-        if (member.isActive() && member.isAdmin()) {
-            long adminCount = goalMemberRepository.findByGoalId(goalId)
-                    .stream()
-                    .filter(GoalMember::isActive)
-                    .filter(GoalMember::isAdmin)
-                    .count();
-
-            if (adminCount <= 1) {
-                throw new ForbiddenOperationException(
-                        "No se puede eliminar al último administrador."
-                );
-            }
-        }
-
-        member.deactivate();
-        goalMemberRepository.save(member);
+        goalMemberRepository.deactivateByGoalId(goalId);
+        goalInvitationRepository.deactivatePendingByGoalId(goalId);
+        goalContributionRepository.deactivateByGoalId(goalId);
     }
 
     @Override
     @Transactional
-    public void updateMember(
+    public GoalMember updateMember(
             UUID goalId,
             UUID memberId,
-            UUID userId,
-            UpdateMemberCommand command) {
-
-        GoalMember requester = getMember(goalId, userId);
-
-        if (!requester.isAdmin()) {
-            throw new ForbiddenOperationException(
-                    "Solo un administrador puede modificar miembros."
-            );
-        }
+            UUID requesterUserId,
+            UpdateMemberCommand command
+    ) {
+        getActiveGoal(goalId);
+        requireAdmin(goalId, requesterUserId);
 
         GoalMember member = goalMemberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "El miembro no existe."
-                ));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Miembro no encontrado")
+                );
 
-        if (!goalId.equals(member.getGoalId())) {
+        if (!member.getGoalId().equals(goalId)) {
             throw new ForbiddenOperationException(
-                    "El miembro no pertenece a esta meta."
+                    "El miembro no pertenece a este objetivo"
             );
         }
 
-        if (member.isActive()
-                && member.isAdmin()
-                && command.role() == GoalRole.MEMBER) {
-
-            long adminCount = goalMemberRepository.findByGoalId(goalId)
-                    .stream()
-                    .filter(GoalMember::isActive)
-                    .filter(GoalMember::isAdmin)
-                    .count();
-
-            if (adminCount <= 1) {
-                throw new ForbiddenOperationException(
-                        "No se puede quitar el rol al último administrador."
-                );
-            }
+        if (!member.isActive()) {
+            throw new ResourceNotFoundException("Miembro no encontrado");
         }
+
+        validateDistributionConsistency(goalId, command);
 
         member.updateDetails(
                 command.role(),
@@ -177,6 +141,31 @@ public class GroupGoalCommandService implements
                 command.customPercentage()
         );
 
+        return goalMemberRepository.save(member);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMember(
+            UUID goalId,
+            UUID memberId,
+            UUID requesterUserId
+    ) {
+        getActiveGoal(goalId);
+        requireAdmin(goalId, requesterUserId);
+
+        GoalMember member = goalMemberRepository.findById(memberId)
+                .orElse(null);
+
+        if (member == null
+                || !member.getGoalId().equals(goalId)
+                || !member.isActive()) {
+            return;
+        }
+
+        preventLastAdminRemoval(goalId, member);
+
+        member.deactivate();
         goalMemberRepository.save(member);
     }
 
@@ -185,14 +174,17 @@ public class GroupGoalCommandService implements
     public void addContribution(
             UUID goalId,
             UUID userId,
-            AddContributionCommand command) {
-
-        getMember(goalId, userId);
+            AddContributionCommand command
+    ) {
+        getActiveGoal(goalId);
+        requireActiveMember(goalId, userId);
 
         GoalContribution contribution = GoalContribution.create(
                 goalId,
                 userId,
-                command.amount()
+                command.amount(),
+                ContributionType.DEPOSIT,
+                LocalDateTime.now()
         );
 
         goalContributionRepository.save(contribution);
@@ -200,62 +192,127 @@ public class GroupGoalCommandService implements
 
     @Override
     @Transactional
-    public void deleteGoalUnit(
+    public void withdrawContribution(
             UUID goalId,
-            UUID userId) {
+            UUID userId,
+            WithdrawContributionCommand command
+    ) {
+        getActiveGoal(goalId);
+        requireActiveMember(goalId, userId);
 
-        GoalMember requester = getMember(goalId, userId);
+        GoalContribution contribution = GoalContribution.create(
+                goalId,
+                userId,
+                command.amount(),
+                ContributionType.WITHDRAWAL,
+                LocalDateTime.now()
+        );
 
-        if (!requester.isAdmin()) {
-            throw new ForbiddenOperationException(
-                    "Solo un administrador puede eliminar la meta."
-            );
-        }
-
-        GoalUnit goalUnit = getGoal(goalId);
-
-        goalUnit.deactivate();
-        goalUnitRepository.save(goalUnit);
-
-        for (GoalMember member : goalMemberRepository.findByGoalId(goalId)) {
-            member.deactivate();
-            goalMemberRepository.save(member);
-        }
-
-        for (GoalInvitation invitation :
-                goalInvitationRepository.findActiveByGoalIdAndStatus(
-                        goalId,
-                        InvitationStatus.PENDING
-                )) {
-
-            invitation.deactivate();
-            goalInvitationRepository.save(invitation);
-        }
+        goalContributionRepository.save(contribution);
     }
 
-    private GoalUnit getGoal(UUID goalId) {
-        return goalUnitRepository.findById(goalId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "La meta no existe."
-                ));
-    }
-
-    private GoalMember getMember(
-            UUID goalId,
-            UUID userId) {
+    @Override
+    @Transactional
+    public void leaveGoal(UUID goalId, UUID userId) {
+        getActiveGoal(goalId);
 
         GoalMember member = goalMemberRepository
                 .findByGoalIdAndUserId(goalId, userId)
-                .orElseThrow(() -> new ForbiddenOperationException(
-                        "El usuario no pertenece a esta meta."
-                ));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "No perteneces a este objetivo"
+                        )
+                );
 
         if (!member.isActive()) {
-            throw new ForbiddenOperationException(
-                    "El usuario no pertenece activamente a esta meta."
+            throw new ResourceNotFoundException(
+                    "No perteneces a este objetivo"
             );
         }
 
-        return member;
+        preventLastAdminRemoval(goalId, member);
+
+        member.deactivate();
+        goalMemberRepository.save(member);
+    }
+
+    private GoalUnit getActiveGoal(UUID goalId) {
+        return goalUnitRepository.findById(goalId)
+                .filter(GoalUnit::isActive)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Objetivo no encontrado"
+                        )
+                );
+    }
+
+    private void requireAdmin(UUID goalId, UUID userId) {
+        GoalMember member = goalMemberRepository
+                .findByGoalIdAndUserId(goalId, userId)
+                .orElseThrow(() ->
+                        new ForbiddenOperationException(
+                                "No tienes permisos sobre este objetivo"
+                        )
+                );
+
+        if (!member.isActive() || !member.isAdmin()) {
+            throw new ForbiddenOperationException(
+                    "Solo los administradores pueden realizar esta acción"
+            );
+        }
+    }
+
+    private void requireActiveMember(UUID goalId, UUID userId) {
+        GoalMember member = goalMemberRepository
+                .findByGoalIdAndUserId(goalId, userId)
+                .orElseThrow(() ->
+                        new ForbiddenOperationException(
+                                "No perteneces a este objetivo"
+                        )
+                );
+
+        if (!member.isActive()) {
+            throw new ForbiddenOperationException(
+                    "No perteneces a este objetivo"
+            );
+        }
+    }
+
+    private void preventLastAdminRemoval(UUID goalId, GoalMember member) {
+        if (!member.isAdmin()) {
+            return;
+        }
+
+        long activeAdmins = goalMemberRepository.findActiveByGoalId(goalId)
+                .stream()
+                .filter(GoalMember::isAdmin)
+                .count();
+
+        if (activeAdmins <= 1) {
+            throw new InvalidInputException(
+                    "No se puede eliminar al último administrador del objetivo"
+            );
+        }
+    }
+
+    private void validateDistributionConsistency(
+            UUID goalId,
+            UpdateMemberCommand command
+    ) {
+        GoalUnit goal = goalUnitRepository.findById(goalId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Objetivo no encontrado"
+                        )
+                );
+
+        DistributionMode mode = goal.getDistributionMode();
+
+        if (mode == DistributionMode.CUSTOM
+                && command.customPercentage() == null) {
+            throw new InvalidInputException(
+                    "En modo CUSTOM todos los miembros deben tener un porcentaje asignado"
+            );
+        }
     }
 }

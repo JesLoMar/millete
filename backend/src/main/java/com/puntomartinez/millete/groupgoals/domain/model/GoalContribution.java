@@ -1,5 +1,7 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -9,8 +11,9 @@ public class GoalContribution {
     private final UUID id;
     private final UUID goalId;
     private final UUID userId;
-    private BigDecimal amount;
-    private LocalDateTime date;
+    private final BigDecimal amount;
+    private final ContributionType type;
+    private final LocalDateTime date;
     private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private boolean active;
@@ -20,34 +23,47 @@ public class GoalContribution {
             UUID goalId,
             UUID userId,
             BigDecimal amount,
+            ContributionType type,
             LocalDateTime date,
             LocalDateTime createdAt,
             LocalDateTime modifiedAt,
-            boolean active) {
+            boolean active
+    ) {
+        validateId(id);
+        validateGoalId(goalId);
+        validateUserId(userId);
+        validateAmount(amount);
+        validateType(type);
+        validateDate(date);
+        validateCreatedAt(createdAt);
+        validateModifiedAt(modifiedAt);
 
-        this.id = requireId(id);
-        this.goalId = requireGoalId(goalId);
-        this.userId = requireUserId(userId);
-        this.amount = requireAmount(amount);
-        this.date = requireDate(date, "La fecha de la contribución es obligatoria.");
-        this.createdAt = requireDate(createdAt, "La fecha de creación es obligatoria.");
-        this.modifiedAt = requireDate(modifiedAt, "La fecha de modificación es obligatoria.");
+        this.id = id;
+        this.goalId = goalId;
+        this.userId = userId;
+        this.amount = amount;
+        this.type = type;
+        this.date = date;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
         this.active = active;
     }
 
     public static GoalContribution create(
             UUID goalId,
             UUID userId,
-            BigDecimal amount) {
-
+            BigDecimal amount,
+            ContributionType type,
+            LocalDateTime date
+    ) {
         LocalDateTime now = LocalDateTime.now();
-
         return new GoalContribution(
                 UUID.randomUUID(),
                 goalId,
                 userId,
                 amount,
-                now,
+                type,
+                date,
                 now,
                 now,
                 true
@@ -59,116 +75,97 @@ public class GoalContribution {
             UUID goalId,
             UUID userId,
             BigDecimal amount,
+            ContributionType type,
             LocalDateTime date,
             LocalDateTime createdAt,
             LocalDateTime modifiedAt,
-            boolean active) {
-
+            boolean active
+    ) {
         return new GoalContribution(
-                id,
-                goalId,
-                userId,
-                amount,
-                date,
-                createdAt,
-                modifiedAt,
-                active
+                id, goalId, userId, amount, type,
+                date, createdAt, modifiedAt, active
         );
-    }
-
-    public void updateAmount(BigDecimal amount) {
-        this.amount = requireAmount(amount);
-        this.modifiedAt = LocalDateTime.now();
-    }
-
-    public void updateDate(LocalDateTime date) {
-        this.date = requireDate(
-                date,
-                "La fecha de la contribución es obligatoria."
-        );
-        this.modifiedAt = LocalDateTime.now();
     }
 
     public void deactivate() {
+        if (!this.active) {
+            return;
+        }
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
     }
 
-    private static UUID requireId(UUID id) {
+    private static void validateId(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "El id de la contribución es obligatorio."
+            throw new InvalidInputException(
+                    "El id de la contribución es obligatorio"
             );
         }
-        return id;
     }
 
-    private static UUID requireGoalId(UUID goalId) {
+    private static void validateGoalId(UUID goalId) {
         if (goalId == null) {
-            throw new IllegalArgumentException(
-                    "La meta es obligatoria."
+            throw new InvalidInputException(
+                    "El objetivo de la contribución es obligatorio"
             );
         }
-        return goalId;
     }
 
-    private static UUID requireUserId(UUID userId) {
+    private static void validateUserId(UUID userId) {
         if (userId == null) {
-            throw new IllegalArgumentException(
-                    "El usuario es obligatorio."
+            throw new InvalidInputException(
+                    "El usuario de la contribución es obligatorio"
             );
         }
-        return userId;
     }
 
-    private static BigDecimal requireAmount(BigDecimal amount) {
+    private static void validateAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
-                    "El importe de la contribución debe ser mayor que cero."
+            throw new InvalidInputException(
+                    "La cantidad de la contribución debe ser mayor que cero"
             );
         }
-        return amount;
     }
 
-    private static LocalDateTime requireDate(
-            LocalDateTime value,
-            String message) {
-
-        if (value == null) {
-            throw new IllegalArgumentException(message);
+    private static void validateType(ContributionType type) {
+        if (type == null) {
+            throw new InvalidInputException(
+                    "El tipo de contribución es obligatorio"
+            );
         }
-        return value;
     }
 
-    public UUID getId() {
-        return id;
+    private static void validateDate(LocalDateTime date) {
+        if (date == null) {
+            throw new InvalidInputException(
+                    "La fecha de la contribución es obligatoria"
+            );
+        }
     }
 
-    public UUID getGoalId() {
-        return goalId;
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+        if (createdAt == null) {
+            throw new InvalidInputException(
+                    "La fecha de creación es obligatoria"
+            );
+        }
     }
 
-    public UUID getUserId() {
-        return userId;
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+        if (modifiedAt == null) {
+            throw new InvalidInputException(
+                    "La fecha de modificación es obligatoria"
+            );
+        }
     }
 
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
+    public UUID getId() { return id; }
+    public UUID getGoalId() { return goalId; }
+    public UUID getUserId() { return userId; }
+    public BigDecimal getAmount() { return amount; }
+    public ContributionType getType() { return type; }
+    public LocalDateTime getDate() { return date; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public boolean isActive() { return active; }
 }

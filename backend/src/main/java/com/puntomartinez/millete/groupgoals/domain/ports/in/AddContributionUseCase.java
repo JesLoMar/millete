@@ -11,8 +11,6 @@ public interface AddContributionUseCase {
             AddContributionCommand command
     );
 
-    record AddContributionCommand(
-            BigDecimal amount
-    ) {
+    record AddContributionCommand(BigDecimal amount) {
     }
 }

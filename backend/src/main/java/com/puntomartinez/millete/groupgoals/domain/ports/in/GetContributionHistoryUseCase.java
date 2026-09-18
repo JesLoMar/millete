@@ -1,32 +1,30 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface GetContributionHistoryUseCase {
 
-    ContributionHistory getContributionHistory(
+    PaginatedContributions getContributionHistory(
             UUID goalId,
             UUID userId,
             int page,
             int size
     );
 
-    record Contribution(
-            UUID id,
-            UUID userId,
-            String userName,
-            BigDecimal amount,
-            LocalDateTime date
-    ) {
-    }
+    List<MemberContributionTotals> getTotalsByMember(UUID goalId, UUID userId);
 
-    record ContributionHistory(
-            List<Contribution> contributions,
+    record PaginatedContributions(
+            List<GoalContribution> contributions,
+            int currentPage,
+            int totalPages,
             long totalElements,
-            int totalPages
+            int size,
+            boolean first,
+            boolean last
     ) {
     }
 }

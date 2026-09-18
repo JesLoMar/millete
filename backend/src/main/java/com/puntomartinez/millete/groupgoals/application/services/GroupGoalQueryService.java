@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.groupgoals.application.services;
 
+import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
@@ -8,331 +9,273 @@ import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHisto
 import com.puntomartinez.millete.groupgoals.domain.ports.in.GetGoalDetailUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.ListGoalsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class GroupGoalQueryService implements
-        CalculateContributionsUseCase,
         ListGoalsUseCase,
         GetGoalDetailUseCase,
-        GetContributionHistoryUseCase {
+        GetContributionHistoryUseCase,
+        CalculateContributionsUseCase {
 
     private final GoalUnitRepository goalUnitRepository;
     private final GoalMemberRepository goalMemberRepository;
     private final GoalContributionRepository goalContributionRepository;
     private final UserLookupPort userLookupPort;
 
-    @Override
-    public Map<UUID, BigDecimal> calculateContributions(
-            UUID goalId,
-            UUID callerId) {
-
-        getMember(goalId, callerId);
-
-        GoalUnit goalUnit = getGoal(goalId);
-
-        List<GoalMember> members =
-                goalMemberRepository.findByGoalId(goalId);
-
-        return goalUnit.calculateContributions(members);
+    public GroupGoalQueryService(
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
+            UserLookupPort userLookupPort
+    ) {
+        this.goalUnitRepository = goalUnitRepository;
+        this.goalMemberRepository = goalMemberRepository;
+        this.goalContributionRepository = goalContributionRepository;
+        this.userLookupPort = userLookupPort;
     }
 
     @Override
-    public GoalsPage listGoals(
-            UUID userId,
-            int page,
-            int size) {
+    @Transactional(readOnly = true)
+    public List<GoalSummary> listGoals(UUID userId) {
+        List<GoalMember> memberships = goalMemberRepository
+                .findActiveByUserId(userId);
 
-        long totalElements =
-                goalUnitRepository.countByUserId(userId);
-
-        int totalPages =
-                calculateTotalPages(totalElements, size);
-
-        if (totalElements == 0) {
-            return new GoalsPage(
-                    List.of(),
-                    0,
-                    0
-            );
+        if (memberships.isEmpty()) {
+            return List.of();
         }
 
-        int safePage = Math.min(
-                Math.max(page, 0),
-                totalPages - 1
-        );
-
-        List<GoalUnit> goals =
-                goalUnitRepository.findByUserId(
-                        userId,
-                        safePage,
-                        size
-                );
-
-        List<UUID> goalIds = goals.stream()
-                .map(GoalUnit::getId)
+        List<UUID> goalIds = memberships.stream()
+                .map(GoalMember::getGoalId)
                 .toList();
 
-        List<GoalMember> members =
-                goalMemberRepository.findByGoalIdIn(goalIds);
+        List<GoalUnit> goals = goalUnitRepository.findByIds(goalIds);
 
-        Map<UUID, List<GoalMember>> membersByGoal =
-                new HashMap<>();
+        Map<UUID, GoalMember> memberByGoal = memberships.stream()
+                .collect(Collectors.toMap(
+                        GoalMember::getGoalId, m -> m, (a, b) -> a
+                ));
 
-        for (GoalMember member : members) {
-            membersByGoal
-                    .computeIfAbsent(
-                            member.getGoalId(),
-                            ignored -> new ArrayList<>()
-                    )
-                    .add(member);
-        }
-
-        List<GoalSummary> summaries = goals.stream()
+        return goals.stream()
+                .filter(GoalUnit::isActive)
                 .map(goal -> {
-                    List<GoalMember> goalMembers =
-                            membersByGoal.getOrDefault(
-                                    goal.getId(),
-                                    List.of()
-                            );
-
-                    boolean admin = goalMembers.stream()
-                            .anyMatch(member ->
-                                    member.getUserId().equals(userId)
-                                            && member.isAdmin());
-
+                    GoalMember membership = memberByGoal.get(goal.getId());
                     return new GoalSummary(
                             goal.getId(),
                             goal.getName(),
                             goal.getMonthlyTarget(),
-                            goalMembers.size(),
-                            admin
+                            goal.getDistributionMode(),
+                            membership != null && membership.isAdmin(),
+                            goal.getCreatedAt()
+                    );
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalDetail getGoalDetail(UUID goalId, UUID userId) {
+        GoalUnit goal = goalUnitRepository.findById(goalId)
+                .filter(GoalUnit::isActive)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Objetivo no encontrado")
+                );
+
+        GoalMember requester = goalMemberRepository
+                .findByGoalIdAndUserId(goalId, userId)
+                .filter(GoalMember::isActive)
+                .orElseThrow(() ->
+                        new ForbiddenOperationException(
+                                "No perteneces a este objetivo"
+                        )
+                );
+
+        List<GoalMember> members = goalMemberRepository
+                .findActiveByGoalId(goalId);
+
+        List<UUID> memberUserIds = members.stream()
+                .map(GoalMember::getUserId)
+                .toList();
+
+        Map<UUID, UserLookupPort.UserInfo> usersById =
+                userLookupPort.findByIds(memberUserIds);
+
+        boolean requesterIsAdmin = requester.isAdmin();
+
+        List<MemberDetail> memberDetails = members.stream()
+                .map(member -> {
+                    UserLookupPort.UserInfo userInfo = usersById.get(
+                            member.getUserId()
+                    );
+                    boolean canSeeFinancialData = requesterIsAdmin
+                            || member.getUserId().equals(userId);
+
+                    return new MemberDetail(
+                            member.getId(),
+                            member.getUserId(),
+                            userInfo != null ? userInfo.username() : null,
+                            userInfo != null ? userInfo.email() : null,
+                            member.getRole(),
+                            canSeeFinancialData ? member.getSalary() : null,
+                            canSeeFinancialData ? member.getCustomPercentage() : null,
+                            member.getJoinedAt()
                     );
                 })
                 .toList();
 
-        return new GoalsPage(
-                summaries,
-                totalElements,
-                totalPages
-        );
-    }
-
-    @Override
-    public GoalDetail getGoalDetail(
-            UUID goalId,
-            UUID userId) {
-
-        GoalUnit goalUnit =
-                getGoal(goalId);
-
-        GoalMember requester =
-                getMember(goalId, userId);
-
-        List<GoalMember> members =
-                goalMemberRepository.findByGoalId(goalId);
-
-        Map<UUID, UserLookupPort.UserInfo> usersById =
-                findUsersForMembers(members);
-
-        boolean requesterIsAdmin =
-                requester.isAdmin();
-
-        List<GetGoalDetailUseCase.Member> memberResults =
-                members.stream()
-                        .map(member -> {
-
-                            boolean canViewFinancialData =
-                                    requesterIsAdmin
-                                            || member.getUserId().equals(userId);
-
-                            return new GetGoalDetailUseCase.Member(
-                                    member.getId(),
-                                    member.getUserId(),
-                                    resolveUserName(
-                                            member.getUserId(),
-                                            usersById
-                                    ),
-                                    member.getRole().name(),
-                                    canViewFinancialData
-                                            ? member.getSalary()
-                                            : null,
-                                    canViewFinancialData
-                                            ? member.getCustomPercentage()
-                                            : null
-                            );
-                        })
-                        .toList();
-
-        Map<UUID, BigDecimal> contributionTotals =
-                goalContributionRepository.sumByUserId(goalId);
+        List<MemberContributionTotals> totals =
+                goalContributionRepository.sumByGoalId(goalId);
 
         return new GoalDetail(
-                goalUnit.getId(),
-                goalUnit.getName(),
-                goalUnit.getMonthlyTarget(),
-                goalUnit.getDistributionMode().name(),
-                requesterIsAdmin,
-                memberResults,
-                contributionTotals
+                goal.getId(),
+                goal.getName(),
+                goal.getMonthlyTarget(),
+                goal.getDistributionMode(),
+                goal.getCreatedAt(),
+                memberDetails,
+                totals
         );
     }
 
     @Override
-    public ContributionHistory getContributionHistory(
-            UUID goalId,
-            UUID userId,
-            int page,
-            int size) {
+    @Transactional(readOnly = true)
+    public PaginatedContributions getContributionHistory(
+            UUID goalId, UUID userId, int page, int size
+    ) {
+        requireActiveMember(goalId, userId);
+        return goalContributionRepository.findByGoalId(goalId, page, size);
+    }
 
-        getMember(goalId, userId);
+    @Override
+    @Transactional(readOnly = true)
+    public List<MemberContributionTotals> getTotalsByMember(
+            UUID goalId, UUID userId
+    ) {
+        requireActiveMember(goalId, userId);
+        return goalContributionRepository.sumByGoalId(goalId);
+    }
 
-        long totalElements =
-                goalContributionRepository.countByGoalId(goalId);
-
-        int totalPages =
-                calculateTotalPages(totalElements, size);
-
-        if (totalElements == 0) {
-            return new ContributionHistory(
-                    List.of(),
-                    0,
-                    0
-            );
-        }
-
-        int safePage = Math.min(
-                Math.max(page, 0),
-                totalPages - 1
-        );
-
-        List<GoalContribution> contributions =
-                goalContributionRepository.findByGoalId(
-                        goalId,
-                        safePage,
-                        size
+    @Override
+    @Transactional(readOnly = true)
+    public ContributionsCalculation calculateContributions(
+            UUID goalId, UUID userId
+    ) {
+        GoalUnit goal = goalUnitRepository.findById(goalId)
+                .filter(GoalUnit::isActive)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Objetivo no encontrado")
                 );
 
-        Set<UUID> userIds = contributions.stream()
-                .map(GoalContribution::getUserId)
-                .collect(Collectors.toSet());
+        requireActiveMember(goalId, userId);
 
-        Map<UUID, UserLookupPort.UserInfo> usersById =
-                userLookupPort.findByIds(userIds);
+        List<GoalMember> members = goalMemberRepository
+                .findActiveByGoalId(goalId);
 
-        List<GetContributionHistoryUseCase.Contribution> result =
-                contributions.stream()
-                        .map(contribution ->
-                                new GetContributionHistoryUseCase.Contribution(
-                                        contribution.getId(),
-                                        contribution.getUserId(),
-                                        resolveUserName(
-                                                contribution.getUserId(),
-                                                usersById
-                                        ),
-                                        contribution.getAmount(),
-                                        contribution.getDate()
-                                ))
-                        .toList();
+        BigDecimal target = goal.getMonthlyTarget();
+        DistributionMode mode = goal.getDistributionMode();
 
-        return new ContributionHistory(
-                result,
-                totalElements,
-                totalPages
+        List<MemberContribution> contributions = switch (mode) {
+            case EQUITATIVE -> calculateEquitative(members, target);
+            case PROPORTIONAL -> calculateProportional(members, target);
+            case CUSTOM -> calculateCustom(members, target);
+        };
+
+        return new ContributionsCalculation(target, mode, contributions);
+    }
+
+    private List<MemberContribution> calculateEquitative(
+            List<GoalMember> members, BigDecimal target
+    ) {
+        if (members.isEmpty()) {
+            return List.of();
+        }
+        BigDecimal perMember = target.divide(
+                new BigDecimal(members.size()), 2, RoundingMode.HALF_UP
         );
+        return members.stream()
+                .map(m -> new MemberContribution(m.getUserId(), perMember))
+                .toList();
     }
 
-    private Map<UUID, UserLookupPort.UserInfo> findUsersForMembers(
-            List<GoalMember> members) {
+    private List<MemberContribution> calculateProportional(
+            List<GoalMember> members, BigDecimal target
+    ) {
+        BigDecimal totalSalary = members.stream()
+                .map(m -> m.getSalary() != null ? m.getSalary() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Set<UUID> userIds = members.stream()
-                .map(GoalMember::getUserId)
-                .collect(Collectors.toSet());
+        if (totalSalary.compareTo(BigDecimal.ZERO) == 0) {
+            throw new InvalidInputException(
+                    "No se puede calcular el reparto proporcional "
+                            + "porque ningún miembro tiene salario asignado"
+            );
+        }
 
-        return userLookupPort.findByIds(userIds);
+        return members.stream()
+                .map(m -> {
+                    BigDecimal salary = m.getSalary() != null
+                            ? m.getSalary() : BigDecimal.ZERO;
+                    BigDecimal share = target
+                            .multiply(salary)
+                            .divide(totalSalary, 2, RoundingMode.HALF_UP);
+                    return new MemberContribution(m.getUserId(), share);
+                })
+                .toList();
     }
 
-    private String resolveUserName(
-        UUID userId,
-        Map<UUID, UserLookupPort.UserInfo> usersById) {
+    private List<MemberContribution> calculateCustom(
+            List<GoalMember> members, BigDecimal target
+    ) {
+        List<MemberContribution> result = new ArrayList<>();
+        BigDecimal totalPercentage = BigDecimal.ZERO;
 
-    UserLookupPort.UserInfo user =
-            usersById.get(userId);
+        for (GoalMember member : members) {
+            BigDecimal percentage = member.getCustomPercentage();
+            if (percentage == null) {
+                throw new InvalidInputException(
+                        "En modo CUSTOM todos los miembros deben tener "
+                                + "un porcentaje asignado"
+                );
+            }
+            totalPercentage = totalPercentage.add(percentage);
+            BigDecimal share = target
+                    .multiply(percentage)
+                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+            result.add(new MemberContribution(member.getUserId(), share));
+        }
 
-    if (user == null) {
-        return "Usuario";
+        if (totalPercentage.compareTo(new BigDecimal("100")) != 0) {
+            throw new InvalidInputException(
+                    "Los porcentajes personalizados deben sumar 100. "
+                            + "Actual: " + totalPercentage
+            );
+        }
+        return result;
     }
 
-    if (user.username() != null && !user.username().isBlank()) {
-        return user.username();
-    }
-
-    if (user.email() != null && !user.email().isBlank()) {
-        return user.email();
-    }
-
-    return "Usuario";
-}
-
-    private GoalUnit getGoal(UUID goalId) {
-        return goalUnitRepository.findById(goalId)
+    private void requireActiveMember(UUID goalId, UUID userId) {
+        goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
+                .filter(GoalMember::isActive)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "La meta no existe."
-                        ));
-    }
-
-    private GoalMember getMember(
-            UUID goalId,
-            UUID userId) {
-
-        GoalMember member =
-                goalMemberRepository
-                        .findByGoalIdAndUserId(goalId, userId)
-                        .orElseThrow(() ->
-                                new ForbiddenOperationException(
-                                        "El usuario no pertenece a esta meta."
-                                ));
-
-        if (!member.isActive()) {
-            throw new ForbiddenOperationException(
-                    "El usuario no pertenece activamente a esta meta."
-            );
-        }
-
-        return member;
-    }
-
-    private int calculateTotalPages(
-            long totalElements,
-            int size) {
-
-        if (size <= 0) {
-            throw new IllegalArgumentException(
-                    "El tamaño de página debe ser mayor que cero."
-            );
-        }
-
-        return (int) Math.ceil(
-                (double) totalElements / size
-        );
+                        new ForbiddenOperationException(
+                                "No perteneces a este objetivo"
+                        )
+                );
     }
 }

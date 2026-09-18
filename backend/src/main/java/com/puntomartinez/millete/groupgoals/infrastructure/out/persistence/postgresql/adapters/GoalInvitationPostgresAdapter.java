@@ -3,9 +3,9 @@ package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.post
 import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalInvitationEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalInvitationEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalInvitationRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -14,43 +14,43 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class GoalInvitationPostgresAdapter
         implements GoalInvitationRepository {
 
-    private final JpaGoalInvitationRepository jpaRepository;
+    private final JpaGoalInvitationRepository repository;
     private final GoalInvitationEntityMapper mapper;
 
-    @Override
-    public GoalInvitation save(GoalInvitation invitation) {
-        var entity = mapper.toEntity(invitation);
-        var savedEntity = jpaRepository.save(entity);
-
-        return mapper.toDomain(savedEntity);
+    public GoalInvitationPostgresAdapter(
+            JpaGoalInvitationRepository repository,
+            GoalInvitationEntityMapper mapper
+    ) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
-    public Optional<GoalInvitation> findByToken(String token) {
-        return jpaRepository.findByToken(token)
-                .map(mapper::toDomain);
+    public GoalInvitation save(GoalInvitation invitation) {
+        GoalInvitationEntity entity = mapper.toEntity(invitation);
+        GoalInvitationEntity saved = repository.save(entity);
+        return mapper.toDomain(saved);
     }
 
     @Override
     public Optional<GoalInvitation> findById(UUID id) {
-        return jpaRepository.findById(id)
+        return repository.findByIdAndActiveTrue(id)
                 .map(mapper::toDomain);
     }
 
     @Override
-    public Optional<GoalInvitation> findByGoalIdAndEmailAndStatus(
+    public Optional<GoalInvitation> findByGoalIdAndInvitedUserIdAndStatus(
             UUID goalId,
-            String email,
-            InvitationStatus status) {
-
-        return jpaRepository
-                .findByGoalIdAndEmailAndStatus(
+            UUID invitedUserId,
+            InvitationStatus status
+    ) {
+        return repository
+                .findByGoalIdAndInvitedUserIdAndStatusAndActiveTrue(
                         goalId,
-                        email,
+                        invitedUserId,
                         status.name()
                 )
                 .map(mapper::toDomain);
@@ -59,14 +59,13 @@ public class GoalInvitationPostgresAdapter
     @Override
     public List<GoalInvitation> findActiveAndNotExpiredByInvitedUserIdAndStatus(
             UUID invitedUserId,
-            InvitationStatus status,
-            LocalDateTime now) {
-
-        return jpaRepository
-                .findByInvitedUserIdAndStatusAndActiveTrueAndExpiresAtAfter(
+            InvitationStatus status
+    ) {
+        return repository
+                .findActiveAndNotExpiredByInvitedUserIdAndStatus(
                         invitedUserId,
                         status.name(),
-                        now
+                        LocalDateTime.now()
                 )
                 .stream()
                 .map(mapper::toDomain)
@@ -74,26 +73,11 @@ public class GoalInvitationPostgresAdapter
     }
 
     @Override
-    public Optional<GoalInvitation> findByGoalIdAndInvitedUserIdAndStatus(
-            UUID goalId,
-            UUID invitedUserId,
-            InvitationStatus status) {
-
-        return jpaRepository
-                .findByGoalIdAndInvitedUserIdAndStatus(
-                        goalId,
-                        invitedUserId,
-                        status.name()
-                )
-                .map(mapper::toDomain);
-    }
-
-    @Override
     public List<GoalInvitation> findActiveByGoalIdAndStatus(
             UUID goalId,
-            InvitationStatus status) {
-
-        return jpaRepository
+            InvitationStatus status
+    ) {
+        return repository
                 .findByGoalIdAndStatusAndActiveTrue(
                         goalId,
                         status.name()
@@ -101,5 +85,10 @@ public class GoalInvitationPostgresAdapter
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void deactivatePendingByGoalId(UUID goalId) {
+        repository.deactivatePendingByGoalId(goalId, LocalDateTime.now());
     }
 }

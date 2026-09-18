@@ -1,24 +1,26 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
+import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public interface GetGoalDetailUseCase {
 
-    GoalDetail getGoalDetail(
-            UUID goalId,
-            UUID userId
-    );
+    GoalDetail getGoalDetail(UUID goalId, UUID userId);
 
-    record Member(
+    record MemberDetail(
             UUID id,
             UUID userId,
-            String memberName,
-            String role,
+            String username,
+            String email,
+            GoalRole role,
             BigDecimal salary,
-            BigDecimal customPercentage
+            BigDecimal customPercentage,
+            LocalDateTime joinedAt
     ) {
     }
 
@@ -26,10 +28,10 @@ public interface GetGoalDetailUseCase {
             UUID id,
             String name,
             BigDecimal monthlyTarget,
-            String distributionMode,
-            boolean admin,
-            List<Member> members,
-            Map<UUID, BigDecimal> contributionTotals
+            DistributionMode distributionMode,
+            LocalDateTime createdAt,
+            List<MemberDetail> members,
+            List<MemberContributionTotals> totals
     ) {
     }
 }

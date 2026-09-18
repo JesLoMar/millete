@@ -2,61 +2,81 @@ package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.post
 
 import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalMemberEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalMemberEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalMemberRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class GoalMemberPostgresAdapter implements GoalMemberRepository {
 
-    private final JpaGoalMemberRepository jpaRepository;
+    private final JpaGoalMemberRepository repository;
     private final GoalMemberEntityMapper mapper;
 
-    @Override
-    public GoalMember save(GoalMember goalMember) {
-        var entity = mapper.toEntity(goalMember);
-        var savedEntity = jpaRepository.save(entity);
-        return mapper.toDomain(savedEntity);
+    public GoalMemberPostgresAdapter(
+            JpaGoalMemberRepository repository,
+            GoalMemberEntityMapper mapper
+    ) {
+        this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Override
-    public Optional<GoalMember> findByGoalIdAndUserId(UUID goalId, UUID userId) {
-        return jpaRepository.findByGoalIdAndUserId(goalId, userId).map(mapper::toDomain);
+    public GoalMember save(GoalMember member) {
+        GoalMemberEntity entity = mapper.toEntity(member);
+        GoalMemberEntity saved = repository.save(entity);
+        return mapper.toDomain(saved);
     }
 
     @Override
     public Optional<GoalMember> findById(UUID id) {
-        return jpaRepository.findById(id).map(mapper::toDomain);
+        return repository.findByIdAndActiveTrue(id)
+                .map(mapper::toDomain);
     }
 
     @Override
-    public List<GoalMember> findByGoalId(UUID goalId) {
-        return jpaRepository.findByGoalIdAndActiveTrue(goalId).stream()
+    public Optional<GoalMember> findByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    ) {
+        return repository.findByGoalIdAndUserId(goalId, userId)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<GoalMember> findActiveByGoalId(UUID goalId) {
+        return repository.findByGoalIdAndActiveTrue(goalId)
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
 
     @Override
-    public List<GoalMember> findByUserId(UUID userId) {
-        return jpaRepository.findByUserIdAndActiveTrue(userId).stream()
-                .map(mapper::toDomain)
-                .toList();
-    }
-
-    @Override
-    public List<GoalMember> findByGoalIdIn(Collection<UUID> goalIds) {
+    public List<GoalMember> findActiveByGoalIdIn(List<UUID> goalIds) {
         if (goalIds == null || goalIds.isEmpty()) {
             return List.of();
         }
-        return jpaRepository.findByGoalIdInAndActiveTrue(goalIds).stream()
+        return repository.findByGoalIdInAndActiveTrue(goalIds)
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void deactivateByGoalId(UUID goalId) {
+        repository.deactivateByGoalId(goalId, LocalDateTime.now());
+    }
+
+    @Override
+public List<GoalMember> findActiveByUserId(UUID userId) {
+    return repository.findByUserIdAndActiveTrue(userId)
+            .stream()
+            .map(mapper::toDomain)
+            .toList();
+}
 }

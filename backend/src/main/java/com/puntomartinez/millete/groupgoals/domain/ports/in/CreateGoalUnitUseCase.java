@@ -8,10 +8,11 @@ import java.util.UUID;
 
 public interface CreateGoalUnitUseCase {
 
-    GoalUnit create(UUID adminUserId, CreateGoalUnitCommand command);
+    GoalUnit create(CreateGoalUnitCommand command);
 
     record CreateGoalUnitCommand(
-            String name, 
+            UUID creatorUserId,
+            String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode
     ) {

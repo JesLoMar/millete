@@ -1,14 +1,14 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class GoalUnit {
+
+    private static final int MAX_NAME_LENGTH = 100;
 
     private final UUID id;
     private String name;
@@ -25,30 +25,30 @@ public class GoalUnit {
             DistributionMode distributionMode,
             LocalDateTime createdAt,
             LocalDateTime modifiedAt,
-            boolean active) {
+            boolean active
+    ) {
+        validateId(id);
+        validateName(name);
+        validateMonthlyTarget(monthlyTarget);
+        validateDistributionMode(distributionMode);
+        validateCreatedAt(createdAt);
+        validateModifiedAt(modifiedAt);
 
-        this.id = requireId(id);
-        this.name = requireName(name);
-        this.monthlyTarget = requireMonthlyTarget(monthlyTarget);
-        this.distributionMode = requireDistributionMode(distributionMode);
-        this.createdAt = requireDate(
-                createdAt,
-                "La fecha de creación es obligatoria."
-        );
-        this.modifiedAt = requireDate(
-                modifiedAt,
-                "La fecha de modificación es obligatoria."
-        );
+        this.id = id;
+        this.name = name;
+        this.monthlyTarget = monthlyTarget;
+        this.distributionMode = distributionMode;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
         this.active = active;
     }
 
     public static GoalUnit create(
             String name,
             BigDecimal monthlyTarget,
-            DistributionMode distributionMode) {
-
+            DistributionMode distributionMode
+    ) {
         LocalDateTime now = LocalDateTime.now();
-
         return new GoalUnit(
                 UUID.randomUUID(),
                 name,
@@ -67,233 +67,112 @@ public class GoalUnit {
             DistributionMode distributionMode,
             LocalDateTime createdAt,
             LocalDateTime modifiedAt,
-            boolean active) {
-
+            boolean active
+    ) {
         return new GoalUnit(
-                id,
-                name,
-                monthlyTarget,
-                distributionMode,
-                createdAt,
-                modifiedAt,
-                active
+                id, name, monthlyTarget, distributionMode,
+                createdAt, modifiedAt, active
         );
     }
 
     public void updateDetails(
             String name,
             BigDecimal monthlyTarget,
-            DistributionMode distributionMode) {
-
+            DistributionMode distributionMode
+    ) {
         if (name != null) {
-            this.name = requireName(name);
+            validateName(name);
+            this.name = name;
         }
-
         if (monthlyTarget != null) {
-            this.monthlyTarget = requireMonthlyTarget(monthlyTarget);
+            validateMonthlyTarget(monthlyTarget);
+            this.monthlyTarget = monthlyTarget;
         }
-
         if (distributionMode != null) {
-            this.distributionMode = requireDistributionMode(distributionMode);
+            validateDistributionMode(distributionMode);
+            this.distributionMode = distributionMode;
         }
-
         this.modifiedAt = LocalDateTime.now();
     }
 
-    public Map<UUID, BigDecimal> calculateContributions(
-            List<GoalMember> members) {
-
-        Map<UUID, BigDecimal> contributions = new HashMap<>();
-
-        if (members == null
-                || members.isEmpty()
-                || monthlyTarget == null
-                || monthlyTarget.compareTo(BigDecimal.ZERO) == 0) {
-
-            return contributions;
-        }
-
-        switch (distributionMode) {
-            case EQUITATIVE -> {
-                BigDecimal equalShare = monthlyTarget.divide(
-                        new BigDecimal(members.size()),
-                        2,
-                        RoundingMode.HALF_UP
-                );
-
-                members.forEach(member ->
-                        contributions.put(
-                                member.getUserId(),
-                                equalShare
-                        )
-                );
-            }
-
-            case PROPORTIONAL -> {
-                BigDecimal totalSalary = members.stream()
-                        .map(GoalMember::getSalary)
-                        .filter(java.util.Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                if (totalSalary.compareTo(BigDecimal.ZERO) == 0) {
-                    throw new IllegalStateException(
-                            "Total salary cannot be zero in PROPORTIONAL mode"
-                    );
-                }
-
-                for (GoalMember member : members) {
-                    BigDecimal salary = member.getSalary();
-
-                    if (salary == null) {
-                        salary = BigDecimal.ZERO;
-                    }
-
-                    BigDecimal percentage = salary.divide(
-                            totalSalary,
-                            4,
-                            RoundingMode.HALF_UP
-                    );
-
-                    contributions.put(
-                            member.getUserId(),
-                            monthlyTarget
-                                    .multiply(percentage)
-                                    .setScale(2, RoundingMode.HALF_UP)
-                    );
-                }
-            }
-
-            case CUSTOM -> {
-                BigDecimal totalPercentage = members.stream()
-                        .map(GoalMember::getCustomPercentage)
-                        .filter(java.util.Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                boolean allMembersHavePercentage = members.stream()
-                        .allMatch(member -> member.getCustomPercentage() != null);
-
-                if (!allMembersHavePercentage) {
-                    throw new IllegalStateException(
-                            "Todos los miembros deben tener un porcentaje personalizado."
-                    );
-                }
-
-                if (totalPercentage.compareTo(new BigDecimal("100")) != 0) {
-                    throw new IllegalStateException(
-                            "Los porcentajes personalizados deben sumar 100%."
-                    );
-                }
-
-                for (GoalMember member : members) {
-                    BigDecimal percentage = member.getCustomPercentage()
-                            .divide(
-                                    new BigDecimal("100"),
-                                    4,
-                                    RoundingMode.HALF_UP
-                            );
-
-                    contributions.put(
-                            member.getUserId(),
-                            monthlyTarget
-                                    .multiply(percentage)
-                                    .setScale(2, RoundingMode.HALF_UP)
-                    );
-                }
-            }
-        }
-
-        return contributions;
-    }
-
     public void deactivate() {
+        if (!this.active) {
+            return;
+        }
         this.active = false;
         this.modifiedAt = LocalDateTime.now();
     }
 
-    private static UUID requireId(UUID id) {
+    // ── Validaciones ──────────────────────────────────────────
+
+    private static void validateId(UUID id) {
         if (id == null) {
-            throw new IllegalArgumentException(
-                    "El id de la meta es obligatorio."
+            throw new InvalidInputException(
+                    "El id de la meta es obligatorio"
             );
         }
-        return id;
     }
 
-    private static String requireName(String name) {
+    private static void validateName(String name) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException(
-                    "El nombre de la meta es obligatorio."
+            throw new InvalidInputException(
+                    "El nombre de la meta es obligatorio"
             );
         }
-        return name.trim();
+        if (name.length() > MAX_NAME_LENGTH) {
+            throw new InvalidInputException(
+                    "El nombre no puede exceder los "
+                            + MAX_NAME_LENGTH + " caracteres"
+            );
+        }
     }
 
-    private static BigDecimal requireMonthlyTarget(
-            BigDecimal monthlyTarget) {
-
+    private static void validateMonthlyTarget(BigDecimal monthlyTarget) {
         if (monthlyTarget == null) {
-            throw new IllegalArgumentException(
-                    "El objetivo mensual es obligatorio."
+            throw new InvalidInputException(
+                    "El objetivo mensual es obligatorio"
             );
         }
-
         if (monthlyTarget.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException(
-                    "El objetivo mensual no puede ser negativo."
+            throw new InvalidInputException(
+                    "El objetivo mensual no puede ser negativo"
             );
         }
-
-        return monthlyTarget;
     }
 
-    private static DistributionMode requireDistributionMode(
-            DistributionMode distributionMode) {
-
+    private static void validateDistributionMode(
+            DistributionMode distributionMode
+    ) {
         if (distributionMode == null) {
-            throw new IllegalArgumentException(
-                    "El modo de distribución es obligatorio."
+            throw new InvalidInputException(
+                    "El modo de distribución es obligatorio"
             );
         }
-
-        return distributionMode;
     }
 
-    private static LocalDateTime requireDate(
-            LocalDateTime value,
-            String message) {
-
-        if (value == null) {
-            throw new IllegalArgumentException(message);
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+        if (createdAt == null) {
+            throw new InvalidInputException(
+                    "La fecha de creación es obligatoria"
+            );
         }
-
-        return value;
     }
 
-    public UUID getId() {
-        return id;
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+        if (modifiedAt == null) {
+            throw new InvalidInputException(
+                    "La fecha de modificación es obligatoria"
+            );
+        }
     }
 
-    public String getName() {
-        return name;
-    }
+    // ── Getters ───────────────────────────────────────────────
 
-    public BigDecimal getMonthlyTarget() {
-        return monthlyTarget;
-    }
-
-    public DistributionMode getDistributionMode() {
-        return distributionMode;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getModifiedAt() {
-        return modifiedAt;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
+    public UUID getId() { return id; }
+    public String getName() { return name; }
+    public BigDecimal getMonthlyTarget() { return monthlyTarget; }
+    public DistributionMode getDistributionMode() { return distributionMode; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public boolean isActive() { return active; }
 }

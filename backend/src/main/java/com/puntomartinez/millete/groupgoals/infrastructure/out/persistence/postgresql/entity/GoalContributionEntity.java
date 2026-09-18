@@ -1,7 +1,13 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,10 +19,10 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class GoalContributionEntity {
 
     @Id
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "goal_id", nullable = false)
@@ -25,18 +31,26 @@ public class GoalContributionEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(
+            name = "amount",
+            nullable = false,
+            precision = 12,
+            scale = 2
+    )
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false, length = 20)
+    private String type;
+
+    @Column(name = "date", nullable = false)
     private LocalDateTime date;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "modified_at", nullable = false)
     private LocalDateTime modifiedAt;
 
-    @Column(nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean active;
 }

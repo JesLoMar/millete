@@ -15,393 +15,317 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepositor
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class GroupGoalInvitationService implements
         InviteMemberUseCase,
         AcceptInvitationUseCase,
         RejectInvitationUseCase,
         ListPendingInvitationsUseCase {
 
-    private final GoalUnitRepository goalUnitRepository;
-    private final GoalMemberRepository goalMemberRepository;
     private final GoalInvitationRepository goalInvitationRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalUnitRepository goalUnitRepository;
     private final UserLookupPort userLookupPort;
-    private final GoalInvitationNotificationPort goalInvitationNotificationPort;
+    private final GoalInvitationNotificationPort notificationPort;
+
+    public GroupGoalInvitationService(
+            GoalInvitationRepository goalInvitationRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalUnitRepository goalUnitRepository,
+            UserLookupPort userLookupPort,
+            GoalInvitationNotificationPort notificationPort
+    ) {
+        this.goalInvitationRepository = goalInvitationRepository;
+        this.goalMemberRepository = goalMemberRepository;
+        this.goalUnitRepository = goalUnitRepository;
+        this.userLookupPort = userLookupPort;
+        this.notificationPort = notificationPort;
+    }
 
     @Override
     @Transactional
     public InviteMemberUseCase.InvitationResult inviteMember(
             UUID goalId,
             UUID inviterUserId,
-            InviteMemberCommand command) {
-
-        GoalUnit goal = getGoal(goalId);
-
-        GoalMember inviter =
-                getMember(goalId, inviterUserId);
-
-        if (!inviter.isAdmin()) {
-            throw new ForbiddenOperationException(
-                    "Solo el administrador puede invitar miembros."
-            );
-        }
-
-        UserLookupPort.UserInfo inviterUser =
-                userLookupPort
-                        .findById(inviterUserId)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "El usuario invitador no existe."
-                                ));
-
-        UserLookupPort.UserInfo invitedUser =
-                userLookupPort
-                        .findByIdentifier(command.identifier())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "No existe ningún usuario con ese identificador."
-                                ));
-
-        GoalMember existingMember =
-                goalMemberRepository
-                        .findByGoalIdAndUserId(
-                                goalId,
-                                invitedUser.id()
+            InviteMemberUseCase.InviteMemberCommand command
+    ) {
+        GoalUnit goal = goalUnitRepository.findById(goalId)
+                .filter(GoalUnit::isActive)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Objetivo no encontrado"
                         )
-                        .orElse(null);
-
-        if (existingMember != null && existingMember.isActive()) {
-            throw new ForbiddenOperationException(
-                    "El usuario ya pertenece a este objetivo."
-            );
-        }
-
-        GoalInvitation existingInvitation =
-                goalInvitationRepository
-                        .findByGoalIdAndInvitedUserIdAndStatus(
-                                goalId,
-                                invitedUser.id(),
-                                InvitationStatus.PENDING
-                        )
-                        .orElse(null);
-
-        if (existingInvitation != null) {
-            throw new ForbiddenOperationException(
-                    "Ya existe una invitación pendiente para este usuario."
-            );
-        }
-
-        GoalInvitation invitation =
-                GoalInvitation.create(
-                        goalId,
-                        invitedUser.email(),
-                        inviterUserId,
-                        invitedUser.id()
                 );
 
-        GoalInvitation savedInvitation =
-                goalInvitationRepository.save(invitation);
+        requireAdmin(goalId, inviterUserId);
 
-        goalInvitationNotificationPort.createInvitationNotification(
-                savedInvitation,
-                goal.getName(),
-                getUserDisplayName(inviterUser)
-        );
+        UserLookupPort.UserInfo invitedUser = userLookupPort
+                .findByIdentifier(command.identifier())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Usuario no encontrado con ese identificador"
+                        )
+                );
 
-        return toInviteResult(
-                savedInvitation,
-                goal,
-                inviterUser
-        );
-    }
+        UUID invitedUserId = invitedUser.id();
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ListPendingInvitationsUseCase.InvitationResult> getPendingInvitations(
-            UUID userId) {
+        if (invitedUserId.equals(inviterUserId)) {
+            throw new InvalidInputException(
+                    "No puedes invitarte a ti mismo"
+            );
+        }
 
-                List<GoalInvitation> invitations =
-                goalInvitationRepository
-                        .findActiveAndNotExpiredByInvitedUserIdAndStatus(
-                                userId,
-                                InvitationStatus.PENDING,
-                                LocalDateTime.now()
+        goalMemberRepository.findByGoalIdAndUserId(goalId, invitedUserId)
+                .ifPresent(m -> {
+                    if (m.isActive()) {
+                        throw new ResourceAlreadyExistsException(
+                                "El usuario ya pertenece a este objetivo"
                         );
+                    }
+                });
 
-        Set<UUID> inviterIds = new HashSet<>();
+        goalInvitationRepository
+                .findByGoalIdAndInvitedUserIdAndStatus(
+                        goalId,
+                        invitedUserId,
+                        InvitationStatus.PENDING
+                )
+                .ifPresent(i -> {
+                    throw new ResourceAlreadyExistsException(
+                            "Ya existe una invitación pendiente para este usuario"
+                    );
+                });
 
-        invitations.stream()
-                .map(GoalInvitation::getInviterUserId)
-                .filter(java.util.Objects::nonNull)
-                .forEach(inviterIds::add);
+        GoalInvitation invitation = GoalInvitation.create(
+                goalId,
+                inviterUserId,
+                invitedUserId
+        );
 
-        Map<UUID, UserLookupPort.UserInfo> usersById =
-                userLookupPort.findByIds(inviterIds);
+        GoalInvitation saved = goalInvitationRepository.save(invitation);
 
-        Set<UUID> goalIds = invitations.stream()
-                .map(GoalInvitation::getGoalId)
-                .filter(java.util.Objects::nonNull)
-                .collect(Collectors.toSet());
+        UserLookupPort.UserInfo inviterUser = userLookupPort
+                .findById(inviterUserId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Usuario invitador no encontrado"
+                        )
+                );
 
-        Map<UUID, GoalUnit> goalsById =
-                goalUnitRepository.findByIds(goalIds)
-                        .stream()
-                        .collect(Collectors.toMap(
-                                GoalUnit::getId,
-                                goal -> goal
-                        ));
+        notificationPort.createInvitationNotification(
+        saved,
+        goal.getName(),
+        inviterUser.username() != null
+                ? inviterUser.username()
+                : inviterUser.email()
+        );
 
-        return invitations.stream()
-                .map(invitation ->
-                        toPendingInvitationResult(
-                                invitation,
-                                goalsById,
-                                usersById
-                        ))
-                .toList();
+        return new InviteMemberUseCase.InvitationResult(
+                saved.getId(),
+                saved.getGoalId(),
+                goal.getName(),
+                inviterUserId,
+                inviterUser.username() != null
+                        ? inviterUser.username()
+                        : inviterUser.email(),
+                invitedUserId,
+                saved.getStatus(),
+                saved.getCreatedAt()
+        );
     }
 
     @Override
     @Transactional
     public GoalInvitation acceptInvitation(
             UUID userId,
-            UUID invitationId) {
-
-        GoalInvitation invitation =
-                getInvitation(invitationId);
-
-        validateInvitedUser(
-                invitation,
-                userId
-        );
+            UUID invitationId
+    ) {
+        GoalInvitation invitation = getInvitation(invitationId);
+        validateInvitedUser(invitation, userId);
 
         if (!invitation.isAcceptable()) {
             throw new ForbiddenOperationException(
-                    "La invitación ya no es válida."
+                    "La invitación ya no es válida"
             );
         }
 
-        getGoal(invitation.getGoalId());
-
-        GoalMember existingMember =
-                goalMemberRepository
-                        .findByGoalIdAndUserId(
-                                invitation.getGoalId(),
-                                userId
+        goalUnitRepository.findById(invitation.getGoalId())
+                .filter(GoalUnit::isActive)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "El objetivo ya no existe"
                         )
-                        .orElse(null);
+                );
+
+        GoalMember existingMember = goalMemberRepository
+                .findByGoalIdAndUserId(
+                        invitation.getGoalId(),
+                        userId
+                )
+                .orElse(null);
 
         if (existingMember == null) {
-
-            GoalMember member =
-                    GoalMember.create(
-                            invitation.getGoalId(),
-                            userId,
-                            GoalRole.MEMBER,
-                            null
-                    );
-
+            GoalMember member = GoalMember.create(
+                    invitation.getGoalId(),
+                    userId,
+                    GoalRole.MEMBER,
+                    null
+            );
             goalMemberRepository.save(member);
-
         } else {
-
             if (existingMember.isActive()) {
                 throw new ForbiddenOperationException(
-                        "El usuario ya pertenece a este objetivo."
+                        "El usuario ya pertenece a este objetivo"
                 );
             }
-
             existingMember.activate();
             goalMemberRepository.save(existingMember);
         }
 
         invitation.markAsAccepted();
-
         GoalInvitation savedInvitation =
                 goalInvitationRepository.save(invitation);
 
-        goalInvitationNotificationPort
-                .markInvitationNotificationAsActioned(
-                        userId,
-                        invitationId
-                );
+        notificationPort.markInvitationNotificationAsActioned(
+                userId,
+                invitationId
+        );
 
         return savedInvitation;
     }
 
     @Override
     @Transactional
-    public void rejectInvitation(
-            UUID userId,
-            UUID invitationId) {
-
-        GoalInvitation invitation =
-                getInvitation(invitationId);
-
-        validateInvitedUser(
-                invitation,
-                userId
-        );
+    public void rejectInvitation(UUID userId, UUID invitationId) {
+        GoalInvitation invitation = getInvitation(invitationId);
+        validateInvitedUser(invitation, userId);
 
         if (invitation.getStatus() != InvitationStatus.PENDING) {
             throw new ForbiddenOperationException(
-                    "La invitación ya no está pendiente."
+                    "La invitación ya no está pendiente"
             );
         }
 
         invitation.markAsRejected();
-
         goalInvitationRepository.save(invitation);
 
-        goalInvitationNotificationPort
-                .markInvitationNotificationAsActioned(
+        notificationPort.markInvitationNotificationAsActioned(
+                userId,
+                invitationId
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ListPendingInvitationsUseCase.InvitationResult> listPendingInvitations(
+            UUID userId
+    ) {
+        List<GoalInvitation> invitations = goalInvitationRepository
+                .findActiveAndNotExpiredByInvitedUserIdAndStatus(
                         userId,
-                        invitationId
+                        InvitationStatus.PENDING
                 );
+
+        if (invitations.isEmpty()) {
+            return List.of();
+        }
+
+        List<UUID> goalIds = invitations.stream()
+                .map(GoalInvitation::getGoalId)
+                .distinct()
+                .toList();
+
+        List<UUID> inviterIds = invitations.stream()
+                .map(GoalInvitation::getInviterUserId)
+                .distinct()
+                .toList();
+
+        Map<UUID, GoalUnit> goalsById = goalUnitRepository
+                .findByIds(goalIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        GoalUnit::getId,
+                        g -> g,
+                        (a, b) -> a
+                ));
+
+        Map<UUID, UserLookupPort.UserInfo> invitersById =
+                userLookupPort.findByIds(inviterIds);
+
+        return invitations.stream()
+                .map(invitation -> {
+                    GoalUnit goal = goalsById.get(
+                            invitation.getGoalId()
+                    );
+                    UserLookupPort.UserInfo inviter = invitersById.get(
+                            invitation.getInviterUserId()
+                    );
+
+                    String inviterName = inviter != null
+                            ? (inviter.username() != null
+                            ? inviter.username()
+                            : inviter.email())
+                            : "Usuario desconocido";
+
+                    return new ListPendingInvitationsUseCase.InvitationResult(
+                            invitation.getId(),
+                            invitation.getGoalId(),
+                            goal != null ? goal.getName() : "Objetivo eliminado",
+                            invitation.getInviterUserId(),
+                            inviterName,
+                            invitation.getInvitedUserId(),
+                            invitation.getStatus(),
+                            invitation.getCreatedAt()
+                    );
+                })
+                .toList();
     }
 
-    private ListPendingInvitationsUseCase.InvitationResult toPendingInvitationResult(
-            GoalInvitation invitation,
-            Map<UUID, GoalUnit> goalsById,
-            Map<UUID, UserLookupPort.UserInfo> usersById) {
-
-        GoalUnit goal =
-                goalsById.get(invitation.getGoalId());
-
-        UserLookupPort.UserInfo inviter =
-                invitation.getInviterUserId() == null
-                        ? null
-                        : usersById.get(
-                                invitation.getInviterUserId()
-                        );
-
-        return toPendingInvitationResult(
-                invitation,
-                goal,
-                inviter
-        );
-    }
-
-    private ListPendingInvitationsUseCase.InvitationResult toPendingInvitationResult(
-            GoalInvitation invitation,
-            GoalUnit goal,
-            UserLookupPort.UserInfo inviter) {
-
-        String goalName =
-                goal != null
-                        ? goal.getName()
-                        : null;
-
-        String inviterName =
-                inviter != null
-                        ? getUserDisplayName(inviter)
-                        : null;
-
-        return new ListPendingInvitationsUseCase.InvitationResult(
-                invitation.getId(),
-                invitation.getGoalId(),
-                goalName,
-                invitation.getInviterUserId(),
-                inviterName,
-                invitation.getInvitedUserId(),
-                invitation.getStatus().name(),
-                invitation.getCreatedAt()
-        );
-    }
-
-    private InviteMemberUseCase.InvitationResult toInviteResult(
-            GoalInvitation invitation,
-            GoalUnit goal,
-            UserLookupPort.UserInfo inviter) {
-
-        String goalName =
-                goal != null
-                        ? goal.getName()
-                        : null;
-
-        String inviterName =
-                inviter != null
-                        ? getUserDisplayName(inviter)
-                        : null;
-
-        return new InviteMemberUseCase.InvitationResult(
-                invitation.getId(),
-                invitation.getGoalId(),
-                goalName,
-                invitation.getInviterUserId(),
-                inviterName,
-                invitation.getInvitedUserId(),
-                invitation.getStatus().name(),
-                invitation.getCreatedAt()
-        );
-    }
-
-    private GoalUnit getGoal(UUID goalId) {
-        return goalUnitRepository
-                .findById(goalId)
+    private GoalInvitation getInvitation(UUID invitationId) {
+        return goalInvitationRepository.findById(invitationId)
+                .filter(GoalInvitation::isActive)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "El objetivo no existe."
-                        ));
-    }
-
-    private GoalMember getMember(
-            UUID goalId,
-            UUID userId) {
-
-        return goalMemberRepository
-                .findByGoalIdAndUserId(
-                        goalId,
-                        userId
-                )
-                .filter(GoalMember::isActive)
-                .orElseThrow(() ->
-                        new ForbiddenOperationException(
-                                "El usuario no pertenece al objetivo."
-                        ));
-    }
-
-    private GoalInvitation getInvitation(
-            UUID invitationId) {
-
-        return goalInvitationRepository
-                .findById(invitationId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "La invitación no existe."
-                        ));
+                                "Invitación no encontrada"
+                        )
+                );
     }
 
     private void validateInvitedUser(
             GoalInvitation invitation,
-            UUID userId) {
-
-        if (!userId.equals(invitation.getInvitedUserId())) {
+            UUID userId
+    ) {
+        if (!invitation.getInvitedUserId().equals(userId)) {
             throw new ForbiddenOperationException(
-                    "El usuario no puede gestionar esta invitación."
+                    "No puedes actuar sobre esta invitación"
             );
         }
     }
 
-    private String getUserDisplayName(
-            UserLookupPort.UserInfo user) {
+    private void requireAdmin(UUID goalId, UUID userId) {
+        GoalMember member = goalMemberRepository
+                .findByGoalIdAndUserId(goalId, userId)
+                .orElseThrow(() ->
+                        new ForbiddenOperationException(
+                                "No tienes permisos sobre este objetivo"
+                        )
+                );
 
-        return user.username() != null
-                ? user.username()
-                : user.email();
+        if (!member.isActive() || !member.isAdmin()) {
+            throw new ForbiddenOperationException(
+                    "Solo los administradores pueden invitar miembros"
+            );
+        }
     }
 }

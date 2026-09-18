@@ -1,19 +1,27 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller;
 
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.AcceptInvitationUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.AddContributionUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.CalculateContributionsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.CreateGoalUnitUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.DeleteGoalUnitUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.DeleteMemberUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHistoryUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.GetGoalDetailUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.InviteMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.LeaveGoalUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.ListGoalsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.ListPendingInvitationsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.RejectInvitationUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateGoalUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.WithdrawContributionUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.ContributionsCalculationResponseDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.CreateGoalRequestDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalContributionDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalDetailResponseDTO;
@@ -24,19 +32,26 @@ import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.Inv
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.InviteMemberRequestDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateGoalRequestDTO;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateMemberRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.WithdrawContributionRequestDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/goals")
+@PreAuthorize("isAuthenticated()")
 public class GroupGoalController {
 
     private final CreateGoalUnitUseCase createGoalUnitUseCase;
@@ -45,15 +60,17 @@ public class GroupGoalController {
     private final UpdateMemberUseCase updateMemberUseCase;
     private final DeleteMemberUseCase deleteMemberUseCase;
     private final AddContributionUseCase addContributionUseCase;
-
+    private final WithdrawContributionUseCase withdrawContributionUseCase;
+    private final LeaveGoalUseCase leaveGoalUseCase;
     private final ListGoalsUseCase listGoalsUseCase;
     private final GetGoalDetailUseCase getGoalDetailUseCase;
     private final GetContributionHistoryUseCase getContributionHistoryUseCase;
-
+    private final CalculateContributionsUseCase calculateContributionsUseCase;
     private final InviteMemberUseCase inviteMemberUseCase;
     private final ListPendingInvitationsUseCase listPendingInvitationsUseCase;
     private final AcceptInvitationUseCase acceptInvitationUseCase;
     private final RejectInvitationUseCase rejectInvitationUseCase;
+    private final UserLookupPort userLookupPort;
 
     public GroupGoalController(
             CreateGoalUnitUseCase createGoalUnitUseCase,
@@ -62,96 +79,83 @@ public class GroupGoalController {
             UpdateMemberUseCase updateMemberUseCase,
             DeleteMemberUseCase deleteMemberUseCase,
             AddContributionUseCase addContributionUseCase,
+            WithdrawContributionUseCase withdrawContributionUseCase,
+            LeaveGoalUseCase leaveGoalUseCase,
             ListGoalsUseCase listGoalsUseCase,
             GetGoalDetailUseCase getGoalDetailUseCase,
             GetContributionHistoryUseCase getContributionHistoryUseCase,
+            CalculateContributionsUseCase calculateContributionsUseCase,
             InviteMemberUseCase inviteMemberUseCase,
             ListPendingInvitationsUseCase listPendingInvitationsUseCase,
             AcceptInvitationUseCase acceptInvitationUseCase,
-            RejectInvitationUseCase rejectInvitationUseCase) {
-
+            RejectInvitationUseCase rejectInvitationUseCase,
+            UserLookupPort userLookupPort
+    ) {
         this.createGoalUnitUseCase = createGoalUnitUseCase;
         this.updateGoalUseCase = updateGoalUseCase;
         this.deleteGoalUnitUseCase = deleteGoalUnitUseCase;
         this.updateMemberUseCase = updateMemberUseCase;
         this.deleteMemberUseCase = deleteMemberUseCase;
         this.addContributionUseCase = addContributionUseCase;
-
+        this.withdrawContributionUseCase = withdrawContributionUseCase;
+        this.leaveGoalUseCase = leaveGoalUseCase;
         this.listGoalsUseCase = listGoalsUseCase;
         this.getGoalDetailUseCase = getGoalDetailUseCase;
         this.getContributionHistoryUseCase = getContributionHistoryUseCase;
-
+        this.calculateContributionsUseCase = calculateContributionsUseCase;
         this.inviteMemberUseCase = inviteMemberUseCase;
         this.listPendingInvitationsUseCase = listPendingInvitationsUseCase;
         this.acceptInvitationUseCase = acceptInvitationUseCase;
         this.rejectInvitationUseCase = rejectInvitationUseCase;
+        this.userLookupPort = userLookupPort;
     }
 
     @GetMapping
-    public ResponseEntity<PaginatedResponseDTO<GoalListItemResponseDTO>> getMyGoals(
-            Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-
+    public ResponseEntity<List<GoalListItemResponseDTO>> getMyGoals(
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
-        ListGoalsUseCase.GoalsPage pageResult =
-                listGoalsUseCase.listGoals(userId, page, size);
-
-        int totalPages = pageResult.totalPages();
-
-        int safePage = Math.min(
-                Math.max(page, 0),
-                Math.max(0, totalPages - 1)
-        );
+        List<ListGoalsUseCase.GoalSummary> goals =
+                listGoalsUseCase.listGoals(userId);
 
         List<GoalListItemResponseDTO> response =
-                pageResult.goals()
-                        .stream()
+                goals.stream()
                         .map(this::mapGoalSummary)
                         .toList();
 
-        return ResponseEntity.ok(
-                new PaginatedResponseDTO<>(
-                        response,
-                        safePage,
-                        totalPages,
-                        pageResult.totalElements(),
-                        size,
-                        safePage == 0,
-                        safePage >= totalPages - 1 || totalPages == 0
-                )
-        );
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{goalId}")
     public ResponseEntity<GoalDetailResponseDTO> getGoalDetail(
             @PathVariable UUID goalId,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         GetGoalDetailUseCase.GoalDetail detail =
                 getGoalDetailUseCase.getGoalDetail(goalId, userId);
 
-        return ResponseEntity.ok(mapGoalDetail(detail));
+        return ResponseEntity.ok(mapGoalDetail(detail, userId));
     }
 
     @PostMapping
     public ResponseEntity<GoalResponseDTO> createGoal(
             @Valid @RequestBody CreateGoalRequestDTO request,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         CreateGoalUnitUseCase.CreateGoalUnitCommand command =
                 new CreateGoalUnitUseCase.CreateGoalUnitCommand(
+                        userId,
                         request.name(),
                         request.monthlyTarget(),
                         request.distributionMode()
                 );
 
-        var goal = createGoalUnitUseCase.create(userId, command);
+        var goal = createGoalUnitUseCase.create(command);
 
         GoalResponseDTO response = new GoalResponseDTO(
                 goal.getId(),
@@ -160,17 +164,15 @@ public class GroupGoalController {
                 goal.getDistributionMode().name()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{goalId}")
     public ResponseEntity<Void> updateGoal(
             @PathVariable UUID goalId,
             @Valid @RequestBody UpdateGoalRequestDTO request,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         UpdateGoalUseCase.UpdateGoalCommand command =
@@ -180,27 +182,17 @@ public class GroupGoalController {
                         request.distributionMode()
                 );
 
-        updateGoalUseCase.update(
-                goalId,
-                userId,
-                command
-        );
-
+        updateGoalUseCase.update(goalId, userId, command);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{goalId}")
     public ResponseEntity<Void> deleteGoal(
             @PathVariable UUID goalId,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
-
-        deleteGoalUnitUseCase.deleteGoalUnit(
-                goalId,
-                userId
-        );
-
+        deleteGoalUnitUseCase.deleteGoalUnit(goalId, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -209,8 +201,8 @@ public class GroupGoalController {
             @PathVariable UUID goalId,
             @PathVariable UUID memberId,
             @Valid @RequestBody UpdateMemberRequestDTO request,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         UpdateMemberUseCase.UpdateMemberCommand command =
@@ -220,13 +212,7 @@ public class GroupGoalController {
                         request.customPercentage()
                 );
 
-        updateMemberUseCase.updateMember(
-                goalId,
-                memberId,
-                userId,
-                command
-        );
-
+        updateMemberUseCase.updateMember(goalId, memberId, userId, command);
         return ResponseEntity.ok().build();
     }
 
@@ -234,16 +220,10 @@ public class GroupGoalController {
     public ResponseEntity<Void> deleteMember(
             @PathVariable UUID goalId,
             @PathVariable UUID memberId,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
-
-        deleteMemberUseCase.deleteMember(
-                goalId,
-                memberId,
-                userId
-        );
-
+        deleteMemberUseCase.deleteMember(goalId, memberId, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -252,41 +232,36 @@ public class GroupGoalController {
             @PathVariable UUID goalId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "60") int size,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
-        GetContributionHistoryUseCase.ContributionHistory pageResult =
+        GetContributionHistoryUseCase.PaginatedContributions pageResult =
                 getContributionHistoryUseCase.getContributionHistory(
-                        goalId,
-                        userId,
-                        page,
-                        size
+                        goalId, userId, page, size
                 );
 
-        int totalPages = pageResult.totalPages();
+        Set<UUID> contributorIds = pageResult.contributions().stream()
+                .map(GoalContribution::getUserId)
+                .collect(Collectors.toSet());
 
-        int safePage = Math.min(
-                Math.max(page, 0),
-                Math.max(0, totalPages - 1)
-        );
+        Map<UUID, UserLookupPort.UserInfo> usersById =
+                userLookupPort.findByIds(contributorIds);
 
         List<GoalContributionDTO> response =
-                pageResult.contributions()
-                        .stream()
-                        .map(this::mapContribution)
+                pageResult.contributions().stream()
+                        .map(c -> mapContribution(c, usersById))
                         .toList();
 
         return ResponseEntity.ok(
                 new PaginatedResponseDTO<>(
                         response,
-                        safePage,
-                        totalPages,
+                        pageResult.currentPage(),
+                        pageResult.totalPages(),
                         pageResult.totalElements(),
-                        size,
-                        safePage == 0,
-                        safePage >= totalPages - 1
-                                || totalPages == 0
+                        pageResult.size(),
+                        pageResult.first(),
+                        pageResult.last()
                 )
         );
     }
@@ -295,45 +270,70 @@ public class GroupGoalController {
     public ResponseEntity<Void> addContribution(
             @PathVariable UUID goalId,
             @Valid @RequestBody AddContributionRequestDTO request,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
-        AddContributionUseCase.AddContributionCommand command =
-                new AddContributionUseCase.AddContributionCommand(
-                        request.amount()
-                );
-
         addContributionUseCase.addContribution(
-                goalId,
-                userId,
-                command
+                goalId, userId,
+                new AddContributionUseCase.AddContributionCommand(request.amount())
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/{goalId}/contributions/withdraw")
+    public ResponseEntity<Void> withdrawContribution(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody WithdrawContributionRequestDTO request,
+            Authentication authentication
+    ) {
+        UUID userId = getUserId(authentication);
+
+        withdrawContributionUseCase.withdrawContribution(
+                goalId, userId,
+                new WithdrawContributionUseCase.WithdrawContributionCommand(request.amount())
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{goalId}/leave")
+    public ResponseEntity<Void> leaveGoal(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+        UUID userId = getUserId(authentication);
+        leaveGoalUseCase.leaveGoal(goalId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{goalId}/contributions/calculation")
+    public ResponseEntity<ContributionsCalculationResponseDTO> calculateContributions(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+        UUID userId = getUserId(authentication);
+
+        CalculateContributionsUseCase.ContributionsCalculation calculation =
+                calculateContributionsUseCase.calculateContributions(goalId, userId);
+
+        return ResponseEntity.ok(mapCalculation(calculation));
     }
 
     @PostMapping("/{goalId}/invitations")
     public ResponseEntity<InvitationResponseDTO> inviteMember(
             @PathVariable UUID goalId,
             @Valid @RequestBody InviteMemberRequestDTO request,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         InviteMemberUseCase.InviteMemberCommand command =
-                new InviteMemberUseCase.InviteMemberCommand(
-                        request.identifier()
-                );
+                new InviteMemberUseCase.InviteMemberCommand(request.identifier());
 
         InviteMemberUseCase.InvitationResult invitation =
-                inviteMemberUseCase.inviteMember(
-                        goalId,
-                        userId,
-                        command
-                );
+                inviteMemberUseCase.inviteMember(goalId, userId, command);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -342,13 +342,12 @@ public class GroupGoalController {
 
     @GetMapping("/invitations/pending")
     public ResponseEntity<List<InvitationResponseDTO>> getPendingInvitations(
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
 
         List<ListPendingInvitationsUseCase.InvitationResult> invitations =
-                listPendingInvitationsUseCase
-                        .getPendingInvitations(userId);
+                listPendingInvitationsUseCase.listPendingInvitations(userId);
 
         List<InvitationResponseDTO> response =
                 invitations.stream()
@@ -361,87 +360,98 @@ public class GroupGoalController {
     @PostMapping("/invitations/{invitationId}/accept")
     public ResponseEntity<Void> acceptInvitation(
             @PathVariable UUID invitationId,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
-
-        acceptInvitationUseCase.acceptInvitation(
-                userId,
-                invitationId
-        );
-
+        acceptInvitationUseCase.acceptInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/invitations/{invitationId}/reject")
     public ResponseEntity<Void> rejectInvitation(
             @PathVariable UUID invitationId,
-            Authentication authentication) {
-
+            Authentication authentication
+    ) {
         UUID userId = getUserId(authentication);
-
-        rejectInvitationUseCase.rejectInvitation(
-                userId,
-                invitationId
-        );
-
+        rejectInvitationUseCase.rejectInvitation(userId, invitationId);
         return ResponseEntity.ok().build();
     }
 
-    private GoalListItemResponseDTO mapGoalSummary(
-            ListGoalsUseCase.GoalSummary summary) {
+    // ── Mappers ──────────────────────────────────────────────
 
+    private GoalListItemResponseDTO mapGoalSummary(
+            ListGoalsUseCase.GoalSummary summary
+    ) {
         return new GoalListItemResponseDTO(
                 summary.id(),
                 summary.name(),
                 summary.monthlyTarget(),
-                summary.activeMembers(),
                 summary.admin()
         );
     }
 
     private GoalDetailResponseDTO mapGoalDetail(
-            GetGoalDetailUseCase.GoalDetail detail) {
+            GetGoalDetailUseCase.GoalDetail detail,
+            UUID userId
+    ) {
+        boolean isAdmin = detail.members().stream()
+                .anyMatch(m ->
+                        m.userId().equals(userId)
+                                && m.role() == GoalRole.ADMIN
+                );
 
-        List<GoalMemberDTO> members =
-                detail.members()
-                        .stream()
-                        .map(member -> new GoalMemberDTO(
-                                member.id(),
-                                member.userId(),
-                                member.memberName(),
-                                member.role(),
-                                member.salary(),
-                                member.customPercentage()
-                        ))
-                        .toList();
+        List<GoalMemberDTO> members = detail.members().stream()
+                .map(m -> new GoalMemberDTO(
+                        m.id(),
+                        m.userId(),
+                        resolveDisplayName(m.username(), m.email()),
+                        m.role().name(),
+                        m.salary(),
+                        m.customPercentage()
+                ))
+                .toList();
+
+        Map<UUID, BigDecimal> contributionTotals = detail.totals().stream()
+                .collect(Collectors.toMap(
+                        MemberContributionTotals::userId,
+                        MemberContributionTotals::net
+                ));
 
         return new GoalDetailResponseDTO(
                 detail.id(),
                 detail.name(),
                 detail.monthlyTarget(),
-                detail.distributionMode(),
-                detail.admin(),
+                detail.distributionMode().name(),
+                isAdmin,
                 members,
-                detail.contributionTotals()
+                contributionTotals
         );
     }
 
     private GoalContributionDTO mapContribution(
-            GetContributionHistoryUseCase.Contribution contribution) {
+            GoalContribution contribution,
+            Map<UUID, UserLookupPort.UserInfo> usersById
+    ) {
+        UserLookupPort.UserInfo userInfo =
+                usersById.get(contribution.getUserId());
+
+        String userName = resolveDisplayName(
+                userInfo != null ? userInfo.username() : null,
+                userInfo != null ? userInfo.email() : null
+        );
 
         return new GoalContributionDTO(
-                contribution.id(),
-                contribution.userId(),
-                contribution.userName(),
-                contribution.amount(),
-                contribution.date()
+                contribution.getId(),
+                contribution.getUserId(),
+                userName,
+                contribution.getAmount(),
+                contribution.getDate()
         );
     }
 
     private InvitationResponseDTO mapInvitationResponse(
-            InviteMemberUseCase.InvitationResult invitation) {
-
+            InviteMemberUseCase.InvitationResult invitation
+    ) {
         return new InvitationResponseDTO(
                 invitation.id(),
                 invitation.goalId(),
@@ -449,14 +459,14 @@ public class GroupGoalController {
                 invitation.inviterUserId(),
                 invitation.inviterName(),
                 invitation.invitedUserId(),
-                invitation.status(),
+                invitation.status().name(),
                 invitation.createdAt()
         );
     }
 
     private InvitationResponseDTO mapInvitationResponse(
-            ListPendingInvitationsUseCase.InvitationResult invitation) {
-
+            ListPendingInvitationsUseCase.InvitationResult invitation
+    ) {
         return new InvitationResponseDTO(
                 invitation.id(),
                 invitation.goalId(),
@@ -464,9 +474,37 @@ public class GroupGoalController {
                 invitation.inviterUserId(),
                 invitation.inviterName(),
                 invitation.invitedUserId(),
-                invitation.status(),
+                invitation.status().name(),
                 invitation.createdAt()
         );
+    }
+
+    private ContributionsCalculationResponseDTO mapCalculation(
+            CalculateContributionsUseCase.ContributionsCalculation calculation
+    ) {
+        List<ContributionsCalculationResponseDTO.MemberContributionDTO> contributions =
+                calculation.contributions().stream()
+                        .map(mc -> new ContributionsCalculationResponseDTO.MemberContributionDTO(
+                                mc.userId(),
+                                mc.suggestedAmount()
+                        ))
+                        .toList();
+
+        return new ContributionsCalculationResponseDTO(
+                calculation.monthlyTarget(),
+                calculation.distributionMode(),
+                contributions
+        );
+    }
+
+    private String resolveDisplayName(String username, String email) {
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        if (email != null && !email.isBlank()) {
+            return email;
+        }
+        return "Usuario";
     }
 
     private UUID getUserId(Authentication authentication) {

@@ -1,22 +1,16 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.out;
 
 import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHistoryUseCase.PaginatedContributions;
 
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public interface GoalContributionRepository {
 
     GoalContribution save(GoalContribution contribution);
 
-    List<GoalContribution> findByGoalId(UUID goalId);
-
-    List<GoalContribution> findByGoalIdIn(Collection<UUID> goalIds);
-
-    List<GoalContribution> findByGoalId(
+    PaginatedContributions findByGoalId(
             UUID goalId,
             int page,
             int size
@@ -24,5 +18,15 @@ public interface GoalContributionRepository {
 
     long countByGoalId(UUID goalId);
 
-    Map<UUID, BigDecimal> sumByUserId(UUID goalId);
+    List<MemberContributionTotals> sumByGoalId(UUID goalId);
+
+    void deactivateByGoalId(UUID goalId);
+
+    record MemberContributionTotals(
+            UUID userId,
+            java.math.BigDecimal totalDeposits,
+            java.math.BigDecimal totalWithdrawals,
+            java.math.BigDecimal net
+    ) {
+    }
 }

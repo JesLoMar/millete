@@ -1,5 +1,7 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
+import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,9 +13,7 @@ public interface InviteMemberUseCase {
             InviteMemberCommand command
     );
 
-    record InviteMemberCommand(
-            String identifier
-    ) {
+    record InviteMemberCommand(String identifier) {
     }
 
     record InvitationResult(
@@ -23,7 +23,7 @@ public interface InviteMemberUseCase {
             UUID inviterUserId,
             String inviterName,
             UUID invitedUserId,
-            String status,
+            InvitationStatus status,
             LocalDateTime createdAt
     ) {
     }
