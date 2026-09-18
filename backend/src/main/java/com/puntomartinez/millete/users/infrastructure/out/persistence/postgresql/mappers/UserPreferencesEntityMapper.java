@@ -7,6 +7,8 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserPreferencesEntityMapper {
+
     UserPreferencesEntity toEntity(UserPreferences domain);
+
     UserPreferences toDomain(UserPreferencesEntity entity);
 }

@@ -1,8 +1,18 @@
 package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -20,8 +30,13 @@ public class UserPreferencesEntity {
     @Column(name = "user_id", nullable = false, unique = true)
     private UUID userId;
 
-    @Column(name = "preferences", nullable = false, columnDefinition = "JSONB")
-    private String preferencesJson;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(
+            name = "preferences",
+            nullable = false,
+            columnDefinition = "jsonb"
+    )
+    private Map<String, Object> preferences;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

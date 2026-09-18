@@ -16,21 +16,18 @@ public class UserPostgresAdapter implements UserRepository {
     private final JpaUserRepository jpaUserRepository;
     private final UserEntityMapper mapper;
 
-
-    public UserPostgresAdapter(JpaUserRepository jpaUserRepository, UserEntityMapper mapper) {
+    public UserPostgresAdapter(
+            JpaUserRepository jpaUserRepository,
+            UserEntityMapper mapper
+    ) {
         this.jpaUserRepository = jpaUserRepository;
         this.mapper = mapper;
     }
 
     @Override
     public User save(User user) {
-
         UserEntity entity = mapper.toEntity(user);
-
-
         UserEntity savedEntity = jpaUserRepository.save(entity);
-
-
         return mapper.toDomain(savedEntity);
     }
 
@@ -48,7 +45,14 @@ public class UserPostgresAdapter implements UserRepository {
 
     @Override
     public Optional<User> findByIdentifier(String identifier) {
-        return jpaUserRepository.findByUsernameOrEmail(identifier, identifier)
+        Optional<UserEntity> byUsername =
+                jpaUserRepository.findByUsername(identifier);
+
+        if (byUsername.isPresent()) {
+            return byUsername.map(mapper::toDomain);
+        }
+
+        return jpaUserRepository.findByEmail(identifier)
                 .map(mapper::toDomain);
     }
 

@@ -1,18 +1,25 @@
 package com.puntomartinez.millete.users.application.services;
+
 import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.domain.ports.in.ManageUserSessionUseCase;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 @Service
-public class SessionPersistenceService {
-    public static final String CHANNEL_WEB = "WEB";
+public class SessionPersistenceService implements ManageUserSessionUseCase {
+
     private final UserSessionRepository userSessionRepository;
+
     public SessionPersistenceService(UserSessionRepository userSessionRepository) {
         this.userSessionRepository = userSessionRepository;
     }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public UserSession createSession(UUID userId, String channel) {
         UserSession session = new UserSession();
@@ -24,6 +31,8 @@ public class SessionPersistenceService {
         session.setModifiedAt(LocalDateTime.now());
         return userSessionRepository.save(session);
     }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markSessionAsInactive(UUID sessionId) {
         userSessionRepository.findById(sessionId).ifPresent(session -> {
