@@ -1,11 +1,16 @@
 package com.puntomartinez.millete.investments.application.services;
 
 import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
+import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase.RegisterInvestmentCommand;
+import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentUseCase.UpdateInvestmentCommand;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,19 +18,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
-import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("InvestmentService - Servicio de inversiones")
+@DisplayName("InvestmentService")
 class InvestmentServiceTest {
+
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private InvestmentRepository investmentRepository;
@@ -33,76 +39,232 @@ class InvestmentServiceTest {
     @InjectMocks
     private InvestmentService investmentService;
 
-    private final UUID userId = UUID.randomUUID();
-
-    @Test
-    @DisplayName("Registrar inversión")
-    void shouldRegisterInvestment() {
-        RegisterInvestmentUseCase.RegisterInvestmentCommand command = new RegisterInvestmentUseCase.RegisterInvestmentCommand(
-                userId, "Nvidia", "NVDA", new BigDecimal("10"), new BigDecimal("100.00"),
-                Investment.InvestmentType.STOCK, LocalDateTime.now());
-
-        when(investmentRepository.save(any(Investment.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        Investment result = investmentService.register(command);
-
-        assertThat(result.getAssetName()).isEqualTo("Nvidia");
-        assertThat(result.getTicker()).isEqualTo("NVDA");
-        assertThat(result.getQuantity()).isEqualByComparingTo("10");
-        assertThat(result.isActive()).isTrue();
-        assertThat(result.getCurrentPrice()).isEqualByComparingTo("100.00");
-        verify(investmentRepository).save(any(Investment.class));
+    private Investment validInvestment() {
+        return Investment.create(
+                USER_ID, "Apple Inc.", "AAPL",
+                new BigDecimal("10"), new BigDecimal("150.00"),
+                InvestmentType.STOCK, LocalDateTime.now().minusDays(30)
+        );
     }
 
-    @Test
-    @DisplayName("Listar inversiones por usuario")
-    void shouldFindAllByUserId() {
-        Investment inv1 = mock(Investment.class);
-        Investment inv2 = mock(Investment.class);
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv1, inv2));
+    @Nested
+    @DisplayName("register")
+    class Register {
 
-        List<Investment> result = investmentService.findAllByUserId(userId);
+        @Test
+        @DisplayName("Should register investment successfully")
+        void shouldRegisterInvestment() {
+            RegisterInvestmentCommand command = new RegisterInvestmentCommand(
+                    USER_ID, "Nvidia", "NVDA",
+                    new BigDecimal("10"), new BigDecimal("100.00"),
+                    InvestmentType.STOCK, LocalDateTime.now()
+            );
 
-        assertThat(result).hasSize(2);
+            when(investmentRepository.save(any(Investment.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            Investment result = investmentService.register(command);
+
+            assertThat(result.getAssetName()).isEqualTo("Nvidia");
+            assertThat(result.getTicker()).isEqualTo("NVDA");
+            assertThat(result.getQuantity()).isEqualByComparingTo("10");
+            assertThat(result.isActive()).isTrue();
+            verify(investmentRepository).save(any(Investment.class));
+        }
     }
 
-    @Test
-    @DisplayName("Actualizar precio de inversión")
-    void shouldUpdatePrice() {
-        UUID id = UUID.randomUUID();
-        Investment inv = mock(Investment.class);
-        when(inv.getUserId()).thenReturn(userId);
-        when(investmentRepository.findById(id)).thenReturn(Optional.of(inv));
-        when(investmentRepository.save(any(Investment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    @Nested
+    @DisplayName("getById")
+    class GetById {
 
-        BigDecimal newPrice = new BigDecimal("200.00");
-        Investment result = investmentService.updatePrice(id, userId, newPrice);
+        @Test
+        @DisplayName("Should return investment when found")
+        void shouldReturnInvestmentWhenFound() {
+            Investment investment = validInvestment();
 
-        verify(inv).updateCurrentPrice(newPrice);
-        verify(investmentRepository).save(inv);
+            when(investmentRepository.findByIdAndUserId(investment.getId(), USER_ID))
+                    .thenReturn(Optional.of(investment));
+
+            Investment result = investmentService.getById(investment.getId(), USER_ID);
+
+            assertThat(result).isSameAs(investment);
+        }
+
+        @Test
+        @DisplayName("Should throw when investment not found")
+        void shouldThrowWhenInvestmentNotFound() {
+            UUID investmentId = UUID.randomUUID();
+
+            when(investmentRepository.findByIdAndUserId(investmentId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> investmentService.getById(investmentId, USER_ID))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Actualizar precio de otro usuario lanza error")
-    void shouldThrowWhenUpdatingOtherUserInvestment() {
-        UUID id = UUID.randomUUID();
-        Investment inv = mock(Investment.class);
-        when(inv.getUserId()).thenReturn(UUID.randomUUID());
-        when(investmentRepository.findById(id)).thenReturn(Optional.of(inv));
+    @Nested
+    @DisplayName("findAllByUserId")
+    class FindAllByUserId {
 
-        assertThatExceptionOfType(ForbiddenOperationException.class)
-                .isThrownBy(() -> investmentService.updatePrice(id, userId, new BigDecimal("200.00")))
-                .withMessage("No tienes permiso para actualizar esta inversión.");
+        @Test
+        @DisplayName("Should delegate to repository")
+        void shouldDelegateToRepository() {
+            Investment inv1 = validInvestment();
+            Investment inv2 = validInvestment();
+
+            when(investmentRepository.findAllByUserId(USER_ID))
+                    .thenReturn(List.of(inv1, inv2));
+
+            List<Investment> result = investmentService.findAllByUserId(USER_ID);
+
+            assertThat(result).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("Should delegate paginated query to repository")
+        void shouldDelegatePaginatedQuery() {
+            Investment inv1 = validInvestment();
+
+            when(investmentRepository.findAllByUserId(
+                    USER_ID, 0, 50, "apple", InvestmentType.STOCK
+            )).thenReturn(List.of(inv1));
+
+            List<Investment> result = investmentService.findAllByUserId(
+                    USER_ID, 0, 50, "apple", InvestmentType.STOCK
+            );
+
+            assertThat(result).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("Should delegate count to repository")
+        void shouldDelegateCount() {
+            when(investmentRepository.countByUserIdAndFilters(
+                    USER_ID, "apple", InvestmentType.STOCK
+            )).thenReturn(5L);
+
+            long result = investmentService.countByUserIdAndFilters(
+                    USER_ID, "apple", InvestmentType.STOCK
+            );
+
+            assertThat(result).isEqualTo(5L);
+        }
     }
 
-    @Test
-    @DisplayName("Actualizar precio de inversión inexistente lanza error")
-    void shouldThrowWhenInvestmentNotFound() {
-        UUID id = UUID.randomUUID();
-        when(investmentRepository.findById(id)).thenReturn(Optional.empty());
+    @Nested
+    @DisplayName("updatePrice")
+    class UpdatePrice {
 
-        assertThatExceptionOfType(ResourceNotFoundException.class)
-                .isThrownBy(() -> investmentService.updatePrice(id, userId, new BigDecimal("200.00")))
-                .withMessage("Inversión no encontrada.");
+        @Test
+        @DisplayName("Should update price and save")
+        void shouldUpdatePriceAndSave() {
+            Investment investment = validInvestment();
+            BigDecimal newPrice = new BigDecimal("200.00");
+
+            when(investmentRepository.findByIdAndUserId(investment.getId(), USER_ID))
+                    .thenReturn(Optional.of(investment));
+            when(investmentRepository.save(any(Investment.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            Investment result = investmentService.updatePrice(
+                    investment.getId(), USER_ID, newPrice
+            );
+
+            assertThat(result.getCurrentPrice()).isEqualByComparingTo("200.00");
+            verify(investmentRepository).save(investment);
+        }
+
+        @Test
+        @DisplayName("Should throw when investment not found for price update")
+        void shouldThrowWhenInvestmentNotFoundForPriceUpdate() {
+            UUID investmentId = UUID.randomUUID();
+
+            when(investmentRepository.findByIdAndUserId(investmentId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> investmentService.updatePrice(
+                    investmentId, USER_ID, new BigDecimal("200.00")
+            )).isInstanceOf(ResourceNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("delete")
+    class Delete {
+
+        @Test
+        @DisplayName("Should deactivate and save investment")
+        void shouldDeactivateAndSaveInvestment() {
+            Investment investment = validInvestment();
+
+            when(investmentRepository.findByIdAndUserId(investment.getId(), USER_ID))
+                    .thenReturn(Optional.of(investment));
+
+            investmentService.delete(investment.getId(), USER_ID);
+
+            ArgumentCaptor<Investment> captor = ArgumentCaptor.forClass(Investment.class);
+            verify(investmentRepository).save(captor.capture());
+
+            assertThat(captor.getValue().isActive()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should throw when investment not found for delete")
+        void shouldThrowWhenInvestmentNotFoundForDelete() {
+            UUID investmentId = UUID.randomUUID();
+
+            when(investmentRepository.findByIdAndUserId(investmentId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> investmentService.delete(investmentId, USER_ID))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("update")
+    class Update {
+
+        @Test
+        @DisplayName("Should update investment details")
+        void shouldUpdateInvestmentDetails() {
+            Investment investment = validInvestment();
+            UpdateInvestmentCommand command = new UpdateInvestmentCommand(
+                    investment.getId(), USER_ID,
+                    "Tesla Inc.", "TSLA",
+                    new BigDecimal("5"), new BigDecimal("200.00"),
+                    InvestmentType.STOCK, LocalDateTime.now()
+            );
+
+            when(investmentRepository.findByIdAndUserId(investment.getId(), USER_ID))
+                    .thenReturn(Optional.of(investment));
+            when(investmentRepository.save(any(Investment.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            Investment result = investmentService.update(command);
+
+            assertThat(result.getAssetName()).isEqualTo("Tesla Inc.");
+            assertThat(result.getTicker()).isEqualTo("TSLA");
+            verify(investmentRepository).save(investment);
+        }
+
+        @Test
+        @DisplayName("Should throw when investment not found for update")
+        void shouldThrowWhenInvestmentNotFoundForUpdate() {
+            UUID investmentId = UUID.randomUUID();
+            UpdateInvestmentCommand command = new UpdateInvestmentCommand(
+                    investmentId, USER_ID,
+                    "Tesla Inc.", "TSLA",
+                    new BigDecimal("5"), new BigDecimal("200.00"),
+                    InvestmentType.STOCK, LocalDateTime.now()
+            );
+
+            when(investmentRepository.findByIdAndUserId(investmentId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> investmentService.update(command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
     }
 }

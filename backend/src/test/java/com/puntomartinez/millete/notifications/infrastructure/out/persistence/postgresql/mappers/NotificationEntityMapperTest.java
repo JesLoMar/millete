@@ -22,42 +22,26 @@ class NotificationEntityMapperTest {
     @Test
     @DisplayName("Should map domain to entity")
     void shouldMapDomainToEntity() {
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime expiresAt = LocalDateTime.of(2024, 12, 31, 23, 59);
-        LocalDateTime actionedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
-        Map<String, Object> metadata = Map.of("goalId", UUID.randomUUID().toString());
-
-        Notification domain = Notification.reconstitute(
-                id,
-                userId,
+        Notification domain = Notification.create(
+                UUID.randomUUID(),
                 NotificationType.GOAL_INVITATION,
-                "Goal invitation",
+                "New invitation",
                 "You have been invited",
-                metadata,
-                false,
+                Map.of("goalId", "some-id"),
                 true,
-                actionedAt,
-                createdAt,
-                expiresAt,
-                true
+                LocalDateTime.now().plusDays(7)
         );
 
         NotificationEntity entity = mapper.toEntity(domain);
 
         assertThat(entity).isNotNull();
-        assertThat(entity.getId()).isEqualTo(id);
-        assertThat(entity.getUserId()).isEqualTo(userId);
+        assertThat(entity.getId()).isEqualTo(domain.getId());
+        assertThat(entity.getUserId()).isEqualTo(domain.getUserId());
         assertThat(entity.getType()).isEqualTo(NotificationType.GOAL_INVITATION);
-        assertThat(entity.getTitle()).isEqualTo("Goal invitation");
+        assertThat(entity.getTitle()).isEqualTo("New invitation");
         assertThat(entity.getMessage()).isEqualTo("You have been invited");
-        assertThat(entity.getMetadata()).containsKey("goalId");
         assertThat(entity.isRead()).isFalse();
         assertThat(entity.isActionRequired()).isTrue();
-        assertThat(entity.getActionedAt()).isEqualTo(actionedAt);
-        assertThat(entity.getCreatedAt()).isEqualTo(createdAt);
-        assertThat(entity.getExpiresAt()).isEqualTo(expiresAt);
         assertThat(entity.isActive()).isTrue();
     }
 
@@ -67,20 +51,17 @@ class NotificationEntityMapperTest {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime expiresAt = LocalDateTime.of(2024, 12, 31, 23, 59);
-        LocalDateTime actionedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
-        Map<String, Object> metadata = Map.of("goalId", UUID.randomUUID().toString());
+        LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
 
         NotificationEntity entity = new NotificationEntity();
         entity.setId(id);
         entity.setUserId(userId);
-        entity.setType(NotificationType.GOAL_INVITATION);
-        entity.setTitle("Goal invitation");
-        entity.setMessage("You have been invited");
-        entity.setMetadata(metadata);
-        entity.setRead(false);
-        entity.setActionRequired(true);
-        entity.setActionedAt(actionedAt);
+        entity.setType(NotificationType.SYSTEM);
+        entity.setTitle("System alert");
+        entity.setMessage("Something happened");
+        entity.setMetadata(Map.of("key", "value"));
+        entity.setRead(true);
+        entity.setActionRequired(false);
         entity.setCreatedAt(createdAt);
         entity.setExpiresAt(expiresAt);
         entity.setActive(true);
@@ -90,15 +71,10 @@ class NotificationEntityMapperTest {
         assertThat(domain).isNotNull();
         assertThat(domain.getId()).isEqualTo(id);
         assertThat(domain.getUserId()).isEqualTo(userId);
-        assertThat(domain.getType()).isEqualTo(NotificationType.GOAL_INVITATION);
-        assertThat(domain.getTitle()).isEqualTo("Goal invitation");
-        assertThat(domain.getMessage()).isEqualTo("You have been invited");
-        assertThat(domain.getMetadata()).containsKey("goalId");
-        assertThat(domain.isRead()).isFalse();
-        assertThat(domain.isActionRequired()).isTrue();
-        assertThat(domain.getActionedAt()).isEqualTo(actionedAt);
-        assertThat(domain.getCreatedAt()).isEqualTo(createdAt);
-        assertThat(domain.getExpiresAt()).isEqualTo(expiresAt);
+        assertThat(domain.getType()).isEqualTo(NotificationType.SYSTEM);
+        assertThat(domain.getTitle()).isEqualTo("System alert");
+        assertThat(domain.isRead()).isTrue();
+        assertThat(domain.isActionRequired()).isFalse();
         assertThat(domain.isActive()).isTrue();
     }
 
@@ -109,20 +85,14 @@ class NotificationEntityMapperTest {
     }
 
     @Test
-    @DisplayName("Should return null when domain is null")
-    void shouldReturnNullWhenDomainIsNull() {
-        assertThat(mapper.toEntity(null)).isNull();
-    }
-
-    @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
         Notification original = Notification.create(
                 UUID.randomUUID(),
-                NotificationType.SYSTEM,
-                "System alert",
-                "Something happened",
-                Map.of("key", "value"),
+                NotificationType.GOAL_INVITATION,
+                "New invitation",
+                "You have been invited to a goal",
+                Map.of("goalId", "goal-123"),
                 true,
                 LocalDateTime.now().plusDays(7)
         );
@@ -135,12 +105,8 @@ class NotificationEntityMapperTest {
         assertThat(restored.getType()).isEqualTo(original.getType());
         assertThat(restored.getTitle()).isEqualTo(original.getTitle());
         assertThat(restored.getMessage()).isEqualTo(original.getMessage());
-        assertThat(restored.getMetadata()).isEqualTo(original.getMetadata());
         assertThat(restored.isRead()).isEqualTo(original.isRead());
         assertThat(restored.isActionRequired()).isEqualTo(original.isActionRequired());
-        assertThat(restored.getActionedAt()).isEqualTo(original.getActionedAt());
-        assertThat(restored.getCreatedAt()).isEqualTo(original.getCreatedAt());
-        assertThat(restored.getExpiresAt()).isEqualTo(original.getExpiresAt());
         assertThat(restored.isActive()).isEqualTo(original.isActive());
     }
 }

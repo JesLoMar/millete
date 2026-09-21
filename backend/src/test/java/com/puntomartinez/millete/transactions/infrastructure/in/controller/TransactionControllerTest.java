@@ -46,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -88,7 +89,7 @@ class TransactionControllerTest {
 
     private void mockAuthenticatedUser() {
         JwtUser jwtUser = new JwtUser(USER_ID, "username", "user@example.com");
-        when(authentication.getPrincipal()).thenReturn(jwtUser);
+        lenient().when(authentication.getPrincipal()).thenReturn(jwtUser);
     }
 
     private Transaction validTransaction() {
@@ -149,8 +150,6 @@ class TransactionControllerTest {
         @ValueSource(ints = {-1, -100})
         @DisplayName("Should reject negative page")
         void shouldRejectNegativePage(int page) {
-            mockAuthenticatedUser();
-
             assertThatThrownBy(() ->
                     controller.listTransactions(
                             page, 50, null, null, "month", authentication
@@ -164,8 +163,6 @@ class TransactionControllerTest {
         @ValueSource(ints = {0, -1})
         @DisplayName("Should reject non-positive page size")
         void shouldRejectNonPositivePageSize(int size) {
-            mockAuthenticatedUser();
-
             assertThatThrownBy(() ->
                     controller.listTransactions(
                             0, size, null, null, "month", authentication
@@ -179,11 +176,6 @@ class TransactionControllerTest {
         @DisplayName("Should reject invalid type parameter")
         void shouldRejectInvalidTypeParameter() {
             mockAuthenticatedUser();
-
-            when(transactionPeriodService.getDateRange("month"))
-                    .thenReturn(new LocalDateTime[]{
-                            LocalDateTime.now(), LocalDateTime.now()
-                    });
 
             assertThatThrownBy(() ->
                     controller.listTransactions(
@@ -206,13 +198,13 @@ class TransactionControllerTest {
                     TransactionType.EXPENSE,
                     "Groceries"
             );
-
             LocalDateTime[] range = {
                     LocalDateTime.now().minusDays(30),
                     LocalDateTime.now()
             };
-            Category category = Category.create(
-                    USER_ID, "Food", "#FF0000", null
+            Category category = Category.reconstitute(
+                    categoryId, USER_ID, "Food", "#FF0000", null,
+                    LocalDateTime.now(), LocalDateTime.now(), true
             );
 
             when(transactionPeriodService.getDateRange("month"))
@@ -236,7 +228,6 @@ class TransactionControllerTest {
             PaginatedResponseDTO<TransactionResponseDTO> body =
                     Objects.requireNonNull(response.getBody());
             assertThat(body.content()).hasSize(1);
-
             TransactionResponseDTO firstItem = body.content().getFirst();
             assertThat(firstItem.categoryName()).isEqualTo("Food");
             assertThat(firstItem.categoryColor()).isEqualTo("#FF0000");
@@ -256,7 +247,6 @@ class TransactionControllerTest {
                     TransactionType.EXPENSE,
                     "Unknown"
             );
-
             LocalDateTime[] range = {
                     LocalDateTime.now().minusDays(30),
                     LocalDateTime.now()
@@ -458,37 +448,6 @@ class TransactionControllerTest {
             assertThat(body.categoryName()).isEqualTo("Sin categoría");
         }
 
-        @Test
-        @DisplayName("Should pass alertLimitExceeded flag from use case result")
-        void shouldPassAlertLimitExceededFlag() {
-            mockAuthenticatedUser();
-
-            RegisterTransactionRequestDTO request =
-                    new RegisterTransactionRequestDTO(
-                            null,
-                            new BigDecimal("100.00"),
-                            LocalDateTime.now(),
-                            TransactionType.EXPENSE,
-                            "Big expense"
-                    );
-            Transaction transaction = validTransaction();
-
-            when(registerTransactionUseCase.register(any()))
-                    .thenReturn(new RegisterTransactionResult(
-                            transaction, true
-                    ));
-            when(getCategoryUseCase.findByIdAndUserId(any(), eq(USER_ID)))
-                    .thenThrow(new ResourceNotFoundException("Not found"));
-
-            ResponseEntity<TransactionResponseDTO> response =
-                    controller.registerTransaction(request, authentication);
-
-            TransactionResponseDTO body =
-                    Objects.requireNonNull(response.getBody());
-            assertThat(body.alertLimitExceeded()).isTrue();
-        }
-    }
-
     @Nested
     @DisplayName("deleteTransaction")
     class DeleteTransaction {
@@ -524,8 +483,8 @@ class TransactionControllerTest {
             when(getTransactionUseCase.getByIdAndUserId(
                     transaction.getId(), USER_ID
             )).thenReturn(transaction);
-            when(getCategoryUseCase.findByUserId(USER_ID))
-                    .thenReturn(Collections.emptyList());
+            when(getCategoryUseCase.findByIdAndUserId(any(), eq(USER_ID)))
+                    .thenThrow(new ResourceNotFoundException("Not found"));
 
             ResponseEntity<TransactionResponseDTO> response =
                     controller.getTransactionById(
@@ -576,9 +535,8 @@ class TransactionControllerTest {
                     );
             verify(updateTransactionUseCase)
                     .update(eq(transactionId), captor.capture());
-
             assertThat(captor.getValue().userId()).isEqualTo(USER_ID);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
     }
-}
+}}

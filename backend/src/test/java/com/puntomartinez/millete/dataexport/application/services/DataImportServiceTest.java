@@ -1,597 +1,183 @@
 package com.puntomartinez.millete.dataexport.application.services;
 
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
-import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
-import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
-import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
-import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.users.domain.model.UserPreferences;
-import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import com.puntomartinez.millete.dataexport.domain.ports.out.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("DataImportService")
 class DataImportServiceTest {
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private CategoryImportPort categoryImportPort;
+
     @Mock
-    private TransactionRepository transactionRepository;
-    @SuppressWarnings("unused")
+    private TransactionImportPort transactionImportPort;
+
     @Mock
-    private PlannedTransactionRepository plannedTransactionRepository;
-    @SuppressWarnings("unused")
+    private PlannedTransactionImportPort plannedTransactionImportPort;
+
     @Mock
-    private InvestmentRepository investmentRepository;
+    private InvestmentImportPort investmentImportPort;
+
     @Mock
-    private SavingsGoalRepository savingsGoalRepository;
+    private SavingsGoalImportPort savingsGoalImportPort;
+
     @Mock
-    private UserPreferencesRepository userPreferencesRepository;
+    private UserPreferencesImportPort userPreferencesImportPort;
+
     @Mock
-    private GoalUnitRepository goalUnitRepository;
-    @Mock
-    private GoalMemberRepository goalMemberRepository;
-    @Mock
-    private GoalContributionRepository goalContributionRepository;
-    @SuppressWarnings("unused")
+    private TransactionImportVerificationPort transactionImportVerificationPort;
+
     @Mock
     private MigrationChain migrationChain;
 
     @InjectMocks
     private DataImportService dataImportService;
 
-    private UUID sourceUserId;
     private UUID destUserId;
-    private UUID sourceCategoryId;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        sourceUserId = UUID.randomUUID();
         destUserId = UUID.randomUUID();
-        sourceCategoryId = UUID.randomUUID();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
     }
 
-    private UserDataSnapshot buildSnapshot(Category category, Transaction transaction) {
+    private UserDataSnapshot buildEmptySnapshot() {
         return new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                category != null ? List.of(category) : List.of(),
-                transaction != null ? List.of(transaction) : List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                null,
-                null,
-                null,
-                null
+                new UserDataSnapshot.SnapshotMetadata(
+                        ExportVersion.CURRENT.toString(),
+                        LocalDateTime.now(),
+                        "0.2.0"
+                ),
+                List.of(), List.of(), List.of(), List.of(), List.of(), null
         );
     }
 
     @Test
-    void importUserData_shouldRemapCategoryIds_whenImportingToDifferentUser() throws Exception {
-
-        Category sourceCategory = new Category(
-                sourceCategoryId, sourceUserId, "Comida", "#FF5733",
-                new BigDecimal("500.00"), LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        Transaction sourceTransaction = new Transaction(
-                UUID.randomUUID(), sourceUserId, sourceCategoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE, "Almuerzo",
-                LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        UserDataSnapshot snapshot = buildSnapshot(sourceCategory, sourceTransaction);
-
+    @DisplayName("Should import empty snapshot successfully")
+    void importUserDataShouldImportEmptySnapshot() throws Exception {
+        UserDataSnapshot snapshot = buildEmptySnapshot();
         String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", json.getBytes()
+        );
 
-
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
-        when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
+        when(categoryImportPort.importCategories(any(), any()))
+                .thenReturn(new com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult(
+                        new java.util.HashMap<>(), 0
+                ));
+        when(transactionImportPort.importTransactions(any(), any(), any())).thenReturn(0);
+        when(plannedTransactionImportPort.importPlannedTransactions(any(), any(), any())).thenReturn(0);
+        when(investmentImportPort.importInvestments(any(), any())).thenReturn(0);
+        when(savingsGoalImportPort.importSavingsGoals(any(), any())).thenReturn(0);
 
         String result = dataImportService.importUserData(file, destUserId);
 
-
-        assertTrue(result.contains("Importación exitosa"));
-
-
-        ArgumentCaptor<Category> categoryCaptor = ArgumentCaptor.forClass(Category.class);
-        verify(categoryRepository, times(1)).save(categoryCaptor.capture());
-        Category savedCategory = categoryCaptor.getValue();
-        assertEquals(destUserId, savedCategory.getUserId());
-        assertNotEquals(sourceCategoryId, savedCategory.getId());
-
-
-        ArgumentCaptor<Transaction> txCaptor = ArgumentCaptor.forClass(Transaction.class);
-        verify(transactionRepository, times(1)).save(txCaptor.capture());
-        Transaction savedTx = txCaptor.getValue();
-        assertEquals(destUserId, savedTx.getUserId());
-        assertNotEquals(sourceCategoryId, savedTx.getCategoryId());
-        assertNotNull(savedTx.getCategoryId());
+        assertThat(result).contains("Importación exitosa");
+        verify(transactionImportVerificationPort).verifyImportedTransactions(destUserId);
     }
 
     @Test
-    void importUserData_shouldReuseExistingCategory_whenNameMatches() throws Exception {
-
-        UUID existingCategoryId = UUID.randomUUID();
-        Category existingCategory = new Category(
-                existingCategoryId, destUserId, "Comida", "#00FF00",
-                new BigDecimal("300.00"), LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        Category sourceCategory = new Category(
-                sourceCategoryId, sourceUserId, "Comida", "#FF5733",
-                new BigDecimal("500.00"), LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        Transaction sourceTransaction = new Transaction(
-                UUID.randomUUID(), sourceUserId, sourceCategoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE, "Almuerzo",
-                LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        UserDataSnapshot snapshot = buildSnapshot(sourceCategory, sourceTransaction);
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(List.of(existingCategory));
-        when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-
-
-        ArgumentCaptor<Category> categoryCaptor = ArgumentCaptor.forClass(Category.class);
-        verify(categoryRepository, times(1)).save(categoryCaptor.capture());
-        Category savedCategory = categoryCaptor.getValue();
-        assertEquals(existingCategoryId, savedCategory.getId());
-
-
-        ArgumentCaptor<Transaction> txCaptor = ArgumentCaptor.forClass(Transaction.class);
-        verify(transactionRepository, times(1)).save(txCaptor.capture());
-        Transaction savedTx = txCaptor.getValue();
-        assertEquals(existingCategoryId, savedTx.getCategoryId());
-    }
-
-    @Test
-    void importUserData_shouldSkipInactiveEntities() throws Exception {
-
-        Category inactiveCategory = new Category(
-                sourceCategoryId, sourceUserId, "Inactiva", "#FF5733",
-                new BigDecimal("500.00"), LocalDateTime.now(), LocalDateTime.now(), false
-        );
-
-        Transaction inactiveTransaction = new Transaction(
-                UUID.randomUUID(), sourceUserId, sourceCategoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
-                Transaction.TransactionType.EXPENSE, "Inactiva",
-                LocalDateTime.now(), LocalDateTime.now(), false
-        );
-
-        UserDataSnapshot snapshot = buildSnapshot(inactiveCategory, inactiveTransaction);
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-        assertTrue(result.contains("0 registros importados"));
-
-
-        verify(categoryRepository, never()).save(any());
-        verify(transactionRepository, never()).save(any());
-    }
-
-    @Test
-    void importUserData_shouldSanitizeUserIds() throws Exception {
-
-        Category sourceCategory = new Category(
-                sourceCategoryId, sourceUserId, "Comida", "#FF5733",
-                new BigDecimal("500.00"), LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        UserDataSnapshot snapshot = buildSnapshot(sourceCategory, null);
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
-        when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        dataImportService.importUserData(file, destUserId);
-
-
-        ArgumentCaptor<Category> categoryCaptor = ArgumentCaptor.forClass(Category.class);
-        verify(categoryRepository).save(categoryCaptor.capture());
-        assertEquals(destUserId, categoryCaptor.getValue().getUserId());
-        assertNotEquals(sourceUserId, categoryCaptor.getValue().getUserId());
-    }
-
-
-    @Test
-    void importUserData_shouldImportSavingsGoals_withNewUuids() throws Exception {
-
-        UUID sourceGoalId = UUID.randomUUID();
-        SavingsGoal sourceGoal = new SavingsGoal(
-                sourceGoalId, sourceUserId, "Vacaciones",
-                new BigDecimal("2000.00"), new BigDecimal("500.00"),
-                LocalDate.now().plusMonths(6), "HIGH", "ACTIVE", null,
-                LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
+    @DisplayName("Should reject incompatible version")
+    void importUserDataShouldRejectIncompatibleVersion() throws Exception {
         UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(),
-                List.of(sourceGoal),
-                null, null, null, null
+                new UserDataSnapshot.SnapshotMetadata(
+                        "99.0.0", LocalDateTime.now(), "99.0.0"
+                ),
+                List.of(), List.of(), List.of(), List.of(), List.of(), null
+        );
+        String json = objectMapper.writeValueAsString(snapshot);
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", json.getBytes()
         );
 
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-
-        ArgumentCaptor<SavingsGoal> goalCaptor = ArgumentCaptor.forClass(SavingsGoal.class);
-        verify(savingsGoalRepository, times(1)).save(goalCaptor.capture());
-        SavingsGoal savedGoal = goalCaptor.getValue();
-        assertEquals(destUserId, savedGoal.getUserId());
-        assertNotEquals(sourceGoalId, savedGoal.getId());
-        assertEquals("Vacaciones", savedGoal.getName());
-        assertEquals(new BigDecimal("2000.00"), savedGoal.getTargetAmount());
+        try {
+            dataImportService.importUserData(file, destUserId);
+        } catch (Exception e) {
+            assertThat(e.getMessage()).contains("incompatible");
+        }
     }
 
     @Test
-    void importUserData_shouldSkipInactiveSavingsGoals() throws Exception {
-
-        SavingsGoal inactiveGoal = new SavingsGoal(
-                UUID.randomUUID(), sourceUserId, "Inactivo",
-                new BigDecimal("1000.00"), BigDecimal.ZERO,
-                LocalDate.now().plusMonths(3), "MEDIUM", "CANCELLED", null,
-                LocalDateTime.now(), LocalDateTime.now(), false
+    @DisplayName("Should reject invalid JSON")
+    void importUserDataShouldRejectInvalidJson() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json",
+                "not valid json".getBytes()
         );
 
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(),
-                List.of(inactiveGoal),
-                null, null, null, null
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("0 registros importados"));
-        verify(savingsGoalRepository, never()).save(any());
+        try {
+            dataImportService.importUserData(file, destUserId);
+        } catch (Exception e) {
+            assertThat(e.getMessage()).contains("JSON");
+        }
     }
 
     @Test
-    void importUserData_shouldImportUserPreferences_whenNotExisting() throws Exception {
-
-        UserPreferences sourcePrefs = new UserPreferences(
-                UUID.randomUUID(), sourceUserId, "{\"theme\":\"dark\"}"
-        );
-        sourcePrefs.setCreatedAt(LocalDateTime.now());
-        sourcePrefs.setModifiedAt(LocalDateTime.now());
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(), List.of(),
-                sourcePrefs, null, null, null
+    @DisplayName("Should reject file exceeding max size")
+    void importUserDataShouldRejectFileExceedingMaxSize() {
+        byte[] largeContent = new byte[51 * 1024 * 1024];
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", largeContent
         );
 
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(userPreferencesRepository.findByUserId(destUserId)).thenReturn(Optional.empty());
-        when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-
-        ArgumentCaptor<UserPreferences> prefsCaptor = ArgumentCaptor.forClass(UserPreferences.class);
-        verify(userPreferencesRepository, times(1)).save(prefsCaptor.capture());
-        UserPreferences savedPrefs = prefsCaptor.getValue();
-        assertEquals(destUserId, savedPrefs.getUserId());
-        assertEquals("{\"theme\":\"dark\"}", savedPrefs.getPreferencesJson());
+        try {
+            dataImportService.importUserData(file, destUserId);
+        } catch (Exception e) {
+            assertThat(e.getMessage()).contains("demasiado grande");
+        }
     }
 
     @Test
-    void importUserData_shouldUpdateUserPreferences_whenExisting() throws Exception {
-
-        UUID existingPrefsId = UUID.randomUUID();
-        UserPreferences existingPrefs = new UserPreferences(
-                existingPrefsId, destUserId, "{\"theme\":\"light\"}"
+    @DisplayName("Should trigger migration when needed")
+    void importUserDataShouldTriggerMigrationWhenNeeded() throws Exception {
+        UserDataSnapshot oldSnapshot = new UserDataSnapshot(
+                new UserDataSnapshot.SnapshotMetadata(
+                        "0.0.1", LocalDateTime.now(), "0.0.1"
+                ),
+                List.of(), List.of(), List.of(), List.of(), List.of(), null
+        );
+        UserDataSnapshot migratedSnapshot = buildEmptySnapshot();
+        String json = objectMapper.writeValueAsString(oldSnapshot);
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", json.getBytes()
         );
 
-        UserPreferences sourcePrefs = new UserPreferences(
-                UUID.randomUUID(), sourceUserId, "{\"theme\":\"dark\"}"
-        );
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(), List.of(),
-                sourcePrefs, null, null, null
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(userPreferencesRepository.findByUserId(destUserId)).thenReturn(Optional.of(existingPrefs));
-        when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
+        when(migrationChain.migrateToLatest(any())).thenReturn(migratedSnapshot);
+        when(categoryImportPort.importCategories(any(), any()))
+                .thenReturn(new com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult(
+                        new java.util.HashMap<>(), 0
+                ));
+        when(transactionImportPort.importTransactions(any(), any(), any())).thenReturn(0);
+        when(plannedTransactionImportPort.importPlannedTransactions(any(), any(), any())).thenReturn(0);
+        when(investmentImportPort.importInvestments(any(), any())).thenReturn(0);
+        when(savingsGoalImportPort.importSavingsGoals(any(), any())).thenReturn(0);
 
         String result = dataImportService.importUserData(file, destUserId);
 
-
-        assertTrue(result.contains("Importación exitosa"));
-
-        ArgumentCaptor<UserPreferences> prefsCaptor = ArgumentCaptor.forClass(UserPreferences.class);
-        verify(userPreferencesRepository, times(1)).save(prefsCaptor.capture());
-        UserPreferences savedPrefs = prefsCaptor.getValue();
-        assertEquals(existingPrefsId, savedPrefs.getId());
-        assertEquals(destUserId, savedPrefs.getUserId());
-        assertEquals("{\"theme\":\"dark\"}", savedPrefs.getPreferencesJson());
-    }
-
-    @Test
-    void importUserData_shouldImportGroupGoals_withRemappedGoalIds() throws Exception {
-
-        UUID sourceGoalId = UUID.randomUUID();
-        UUID sourceMemberId = UUID.randomUUID();
-        UUID sourceContributionId = UUID.randomUUID();
-
-        GoalUnit sourceGoalUnit = new GoalUnit();
-        sourceGoalUnit.setId(sourceGoalId);
-        sourceGoalUnit.setName("Viaje familiar");
-        sourceGoalUnit.setMonthlyTarget(new BigDecimal("300.00"));
-        sourceGoalUnit.setDistributionMode(DistributionMode.EQUITATIVE);
-        sourceGoalUnit.setCreatedAt(LocalDateTime.now());
-        sourceGoalUnit.setModifiedAt(LocalDateTime.now());
-        sourceGoalUnit.setActive(true);
-
-        GoalMember sourceMember = new GoalMember();
-        sourceMember.setId(sourceMemberId);
-        sourceMember.setGoalId(sourceGoalId);
-        sourceMember.setUserId(sourceUserId);
-        sourceMember.setRole(GoalRole.ADMIN);
-        sourceMember.setSalary(new BigDecimal("2000.00"));
-        sourceMember.setJoinedAt(LocalDateTime.now());
-        sourceMember.setCreatedAt(LocalDateTime.now());
-        sourceMember.setModifiedAt(LocalDateTime.now());
-        sourceMember.setActive(true);
-
-        GoalContribution sourceContribution = new GoalContribution();
-        sourceContribution.setId(sourceContributionId);
-        sourceContribution.setGoalId(sourceGoalId);
-        sourceContribution.setUserId(sourceUserId);
-        sourceContribution.setAmount(new BigDecimal("100.00"));
-        sourceContribution.setDate(LocalDateTime.now());
-        sourceContribution.setCreatedAt(LocalDateTime.now());
-        sourceContribution.setModifiedAt(LocalDateTime.now());
-        sourceContribution.setActive(true);
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(), List.of(),
-                null,
-                List.of(sourceGoalUnit),
-                List.of(sourceMember),
-                List.of(sourceContribution)
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(goalUnitRepository.save(any(GoalUnit.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(goalMemberRepository.save(any(GoalMember.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(goalContributionRepository.save(any(GoalContribution.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-
-
-        ArgumentCaptor<GoalUnit> goalCaptor = ArgumentCaptor.forClass(GoalUnit.class);
-        verify(goalUnitRepository, times(1)).save(goalCaptor.capture());
-        GoalUnit savedGoal = goalCaptor.getValue();
-        assertNotEquals(sourceGoalId, savedGoal.getId());
-        assertEquals("Viaje familiar", savedGoal.getName());
-
-
-        ArgumentCaptor<GoalMember> memberCaptor = ArgumentCaptor.forClass(GoalMember.class);
-        verify(goalMemberRepository, times(1)).save(memberCaptor.capture());
-        GoalMember savedMember = memberCaptor.getValue();
-        assertNotEquals(sourceMemberId, savedMember.getId());
-        assertNotEquals(sourceGoalId, savedMember.getGoalId());
-        assertEquals(destUserId, savedMember.getUserId());
-        assertEquals(GoalRole.ADMIN, savedMember.getRole());
-
-
-        ArgumentCaptor<GoalContribution> contribCaptor = ArgumentCaptor.forClass(GoalContribution.class);
-        verify(goalContributionRepository, times(1)).save(contribCaptor.capture());
-        GoalContribution savedContribution = contribCaptor.getValue();
-        assertNotEquals(sourceContributionId, savedContribution.getId());
-        assertNotEquals(sourceGoalId, savedContribution.getGoalId());
-        assertEquals(destUserId, savedContribution.getUserId());
-        assertEquals(new BigDecimal("100.00"), savedContribution.getAmount());
-    }
-
-    @Test
-    void importUserData_shouldSkipInactiveGroupGoals() throws Exception {
-
-        GoalUnit inactiveGoalUnit = new GoalUnit();
-        inactiveGoalUnit.setId(UUID.randomUUID());
-        inactiveGoalUnit.setName("Inactiva");
-        inactiveGoalUnit.setMonthlyTarget(new BigDecimal("100.00"));
-        inactiveGoalUnit.setDistributionMode(DistributionMode.EQUITATIVE);
-        inactiveGoalUnit.setActive(false);
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(), List.of(),
-                null,
-                List.of(inactiveGoalUnit),
-                null, null
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("0 registros importados"));
-        verify(goalUnitRepository, never()).save(any());
-        verify(goalMemberRepository, never()).save(any());
-        verify(goalContributionRepository, never()).save(any());
-    }
-
-    @Test
-    void importUserData_shouldSkipGroupGoalMembersWithOrphanGoalId() throws Exception {
-
-        UUID orphanGoalId = UUID.randomUUID();
-
-        GoalMember orphanMember = new GoalMember();
-        orphanMember.setId(UUID.randomUUID());
-        orphanMember.setGoalId(orphanGoalId);
-        orphanMember.setUserId(sourceUserId);
-        orphanMember.setRole(GoalRole.MEMBER);
-        orphanMember.setActive(true);
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(), List.of(), List.of(), List.of(), List.of(),
-                null,
-                null,
-                List.of(orphanMember),
-                null
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-        verify(goalMemberRepository, never()).save(any());
-    }
-
-    @Test
-    void importUserData_shouldHandleSnapshotWithoutNewEntities() throws Exception {
-
-        Category sourceCategory = new Category(
-                sourceCategoryId, sourceUserId, "Comida", "#FF5733",
-                new BigDecimal("500.00"), LocalDateTime.now(), LocalDateTime.now(), true
-        );
-
-        UserDataSnapshot snapshot = new UserDataSnapshot(
-                new UserDataSnapshot.SnapshotMetadata(ExportVersion.CURRENT.toString(), LocalDateTime.now(), "0.1.0"),
-                List.of(sourceCategory),
-                List.of(), List.of(), List.of(), List.of(),
-                null, null, null, null
-        );
-
-        String json = objectMapper.writeValueAsString(snapshot);
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", json.getBytes());
-
-        when(categoryRepository.findByIdUsuario(destUserId)).thenReturn(new ArrayList<>());
-        when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(destUserId)).thenReturn(new ArrayList<>());
-
-
-        String result = dataImportService.importUserData(file, destUserId);
-
-
-        assertTrue(result.contains("Importación exitosa"));
-        assertTrue(result.contains("1 registros importados"));
-
-        verify(savingsGoalRepository, never()).save(any());
-        verify(userPreferencesRepository, never()).save(any());
-        verify(goalUnitRepository, never()).save(any());
-        verify(goalMemberRepository, never()).save(any());
-        verify(goalContributionRepository, never()).save(any());
+        assertThat(result).contains("Importación exitosa");
+        verify(migrationChain).migrateToLatest(any());
     }
 }

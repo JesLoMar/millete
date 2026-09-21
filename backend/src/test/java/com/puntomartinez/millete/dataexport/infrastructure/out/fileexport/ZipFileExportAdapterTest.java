@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.dataexport.infrastructure.out.fileexport;
 
 import com.puntomartinez.millete.dataexport.domain.model.ExportData;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -14,14 +15,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("ZipFileExportAdapter")
 class ZipFileExportAdapterTest {
 
     private final ZipFileExportAdapter adapter = new ZipFileExportAdapter();
 
     @Test
-    void generateCsv_shouldSanitizeFormulaInjectionInDescription() {
+    @DisplayName("generateCsv should sanitize formula injection in description")
+    void generateCsvShouldSanitizeFormulaInjection() {
         String maliciousDescription = "=CMD|' /C calc'!A0";
         ExportData data = new ExportData(
                 null,
@@ -32,37 +35,36 @@ class ZipFileExportAdapterTest {
                         "EXPENSE",
                         maliciousDescription
                 )),
-                null,
-                null,
-                null
+                null, null, null
         );
 
         byte[] csvBytes = adapter.generateCsv(data, "transactions");
         String csv = new String(csvBytes, StandardCharsets.UTF_8);
 
-        assertTrue(csv.contains("'=CMD|' /C calc'!A0"), "La fórmula maliciosa debe ir precedida de una comilla simple");
-        assertFalse(csv.contains("," + maliciousDescription), "La fórmula no debe aparecer sin sanitizar");
+        assertThat(csv).contains("'=CMD|' /C calc'!A0");
+        assertThat(csv).doesNotContain("," + maliciousDescription);
     }
 
     @Test
-    void generateCsv_shouldNotModifySafeText() {
+    @DisplayName("generateCsv should not modify safe text")
+    void generateCsvShouldNotModifySafeText() {
         ExportData data = new ExportData(
-                List.of(new ExportData.CategoryExportRow("Groceries", new BigDecimal("300.00"))),
-                null,
-                null,
-                null,
-                null
+                List.of(new ExportData.CategoryExportRow(
+                        "Groceries", new BigDecimal("300.00")
+                )),
+                null, null, null, null
         );
 
         byte[] csvBytes = adapter.generateCsv(data, "categories");
         String csv = new String(csvBytes, StandardCharsets.UTF_8);
 
-        assertTrue(csv.contains("Groceries"));
-        assertFalse(csv.contains("'Groceries"));
+        assertThat(csv).contains("Groceries");
+        assertThat(csv).doesNotContain("'Groceries");
     }
 
     @Test
-    void generateCsv_shouldSanitizeFormulaPrefixes() {
+    @DisplayName("generateCsv should sanitize formula prefixes")
+    void generateCsvShouldSanitizeFormulaPrefixes() {
         ExportData data = new ExportData(
                 List.of(
                         new ExportData.CategoryExportRow("=SUM(A1:A10)", new BigDecimal("100.00")),
@@ -70,23 +72,21 @@ class ZipFileExportAdapterTest {
                         new ExportData.CategoryExportRow("-100", new BigDecimal("300.00")),
                         new ExportData.CategoryExportRow("@SUM(A1)", new BigDecimal("400.00"))
                 ),
-                null,
-                null,
-                null,
-                null
+                null, null, null, null
         );
 
         byte[] csvBytes = adapter.generateCsv(data, "categories");
         String csv = new String(csvBytes, StandardCharsets.UTF_8);
 
-        assertTrue(csv.contains("'=SUM(A1:A10)"));
-        assertTrue(csv.contains("'+123456789"));
-        assertTrue(csv.contains("'-100"));
-        assertTrue(csv.contains("'@SUM(A1)"));
+        assertThat(csv).contains("'=SUM(A1:A10)");
+        assertThat(csv).contains("'+123456789");
+        assertThat(csv).contains("'-100");
+        assertThat(csv).contains("'@SUM(A1)");
     }
 
     @Test
-    void generateZip_shouldSanitizeAllTextFields() throws Exception {
+    @DisplayName("generateZip should sanitize all text fields")
+    void generateZipShouldSanitizeAllTextFields() throws Exception {
         ExportData data = new ExportData(
                 List.of(new ExportData.CategoryExportRow("=MALICIOUS()", new BigDecimal("100.00"))),
                 List.of(new ExportData.TransactionExportRow(
@@ -123,7 +123,6 @@ class ZipFileExportAdapterTest {
                         10.0,
                         LocalDate.now().plusMonths(1),
                         "+HIGH",
-                        "@ACTIVE",
                         "=LINK"
                 ))
         );
@@ -133,41 +132,43 @@ class ZipFileExportAdapterTest {
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
             while (true) {
                 var entry = zis.getNextEntry();
-                if (entry == null) {
-                    break;
-                }
+                if (entry == null) break;
 
-                String content = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
-
+                String content = new BufferedReader(
+                        new InputStreamReader(zis, StandardCharsets.UTF_8)
+                ).lines().collect(Collectors.joining("\n"));
 
                 String[] lines = content.split("\n");
                 for (String line : lines) {
                     String[] cells = line.split(",");
                     for (String cell : cells) {
                         String trimmed = cell.trim();
-                        if (!trimmed.isEmpty() && !trimmed.equals("name") && !trimmed.equals("budget_limit")
-                                && !trimmed.equals("category_name") && !trimmed.equals("amount")
-                                && !trimmed.equals("date") && !trimmed.equals("type") && !trimmed.equals("description")
-                                && !trimmed.equals("frequency_type") && !trimmed.equals("frequency_interval")
-                                && !trimmed.equals("start_date") && !trimmed.equals("end_date")
-                                && !trimmed.equals("last_executed_date") && !trimmed.equals("asset_name")
-                                && !trimmed.equals("ticker") && !trimmed.equals("quantity")
-                                && !trimmed.equals("purchase_price") && !trimmed.equals("current_price")
-                                && !trimmed.equals("purchase_date") && !trimmed.equals("target_amount")
-                                && !trimmed.equals("current_amount") && !trimmed.equals("progress")
-                                && !trimmed.equals("deadline") && !trimmed.equals("priority")
-                                && !trimmed.equals("status") && !trimmed.equals("link")) {
-
-                            if (trimmed.startsWith("=") || trimmed.startsWith("+") || trimmed.startsWith("-")
-                                    || trimmed.startsWith("@")) {
-                                assertTrue(trimmed.startsWith("'"), entry.getName() + " contiene fórmula sin sanitizar: " + trimmed);
+                        if (!trimmed.isEmpty() && isDataField(trimmed)) {
+                            if (trimmed.startsWith("=") || trimmed.startsWith("+")
+                                    || trimmed.startsWith("-") || trimmed.startsWith("@")) {
+                                assertThat(trimmed)
+                                        .as(entry.getName() + " contains unsanitized formula: " + trimmed)
+                                        .startsWith("'");
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean isDataField(String value) {
+        return !value.equals("name") && !value.equals("budget_limit")
+                && !value.equals("category_name") && !value.equals("amount")
+                && !value.equals("date") && !value.equals("type")
+                && !value.equals("description") && !value.equals("frequency_type")
+                && !value.equals("frequency_interval") && !value.equals("start_date")
+                && !value.equals("end_date") && !value.equals("last_executed_date")
+                && !value.equals("asset_name") && !value.equals("ticker")
+                && !value.equals("quantity") && !value.equals("purchase_price")
+                && !value.equals("current_price") && !value.equals("purchase_date")
+                && !value.equals("target_amount") && !value.equals("current_amount")
+                && !value.equals("progress") && !value.equals("deadline")
+                && !value.equals("priority") && !value.equals("link");
     }
 }

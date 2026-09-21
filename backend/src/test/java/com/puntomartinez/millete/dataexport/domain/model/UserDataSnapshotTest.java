@@ -1,70 +1,71 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("UserDataSnapshot - DTO de exportación")
+@DisplayName("UserDataSnapshot")
 class UserDataSnapshotTest {
 
     @Test
-    @DisplayName("Debe crear snapshot con todos los campos")
-    void constructor_shouldCreateSnapshotWithAllFields() {
-        UserDataSnapshot.SnapshotMetadata metadata = new UserDataSnapshot.SnapshotMetadata(
-                "0.1.0", LocalDateTime.now(), "0.1.0"
-        );
+    @DisplayName("Should create snapshot with all fields")
+    void shouldCreateSnapshotWithAllFields() {
+        UserDataSnapshot.SnapshotMetadata metadata =
+                new UserDataSnapshot.SnapshotMetadata(
+                        "0.2.0", LocalDateTime.now(), "0.2.0"
+                );
 
         UserDataSnapshot snapshot = new UserDataSnapshot(
-                metadata, List.of(), List.of(), List.of(), List.of(), List.of(),
-                null, null, null, null
+                metadata, List.of(), List.of(), List.of(), List.of(), List.of(), null
         );
 
-        assertNotNull(snapshot);
-        assertEquals("0.1.0", snapshot.metadata().version());
-        assertNotNull(snapshot.metadata().exportDate());
-        assertEquals("0.1.0", snapshot.metadata().appVersion());
+        assertThat(snapshot).isNotNull();
+        assertThat(snapshot.metadata().version()).isEqualTo("0.2.0");
+        assertThat(snapshot.metadata().exportDate()).isNotNull();
+        assertThat(snapshot.metadata().appVersion()).isEqualTo("0.2.0");
     }
 
     @Test
-    @DisplayName("Debe lanzar error cuando metadata es null")
-    void constructor_shouldThrow_whenMetadataNull() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new UserDataSnapshot(null, List.of(), List.of(), List.of(), List.of(), List.of(),
-                    null, null, null, null)
-        );
+    @DisplayName("Should throw when metadata is null")
+    void shouldThrowWhenMetadataIsNull() {
+        assertThatThrownBy(() ->
+                new UserDataSnapshot(
+                        null, List.of(), List.of(), List.of(), List.of(), List.of(), null
+                )
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    @DisplayName("SnapshotMetadata debe ser inmutable")
-    void snapshotMetadata_shouldBeImmutableRecord() {
+    @DisplayName("SnapshotMetadata should be immutable record")
+    void snapshotMetadataShouldBeImmutable() {
         LocalDateTime now = LocalDateTime.now();
-        UserDataSnapshot.SnapshotMetadata metadata = new UserDataSnapshot.SnapshotMetadata(
-                "0.1.0", now, "0.1.0"
-        );
+        UserDataSnapshot.SnapshotMetadata metadata =
+                new UserDataSnapshot.SnapshotMetadata("0.2.0", now, "0.2.0");
 
-        assertEquals("0.1.0", metadata.version());
-        assertEquals(now, metadata.exportDate());
-        assertEquals("0.1.0", metadata.appVersion());
+        assertThat(metadata.version()).isEqualTo("0.2.0");
+        assertThat(metadata.exportDate()).isEqualTo(now);
+        assertThat(metadata.appVersion()).isEqualTo("0.2.0");
     }
 
     @Test
-    @DisplayName("Debe permitir campos nulos para entidades opcionales")
-    void constructor_shouldAllowNullOptionalFields() {
-        UserDataSnapshot.SnapshotMetadata metadata = new UserDataSnapshot.SnapshotMetadata(
-                "0.1.0", LocalDateTime.now(), "0.1.0"
-        );
+    @DisplayName("Should allow null optional fields")
+    void shouldAllowNullOptionalFields() {
+        UserDataSnapshot.SnapshotMetadata metadata =
+                new UserDataSnapshot.SnapshotMetadata(
+                        "0.2.0", LocalDateTime.now(), "0.2.0"
+                );
 
         UserDataSnapshot snapshot = new UserDataSnapshot(
-                metadata, null, null, null, null, null,
-                null, null, null, null
+                metadata, null, null, null, null, null, null
         );
 
-        assertNull(snapshot.categories());
-        assertNull(snapshot.transactions());
-        assertNull(snapshot.userPreferences());
+        assertThat(snapshot.categories()).isNull();
+        assertThat(snapshot.transactions()).isNull();
+        assertThat(snapshot.userPreferences()).isNull();
     }
 }

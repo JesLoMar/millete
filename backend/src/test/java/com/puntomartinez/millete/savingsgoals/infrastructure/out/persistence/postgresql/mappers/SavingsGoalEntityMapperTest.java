@@ -27,7 +27,7 @@ class SavingsGoalEntityMapperTest {
         UUID userId = UUID.randomUUID();
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 11, 30);
-        LocalDate deadline = LocalDate.of(2025, 6, 1);
+        LocalDate deadline = LocalDate.of(2030, 6, 1);
 
         SavingsGoal domain = SavingsGoal.reconstitute(
                 id,
@@ -66,7 +66,7 @@ class SavingsGoalEntityMapperTest {
         UUID userId = UUID.randomUUID();
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 11, 30);
-        LocalDate deadline = LocalDate.of(2025, 6, 1);
+        LocalDate deadline = LocalDate.of(2030, 6, 1);
 
         SavingsGoalEntity entity = new SavingsGoalEntity();
         entity.setId(id);

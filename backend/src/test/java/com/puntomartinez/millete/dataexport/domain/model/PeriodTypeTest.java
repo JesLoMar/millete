@@ -1,78 +1,80 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("PeriodType - Periodos de exportación PDF")
+@DisplayName("PeriodType")
 class PeriodTypeTest {
 
     @Test
-    @DisplayName("fromCode debe devolver el periodo correcto")
-    void fromCode_shouldReturnCorrectPeriod() {
-        assertEquals(PeriodType.ONE_MONTH, PeriodType.fromCode("1m"));
-        assertEquals(PeriodType.THREE_MONTHS, PeriodType.fromCode("3m"));
-        assertEquals(PeriodType.SIX_MONTHS, PeriodType.fromCode("6m"));
-        assertEquals(PeriodType.ONE_YEAR, PeriodType.fromCode("1y"));
+    @DisplayName("fromCode should return correct period")
+    void fromCodeShouldReturnCorrectPeriod() {
+        assertThat(PeriodType.fromCode("1m")).isEqualTo(PeriodType.ONE_MONTH);
+        assertThat(PeriodType.fromCode("3m")).isEqualTo(PeriodType.THREE_MONTHS);
+        assertThat(PeriodType.fromCode("6m")).isEqualTo(PeriodType.SIX_MONTHS);
+        assertThat(PeriodType.fromCode("1y")).isEqualTo(PeriodType.ONE_YEAR);
     }
 
     @Test
-    @DisplayName("fromCode debe ser case-insensitive")
-    void fromCode_shouldBeCaseInsensitive() {
-        assertEquals(PeriodType.ONE_MONTH, PeriodType.fromCode("1M"));
-        assertEquals(PeriodType.ONE_YEAR, PeriodType.fromCode("1Y"));
+    @DisplayName("fromCode should be case-insensitive")
+    void fromCodeShouldBeCaseInsensitive() {
+        assertThat(PeriodType.fromCode("1M")).isEqualTo(PeriodType.ONE_MONTH);
+        assertThat(PeriodType.fromCode("1Y")).isEqualTo(PeriodType.ONE_YEAR);
     }
 
     @Test
-    @DisplayName("fromCode debe lanzar error con código inválido")
-    void fromCode_shouldThrow_whenInvalidCode() {
-        assertThrows(IllegalArgumentException.class, () -> PeriodType.fromCode("invalid"));
+    @DisplayName("fromCode should throw on invalid code")
+    void fromCodeShouldThrowOnInvalidCode() {
+        assertThatThrownBy(() -> PeriodType.fromCode("invalid"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    @DisplayName("getStartDate debe calcular fecha correcta")
-    void getStartDate_shouldCalculateCorrectDate() {
+    @DisplayName("getStartDate should calculate correct date")
+    void getStartDateShouldCalculateCorrectDate() {
         LocalDate today = LocalDate.now();
 
-        assertEquals(today.minusMonths(1), PeriodType.ONE_MONTH.getStartDate());
-        assertEquals(today.minusMonths(3), PeriodType.THREE_MONTHS.getStartDate());
-        assertEquals(today.minusMonths(6), PeriodType.SIX_MONTHS.getStartDate());
-        assertEquals(today.minusMonths(12), PeriodType.ONE_YEAR.getStartDate());
+        assertThat(PeriodType.ONE_MONTH.getStartDate()).isEqualTo(today.minusMonths(1));
+        assertThat(PeriodType.THREE_MONTHS.getStartDate()).isEqualTo(today.minusMonths(3));
+        assertThat(PeriodType.SIX_MONTHS.getStartDate()).isEqualTo(today.minusMonths(6));
+        assertThat(PeriodType.ONE_YEAR.getStartDate()).isEqualTo(today.minusMonths(12));
     }
 
     @Test
-    @DisplayName("getEndDate debe devolver fecha actual")
-    void getEndDate_shouldReturnToday() {
-        assertEquals(LocalDate.now(), PeriodType.ONE_MONTH.getEndDate());
+    @DisplayName("getEndDate should return today")
+    void getEndDateShouldReturnToday() {
+        assertThat(PeriodType.ONE_MONTH.getEndDate()).isEqualTo(LocalDate.now());
     }
 
     @Test
-    @DisplayName("getDisplayName debe devolver nombre legible")
-    void getDisplayName_shouldReturnReadableName() {
-        assertEquals("1 month", PeriodType.ONE_MONTH.getDisplayName());
-        assertEquals("3 months", PeriodType.THREE_MONTHS.getDisplayName());
-        assertEquals("6 months", PeriodType.SIX_MONTHS.getDisplayName());
-        assertEquals("1 year", PeriodType.ONE_YEAR.getDisplayName());
+    @DisplayName("getDisplayName should return readable name")
+    void getDisplayNameShouldReturnReadableName() {
+        assertThat(PeriodType.ONE_MONTH.getDisplayName()).isEqualTo("1 month");
+        assertThat(PeriodType.THREE_MONTHS.getDisplayName()).isEqualTo("3 months");
+        assertThat(PeriodType.SIX_MONTHS.getDisplayName()).isEqualTo("6 months");
+        assertThat(PeriodType.ONE_YEAR.getDisplayName()).isEqualTo("1 year");
     }
 
     @Test
-    @DisplayName("getCode debe devolver código correcto")
-    void getCode_shouldReturnCorrectCode() {
-        assertEquals("1m", PeriodType.ONE_MONTH.getCode());
-        assertEquals("3m", PeriodType.THREE_MONTHS.getCode());
-        assertEquals("6m", PeriodType.SIX_MONTHS.getCode());
-        assertEquals("1y", PeriodType.ONE_YEAR.getCode());
+    @DisplayName("getCode should return correct code")
+    void getCodeShouldReturnCorrectCode() {
+        assertThat(PeriodType.ONE_MONTH.getCode()).isEqualTo("1m");
+        assertThat(PeriodType.THREE_MONTHS.getCode()).isEqualTo("3m");
+        assertThat(PeriodType.SIX_MONTHS.getCode()).isEqualTo("6m");
+        assertThat(PeriodType.ONE_YEAR.getCode()).isEqualTo("1y");
     }
 
     @Test
-    @DisplayName("getMonths debe devolver meses correctos")
-    void getMonths_shouldReturnCorrectMonths() {
-        assertEquals(1, PeriodType.ONE_MONTH.getMonths());
-        assertEquals(3, PeriodType.THREE_MONTHS.getMonths());
-        assertEquals(6, PeriodType.SIX_MONTHS.getMonths());
-        assertEquals(12, PeriodType.ONE_YEAR.getMonths());
+    @DisplayName("getMonths should return correct months")
+    void getMonthsShouldReturnCorrectMonths() {
+        assertThat(PeriodType.ONE_MONTH.getMonths()).isEqualTo(1);
+        assertThat(PeriodType.THREE_MONTHS.getMonths()).isEqualTo(3);
+        assertThat(PeriodType.SIX_MONTHS.getMonths()).isEqualTo(6);
+        assertThat(PeriodType.ONE_YEAR.getMonths()).isEqualTo(12);
     }
 }

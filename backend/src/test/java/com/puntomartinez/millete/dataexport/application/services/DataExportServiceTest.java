@@ -1,382 +1,268 @@
 package com.puntomartinez.millete.dataexport.application.services;
 
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.dataexport.domain.model.*;
-import com.puntomartinez.millete.dataexport.domain.ports.out.FileExportPort;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
-import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
-import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
-import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
-import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
-import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
-import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.users.domain.model.UserPreferences;
-import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import com.puntomartinez.millete.dataexport.domain.ports.out.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("DataExportService")
 class DataExportServiceTest {
 
     @Mock
-    private CategoryRepository categoryRepository;
-    @Mock
-    private TransactionRepository transactionRepository;
-    @Mock
-    private PlannedTransactionRepository plannedTransactionRepository;
-    @Mock
-    private InvestmentRepository investmentRepository;
-    @Mock
-    private SavingsGoalRepository savingsGoalRepository;
-    @Mock
-    private UserPreferencesRepository userPreferencesRepository;
-    @Mock
-    private GoalUnitRepository goalUnitRepository;
-    @Mock
-    private GoalMemberRepository goalMemberRepository;
-    @Mock
-    private GoalContributionRepository goalContributionRepository;
-    @Mock
-    private FileExportPort fileExportPort;
-    @Mock
-    private FileExportPort pdfFileExportPort;
+    private CategoryExportPort categoryExportPort;
 
+    @Mock
+    private TransactionExportPort transactionExportPort;
+
+    @Mock
+    private PlannedTransactionExportPort plannedTransactionExportPort;
+
+    @Mock
+    private InvestmentExportPort investmentExportPort;
+
+    @Mock
+    private SavingsGoalExportPort savingsGoalExportPort;
+
+    @Mock
+    private UserPreferencesExportPort userPreferencesExportPort;
+
+    @Mock
+    private FileZipExportPort fileZipExportPort;
+
+    @Mock
+    private FileCsvExportPort fileCsvExportPort;
+
+    @Mock
+    private FilePdfExportPort filePdfExportPort;
+
+    @InjectMocks
     private DataExportService dataExportService;
 
     private UUID userId;
-    private UUID categoryId;
-    private UUID goalId;
 
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        categoryId = UUID.randomUUID();
-        goalId = UUID.randomUUID();
-        dataExportService = new DataExportService(
-                categoryRepository,
-                transactionRepository,
-                plannedTransactionRepository,
-                investmentRepository,
-                savingsGoalRepository,
-                userPreferencesRepository,
-                goalUnitRepository,
-                goalMemberRepository,
-                goalContributionRepository,
-                fileExportPort,
-                pdfFileExportPort
+        // Mockito no procesa @Value, lo inyectamos manualmente para evitar NPE o datos nulos en el metadata
+        ReflectionTestUtils.setField(dataExportService, "appVersion", "1.0.0");
+    }
+
+    private CategorySnapshot createCategorySnapshot() {
+        return new CategorySnapshot(
+                UUID.randomUUID(), userId, "Food", "#FF5733",
+                new BigDecimal("500.00"),
+                LocalDateTime.now(), LocalDateTime.now(), true
         );
     }
 
-    private Category createCategory() {
-        Category cat = new Category();
-        cat.setId(categoryId);
-        cat.setUserId(userId);
-        cat.setName("Comida");
-        cat.setBudgetLimit(new BigDecimal("500.00"));
-        cat.setActive(true);
-        return cat;
-    }
-
-    private Transaction createTransaction() {
-        Transaction tx = new Transaction();
-        tx.setId(UUID.randomUUID());
-        tx.setUserId(userId);
-        tx.setCategoryId(categoryId);
-        tx.setAmount(new BigDecimal("50.00"));
-        tx.setDate(LocalDateTime.now());
-        tx.setType(Transaction.TransactionType.EXPENSE);
-        tx.setDescription("Almuerzo");
-        tx.setActive(true);
-        return tx;
-    }
-
-    private PlannedTransaction createPlannedTransaction() {
-        PlannedTransaction ptx = new PlannedTransaction();
-        ptx.setId(UUID.randomUUID());
-        ptx.setUserId(userId);
-        ptx.setCategoryId(categoryId);
-        ptx.setAmount(new BigDecimal("100.00"));
-        ptx.setType(Transaction.TransactionType.EXPENSE);
-        ptx.setDescription("Alquiler");
-        ptx.setFrequencyType(PlannedTransaction.FrequencyType.MONTHS);
-        ptx.setFrequencyInterval(1);
-        ptx.setStartDate(LocalDate.now());
-        ptx.setActive(true);
-        return ptx;
-    }
-
-    private Investment createInvestment() {
-        Investment inv = new Investment();
-        inv.setId(UUID.randomUUID());
-        inv.setUserId(userId);
-        inv.setAssetName("Apple");
-        inv.setTicker("AAPL");
-        inv.setQuantity(new BigDecimal("10"));
-        inv.setPurchasePrice(new BigDecimal("150.00"));
-        inv.setCurrentPrice(new BigDecimal("180.00"));
-        inv.setType(Investment.InvestmentType.STOCK);
-        inv.setPurchaseDate(LocalDateTime.now().minusMonths(3));
-        inv.setActive(true);
-        return inv;
-    }
-
-    private SavingsGoal createSavingsGoal() {
-        SavingsGoal sg = new SavingsGoal();
-        sg.setId(UUID.randomUUID());
-        sg.setUserId(userId);
-        sg.setName("Vacaciones");
-        sg.setTargetAmount(new BigDecimal("2000.00"));
-        sg.setCurrentAmount(new BigDecimal("500.00"));
-        sg.setDeadline(LocalDate.now().plusMonths(6));
-        sg.setPriority("HIGH");
-        sg.setStatus("ACTIVE");
-        sg.setActive(true);
-        return sg;
-    }
-
-    private GoalUnit createGoalUnit() {
-        GoalUnit gu = new GoalUnit();
-        gu.setId(goalId);
-        gu.setName("Viaje familiar");
-        gu.setMonthlyTarget(new BigDecimal("300.00"));
-        gu.setActive(true);
-        return gu;
-    }
-
-    private GoalMember createGoalMember() {
-        GoalMember gm = new GoalMember();
-        gm.setId(UUID.randomUUID());
-        gm.setGoalId(goalId);
-        gm.setUserId(userId);
-        gm.setRole(GoalRole.ADMIN);
-        gm.setActive(true);
-        return gm;
-    }
-
-    private GoalContribution createGoalContribution() {
-        GoalContribution gc = new GoalContribution();
-        gc.setId(UUID.randomUUID());
-        gc.setGoalId(goalId);
-        gc.setUserId(userId);
-        gc.setAmount(new BigDecimal("100.00"));
-        gc.setActive(true);
-        return gc;
+    private TransactionSnapshot createTransactionSnapshot(UUID categoryId) {
+        return new TransactionSnapshot(
+                UUID.randomUUID(), userId, categoryId,
+                new BigDecimal("50.00"), LocalDateTime.now(),
+                "EXPENSE", "Lunch",
+                LocalDateTime.now(), LocalDateTime.now(), true
+        );
     }
 
     @Test
-    void exportAllUserData_shouldReturnCompleteSnapshot() {
-        Category cat = createCategory();
-        Transaction tx = createTransaction();
-        PlannedTransaction ptx = createPlannedTransaction();
-        Investment inv = createInvestment();
-        SavingsGoal sg = createSavingsGoal();
-        UserPreferences prefs = new UserPreferences(UUID.randomUUID(), userId, "{\"theme\":\"dark\"}");
-        GoalUnit gu = createGoalUnit();
-        GoalMember gm = createGoalMember();
-        GoalContribution gc = createGoalContribution();
+    @DisplayName("exportAllUserData should return complete snapshot")
+    void exportAllUserDataShouldReturnCompleteSnapshot() {
+        CategorySnapshot cat = createCategorySnapshot();
+        TransactionSnapshot tx = createTransactionSnapshot(cat.id());
 
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of(ptx));
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv));
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of(sg));
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.of(prefs));
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of(gm));
-        when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(gu));
-        when(goalMemberRepository.findByGoalId(goalId)).thenReturn(List.of(gm));
-        when(goalContributionRepository.findByGoalId(goalId)).thenReturn(List.of(gc));
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of(cat));
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of(tx));
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
 
         UserDataSnapshot result = dataExportService.exportAllUserData(userId);
 
-        assertNotNull(result);
-        assertNotNull(result.metadata());
-        assertEquals(ExportVersion.CURRENT.toString(), result.metadata().version());
-        assertEquals(1, result.categories().size());
-        assertEquals(1, result.transactions().size());
-        assertEquals(1, result.plannedTransactions().size());
-        assertEquals(1, result.investments().size());
-        assertEquals(1, result.savingsGoals().size());
-        assertNotNull(result.userPreferences());
-        assertEquals(1, result.goalUnits().size());
-        assertEquals(1, result.goalMembers().size());
-        assertEquals(1, result.goalContributions().size());
+        assertThat(result).isNotNull();
+        assertThat(result.metadata()).isNotNull();
+        assertThat(result.metadata().version())
+                .isEqualTo(ExportVersion.CURRENT.toString());
+        assertThat(result.metadata().appVersion()).isEqualTo("1.0.0");
+        assertThat(result.categories()).hasSize(1);
+        assertThat(result.transactions()).hasSize(1);
+        assertThat(result.plannedTransactions()).isEmpty();
+        assertThat(result.investments()).isEmpty();
+        assertThat(result.savingsGoals()).isEmpty();
+        assertThat(result.userPreferences()).isNull();
     }
 
     @Test
-    void exportAllUserData_shouldHandleEmptyData() {
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of());
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
+    @DisplayName("exportAllUserData should handle empty data")
+    void exportAllUserDataShouldHandleEmptyData() {
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of());
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
 
         UserDataSnapshot result = dataExportService.exportAllUserData(userId);
 
-        assertNotNull(result);
-        assertTrue(result.categories().isEmpty());
-        assertTrue(result.transactions().isEmpty());
-        assertNull(result.userPreferences());
-        assertTrue(result.goalUnits().isEmpty());
+        assertThat(result).isNotNull();
+        assertThat(result.categories()).isEmpty();
+        assertThat(result.transactions()).isEmpty();
+        assertThat(result.userPreferences()).isNull();
     }
 
     @Test
-    void buildExportData_shouldReturnFilteredActiveData() {
-        Category cat = createCategory();
-        Transaction tx = createTransaction();
-        tx.setCategoryId(categoryId);
-        SavingsGoal sg = createSavingsGoal();
+    @DisplayName("buildExportData should return filtered active data")
+    void buildExportDataShouldReturnFilteredActiveData() {
+        CategorySnapshot cat = createCategorySnapshot();
+        // Pasamos el ID de la categoría para que el servicio pueda resolver el nombre "Food"
+        TransactionSnapshot tx = createTransactionSnapshot(cat.id());
 
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of(sg));
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of(cat));
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of(tx));
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
 
         ExportData result = dataExportService.buildExportData(userId);
 
-        assertEquals(1, result.categories().size());
-        assertEquals(1, result.transactions().size());
-        assertEquals(1, result.savingsGoals().size());
-        assertEquals("Comida", result.transactions().getFirst().categoryName());
+        assertThat(result.categories()).hasSize(1);
+        assertThat(result.transactions()).hasSize(1);
+        assertThat(result.transactions().getFirst().categoryName()).isEqualTo("Food");
     }
 
     @Test
-    void buildExportData_shouldFilterInactiveEntities() {
-        Category activeCat = createCategory();
-        Category inactiveCat = createCategory();
-        inactiveCat.setId(UUID.randomUUID());
-        inactiveCat.setActive(false);
+    @DisplayName("buildExportData should filter inactive entities")
+    void buildExportDataShouldFilterInactiveEntities() {
+        CategorySnapshot activeCat = createCategorySnapshot();
+        CategorySnapshot inactiveCat = new CategorySnapshot(
+                UUID.randomUUID(), userId, "Inactive", "#00FF00",
+                new BigDecimal("300.00"),
+                LocalDateTime.now(), LocalDateTime.now(), false
+        );
 
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(activeCat, inactiveCat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
+        when(categoryExportPort.findByUserId(userId))
+                .thenReturn(List.of(activeCat, inactiveCat));
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
 
         ExportData result = dataExportService.buildExportData(userId);
 
-        assertEquals(1, result.categories().size());
-        assertEquals("Comida", result.categories().getFirst().name());
+        assertThat(result.categories()).hasSize(1);
+        assertThat(result.categories().getFirst().name()).isEqualTo("Food");
     }
 
     @Test
-    void buildPdfExportData_shouldCalculateMetrics() {
-        Category cat = createCategory();
-        Transaction income = createTransaction();
-        income.setType(Transaction.TransactionType.INCOME);
-        income.setAmount(new BigDecimal("1000.00"));
-        Transaction expense = createTransaction();
-        expense.setType(Transaction.TransactionType.EXPENSE);
-        expense.setAmount(new BigDecimal("300.00"));
-        expense.setCategoryId(categoryId);
-        Investment inv = createInvestment();
-        SavingsGoal sg = createSavingsGoal();
-
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(income, expense));
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv));
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of(sg));
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
-
-        PdfExportData result = dataExportService.buildPdfExportData(userId, PeriodType.ONE_MONTH);
-
-        assertNotNull(result);
-        assertEquals("1 month", result.periodDisplayName());
-        assertNotNull(result.summary());
-        assertEquals(new BigDecimal("700.00"), result.summary().balance());
-        assertEquals(new BigDecimal("1000.00"), result.summary().totalIncome());
-        assertEquals(new BigDecimal("300.00"), result.summary().totalExpenses());
-        assertEquals(2, result.summary().transactionCount());
-        assertEquals("Comida", result.summary().topCategoryName());
-        assertEquals(1, result.investments().size());
-        assertEquals(1, result.savingsGoals().size());
-    }
-
-    @Test
-    void exportUserDataAsZip_shouldDelegateToFileExportPort() {
-        Category cat = createCategory();
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
-        when(fileExportPort.generateZip(any(ExportData.class))).thenReturn(new byte[]{1, 2, 3});
+    @DisplayName("exportUserDataAsZip should delegate to file export port")
+    void exportUserDataAsZipShouldDelegateToFileExportPort() {
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of());
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
+        when(fileZipExportPort.generateZip(any(ExportData.class)))
+                .thenReturn(new byte[]{1, 2, 3});
 
         byte[] result = dataExportService.exportUserDataAsZip(userId);
 
-        assertNotNull(result);
-        assertEquals(3, result.length);
-        verify(fileExportPort).generateZip(any(ExportData.class));
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(3);
+        verify(fileZipExportPort).generateZip(any(ExportData.class));
     }
 
     @Test
-    void exportUserDataAsCsv_shouldDelegateToFileExportPort() {
-        Category cat = createCategory();
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
-        when(fileExportPort.generateCsv(any(ExportData.class), eq("categories"))).thenReturn(new byte[]{4, 5, 6});
+    @DisplayName("exportUserDataAsCsv should delegate to file export port")
+    void exportUserDataAsCsvShouldDelegateToFileExportPort() {
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of());
+        when(transactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(plannedTransactionExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(userPreferencesExportPort.findByUserId(userId)).thenReturn(Optional.empty());
+        when(fileCsvExportPort.generateCsv(any(ExportData.class), eq("categories")))
+                .thenReturn(new byte[]{4, 5, 6});
 
         byte[] result = dataExportService.exportUserDataAsCsv(userId, "categories");
 
-        assertNotNull(result);
-        verify(fileExportPort).generateCsv(any(ExportData.class), eq("categories"));
+        assertThat(result).isNotNull();
+        verify(fileCsvExportPort).generateCsv(any(ExportData.class), eq("categories"));
     }
 
     @Test
-    void exportUserDataAsPdf_shouldDelegateToPdfFileExportPort() {
-        Category cat = createCategory();
-        when(categoryRepository.findByIdUsuario(userId)).thenReturn(List.of(cat));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(plannedTransactionRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of());
-        when(userPreferencesRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(goalMemberRepository.findByUserId(userId)).thenReturn(List.of());
-        when(pdfFileExportPort.generatePdf(any(PdfExportData.class))).thenReturn(new byte[]{7, 8, 9});
+    @DisplayName("exportUserDataAsPdf should delegate to pdf file export port")
+    void exportUserDataAsPdfShouldDelegateToPdfFileExportPort() {
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of());
+        // buildPdfExportData usa findByUserIdAndDateBetween, NO findAllByUserId
+        when(transactionExportPort.findByUserIdAndDateBetween(
+                eq(userId), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).thenReturn(List.of());
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(filePdfExportPort.generatePdf(any(PdfExportData.class)))
+                .thenReturn(new byte[]{7, 8, 9});
 
         byte[] result = dataExportService.exportUserDataAsPdf(userId, PeriodType.ONE_MONTH);
 
-        assertNotNull(result);
-        assertEquals(3, result.length);
-        verify(pdfFileExportPort).generatePdf(any(PdfExportData.class));
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(3);
+        verify(filePdfExportPort).generatePdf(any(PdfExportData.class));
+    }
+
+    @Test
+    @DisplayName("buildPdfExportData should calculate metrics")
+    void buildPdfExportDataShouldCalculateMetrics() {
+        CategorySnapshot cat = createCategorySnapshot();
+        TransactionSnapshot income = new TransactionSnapshot(
+                UUID.randomUUID(), userId, UUID.randomUUID(),
+                new BigDecimal("1000.00"), LocalDateTime.now(),
+                "INCOME", "Salary",
+                LocalDateTime.now(), LocalDateTime.now(), true
+        );
+        TransactionSnapshot expense = new TransactionSnapshot(
+                UUID.randomUUID(), userId, cat.id(),
+                new BigDecimal("300.00"), LocalDateTime.now(),
+                "EXPENSE", "Groceries",
+                LocalDateTime.now(), LocalDateTime.now(), true
+        );
+
+        when(categoryExportPort.findByUserId(userId)).thenReturn(List.of(cat));
+        when(transactionExportPort.findByUserIdAndDateBetween(
+                eq(userId), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).thenReturn(List.of(income, expense));
+        when(investmentExportPort.findAllByUserId(userId)).thenReturn(List.of());
+        when(savingsGoalExportPort.findAllByUserId(userId)).thenReturn(List.of());
+
+        PdfExportData result = dataExportService.buildPdfExportData(userId, PeriodType.ONE_MONTH);
+
+        assertThat(result).isNotNull();
+        assertThat(result.periodDisplayName()).isEqualTo("1 month");
+        assertThat(result.summary()).isNotNull();
+        assertThat(result.summary().balance()).isEqualByComparingTo("700.00");
+        assertThat(result.summary().totalIncome()).isEqualByComparingTo("1000.00");
+        assertThat(result.summary().totalExpenses()).isEqualByComparingTo("300.00");
+        assertThat(result.summary().transactionCount()).isEqualTo(2);
+        assertThat(result.summary().topCategoryName()).isEqualTo("Food");
     }
 }

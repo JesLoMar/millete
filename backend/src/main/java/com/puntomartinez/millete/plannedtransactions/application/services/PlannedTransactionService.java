@@ -190,28 +190,26 @@ public class PlannedTransactionService implements
                     log.warn(
                             "La plantilla recurrente {} se ha "
                                     + "desactivado tras {} fallos "
-                                    + "consecutivos.",
+                                    + "consecutivos. Motivo: {}",
                             template.getId(),
                             PlannedTransaction.MAX_CONSECUTIVE_FAILURES,
-                            e
+                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'
                     );
                 } else {
                     log.error(
                             "Error ejecutando la plantilla recurrente "
                                     + "{} para la fecha {} "
-                                    + "(intento {}/{}).",
+                                    + "(intento {}/{}). Motivo: {}",
                             template.getId(),
                             pendingDate,
                             template.getFailureCount(),
                             PlannedTransaction.MAX_CONSECUTIVE_FAILURES,
-                            e
+                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'
                     );
                 }
-
                 plannedTransactionRepository.save(template);
                 break;
             }
-
             pendingDate =
                     getNextPendingExecutionDate(template, today);
         }

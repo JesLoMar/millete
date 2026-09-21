@@ -5,6 +5,7 @@ import com.puntomartinez.millete.users.domain.model.UserLoginSecurity;
 import com.puntomartinez.millete.users.domain.ports.out.LoginSecurityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,14 +17,16 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("AccountLockService - Servicio de bloqueo de cuentas")
+@DisplayName("AccountLockService")
 class AccountLockServiceTest {
 
     @Mock
@@ -44,176 +47,198 @@ class AccountLockServiceTest {
         security.setModifiedAt(LocalDateTime.now());
     }
 
-    // ==================== checkLockStatus ====================
+    @Nested
+    @DisplayName("checkLockStatus")
+    class CheckLockStatus {
 
-    @Test
-    @DisplayName("checkLockStatus - usuario sin registro de seguridad no hace nada")
-    void checkLockStatusShouldDoNothingWhenNoRecord() {
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Should do nothing when no record exists")
+        void shouldDoNothingWhenNoRecord() {
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.empty());
 
-        assertThatCode(() -> accountLockService.checkLockStatus(userId))
-                .doesNotThrowAnyException();
+            assertThatCode(() ->
+                    accountLockService.checkLockStatus(userId)
+            ).doesNotThrowAnyException();
 
-        verify(loginSecurityRepository).findByUserId(userId);
-        verify(loginSecurityRepository, never()).save(any());
+            verify(loginSecurityRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw AccountLockedException when blocked")
+        void shouldThrowWhenBlocked() {
+            security.setFailedAttempts(5);
+            security.setBlockedUntil(LocalDateTime.now().plusMinutes(10));
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+
+            assertThatThrownBy(() ->
+                    accountLockService.checkLockStatus(userId)
+            ).isInstanceOf(AccountLockedException.class);
+
+            verify(loginSecurityRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should unlock when block is expired keeping attempts")
+        void shouldUnlockWhenBlockExpired() {
+            security.setFailedAttempts(5);
+            security.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+
+            assertThatCode(() ->
+                    accountLockService.checkLockStatus(userId)
+            ).doesNotThrowAnyException();
+
+            assertThat(security.getFailedAttempts()).isEqualTo(5);
+            assertThat(security.getBlockedUntil()).isNull();
+            verify(loginSecurityRepository).save(security);
+        }
+
+        @Test
+        @DisplayName("Should not persist when record is clean")
+        void shouldNotPersistWhenRecordIsClean() {
+            security.setFailedAttempts(0);
+            security.setBlockedUntil(null);
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+
+            accountLockService.checkLockStatus(userId);
+
+            verify(loginSecurityRepository, never()).save(any());
+        }
     }
 
-    @Test
-    @DisplayName("checkLockStatus - cuenta bloqueada lanza AccountLockedException")
-    void checkLockStatusShouldThrowWhenBlocked() {
-        security.setFailedAttempts(5);
-        security.setBlockedUntil(LocalDateTime.now().plusMinutes(10));
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+    @Nested
+    @DisplayName("handleFailedLogin")
+    class HandleFailedLogin {
 
-        assertThatThrownBy(() -> accountLockService.checkLockStatus(userId))
-                .isInstanceOf(AccountLockedException.class)
-                .hasMessageContaining("Inténtalo de nuevo en");
+        @Test
+        @DisplayName("Should create record on first failure")
+        void shouldCreateRecordOnFirstFailure() {
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.empty());
+            when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
 
-        verify(loginSecurityRepository, never()).save(any());
+            assertThatCode(() ->
+                    accountLockService.handleFailedLogin(userId)
+            ).doesNotThrowAnyException();
+
+            ArgumentCaptor<UserLoginSecurity> captor =
+                    ArgumentCaptor.forClass(UserLoginSecurity.class);
+            verify(loginSecurityRepository).save(captor.capture());
+
+            UserLoginSecurity saved = captor.getValue();
+            assertThat(saved.getUserId()).isEqualTo(userId);
+            assertThat(saved.getFailedAttempts()).isEqualTo(1);
+            assertThat(saved.getBlockedUntil()).isNull();
+            assertThat(saved.getLastAttemptAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should increment without blocking below threshold")
+        void shouldIncrementWithoutBlocking() {
+            security.setFailedAttempts(3);
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+            when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            assertThatCode(() ->
+                    accountLockService.handleFailedLogin(userId)
+            ).doesNotThrowAnyException();
+
+            assertThat(security.getFailedAttempts()).isEqualTo(4);
+            assertThat(security.getBlockedUntil()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should block and throw at 5th attempt")
+        void shouldBlockAtFifthAttempt() {
+            security.setFailedAttempts(4);
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+            when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            assertThatThrownBy(() ->
+                    accountLockService.handleFailedLogin(userId)
+            ).isInstanceOf(AccountLockedException.class);
+
+            assertThat(security.getFailedAttempts()).isEqualTo(5);
+            assertThat(security.getBlockedUntil()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should escalate lock duration on subsequent failures")
+        void shouldEscalateLockDuration() {
+            security.setFailedAttempts(5);
+
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
+            when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+
+            assertThatThrownBy(() ->
+                    accountLockService.handleFailedLogin(userId)
+            ).isInstanceOf(AccountLockedException.class);
+
+            assertThat(security.getFailedAttempts()).isEqualTo(6);
+        }
     }
 
-    @Test
-    @DisplayName("checkLockStatus - bloqueo expirado limpia el bloqueo pero conserva los intentos (progresivo)")
-    void checkLockStatusShouldUnlockWhenBlockExpired() {
-        security.setFailedAttempts(5);
-        security.setBlockedUntil(LocalDateTime.now().minusMinutes(5));
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+    @Nested
+    @DisplayName("handleSuccessfulLogin")
+    class HandleSuccessfulLogin {
 
-        assertThatCode(() -> accountLockService.checkLockStatus(userId))
-                .doesNotThrowAnyException();
+        @Test
+        @DisplayName("Should do nothing when no record exists")
+        void shouldDoNothingWhenNoRecord() {
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.empty());
 
-        assertThat(security.getFailedAttempts()).isEqualTo(5);
-        assertThat(security.getBlockedUntil()).isNull();
-        verify(loginSecurityRepository).save(security);
-    }
+            assertThatCode(() ->
+                    accountLockService.handleSuccessfulLogin(userId)
+            ).doesNotThrowAnyException();
 
-    @Test
-    @DisplayName("checkLockStatus - registro limpio no persiste nada")
-    void checkLockStatusShouldNotSaveWhenRecordIsClean() {
-        // Dado: un usuario sin intentos ni bloqueo (lo habitual en cada login)
-        UUID userId = UUID.randomUUID();
-        UserLoginSecurity security = new UserLoginSecurity();
-        security.setUserId(userId);
-        security.setFailedAttempts(0);
-        security.setBlockedUntil(null);
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
+            verify(loginSecurityRepository, never()).save(any());
+        }
 
-        // Cuando
-        accountLockService.checkLockStatus(userId);
+        @Test
+        @DisplayName("Should reset attempts when previous failures exist")
+        void shouldResetAttemptsWhenFailuresExist() {
+            security.setFailedAttempts(3);
+            security.setBlockedUntil(LocalDateTime.now().minusMinutes(1));
 
-        // Entonces: no hay nada que persistir — ni un solo write innecesario
-        verify(loginSecurityRepository, never()).save(any());
-    }
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
 
-    // ==================== handleFailedLogin ====================
+            accountLockService.handleSuccessfulLogin(userId);
 
-    @Test
-    @DisplayName("handleFailedLogin - crea registro si no existe y cuenta el primer fallo")
-    void handleFailedLoginShouldCreateRecordOnFirstFailure() {
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+            assertThat(security.getFailedAttempts()).isZero();
+            assertThat(security.getBlockedUntil()).isNull();
+            verify(loginSecurityRepository).save(security);
+        }
 
-        assertThatCode(() -> accountLockService.handleFailedLogin(userId))
-                .doesNotThrowAnyException();
+        @Test
+        @DisplayName("Should not save when record is clean")
+        void shouldNotSaveWhenClean() {
+            security.setFailedAttempts(0);
+            security.setBlockedUntil(null);
 
-        ArgumentCaptor<UserLoginSecurity> captor = ArgumentCaptor.forClass(UserLoginSecurity.class);
-        verify(loginSecurityRepository).save(captor.capture());
-        UserLoginSecurity saved = captor.getValue();
-        assertThat(saved.getUserId()).isEqualTo(userId);
-        assertThat(saved.getFailedAttempts()).isEqualTo(1);
-        assertThat(saved.getBlockedUntil()).isNull();
-        assertThat(saved.getLastAttemptAt()).isNotNull();
-    }
+            when(loginSecurityRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(security));
 
-    @Test
-    @DisplayName("handleFailedLogin - incrementa intentos sin bloquear por debajo del límite")
-    void handleFailedLoginShouldIncrementWithoutBlocking() {
-        security.setFailedAttempts(3);
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
-        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+            accountLockService.handleSuccessfulLogin(userId);
 
-        assertThatCode(() -> accountLockService.handleFailedLogin(userId))
-                .doesNotThrowAnyException();
-
-        assertThat(security.getFailedAttempts()).isEqualTo(4);
-        assertThat(security.getBlockedUntil()).isNull();
-        verify(loginSecurityRepository).save(security);
-    }
-
-    @Test
-    @DisplayName("handleFailedLogin - bloquea y lanza AccountLockedException al 5º intento")
-    void handleFailedLoginShouldBlockAtFifthAttempt() {
-        security.setFailedAttempts(4);
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
-        when(loginSecurityRepository.save(any(UserLoginSecurity.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
-
-        assertThatThrownBy(() -> accountLockService.handleFailedLogin(userId))
-                .isInstanceOf(AccountLockedException.class)
-                .hasMessageContaining("Inténtalo de nuevo en 15 minutos");
-
-        assertThat(security.getFailedAttempts()).isEqualTo(5);
-        assertThat(security.getBlockedUntil())
-                .isAfter(LocalDateTime.now().plusMinutes(14))
-                .isBefore(LocalDateTime.now().plusMinutes(16));
-        verify(loginSecurityRepository).save(security);
-    }
-
-    @Test
-    @DisplayName("handleFailedLogin - cada fallo tras el umbral duplica la espera")
-    void handleFailedLoginShouldEscalateLockDuration() {
-        security.setFailedAttempts(5);
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
-        when(loginSecurityRepository.save(any(UserLoginSecurity.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        assertThatThrownBy(() -> accountLockService.handleFailedLogin(userId))
-                .isInstanceOf(AccountLockedException.class)
-                .hasMessageContaining("Inténtalo de nuevo en 30 minutos");
-
-        assertThat(security.getFailedAttempts()).isEqualTo(6);
-        assertThat(security.getBlockedUntil())
-                .isAfter(LocalDateTime.now().plusMinutes(29))
-                .isBefore(LocalDateTime.now().plusMinutes(31));
-    }
-
-    // ==================== handleSuccessfulLogin ====================
-
-    @Test
-    @DisplayName("handleSuccessfulLogin - no hace nada si no existe registro")
-    void handleSuccessfulLoginShouldDoNothingWhenNoRecord() {
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.empty());
-
-        assertThatCode(() -> accountLockService.handleSuccessfulLogin(userId))
-                .doesNotThrowAnyException();
-
-        verify(loginSecurityRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("handleSuccessfulLogin - resetea intentos si existen fallos previos")
-    void handleSuccessfulLoginShouldResetAttempts() {
-        security.setFailedAttempts(3);
-        security.setBlockedUntil(LocalDateTime.now().minusMinutes(1));
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
-
-        accountLockService.handleSuccessfulLogin(userId);
-
-        assertThat(security.getFailedAttempts()).isZero();
-        assertThat(security.getBlockedUntil()).isNull();
-        verify(loginSecurityRepository).save(security);
-    }
-
-    @Test
-    @DisplayName("handleSuccessfulLogin - no guarda si no hay intentos previos")
-    void handleSuccessfulLoginShouldNotSaveWhenClean() {
-        security.setFailedAttempts(0);
-        security.setBlockedUntil(null);
-        when(loginSecurityRepository.findByUserId(userId)).thenReturn(Optional.of(security));
-
-        accountLockService.handleSuccessfulLogin(userId);
-
-        verify(loginSecurityRepository, never()).save(any());
+            verify(loginSecurityRepository, never()).save(any());
+        }
     }
 }

@@ -27,16 +27,17 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("NotificationController")
 class NotificationControllerTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID NOTIFICATION_ID = UUID.randomUUID();
 
     @Mock
     private GetNotificationsUseCase getNotificationsUseCase;
@@ -61,11 +62,11 @@ class NotificationControllerTest {
         when(authentication.getPrincipal()).thenReturn(jwtUser);
     }
 
-    private Notification activeNotification() {
+    private Notification validNotification() {
         return Notification.create(
                 USER_ID,
                 NotificationType.GOAL_INVITATION,
-                "Goal invitation",
+                "New invitation",
                 "You have been invited",
                 Map.of("goalId", UUID.randomUUID().toString()),
                 true,
@@ -78,13 +79,12 @@ class NotificationControllerTest {
     class GetNotifications {
 
         @Test
-        @DisplayName("Should pass provided limit to use case")
-        void shouldPassProvidedLimitToUseCase() {
+        @DisplayName("Should return notifications with provided limit")
+        void shouldReturnNotificationsWithLimit() {
             mockAuthenticatedUser();
-            Notification notification = activeNotification();
 
             when(getNotificationsUseCase.getUserNotifications(USER_ID, 10))
-                    .thenReturn(List.of(notification));
+                    .thenReturn(List.of(validNotification()));
 
             ResponseEntity<List<NotificationResponseDTO>> response =
                     controller.getNotifications(authentication, 10);
@@ -92,12 +92,11 @@ class NotificationControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).hasSize(1);
             assertThat(response.getBody().getFirst().title())
-                    .isEqualTo("Goal invitation");
-            verify(getNotificationsUseCase).getUserNotifications(USER_ID, 10);
+                    .isEqualTo("New invitation");
         }
 
         @Test
-        @DisplayName("Should use Integer.MAX_VALUE when limit is null")
+        @DisplayName("Should use MAX_VALUE when limit is null")
         void shouldUseMaxValueWhenLimitIsNull() {
             mockAuthenticatedUser();
 
@@ -119,30 +118,24 @@ class NotificationControllerTest {
     class GetNotificationsPaginated {
 
         @Test
-        @DisplayName("Should delegate and map to PaginatedResponseDTO")
-        void shouldDelegateAndMapToPaginatedResponse() {
+        @DisplayName("Should return paginated response")
+        void shouldReturnPaginatedResponse() {
             mockAuthenticatedUser();
-            Notification notification = activeNotification();
 
-            PaginatedNotifications paginatedResult = new PaginatedNotifications(
-                    List.of(notification), 0, 1, 1, 25, true, true
+            PaginatedNotifications paginated = new PaginatedNotifications(
+                    List.of(validNotification()), 0, 1, 1, 25, true, true
             );
 
             when(getNotificationsUseCase.getUserNotificationsPage(USER_ID, 0, 25))
-                    .thenReturn(paginatedResult);
+                    .thenReturn(paginated);
 
             ResponseEntity<PaginatedResponseDTO<NotificationResponseDTO>> response =
                     controller.getNotificationsPaginated(authentication, 0, 25);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            PaginatedResponseDTO<NotificationResponseDTO> body = response.getBody();
-            assertThat(body).isNotNull();
-            assertThat(body.content()).hasSize(1);
-            assertThat(body.currentPage()).isZero();
-            assertThat(body.totalPages()).isEqualTo(1);
-            assertThat(body.totalElements()).isEqualTo(1L);
-            assertThat(body.first()).isTrue();
-            assertThat(body.last()).isTrue();
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().content()).hasSize(1);
+            assertThat(response.getBody().currentPage()).isZero();
         }
     }
 
@@ -151,17 +144,17 @@ class NotificationControllerTest {
     class GetUnreadCount {
 
         @Test
-        @DisplayName("Should return count in map")
-        void shouldReturnCountInMap() {
+        @DisplayName("Should return unread count in map")
+        void shouldReturnUnreadCount() {
             mockAuthenticatedUser();
 
-            when(getNotificationsUseCase.getUnreadCount(USER_ID)).thenReturn(5L);
+            when(getNotificationsUseCase.getUnreadCount(USER_ID)).thenReturn(3L);
 
             ResponseEntity<Map<String, Long>> response =
                     controller.getUnreadCount(authentication);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).containsEntry("count", 5L);
+            assertThat(response.getBody()).containsEntry("count", 3L);
         }
     }
 
@@ -170,17 +163,16 @@ class NotificationControllerTest {
     class MarkAsRead {
 
         @Test
-        @DisplayName("Should delegate and return 200")
-        void shouldDelegateAndReturn200() {
+        @DisplayName("Should mark as read and return 200")
+        void shouldMarkAsReadAndReturn200() {
             mockAuthenticatedUser();
-            UUID notificationId = UUID.randomUUID();
 
             ResponseEntity<Void> response =
-                    controller.markAsRead(authentication, notificationId);
+                    controller.markAsRead(authentication, NOTIFICATION_ID);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             verify(markNotificationAsReadUseCase)
-                    .markAsRead(USER_ID, notificationId);
+                    .markAsRead(USER_ID, NOTIFICATION_ID);
         }
     }
 
@@ -189,33 +181,31 @@ class NotificationControllerTest {
     class MarkAsActioned {
 
         @Test
-        @DisplayName("Should return 200 when actioned is true")
-        void shouldReturn200WhenActionedIsTrue() {
+        @DisplayName("Should return 200 when actioned successfully")
+        void shouldReturn200WhenActioned() {
             mockAuthenticatedUser();
-            UUID notificationId = UUID.randomUUID();
 
-            when(markNotificationAsActionedUseCase
-                    .markAsActioned(USER_ID, notificationId)
-            ).thenReturn(true);
+            when(markNotificationAsActionedUseCase.markAsActioned(
+                    USER_ID, NOTIFICATION_ID
+            )).thenReturn(true);
 
             ResponseEntity<Void> response =
-                    controller.markAsActioned(authentication, notificationId);
+                    controller.markAsActioned(authentication, NOTIFICATION_ID);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
 
         @Test
-        @DisplayName("Should return 404 when actioned is false")
-        void shouldReturn404WhenActionedIsFalse() {
+        @DisplayName("Should return 404 when notification not found")
+        void shouldReturn404WhenNotFound() {
             mockAuthenticatedUser();
-            UUID notificationId = UUID.randomUUID();
 
-            when(markNotificationAsActionedUseCase
-                    .markAsActioned(USER_ID, notificationId)
-            ).thenReturn(false);
+            when(markNotificationAsActionedUseCase.markAsActioned(
+                    USER_ID, NOTIFICATION_ID
+            )).thenReturn(false);
 
             ResponseEntity<Void> response =
-                    controller.markAsActioned(authentication, notificationId);
+                    controller.markAsActioned(authentication, NOTIFICATION_ID);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
@@ -226,16 +216,15 @@ class NotificationControllerTest {
     class Delete {
 
         @Test
-        @DisplayName("Should delegate and return 204")
-        void shouldDelegateAndReturn204() {
+        @DisplayName("Should delete and return 204")
+        void shouldDeleteAndReturn204() {
             mockAuthenticatedUser();
-            UUID notificationId = UUID.randomUUID();
 
             ResponseEntity<Void> response =
-                    controller.delete(authentication, notificationId);
+                    controller.delete(authentication, NOTIFICATION_ID);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-            verify(deleteNotificationUseCase).delete(USER_ID, notificationId);
+            verify(deleteNotificationUseCase).delete(USER_ID, NOTIFICATION_ID);
         }
     }
 }

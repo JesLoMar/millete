@@ -1,68 +1,235 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
-import org.junit.jupiter.api.Test;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import org.junit.jupiter.api.DisplayName;
-import java.time.LocalDateTime;
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-@DisplayName("FamilyInvitation - Modelo de dominio")
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@DisplayName("GoalInvitation aggregate")
 class GoalInvitationTest {
 
-    @Test
-    @DisplayName("Debe ser aceptable si PENDING y no expirada")
-    void shouldBeAcceptable() {
-        GoalInvitation invitation = new GoalInvitation();
-        invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(24));
-        invitation.setActive(true);
+    private static final UUID GOAL_ID = UUID.randomUUID();
+    private static final UUID INVITER_ID = UUID.randomUUID();
+    private static final UUID INVITED_ID = UUID.randomUUID();
 
-        assertThat(invitation.isAcceptable()).isTrue();
+    private GoalInvitation createValid() {
+        return GoalInvitation.create(GOAL_ID, INVITER_ID, INVITED_ID);
     }
 
-    @Test
-    @DisplayName("No debe ser aceptable si ha expirado")
-    void shouldNotBeAcceptableIfExpired() {
-        GoalInvitation invitation = new GoalInvitation();
-        invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setExpiresAt(LocalDateTime.now().minusHours(1));
-        invitation.setActive(true);
+    @Nested
+    @DisplayName("create")
+    class Create {
 
-        assertThat(invitation.isAcceptable()).isFalse();
+        @Test
+        @DisplayName("Should create valid pending invitation")
+        void shouldCreateValidPendingInvitation() {
+            GoalInvitation invitation = createValid();
+
+            assertThat(invitation.getId()).isNotNull();
+            assertThat(invitation.getGoalId()).isEqualTo(GOAL_ID);
+            assertThat(invitation.getInviterUserId()).isEqualTo(INVITER_ID);
+            assertThat(invitation.getInvitedUserId()).isEqualTo(INVITED_ID);
+            assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.PENDING);
+            assertThat(invitation.isActive()).isTrue();
+            assertThat(invitation.getExpiresAt()).isNotNull();
+            assertThat(invitation.getCreatedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should set expiration to 7 days")
+        void shouldSetExpirationTo7Days() {
+            GoalInvitation invitation = createValid();
+
+            LocalDateTime expectedExpiry =
+                    invitation.getCreatedAt().plusDays(7);
+
+            assertThat(invitation.getExpiresAt()).isEqualTo(expectedExpiry);
+        }
+
+        @Test
+        @DisplayName("Should reject null goal id")
+        void shouldRejectNullGoalId() {
+            assertThatThrownBy(() -> GoalInvitation.create(
+                    null, INVITER_ID, INVITED_ID
+            )).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null inviter user id")
+        void shouldRejectNullInviterUserId() {
+            assertThatThrownBy(() -> GoalInvitation.create(
+                    GOAL_ID, null, INVITED_ID
+            )).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null invited user id")
+        void shouldRejectNullInvitedUserId() {
+            assertThatThrownBy(() -> GoalInvitation.create(
+                    GOAL_ID, INVITER_ID, null
+            )).isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("No debe ser aceptable si no está activa")
-    void shouldNotBeAcceptableIfInactive() {
-        GoalInvitation invitation = new GoalInvitation();
-        invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(24));
-        invitation.setActive(false);
+    @Nested
+    @DisplayName("reconstitute")
+    class Reconstitute {
 
-        assertThat(invitation.isAcceptable()).isFalse();
+        @Test
+        @DisplayName("Should reconstitute existing invitation")
+        void shouldReconstituteInvitation() {
+            UUID id = UUID.randomUUID();
+            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+            LocalDateTime createdAt = LocalDateTime.now();
+            LocalDateTime modifiedAt = LocalDateTime.now();
+
+            GoalInvitation invitation = GoalInvitation.reconstitute(
+                    id, GOAL_ID, INVITER_ID, INVITED_ID,
+                    InvitationStatus.PENDING, expiresAt,
+                    createdAt, modifiedAt, true
+            );
+
+            assertThat(invitation.getId()).isEqualTo(id);
+            assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.PENDING);
+        }
+
+        @Test
+        @DisplayName("Should reject null id on reconstitute")
+        void shouldRejectNullIdOnReconstitute() {
+            assertThatThrownBy(() -> GoalInvitation.reconstitute(
+                    null, GOAL_ID, INVITER_ID, INVITED_ID,
+                    InvitationStatus.PENDING, LocalDateTime.now().plusDays(7),
+                    LocalDateTime.now(), LocalDateTime.now(), true
+            )).isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("No debe ser aceptable si no es PENDING")
-    void shouldNotBeAcceptableIfNotPending() {
-        GoalInvitation invitation = new GoalInvitation();
-        invitation.setStatus(InvitationStatus.ACCEPTED);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(24));
-        invitation.setActive(true);
+    @Nested
+    @DisplayName("isAcceptable")
+    class IsAcceptable {
 
-        assertThat(invitation.isAcceptable()).isFalse();
+        @Test
+        @DisplayName("Should return true for pending active not expired invitation")
+        void shouldReturnTrueForPendingActiveNotExpired() {
+            GoalInvitation invitation = createValid();
+
+            assertThat(invitation.isAcceptable()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should return false for accepted invitation")
+        void shouldReturnFalseForAcceptedInvitation() {
+            GoalInvitation invitation = createValid();
+            invitation.markAsAccepted();
+
+            assertThat(invitation.isAcceptable()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return false for expired invitation")
+        void shouldReturnFalseForExpiredInvitation() {
+            GoalInvitation invitation = GoalInvitation.reconstitute(
+                    UUID.randomUUID(), GOAL_ID, INVITER_ID, INVITED_ID,
+                    InvitationStatus.PENDING, LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().minusDays(8), LocalDateTime.now(), true
+            );
+
+            assertThat(invitation.isAcceptable()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return false for inactive invitation")
+        void shouldReturnFalseForInactiveInvitation() {
+            GoalInvitation invitation = createValid();
+            invitation.deactivate();
+
+            assertThat(invitation.isAcceptable()).isFalse();
+        }
     }
 
-    @Test
-    @DisplayName("markAsAccepted debe cambiar estado y fecha")
-    void shouldMarkAsAccepted() {
-        GoalInvitation invitation = new GoalInvitation();
-        invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setExpiresAt(LocalDateTime.now().plusHours(24));
-        invitation.setActive(true);
+    @Nested
+    @DisplayName("markAsAccepted and markAsRejected")
+    class MarkStatus {
 
-        invitation.markAsAccepted();
+        @Test
+        @DisplayName("Should mark as accepted")
+        void shouldMarkAsAccepted() {
+            GoalInvitation invitation = createValid();
 
-        assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
-        assertThat(invitation.getModifiedAt()).isNotNull();
+            invitation.markAsAccepted();
+
+            assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+            assertThat(invitation.getModifiedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should mark as rejected")
+        void shouldMarkAsRejected() {
+            GoalInvitation invitation = createValid();
+
+            invitation.markAsRejected();
+
+            assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.REJECTED);
+            assertThat(invitation.getModifiedAt()).isNotNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("isExpired")
+    class IsExpired {
+
+        @Test
+        @DisplayName("Should return false when not expired")
+        void shouldReturnFalseWhenNotExpired() {
+            GoalInvitation invitation = createValid();
+
+            assertThat(invitation.isExpired()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return true when expired")
+        void shouldReturnTrueWhenExpired() {
+            GoalInvitation invitation = GoalInvitation.reconstitute(
+                    UUID.randomUUID(), GOAL_ID, INVITER_ID, INVITED_ID,
+                    InvitationStatus.PENDING, LocalDateTime.now().minusDays(1),
+                    LocalDateTime.now().minusDays(8), LocalDateTime.now(), true
+            );
+
+            assertThat(invitation.isExpired()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("deactivate")
+    class Deactivate {
+
+        @Test
+        @DisplayName("Should deactivate invitation")
+        void shouldDeactivateInvitation() {
+            GoalInvitation invitation = createValid();
+
+            invitation.deactivate();
+
+            assertThat(invitation.isActive()).isFalse();
+            assertThat(invitation.getModifiedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should not change modified at when already inactive")
+        void shouldNotChangeModifiedAtWhenAlreadyInactive() {
+            GoalInvitation invitation = createValid();
+            invitation.deactivate();
+            LocalDateTime previousModifiedAt = invitation.getModifiedAt();
+
+            invitation.deactivate();
+
+            assertThat(invitation.getModifiedAt()).isEqualTo(previousModifiedAt);
+        }
     }
 }

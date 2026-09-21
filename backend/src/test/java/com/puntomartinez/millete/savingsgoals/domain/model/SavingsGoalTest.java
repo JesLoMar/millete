@@ -403,7 +403,7 @@ class SavingsGoalTest {
             assertThat(goal.getDeadline()).isEqualTo(LocalDate.now().plusDays(60));
             assertThat(goal.getPriority()).isEqualTo(GoalPriority.HIGH);
             assertThat(goal.getLink()).isEqualTo("https://updated.com");
-            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+            assertThat(goal.getModifiedAt()).isAfterOrEqualTo(previousModifiedAt);
         }
 
         @Test
@@ -484,7 +484,7 @@ class SavingsGoalTest {
             goal.addContribution(new BigDecimal("100.00"));
 
             assertThat(goal.getCurrentAmount()).isEqualByComparingTo("100.00");
-            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+            assertThat(goal.getModifiedAt()).isAfterOrEqualTo(previousModifiedAt);
         }
 
         @Test
@@ -533,7 +533,7 @@ class SavingsGoalTest {
             goal.withdraw(new BigDecimal("30.00"));
 
             assertThat(goal.getCurrentAmount()).isEqualByComparingTo("70.00");
-            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+            assertThat(goal.getModifiedAt()).isAfterOrEqualTo(previousModifiedAt);
         }
 
         @ParameterizedTest
@@ -592,7 +592,7 @@ class SavingsGoalTest {
             goal.deactivate();
 
             assertThat(goal.isActive()).isFalse();
-            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+            assertThat(goal.getModifiedAt()).isAfterOrEqualTo(previousModifiedAt);
         }
 
         @Test

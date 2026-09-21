@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class NotificationTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
-    private static final String VALID_TITLE = "Goal invitation";
+    private static final String VALID_TITLE = "New invitation";
     private static final String VALID_MESSAGE = "You have been invited to a goal.";
 
     private Notification createValid() {
@@ -57,7 +56,7 @@ class NotificationTest {
     class Create {
 
         @Test
-        @DisplayName("Should create a valid active unread notification")
+        @DisplayName("Should create valid notification with all fields")
         void shouldCreateValidNotification() {
             Notification notification = createValid();
 
@@ -76,8 +75,26 @@ class NotificationTest {
         }
 
         @Test
-        @DisplayName("Should allow null expiresAt")
-        void shouldAllowNullExpiresAt() {
+        @DisplayName("Should create notification with null metadata")
+        void shouldCreateWithNullMetadata() {
+            Notification notification = Notification.create(
+                    USER_ID,
+                    NotificationType.SYSTEM,
+                    VALID_TITLE,
+                    VALID_MESSAGE,
+                    null,
+                    false,
+                    null
+            );
+
+            assertThat(notification.getMetadata()).isNull();
+            assertThat(notification.isActionRequired()).isFalse();
+            assertThat(notification.getExpiresAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should create notification with null expiresAt")
+        void shouldCreateWithNullExpiresAt() {
             Notification notification = Notification.create(
                     USER_ID,
                     NotificationType.SYSTEM,
@@ -92,51 +109,31 @@ class NotificationTest {
         }
 
         @Test
-        @DisplayName("Should allow null metadata")
-        void shouldAllowNullMetadata() {
-            Notification notification = Notification.create(
-                    USER_ID,
+        @DisplayName("Should reject null userId")
+        void shouldRejectNullUserId() {
+            assertThatThrownBy(() -> Notification.create(
+                    null,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
                     VALID_MESSAGE,
                     null,
                     false,
                     null
-            );
-
-            assertThat(notification.getMetadata()).isNull();
-        }
-
-        @Test
-        @DisplayName("Should reject null userId")
-        void shouldRejectNullUserId() {
-            assertThatThrownBy(() ->
-                    Notification.create(
-                            null,
-                            NotificationType.SYSTEM,
-                            VALID_TITLE,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            null
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            )).isInstanceOf(InvalidInputException.class);
         }
 
         @Test
         @DisplayName("Should reject null type")
         void shouldRejectNullType() {
-            assertThatThrownBy(() ->
-                    Notification.create(
-                            USER_ID,
-                            null,
-                            VALID_TITLE,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            null
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            assertThatThrownBy(() -> Notification.create(
+                    USER_ID,
+                    null,
+                    VALID_TITLE,
+                    VALID_MESSAGE,
+                    null,
+                    false,
+                    null
+            )).isInstanceOf(InvalidInputException.class);
         }
 
         @ParameterizedTest
@@ -144,39 +141,35 @@ class NotificationTest {
         @ValueSource(strings = {"   "})
         @DisplayName("Should reject blank title")
         void shouldRejectBlankTitle(String title) {
-            assertThatThrownBy(() ->
-                    Notification.create(
-                            USER_ID,
-                            NotificationType.SYSTEM,
-                            title,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            null
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            assertThatThrownBy(() -> Notification.create(
+                    USER_ID,
+                    NotificationType.SYSTEM,
+                    title,
+                    VALID_MESSAGE,
+                    null,
+                    false,
+                    null
+            )).isInstanceOf(InvalidInputException.class);
         }
 
         @Test
-        @DisplayName("Should reject title exceeding max length")
+        @DisplayName("Should reject title exceeding 255 characters")
         void shouldRejectTitleExceedingMaxLength() {
             String longTitle = "A".repeat(256);
 
-            assertThatThrownBy(() ->
-                    Notification.create(
-                            USER_ID,
-                            NotificationType.SYSTEM,
-                            longTitle,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            null
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            assertThatThrownBy(() -> Notification.create(
+                    USER_ID,
+                    NotificationType.SYSTEM,
+                    longTitle,
+                    VALID_MESSAGE,
+                    null,
+                    false,
+                    null
+            )).isInstanceOf(InvalidInputException.class);
         }
 
         @Test
-        @DisplayName("Should allow title at max length")
+        @DisplayName("Should allow title at exactly 255 characters")
         void shouldAllowTitleAtMaxLength() {
             String maxTitle = "A".repeat(255);
 
@@ -190,13 +183,13 @@ class NotificationTest {
                     null
             );
 
-            assertThat(notification.getTitle()).isEqualTo(maxTitle);
+            assertThat(notification.getTitle()).hasSize(255);
         }
 
         @Test
-        @DisplayName("Should protect metadata from external mutation")
-        void shouldProtectMetadataFromExternalMutation() {
-            Map<String, Object> mutableMetadata = new HashMap<>();
+        @DisplayName("Should make metadata immutable via defensive copy")
+        void shouldMakeMetadataImmutable() {
+            var mutableMetadata = new java.util.HashMap<String, Object>();
             mutableMetadata.put("key", "value");
 
             Notification notification = Notification.create(
@@ -209,9 +202,9 @@ class NotificationTest {
                     null
             );
 
-            mutableMetadata.put("hacked", "value");
+            mutableMetadata.put("newKey", "newValue");
 
-            assertThat(notification.getMetadata()).doesNotContainKey("hacked");
+            assertThat(notification.getMetadata()).doesNotContainKey("newKey");
         }
     }
 
@@ -220,82 +213,44 @@ class NotificationTest {
     class Reconstitute {
 
         @Test
-        @DisplayName("Should reconstitute an existing notification")
+        @DisplayName("Should reconstitute existing notification")
         void shouldReconstituteNotification() {
             UUID id = UUID.randomUUID();
             LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime expiresAt = LocalDateTime.of(2024, 12, 31, 23, 59);
-            LocalDateTime actionedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
 
             Notification notification = Notification.reconstitute(
-                    id,
-                    USER_ID,
-                    NotificationType.SYSTEM,
-                    "System alert",
-                    "Something happened",
-                    Map.of("key", "value"),
-                    true,
-                    true,
-                    actionedAt,
-                    createdAt,
-                    expiresAt,
-                    false
+                    id, USER_ID, NotificationType.SYSTEM,
+                    VALID_TITLE, VALID_MESSAGE, null,
+                    true, false, null, createdAt, expiresAt, true
             );
 
             assertThat(notification.getId()).isEqualTo(id);
-            assertThat(notification.getUserId()).isEqualTo(USER_ID);
-            assertThat(notification.getType()).isEqualTo(NotificationType.SYSTEM);
-            assertThat(notification.getTitle()).isEqualTo("System alert");
-            assertThat(notification.getMessage()).isEqualTo("Something happened");
-            assertThat(notification.getMetadata()).containsEntry("key", "value");
             assertThat(notification.isRead()).isTrue();
-            assertThat(notification.isActionRequired()).isTrue();
-            assertThat(notification.getActionedAt()).isEqualTo(actionedAt);
-            assertThat(notification.getCreatedAt()).isEqualTo(createdAt);
-            assertThat(notification.getExpiresAt()).isEqualTo(expiresAt);
-            assertThat(notification.isActive()).isFalse();
+            assertThat(notification.isActionRequired()).isFalse();
+            assertThat(notification.isActive()).isTrue();
         }
 
         @Test
         @DisplayName("Should reject null id on reconstitute")
         void shouldRejectNullIdOnReconstitute() {
-            assertThatThrownBy(() ->
-                    Notification.reconstitute(
-                            null,
-                            USER_ID,
-                            NotificationType.SYSTEM,
-                            VALID_TITLE,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            false,
-                            null,
-                            LocalDateTime.now(),
-                            null,
-                            true
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            assertThatThrownBy(() -> Notification.reconstitute(
+                    null, USER_ID, NotificationType.SYSTEM,
+                    VALID_TITLE, VALID_MESSAGE, null,
+                    false, false, null,
+                    LocalDateTime.now(), null, true
+            )).isInstanceOf(InvalidInputException.class);
         }
 
         @Test
         @DisplayName("Should reject null createdAt on reconstitute")
         void shouldRejectNullCreatedAtOnReconstitute() {
-            assertThatThrownBy(() ->
-                    Notification.reconstitute(
-                            UUID.randomUUID(),
-                            USER_ID,
-                            NotificationType.SYSTEM,
-                            VALID_TITLE,
-                            VALID_MESSAGE,
-                            null,
-                            false,
-                            false,
-                            null,
-                            null,
-                            null,
-                            true
-                    )
-            ).isInstanceOf(InvalidInputException.class);
+            assertThatThrownBy(() -> Notification.reconstitute(
+                    UUID.randomUUID(), USER_ID, NotificationType.SYSTEM,
+                    VALID_TITLE, VALID_MESSAGE, null,
+                    false, false, null,
+                    null, null, true
+            )).isInstanceOf(InvalidInputException.class);
         }
     }
 
@@ -304,8 +259,8 @@ class NotificationTest {
     class MarkAsRead {
 
         @Test
-        @DisplayName("Should mark as read and return true when unread")
-        void shouldMarkAsReadWhenUnread() {
+        @DisplayName("Should mark unread notification as read and return true")
+        void shouldMarkUnreadAsRead() {
             Notification notification = createValid();
 
             boolean changed = notification.markAsRead();
@@ -317,13 +272,12 @@ class NotificationTest {
         @Test
         @DisplayName("Should return false when already read")
         void shouldReturnFalseWhenAlreadyRead() {
-            Notification notification = reconstituteValid(true);
+            Notification notification = createValid();
             notification.markAsRead();
 
             boolean changed = notification.markAsRead();
 
             assertThat(changed).isFalse();
-            assertThat(notification.isRead()).isTrue();
         }
     }
 
@@ -332,8 +286,8 @@ class NotificationTest {
     class MarkAsActioned {
 
         @Test
-        @DisplayName("Should mark as actioned and return true when not yet actioned")
-        void shouldMarkAsActionedWhenNotYetActioned() {
+        @DisplayName("Should mark action-required notification as actioned")
+        void shouldMarkAsActioned() {
             Notification notification = createValid();
 
             boolean changed = notification.markAsActioned();
@@ -355,7 +309,7 @@ class NotificationTest {
 
         @Test
         @DisplayName("Should throw when notification does not require action")
-        void shouldThrowWhenNotificationDoesNotRequireAction() {
+        void shouldThrowWhenNotActionRequired() {
             Notification notification = Notification.create(
                     USER_ID,
                     NotificationType.SYSTEM,
@@ -376,8 +330,8 @@ class NotificationTest {
     class SoftDelete {
 
         @Test
-        @DisplayName("Should set active to false")
-        void shouldSetActiveToFalse() {
+        @DisplayName("Should deactivate notification")
+        void shouldDeactivateNotification() {
             Notification notification = createValid();
 
             notification.softDelete();
@@ -392,50 +346,31 @@ class NotificationTest {
 
         @Test
         @DisplayName("Should return false when expiresAt is null")
-        void shouldReturnFalseWhenExpiresAtIsNull() {
+        void shouldReturnFalseWhenNoExpiry() {
             Notification notification = Notification.create(
-                    USER_ID,
-                    NotificationType.SYSTEM,
-                    VALID_TITLE,
-                    VALID_MESSAGE,
-                    null,
-                    false,
-                    null
+                    USER_ID, NotificationType.SYSTEM,
+                    VALID_TITLE, VALID_MESSAGE, null, false, null
             );
 
             assertThat(notification.isExpired()).isFalse();
         }
 
         @Test
-        @DisplayName("Should return false when expiresAt is in the future")
-        void shouldReturnFalseWhenExpiresAtIsInFuture() {
-            Notification notification = Notification.create(
-                    USER_ID,
-                    NotificationType.SYSTEM,
-                    VALID_TITLE,
-                    VALID_MESSAGE,
-                    null,
-                    false,
-                    LocalDateTime.now().plusDays(1)
-            );
+        @DisplayName("Should return false when not yet expired")
+        void shouldReturnFalseWhenNotExpired() {
+            Notification notification = createValid();
 
             assertThat(notification.isExpired()).isFalse();
         }
 
         @Test
-        @DisplayName("Should return true when expiresAt is in the past")
-        void shouldReturnTrueWhenExpiresAtIsInPast() {
+        @DisplayName("Should return true when expired")
+        void shouldReturnTrueWhenExpired() {
             Notification notification = Notification.reconstitute(
-                    UUID.randomUUID(),
-                    USER_ID,
-                    NotificationType.SYSTEM,
-                    VALID_TITLE,
-                    VALID_MESSAGE,
-                    null,
-                    false,
-                    false,
-                    null,
-                    LocalDateTime.now().minusDays(2),
+                    UUID.randomUUID(), USER_ID, NotificationType.SYSTEM,
+                    VALID_TITLE, VALID_MESSAGE, null,
+                    false, false, null,
+                    LocalDateTime.now().minusDays(10),
                     LocalDateTime.now().minusDays(1),
                     true
             );

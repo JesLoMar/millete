@@ -359,13 +359,13 @@ class DashboardServiceTest {
         }
 
         @Test
-        @DisplayName("Should handle null priority gracefully")
-        void shouldHandleNullPriority() {
+        @DisplayName("Should use default icon when priority is unrecognized")
+        void shouldUseDefaultIconWhenPriorityIsUnrecognized() {
             SavingsGoalQueryPort.SavingsGoalData goal =
                     new SavingsGoalQueryPort.SavingsGoalData(
-                            UUID.randomUUID(), "No Priority",
+                            UUID.randomUUID(), "Unknown Priority",
                             new BigDecimal("1000"), new BigDecimal("500"),
-                            LocalDate.now().plusDays(30), null,
+                            LocalDate.now().plusDays(30), "INVALID",  // ← valor no reconocido
                             LocalDateTime.now()
                     );
 

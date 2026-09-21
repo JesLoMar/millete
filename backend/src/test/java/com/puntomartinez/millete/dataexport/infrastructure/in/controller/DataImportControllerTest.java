@@ -3,6 +3,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
 import com.puntomartinez.millete.dataexport.application.services.DataImportService;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,12 +17,13 @@ import org.springframework.security.core.Authentication;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("DataImportController")
 class DataImportControllerTest {
 
     @Mock
@@ -44,49 +46,73 @@ class DataImportControllerTest {
     }
 
     @Test
-    void importData_shouldReturnSuccess_whenValidFile() {
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", "{}".getBytes());
-        when(dataImportService.importUserData(any(), eq(userId))).thenReturn("Importación exitosa. 5 registros importados. v0.1.0");
+    @DisplayName("importData should return success when valid file")
+    void importDataShouldReturnSuccessWhenValidFile() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", "{}".getBytes()
+        );
 
-        ResponseEntity<Map<String, Object>> response = controller.importData(file, authentication);
+        when(dataImportService.importUserData(any(), eq(userId)))
+                .thenReturn("Importación exitosa. 5 registros importados. v0.2.0");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(true, response.getBody().get("success"));
-        assertTrue(response.getBody().get("message").toString().contains("Importación exitosa"));
+        ResponseEntity<Map<String, Object>> response =
+                controller.importData(file, authentication);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().get("success")).isEqualTo(true);
+        assertThat(response.getBody().get("message").toString())
+                .contains("Importación exitosa");
     }
 
     @Test
-    void importData_shouldReturnBadRequest_whenEmptyFile() {
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", new byte[0]);
+    @DisplayName("importData should return bad request when empty file")
+    void importDataShouldReturnBadRequestWhenEmptyFile() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", new byte[0]
+        );
 
-        ResponseEntity<Map<String, Object>> response = controller.importData(file, authentication);
+        ResponseEntity<Map<String, Object>> response =
+                controller.importData(file, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(false, response.getBody().get("success"));
-        assertEquals("ARCHIVO_VACIO", response.getBody().get("error"));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().get("success")).isEqualTo(false);
+        assertThat(response.getBody().get("error")).isEqualTo("ARCHIVO_VACIO");
     }
 
     @Test
-    void importData_shouldReturnBadRequest_whenInvalidExtension() {
-        MockMultipartFile file = new MockMultipartFile("file", "export.txt", "text/plain", "{}".getBytes());
+    @DisplayName("importData should return bad request when invalid extension")
+    void importDataShouldReturnBadRequestWhenInvalidExtension() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.txt", "text/plain", "{}".getBytes()
+        );
 
-        ResponseEntity<Map<String, Object>> response = controller.importData(file, authentication);
+        ResponseEntity<Map<String, Object>> response =
+                controller.importData(file, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(false, response.getBody().get("success"));
-        assertEquals("FORMATO_NO_SOPORTADO", response.getBody().get("error"));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().get("success")).isEqualTo(false);
+        assertThat(response.getBody().get("error")).isEqualTo("FORMATO_NO_SOPORTADO");
     }
 
     @Test
-    void importData_shouldReturnBadRequest_whenServiceThrows() {
-        MockMultipartFile file = new MockMultipartFile("file", "export.json", "application/json", "{}".getBytes());
-        when(dataImportService.importUserData(any(), eq(userId))).thenThrow(new RuntimeException("Error"));
+    @DisplayName("importData should return bad request when service throws")
+    void importDataShouldReturnBadRequestWhenServiceThrows() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "export.json", "application/json", "{}".getBytes()
+        );
 
-        ResponseEntity<Map<String, Object>> response = controller.importData(file, authentication);
+        when(dataImportService.importUserData(any(), eq(userId)))
+                .thenThrow(new RuntimeException("Error"));
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(false, response.getBody().get("success"));
-        assertEquals("ERROR_IMPORTACION", response.getBody().get("error"));
+        ResponseEntity<Map<String, Object>> response =
+                controller.importData(file, authentication);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().get("success")).isEqualTo(false);
+        assertThat(response.getBody().get("error")).isEqualTo("ERROR_IMPORTACION");
     }
 }
