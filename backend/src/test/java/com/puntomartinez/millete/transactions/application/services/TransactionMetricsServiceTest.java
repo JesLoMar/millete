@@ -1,88 +1,212 @@
 package com.puntomartinez.millete.transactions.application.services;
 
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.in.GetTransactionMetricsUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.GetTransactionMetricsUseCase.MetricsCommand;
+import com.puntomartinez.millete.transactions.domain.ports.in.GetTransactionMetricsUseCase.MetricsResult;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionMetricsResponseDTO;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository.TransactionAggregates;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TransactionMetricsService - Métricas de transacciones")
+@DisplayName("TransactionMetricsService")
 class TransactionMetricsServiceTest {
+
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private TransactionRepository transactionRepository;
 
-    @InjectMocks
-    private TransactionMetricsService metricsService;
+    @Mock
+    private TransactionPeriodService transactionPeriodService;
 
-    private final UUID userId = UUID.randomUUID();
-    private final LocalDateTime now = LocalDateTime.now();
+    private TransactionMetricsService service;
 
-    @Test
-    @DisplayName("Debe calcular métricas con ingresos y gastos")
-    void shouldCalculateMetrics() {
-        Transaction income = mock(Transaction.class);
-        when(income.getType()).thenReturn(Transaction.TransactionType.INCOME);
-        when(income.getAmount()).thenReturn(new BigDecimal("1000.00"));
-        when(income.isActive()).thenReturn(true);
+    @BeforeEach
+    void setUp() {
+        service = new TransactionMetricsService(transactionRepository, transactionPeriodService);
 
-        Transaction expense = mock(Transaction.class);
-        when(expense.getType()).thenReturn(Transaction.TransactionType.EXPENSE);
-        when(expense.getAmount()).thenReturn(new BigDecimal("-300.00"));
-        when(expense.isActive()).thenReturn(true);
+        LocalDateTime[] currentRange = {
+                LocalDateTime.now().minusDays(30),
+                LocalDateTime.now()
+        };
+        LocalDateTime[] previousRange = {
+                LocalDateTime.now().minusDays(60),
+                LocalDateTime.now().minusDays(30)
+        };
 
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(income, expense));
-
-        GetTransactionMetricsUseCase.MetricsCommand command = new GetTransactionMetricsUseCase.MetricsCommand(userId, "month");
-
-        TransactionMetricsResponseDTO result = metricsService.getMetrics(command);
-
-        assertThat(result.income()).isEqualByComparingTo("1000.00");
-        assertThat(result.expenses()).isEqualByComparingTo("300.00");
-        assertThat(result.balance()).isEqualByComparingTo("700.00");
-        assertThat(result.count()).isEqualTo(2);
+        lenient().when(transactionPeriodService.getDateRange(any())).thenReturn(currentRange);
+        lenient().when(transactionPeriodService.getPreviousPeriod(any())).thenReturn(previousRange);
     }
 
-    @Test
-    @DisplayName("Debe calcular métricas sin transacciones")
-    void shouldCalculateMetricsWithNoTransactions() {
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of());
+    @Nested
+    @DisplayName("getMetrics")
+    class GetMetrics {
 
-        GetTransactionMetricsUseCase.MetricsCommand command = new GetTransactionMetricsUseCase.MetricsCommand(userId, "month");
+        @Test
+        @DisplayName("Should calculate income, expenses, balance and count")
+        void shouldCalculateMetrics() {
+            TransactionAggregates current = new TransactionAggregates(
+                    new BigDecimal("2000.00"),
+                    new BigDecimal("500.00"),
+                    15L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    new BigDecimal("1500.00"),
+                    new BigDecimal("400.00"),
+                    10L
+            );
 
-        TransactionMetricsResponseDTO result = metricsService.getMetrics(command);
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
 
-        assertThat(result.income()).isEqualByComparingTo("0");
-        assertThat(result.expenses()).isEqualByComparingTo("0");
-        assertThat(result.balance()).isEqualByComparingTo("0");
-        assertThat(result.count()).isEqualTo(0);
-    }
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
 
-    @Test
-    @DisplayName("Debe lanzar error con período inválido")
-    void shouldThrowWithInvalidPeriod() {
-        GetTransactionMetricsUseCase.MetricsCommand command = new GetTransactionMetricsUseCase.MetricsCommand(userId, "invalid");
+            assertThat(result.income()).isEqualByComparingTo("2000.00");
+            assertThat(result.expenses()).isEqualByComparingTo("500.00");
+            assertThat(result.balance()).isEqualByComparingTo("1500.00");
+            assertThat(result.count()).isEqualTo(15L);
+        }
 
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> metricsService.getMetrics(command))
-                .withMessage("Invalid period: invalid");
+        @Test
+        @DisplayName("Should calculate trend when previous is positive")
+        void shouldCalculateTrendWhenPreviousIsPositive() {
+            TransactionAggregates current = new TransactionAggregates(
+                    new BigDecimal("2000.00"),
+                    new BigDecimal("500.00"),
+                    15L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("500.00"),
+                    10L
+            );
+
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
+
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
+
+            // income trend: (2000 - 1000) * 100 / 1000 = 100.0
+            assertThat(result.incomeTrend()).isEqualTo(100.0);
+            // expenses trend: (500 - 500) * 100 / 500 = 0.0
+            assertThat(result.expensesTrend()).isEqualTo(0.0);
+        }
+
+        @Test
+        @DisplayName("Should return 100 trend when previous is zero and current is positive")
+        void shouldReturn100TrendWhenPreviousIsZeroAndCurrentIsPositive() {
+            TransactionAggregates current = new TransactionAggregates(
+                    new BigDecimal("1000.00"),
+                    BigDecimal.ZERO,
+                    5L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0L
+            );
+
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
+
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
+
+            assertThat(result.incomeTrend()).isEqualTo(100.0);
+            assertThat(result.expensesTrend()).isEqualTo(0.0);
+            assertThat(result.countTrend()).isEqualTo(100.0);
+        }
+
+        @Test
+        @DisplayName("Should return 0 trend when both current and previous are zero")
+        void shouldReturn0TrendWhenBothAreZero() {
+            TransactionAggregates current = new TransactionAggregates(
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0L
+            );
+
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
+
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
+
+            assertThat(result.incomeTrend()).isEqualTo(0.0);
+            assertThat(result.expensesTrend()).isEqualTo(0.0);
+            assertThat(result.balanceTrend()).isEqualTo(0.0);
+            assertThat(result.countTrend()).isEqualTo(0.0);
+        }
+
+        @Test
+        @DisplayName("Should calculate count trend correctly")
+        void shouldCalculateCountTrendCorrectly() {
+            TransactionAggregates current = new TransactionAggregates(
+                    BigDecimal.TEN,
+                    BigDecimal.TEN,
+                    20L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    BigDecimal.TEN,
+                    BigDecimal.TEN,
+                    10L
+            );
+
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
+
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
+
+            // count trend: ((20 - 10) / 10) * 100 = 100.0
+            assertThat(result.countTrend()).isEqualTo(100.0);
+        }
+
+        @Test
+        @DisplayName("Should handle negative balance trend")
+        void shouldHandleNegativeBalanceTrend() {
+            TransactionAggregates current = new TransactionAggregates(
+                    new BigDecimal("500.00"),
+                    new BigDecimal("1000.00"),
+                    10L
+            );
+            TransactionAggregates previous = new TransactionAggregates(
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("500.00"),
+                    10L
+            );
+
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(current, previous);
+
+            MetricsResult result = service.getMetrics(new MetricsCommand(USER_ID, "month"));
+
+            // current balance = -500, previous balance = 500
+            // trend = (-500 - 500) * 100 / 500 = -200.0
+            assertThat(result.balanceTrend()).isEqualTo(-200.0);
+        }
     }
 }

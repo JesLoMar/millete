@@ -1,11 +1,15 @@
 package com.puntomartinez.millete.savingsgoals.application.services;
 
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.AddContributionToGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.CreateSavingsGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.UpdateSavingsGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.WithdrawFromGoalCommand;
 import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
-import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,17 +19,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("SavingsGoalService")
 class SavingsGoalServiceTest {
+
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private SavingsGoalRepository savingsGoalRepository;
@@ -33,248 +44,285 @@ class SavingsGoalServiceTest {
     @InjectMocks
     private SavingsGoalService savingsGoalService;
 
-    private UUID userId;
-    private UUID goalId;
-
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        goalId = UUID.randomUUID();
-    }
-
-    private SavingsGoal createActiveGoal() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setId(goalId);
-        goal.setUserId(userId);
-        goal.setName("Vacaciones");
-        goal.setTargetAmount(new BigDecimal("2000.00"));
-        goal.setCurrentAmount(BigDecimal.ZERO);
-        goal.setDeadline(LocalDate.now().plusMonths(6));
-        goal.setPriority("HIGH");
-        goal.setStatus("ACTIVE");
-        goal.setActive(true);
-        goal.setCreatedAt(LocalDateTime.now());
-        goal.setModifiedAt(LocalDateTime.now());
-        return goal;
-    }
-
-    @Test
-    void create_shouldSaveNewGoal() {
-        CreateSavingsGoalCommand command = new CreateSavingsGoalCommand(
-                userId, "Vacaciones", new BigDecimal("2000.00"),
-                LocalDate.now().plusMonths(6), "HIGH", null
+    private SavingsGoal existingGoal() {
+        return SavingsGoal.create(
+                USER_ID,
+                "Vacation",
+                new BigDecimal("1000.00"),
+                LocalDate.now().plusDays(30),
+                GoalPriority.MEDIUM,
+                null
         );
-
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        SavingsGoal result = savingsGoalService.create(command);
-
-        assertNotNull(result.getId());
-        assertEquals(userId, result.getUserId());
-        assertEquals("Vacaciones", result.getName());
-        assertEquals(new BigDecimal("2000.00"), result.getTargetAmount());
-        assertEquals(BigDecimal.ZERO, result.getCurrentAmount());
-        assertEquals("HIGH", result.getPriority());
-        assertEquals("ACTIVE", result.getStatus());
-        assertTrue(result.isActive());
     }
 
-    @Test
-    void create_shouldUseDefaultPriority_whenNull() {
-        CreateSavingsGoalCommand command = new CreateSavingsGoalCommand(
-                userId, "Vacaciones", new BigDecimal("2000.00"),
-                LocalDate.now().plusMonths(6), null, null
-        );
+    @Nested
+    @DisplayName("create")
+    class Create {
 
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
+        @Test
+        @DisplayName("Should create and save savings goal")
+        void shouldCreateAndSaveSavingsGoal() {
+            CreateSavingsGoalCommand command = new CreateSavingsGoalCommand(
+                    USER_ID,
+                    "Car",
+                    new BigDecimal("5000.00"),
+                    LocalDate.now().plusDays(90),
+                    GoalPriority.HIGH,
+                    "https://example.com"
+            );
 
-        SavingsGoal result = savingsGoalService.create(command);
+            when(savingsGoalRepository.save(any(SavingsGoal.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertEquals("MEDIUM", result.getPriority());
+            SavingsGoal result = savingsGoalService.create(command);
+
+            ArgumentCaptor<SavingsGoal> captor = ArgumentCaptor.forClass(SavingsGoal.class);
+            verify(savingsGoalRepository).save(captor.capture());
+
+            SavingsGoal saved = captor.getValue();
+
+            assertThat(saved.getUserId()).isEqualTo(USER_ID);
+            assertThat(saved.getName()).isEqualTo("Car");
+            assertThat(saved.getTargetAmount()).isEqualByComparingTo("5000.00");
+            assertThat(saved.getPriority()).isEqualTo(GoalPriority.HIGH);
+            assertThat(saved.getLink()).isEqualTo("https://example.com");
+            assertThat(saved.isActive()).isTrue();
+            assertThat(result).isSameAs(saved);
+        }
     }
 
-    @Test
-    void update_shouldUpdateExistingGoal() {
-        SavingsGoal existing = createActiveGoal();
-        UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(
-                goalId, userId, "Nuevo nombre", new BigDecimal("3000.00"),
-                LocalDate.now().plusMonths(12), "LOW", "PAUSED", "http://link.com"
-        );
+    @Nested
+    @DisplayName("update")
+    class Update {
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(existing));
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
+        @Test
+        @DisplayName("Should update savings goal when it exists")
+        void shouldUpdateSavingsGoalWhenItExists() {
+            SavingsGoal goal = existingGoal();
+            UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(
+                    goal.getId(),
+                    USER_ID,
+                    "Updated",
+                    new BigDecimal("2000.00"),
+                    null,
+                    GoalPriority.HIGH,
+                    null
+            );
 
-        SavingsGoal result = savingsGoalService.update(command);
+            when(savingsGoalRepository.findByIdAndUserId(goal.getId(), USER_ID))
+                    .thenReturn(Optional.of(goal));
+            when(savingsGoalRepository.save(goal)).thenReturn(goal);
 
-        assertEquals("Nuevo nombre", result.getName());
-        assertEquals(new BigDecimal("3000.00"), result.getTargetAmount());
-        assertEquals("PAUSED", result.getStatus());
-        assertEquals("http://link.com", result.getLink());
+            SavingsGoal result = savingsGoalService.update(command);
+
+            assertThat(result.getName()).isEqualTo("Updated");
+            assertThat(result.getTargetAmount()).isEqualByComparingTo("2000.00");
+            assertThat(result.getPriority()).isEqualTo(GoalPriority.HIGH);
+            verify(savingsGoalRepository).save(goal);
+        }
+
+        @Test
+        @DisplayName("Should throw when savings goal does not exist")
+        void shouldThrowWhenSavingsGoalDoesNotExist() {
+            UUID goalId = UUID.randomUUID();
+            UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(
+                    goalId,
+                    USER_ID,
+                    "Updated",
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            when(savingsGoalRepository.findByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> savingsGoalService.update(command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(savingsGoalRepository, never()).save(any(SavingsGoal.class));
+        }
     }
 
-    @Test
-    void update_shouldThrow_whenGoalNotFound() {
-        UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(
-                goalId, userId, "Nombre", new BigDecimal("1000.00"),
-                null, null, null, null
-        );
+    @Nested
+    @DisplayName("addContribution")
+    class AddContribution {
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Should add contribution when savings goal exists")
+        void shouldAddContributionWhenSavingsGoalExists() {
+            SavingsGoal goal = existingGoal();
+            AddContributionToGoalCommand command =
+                    new AddContributionToGoalCommand(goal.getId(), USER_ID, new BigDecimal("100.00"));
 
-        assertThrows(ResourceNotFoundException.class, () -> savingsGoalService.update(command));
+            when(savingsGoalRepository.findByIdAndUserId(goal.getId(), USER_ID))
+                    .thenReturn(Optional.of(goal));
+            when(savingsGoalRepository.save(goal)).thenReturn(goal);
+
+            SavingsGoal result = savingsGoalService.addContribution(command);
+
+            assertThat(result.getCurrentAmount()).isEqualByComparingTo("100.00");
+            verify(savingsGoalRepository).save(goal);
+        }
+
+        @Test
+        @DisplayName("Should throw when savings goal does not exist")
+        void shouldThrowWhenSavingsGoalDoesNotExist() {
+            UUID goalId = UUID.randomUUID();
+            AddContributionToGoalCommand command =
+                    new AddContributionToGoalCommand(goalId, USER_ID, BigDecimal.TEN);
+
+            when(savingsGoalRepository.findByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> savingsGoalService.addContribution(command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(savingsGoalRepository, never()).save(any(SavingsGoal.class));
+        }
     }
 
-    @Test
-    void update_shouldThrow_whenGoalInactive() {
-        SavingsGoal inactive = createActiveGoal();
-        inactive.setActive(false);
-        UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(
-                goalId, userId, "Nombre", new BigDecimal("1000.00"),
-                null, null, null, null
-        );
+    @Nested
+    @DisplayName("withdraw")
+    class Withdraw {
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(inactive));
+        @Test
+        @DisplayName("Should withdraw amount when savings goal exists and has enough balance")
+        void shouldWithdrawAmountWhenSavingsGoalExists() {
+            SavingsGoal goal = existingGoal();
+            goal.addContribution(new BigDecimal("100.00"));
 
-        assertThrows(InvalidInputException.class, () -> savingsGoalService.update(command));
+            WithdrawFromGoalCommand command =
+                    new WithdrawFromGoalCommand(goal.getId(), USER_ID, new BigDecimal("30.00"));
+
+            when(savingsGoalRepository.findByIdAndUserId(goal.getId(), USER_ID))
+                    .thenReturn(Optional.of(goal));
+            when(savingsGoalRepository.save(goal)).thenReturn(goal);
+
+            SavingsGoal result = savingsGoalService.withdraw(command);
+
+            assertThat(result.getCurrentAmount()).isEqualByComparingTo("70.00");
+            verify(savingsGoalRepository).save(goal);
+        }
+
+        @Test
+        @DisplayName("Should throw when savings goal does not exist")
+        void shouldThrowWhenSavingsGoalDoesNotExist() {
+            UUID goalId = UUID.randomUUID();
+            WithdrawFromGoalCommand command =
+                    new WithdrawFromGoalCommand(goalId, USER_ID, BigDecimal.TEN);
+
+            when(savingsGoalRepository.findByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> savingsGoalService.withdraw(command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(savingsGoalRepository, never()).save(any(SavingsGoal.class));
+        }
     }
 
-    @Test
-    void addContribution_shouldIncreaseCurrentAmount() {
-        SavingsGoal goal = createActiveGoal();
-        AddContributionToGoalCommand command = new AddContributionToGoalCommand(
-                goalId, userId, new BigDecimal("500.00")
-        );
+    @Nested
+    @DisplayName("queries")
+    class Queries {
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
+        @Test
+        @DisplayName("Should delegate findByUserId to repository")
+        void shouldDelegateFindByUserIdToRepository() {
+            SavingsGoal goal = existingGoal();
+            List<SavingsGoal> goals = List.of(goal);
 
-        SavingsGoal result = savingsGoalService.addContribution(command);
+            when(savingsGoalRepository.findAllByUserId(USER_ID)).thenReturn(goals);
 
-        assertEquals(new BigDecimal("500.00"), result.getCurrentAmount());
+            List<SavingsGoal> result = savingsGoalService.findByUserId(USER_ID);
+
+            assertThat(result).containsExactly(goal);
+        }
+
+        @Test
+        @DisplayName("Should delegate paginated findByUserId to repository")
+        void shouldDelegatePaginatedFindByUserIdToRepository() {
+            SavingsGoal goal = existingGoal();
+            List<SavingsGoal> goals = List.of(goal);
+
+            when(savingsGoalRepository.findAllByUserId(USER_ID, 0, 10, "search"))
+                    .thenReturn(goals);
+
+            List<SavingsGoal> result = savingsGoalService.findByUserId(USER_ID, 0, 10, "search");
+
+            assertThat(result).containsExactly(goal);
+        }
+
+        @Test
+        @DisplayName("Should delegate countByUserIdAndFilters to repository")
+        void shouldDelegateCountByUserIdAndFiltersToRepository() {
+            when(savingsGoalRepository.countByUserIdAndFilters(USER_ID, "search"))
+                    .thenReturn(5L);
+
+            long result = savingsGoalService.countByUserIdAndFilters(USER_ID, "search");
+
+            assertThat(result).isEqualTo(5L);
+        }
+
+        @Test
+        @DisplayName("Should return goal when getByIdAndUserId finds it")
+        void shouldReturnGoalWhenGetByIdAndUserIdFindsIt() {
+            SavingsGoal goal = existingGoal();
+
+            when(savingsGoalRepository.findByIdAndUserId(goal.getId(), USER_ID))
+                    .thenReturn(Optional.of(goal));
+
+            SavingsGoal result = savingsGoalService.getByIdAndUserId(goal.getId(), USER_ID);
+
+            assertThat(result).isSameAs(goal);
+        }
+
+        @Test
+        @DisplayName("Should throw when getByIdAndUserId does not find goal")
+        void shouldThrowWhenGetByIdAndUserIdDoesNotFindGoal() {
+            UUID goalId = UUID.randomUUID();
+
+            when(savingsGoalRepository.findByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> savingsGoalService.getByIdAndUserId(goalId, USER_ID))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
     }
 
-    @Test
-    void addContribution_shouldThrow_whenGoalNotFound() {
-        AddContributionToGoalCommand command = new AddContributionToGoalCommand(
-                goalId, userId, new BigDecimal("100.00")
-        );
+    @Nested
+    @DisplayName("deleteByIdAndUserId")
+    class Delete {
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Should deactivate and save savings goal")
+        void shouldDeactivateAndSaveSavingsGoal() {
+            SavingsGoal goal = existingGoal();
 
-        assertThrows(ResourceNotFoundException.class, () -> savingsGoalService.addContribution(command));
-    }
+            when(savingsGoalRepository.findByIdAndUserId(goal.getId(), USER_ID))
+                    .thenReturn(Optional.of(goal));
 
-    @Test
-    void addContribution_shouldThrow_whenGoalInactive() {
-        SavingsGoal inactive = createActiveGoal();
-        inactive.setActive(false);
-        AddContributionToGoalCommand command = new AddContributionToGoalCommand(
-                goalId, userId, new BigDecimal("100.00")
-        );
+            savingsGoalService.deleteByIdAndUserId(goal.getId(), USER_ID);
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(inactive));
+            ArgumentCaptor<SavingsGoal> captor = ArgumentCaptor.forClass(SavingsGoal.class);
+            verify(savingsGoalRepository).save(captor.capture());
 
-        assertThrows(InvalidInputException.class, () -> savingsGoalService.addContribution(command));
-    }
+            assertThat(captor.getValue().isActive()).isFalse();
+        }
 
-    @Test
-    void addContribution_shouldThrow_whenGoalNotActiveStatus() {
-        SavingsGoal paused = createActiveGoal();
-        paused.setStatus("PAUSED");
-        AddContributionToGoalCommand command = new AddContributionToGoalCommand(
-                goalId, userId, new BigDecimal("100.00")
-        );
+        @Test
+        @DisplayName("Should throw when savings goal does not exist")
+        void shouldThrowWhenSavingsGoalDoesNotExist() {
+            UUID goalId = UUID.randomUUID();
 
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(paused));
+            when(savingsGoalRepository.findByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(Optional.empty());
 
-        assertThrows(InvalidInputException.class, () -> savingsGoalService.addContribution(command));
-    }
+            assertThatThrownBy(() -> savingsGoalService.deleteByIdAndUserId(goalId, USER_ID))
+                    .isInstanceOf(ResourceNotFoundException.class);
 
-    @Test
-    void findByUserId_shouldReturnOnlyActiveGoals() {
-        SavingsGoal active1 = createActiveGoal();
-        SavingsGoal active2 = createActiveGoal();
-        active2.setId(UUID.randomUUID());
-        SavingsGoal inactive = createActiveGoal();
-        inactive.setId(UUID.randomUUID());
-        inactive.setActive(false);
-
-        when(savingsGoalRepository.findAllByUserId(userId)).thenReturn(List.of(active1, active2, inactive));
-
-        List<SavingsGoal> result = savingsGoalService.findByUserId(userId);
-
-        assertEquals(2, result.size());
-        assertTrue(result.stream().allMatch(SavingsGoal::isActive));
-    }
-
-    @Test
-    void findByUserIdAndStatus_shouldReturnFilteredActiveGoals() {
-        SavingsGoal active = createActiveGoal();
-        SavingsGoal paused = createActiveGoal();
-        paused.setId(UUID.randomUUID());
-        paused.setStatus("PAUSED");
-
-        when(savingsGoalRepository.findAllByUserIdAndStatus(userId, "ACTIVE")).thenReturn(List.of(active));
-
-        List<SavingsGoal> result = savingsGoalService.findByUserIdAndStatus(userId, "ACTIVE");
-
-        assertEquals(1, result.size());
-        assertEquals("ACTIVE", result.get(0).getStatus());
-    }
-
-    @Test
-    void getByIdAndUserId_shouldReturnActiveGoal() {
-        SavingsGoal goal = createActiveGoal();
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
-
-        SavingsGoal result = savingsGoalService.getByIdAndUserId(goalId, userId);
-
-        assertEquals(goalId, result.getId());
-    }
-
-    @Test
-    void getByIdAndUserId_shouldThrow_whenNotFound() {
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> savingsGoalService.getByIdAndUserId(goalId, userId));
-    }
-
-    @Test
-    void getByIdAndUserId_shouldThrow_whenInactive() {
-        SavingsGoal inactive = createActiveGoal();
-        inactive.setActive(false);
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(inactive));
-
-        assertThrows(ResourceNotFoundException.class, () -> savingsGoalService.getByIdAndUserId(goalId, userId));
-    }
-
-    @Test
-    void deleteByIdAndUserId_shouldDeactivateGoal() {
-        SavingsGoal goal = createActiveGoal();
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
-        when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        savingsGoalService.deleteByIdAndUserId(goalId, userId);
-
-        ArgumentCaptor<SavingsGoal> captor = ArgumentCaptor.forClass(SavingsGoal.class);
-        verify(savingsGoalRepository).save(captor.capture());
-        assertFalse(captor.getValue().isActive());
-        assertEquals("CANCELLED", captor.getValue().getStatus());
-    }
-
-    @Test
-    void deleteByIdAndUserId_shouldThrow_whenNotFound() {
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> savingsGoalService.deleteByIdAndUserId(goalId, userId));
-    }
-
-    @Test
-    void deleteByIdAndUserId_shouldThrow_whenAlreadyInactive() {
-        SavingsGoal inactive = createActiveGoal();
-        inactive.setActive(false);
-        when(savingsGoalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(inactive));
-
-        assertThrows(InvalidInputException.class, () -> savingsGoalService.deleteByIdAndUserId(goalId, userId));
+            verify(savingsGoalRepository, never()).save(any(SavingsGoal.class));
+        }
     }
 }

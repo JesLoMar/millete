@@ -1,319 +1,382 @@
 package com.puntomartinez.millete.dashboard.application.services;
 
-import com.puntomartinez.millete.categories.domain.model.Category;
-import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
-import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
+import com.puntomartinez.millete.dashboard.domain.ports.out.SavingsGoalQueryPort;
+import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DashboardService - Servicio de dashboard")
+@DisplayName("DashboardService")
 class DashboardServiceTest {
 
-    @Mock
-    private TransactionRepository transactionRepository;
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private TransactionQueryPort transactionQueryPort;
 
     @Mock
-    private InvestmentRepository investmentRepository;
+    private CategoryQueryPort categoryQueryPort;
 
     @Mock
-    private SavingsGoalRepository savingsGoalRepository;
+    private SavingsGoalQueryPort savingsGoalQueryPort;
 
-    @InjectMocks
-    private DashboardService dashboardService;
+    @Mock
+    private DashboardPeriodService dashboardPeriodService;
 
-    private final UUID userId = UUID.randomUUID();
+    @Mock
+    private DashboardHistoryService dashboardHistoryService;
 
-    @Test
-    @DisplayName("Obtener métricas del dashboard")
-    void shouldGetMetrics() {
-        Transaction income = createTransaction(Transaction.TransactionType.INCOME, "1000.00");
-        Transaction expense = createTransaction(Transaction.TransactionType.EXPENSE, "-300.00");
+    @Mock
+    private DashboardCategoryService dashboardCategoryService;
 
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(income, expense));
+    @Mock
+    private DashboardBudgetService dashboardBudgetService;
 
-        var result = dashboardService.getMetrics(userId, "month");
+    private DashboardService service;
 
-        assertThat(result.income()).isEqualByComparingTo("1000.00");
-        assertThat(result.expenses()).isEqualByComparingTo("300.00");
-        assertThat(result.balance()).isEqualByComparingTo("700.00");
-        assertThat(result.savings()).isEqualByComparingTo("700.00");
+    @BeforeEach
+    void setUp() {
+        service = new DashboardService(
+                transactionQueryPort,
+                categoryQueryPort,
+                savingsGoalQueryPort,
+                dashboardPeriodService,
+                dashboardHistoryService,
+                dashboardCategoryService,
+                dashboardBudgetService
+        );
     }
 
-    @Test
-    @DisplayName("Obtener métricas sin transacciones")
-    void shouldGetMetricsWithNoTransactions() {
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of());
+    @Nested
+    @DisplayName("getMetrics")
+    class GetMetrics {
 
-        var result = dashboardService.getMetrics(userId, "month");
+        @Test
+        @DisplayName("Should calculate income, expenses and balance")
+        void shouldCalculateMetrics() {
+            LocalDateTime[] currentRange = {
+                    LocalDateTime.now().minusDays(30),
+                    LocalDateTime.now()
+            };
+            LocalDateTime[] previousRange = {
+                    LocalDateTime.now().minusDays(60),
+                    LocalDateTime.now().minusDays(30)
+            };
 
-        assertThat(result.income()).isEqualByComparingTo("0");
-        assertThat(result.expenses()).isEqualByComparingTo("0");
-        assertThat(result.balance()).isEqualByComparingTo("0");
+            when(dashboardPeriodService.getDateRange("month"))
+                    .thenReturn(currentRange);
+            when(dashboardPeriodService.getPreviousPeriod("month"))
+                    .thenReturn(previousRange);
+
+            TransactionQueryPort.TransactionData income =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Salary", null,
+                            new BigDecimal("2000.00"),
+                            LocalDateTime.now(), "INCOME"
+                    );
+            TransactionQueryPort.TransactionData expense =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Food", null,
+                            new BigDecimal("500.00"),
+                            LocalDateTime.now(), "EXPENSE"
+                    );
+
+            when(transactionQueryPort.findByUserIdAndDateBetween(
+                    eq(USER_ID), eq(currentRange[0]), eq(currentRange[1])
+            )).thenReturn(List.of(income, expense));
+
+            when(transactionQueryPort.findByUserIdAndDateBetween(
+                    eq(USER_ID), eq(previousRange[0]), eq(previousRange[1])
+            )).thenReturn(Collections.emptyList());
+
+            DashboardMetricsResponseDTO result =
+                    service.getMetrics(USER_ID, "month");
+
+            assertThat(result.income()).isEqualByComparingTo("2000.00");
+            assertThat(result.expenses()).isEqualByComparingTo("500.00");
+            assertThat(result.balance()).isEqualByComparingTo("1500.00");
+            assertThat(result.savings()).isEqualByComparingTo("1500.00");
+        }
+
+        @Test
+        @DisplayName("Should return 100 trend when previous is zero and current is positive")
+        void shouldReturn100TrendWhenPreviousIsZero() {
+            LocalDateTime[] currentRange = {
+                    LocalDateTime.now().minusDays(30),
+                    LocalDateTime.now()
+            };
+            LocalDateTime[] previousRange = {
+                    LocalDateTime.now().minusDays(60),
+                    LocalDateTime.now().minusDays(30)
+            };
+
+            when(dashboardPeriodService.getDateRange("month"))
+                    .thenReturn(currentRange);
+            when(dashboardPeriodService.getPreviousPeriod("month"))
+                    .thenReturn(previousRange);
+
+            TransactionQueryPort.TransactionData income =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Salary", null,
+                            new BigDecimal("1000.00"),
+                            LocalDateTime.now(), "INCOME"
+                    );
+
+            when(transactionQueryPort.findByUserIdAndDateBetween(
+                    eq(USER_ID), eq(currentRange[0]), eq(currentRange[1])
+            )).thenReturn(List.of(income));
+
+            when(transactionQueryPort.findByUserIdAndDateBetween(
+                    eq(USER_ID), eq(previousRange[0]), eq(previousRange[1])
+            )).thenReturn(Collections.emptyList());
+
+            DashboardMetricsResponseDTO result =
+                    service.getMetrics(USER_ID, "month");
+
+            assertThat(result.incomeTrend()).isEqualTo(100.0);
+        }
     }
 
-    @Test
-    @DisplayName("Obtener gastos por categoría")
-    void shouldGetCategories() {
-        UUID categoryId = UUID.randomUUID();
-        Transaction expense = mock(Transaction.class, RETURNS_DEEP_STUBS);
-        when(expense.getType()).thenReturn(Transaction.TransactionType.EXPENSE);
-        when(expense.getAmount()).thenReturn(new BigDecimal("-300.00"));
-        when(expense.getCategoryId()).thenReturn(categoryId);
+    @Nested
+    @DisplayName("getHistory")
+    class GetHistory {
 
-        Category category = mock(Category.class);
-        when(category.getName()).thenReturn("Transporte");
+        @Test
+        @DisplayName("Should delegate to DashboardHistoryService")
+        void shouldDelegateToHistoryService() {
+            DashboardHistoryResponseDTO expected =
+                    new DashboardHistoryResponseDTO(
+                            "month", List.of("Sem 1"), List.of(BigDecimal.TEN)
+                    );
+            when(dashboardHistoryService.getHistory(USER_ID, "month"))
+                    .thenReturn(expected);
 
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(expense));
-        when(categoryRepository.findActiveByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            DashboardHistoryResponseDTO result =
+                    service.getHistory(USER_ID, "month");
 
-        var result = dashboardService.getCategories(userId, "month");
-
-        assertThat(result.totalExpenses()).isEqualByComparingTo("300.00");
-        assertThat(result.categories()).hasSize(1);
-        assertThat(result.categories().get(0).name()).isEqualTo("Transporte");
+            assertThat(result).isSameAs(expected);
+            verify(dashboardHistoryService).getHistory(USER_ID, "month");
+        }
     }
 
-    @Test
-    @DisplayName("Obtener presupuestos")
-    void shouldGetBudgets() {
-        UUID categoryId = UUID.randomUUID();
-        Category category = mock(Category.class);
-        when(category.getId()).thenReturn(categoryId);
-        when(category.getName()).thenReturn("Transporte");
-        when(category.getBudgetLimit()).thenReturn(new BigDecimal("500.00"));
+    @Nested
+    @DisplayName("getCategories")
+    class GetCategories {
 
-        Transaction expense = mock(Transaction.class);
-        when(expense.getCategoryId()).thenReturn(categoryId);
-        when(expense.getType()).thenReturn(Transaction.TransactionType.EXPENSE);
-        when(expense.getAmount()).thenReturn(new BigDecimal("-300.00"));
+        @Test
+        @DisplayName("Should delegate to DashboardCategoryService")
+        void shouldDelegateToCategoryService() {
+            DashboardCategoriesResponseDTO expected =
+                    new DashboardCategoriesResponseDTO(
+                            BigDecimal.TEN, Collections.emptyList()
+                    );
+            when(dashboardCategoryService.getCategories(USER_ID, "month"))
+                    .thenReturn(expected);
 
-        when(categoryRepository.findCategoriesWithBudgetByUserId(userId)).thenReturn(List.of(category));
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(expense));
+            DashboardCategoriesResponseDTO result =
+                    service.getCategories(USER_ID, "month");
 
-        var result = dashboardService.getBudgets(userId, "month");
-
-        assertThat(result.budgets()).hasSize(1);
-        assertThat(result.budgets().get(0).category()).isEqualTo("Transporte");
-        assertThat(result.budgets().get(0).spent()).isEqualByComparingTo("300.00");
-        assertThat(result.budgets().get(0).limit()).isEqualByComparingTo("500.00");
+            assertThat(result).isSameAs(expected);
+            verify(dashboardCategoryService).getCategories(USER_ID, "month");
+        }
     }
 
-    @Test
-    @DisplayName("Obtener presupuestos sin gastos muestra 0 de gasto")
-    void shouldNotShowBudgetsWithNoSpending() {
-        UUID categoryId = UUID.randomUUID();
-        Category category = mock(Category.class);
-        when(category.getId()).thenReturn(categoryId);
-        when(category.getName()).thenReturn("Transporte");
-        when(category.getBudgetLimit()).thenReturn(new BigDecimal("500.00"));
+    @Nested
+    @DisplayName("getBudgets")
+    class GetBudgets {
 
-        when(categoryRepository.findCategoriesWithBudgetByUserId(userId)).thenReturn(List.of(category));
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of());
+        @Test
+        @DisplayName("Should delegate to DashboardBudgetService")
+        void shouldDelegateToBudgetService() {
+            DashboardBudgetsResponseDTO expected =
+                    new DashboardBudgetsResponseDTO("month", Collections.emptyList());
+            when(dashboardBudgetService.getBudgets(USER_ID, "month"))
+                    .thenReturn(expected);
 
-        var result = dashboardService.getBudgets(userId, "month");
+            DashboardBudgetsResponseDTO result =
+                    service.getBudgets(USER_ID, "month");
 
-        assertThat(result.budgets()).hasSize(1);
-        assertThat(result.budgets().get(0).spent()).isEqualByComparingTo("0");
-        assertThat(result.budgets().get(0).percentage()).isEqualTo(0.0);
+            assertThat(result).isSameAs(expected);
+            verify(dashboardBudgetService).getBudgets(USER_ID, "month");
+        }
     }
 
-    @Test
-    @DisplayName("Obtener transacciones recientes")
-    void shouldGetRecentTransactions() {
-        Transaction tx = createTransaction(Transaction.TransactionType.EXPENSE, "-50.00");
+    @Nested
+    @DisplayName("getRecentTransactions")
+    class GetRecentTransactions {
 
-        when(tx.getDescription()).thenReturn("Compra");
-        when(tx.getCategoryId()).thenReturn(UUID.randomUUID());
+        @Test
+        @DisplayName("Should map transactions with category info")
+        void shouldMapTransactionsWithCategoryInfo() {
+            UUID categoryId = UUID.randomUUID();
+            TransactionQueryPort.TransactionData tx =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Groceries", categoryId,
+                            new BigDecimal("50.00"),
+                            LocalDateTime.now(), "EXPENSE"
+                    );
 
-        when(transactionRepository.findRecentByUserId(userId, 5)).thenReturn(List.of(tx));
-        when(categoryRepository.findActiveByIdAndUserId(any(), eq(userId))).thenReturn(Optional.of(mock(Category.class)));
+            when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
+                    .thenReturn(List.of(tx));
 
-        var result = dashboardService.getRecentTransactions(userId, 5);
+            when(categoryQueryPort.findByIdsAndUserId(USER_ID, List.of(categoryId)))
+                    .thenReturn(List.of(
+                            new CategoryQueryPort.CategoryData(
+                                    categoryId, "Food", "#FF0000", null
+                            )
+                    ));
 
-        assertThat(result.transactions()).hasSize(1);
+            DashboardTransactionsResponseDTO result =
+                    service.getRecentTransactions(USER_ID, 5);
+
+            assertThat(result.transactions()).hasSize(1);
+            assertThat(result.transactions().get(0).category()).isEqualTo("Food");
+            assertThat(result.transactions().get(0).categoryColor()).isEqualTo("#FF0000");
+        }
+
+        @Test
+        @DisplayName("Should use Sin categoria when category is null")
+        void shouldUseSinCategoriaWhenCategoryIsNull() {
+            TransactionQueryPort.TransactionData tx =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Unknown", null,
+                            new BigDecimal("50.00"),
+                            LocalDateTime.now(), "EXPENSE"
+                    );
+
+            when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
+                    .thenReturn(List.of(tx));
+
+            DashboardTransactionsResponseDTO result =
+                    service.getRecentTransactions(USER_ID, 5);
+
+            assertThat(result.transactions().get(0).category())
+                    .isEqualTo("Sin categoría");
+        }
+
+        @Test
+        @DisplayName("Should not call findByIdsAndUserId when no categoryIds")
+        void shouldNotCallFindByIdsWhenNoCategories() {
+            TransactionQueryPort.TransactionData tx =
+                    new TransactionQueryPort.TransactionData(
+                            UUID.randomUUID(), "Unknown", null,
+                            new BigDecimal("50.00"),
+                            LocalDateTime.now(), "EXPENSE"
+                    );
+
+            when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
+                    .thenReturn(List.of(tx));
+
+            service.getRecentTransactions(USER_ID, 5);
+
+            verify(categoryQueryPort, never()).findByIdsAndUserId(any(), any());
+        }
     }
 
-    @Test
-    @DisplayName("Obtener métricas de inversiones")
-    void shouldGetInvestmentMetrics() {
-        Investment inv = mock(Investment.class);
-        when(inv.isActive()).thenReturn(true);
-        when(inv.getCurrentValue()).thenReturn(new BigDecimal("1500.00"));
-        when(inv.getProfitOrLoss()).thenReturn(new BigDecimal("500.00"));
-        when(inv.getInvestedCapital()).thenReturn(new BigDecimal("1000.00"));
+    @Nested
+    @DisplayName("getSavingsGoals")
+    class GetSavingsGoals {
 
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv));
+        @Test
+        @DisplayName("Should return goals sorted by priority and createdAt")
+        void shouldSortByPriorityAndCreatedAt() {
+            SavingsGoalQueryPort.SavingsGoalData highGoal =
+                    new SavingsGoalQueryPort.SavingsGoalData(
+                            UUID.randomUUID(), "High Goal",
+                            new BigDecimal("1000"), new BigDecimal("500"),
+                            LocalDate.now().plusDays(30), "HIGH",
+                            LocalDateTime.now().minusDays(1)
+                    );
+            SavingsGoalQueryPort.SavingsGoalData lowGoal =
+                    new SavingsGoalQueryPort.SavingsGoalData(
+                            UUID.randomUUID(), "Low Goal",
+                            new BigDecimal("500"), new BigDecimal("100"),
+                            LocalDate.now().plusDays(60), "LOW",
+                            LocalDateTime.now().minusDays(2)
+                    );
 
-        var result = dashboardService.getInvestmentMetrics(userId, "month");
+            when(savingsGoalQueryPort.findAllByUserId(USER_ID))
+                    .thenReturn(List.of(lowGoal, highGoal));
 
-        assertThat(result.portfolioValue()).isEqualByComparingTo("1500.00");
-        assertThat(result.monthlyReturn()).isEqualByComparingTo("500.00");
-    }
+            DashboardGoalsResponseDTO result =
+                    service.getSavingsGoals(USER_ID);
 
-    @Test
-    @DisplayName("Obtener distribución de inversiones")
-    void shouldGetInvestmentDistribution() {
-        Investment inv = mock(Investment.class);
-        when(inv.isActive()).thenReturn(true);
-        when(inv.getCurrentValue()).thenReturn(new BigDecimal("1000.00"));
-        when(inv.getType()).thenReturn(Investment.InvestmentType.STOCK);
+            assertThat(result.goals()).hasSize(2);
+            assertThat(result.goals().get(0).name()).isEqualTo("High Goal");
+        }
 
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv));
+        @Test
+        @DisplayName("Should limit to 20 goals")
+        void shouldLimitTo20Goals() {
+            List<SavingsGoalQueryPort.SavingsGoalData> manyGoals =
+                    java.util.stream.IntStream.range(0, 25)
+                            .mapToObj(i -> new SavingsGoalQueryPort.SavingsGoalData(
+                                    UUID.randomUUID(), "Goal " + i,
+                                    new BigDecimal("1000"), new BigDecimal("500"),
+                                    LocalDate.now().plusDays(30), "MEDIUM",
+                                    LocalDateTime.now().minusDays(i)
+                            ))
+                            .toList();
 
-        var result = dashboardService.getInvestmentDistribution(userId, "month");
+            when(savingsGoalQueryPort.findAllByUserId(USER_ID))
+                    .thenReturn(manyGoals);
 
-        assertThat(result.totalValue()).isEqualByComparingTo("1000.00");
-        assertThat(result.distribution()).hasSize(1);
-    }
+            DashboardGoalsResponseDTO result =
+                    service.getSavingsGoals(USER_ID);
 
-    @Test
-    @DisplayName("Período inválido lanza error en métricas")
-    void shouldThrowWithInvalidPeriod() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> dashboardService.getMetrics(userId, "invalid"))
-                .withMessage("Invalid period: invalid");
-    }
+            assertThat(result.goals()).hasSize(20);
+        }
 
-    private Transaction createTransaction(Transaction.TransactionType type, String amount) {
-        Transaction tx = mock(Transaction.class);
-        lenient().when(tx.getType()).thenReturn(type);
-        lenient().when(tx.getAmount()).thenReturn(new BigDecimal(amount));
-        return tx;
-    }
+        @Test
+        @DisplayName("Should return empty when no goals")
+        void shouldReturnEmptyWhenNoGoals() {
+            when(savingsGoalQueryPort.findAllByUserId(USER_ID))
+                    .thenReturn(Collections.emptyList());
 
-    @Test
-    @DisplayName("Obtener historial semanal")
-    void shouldGetWeeklyHistory() {
-        Transaction expense = createTransaction(Transaction.TransactionType.EXPENSE, "-100.00");
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(expense));
+            DashboardGoalsResponseDTO result =
+                    service.getSavingsGoals(USER_ID);
 
-        var result = dashboardService.getHistory(userId, "week");
+            assertThat(result.goals()).isEmpty();
+        }
 
-        assertThat(result.period()).isEqualTo("week");
-        assertThat(result.labels()).isNotEmpty();
-        assertThat(result.data()).isNotEmpty();
-    }
+        @Test
+        @DisplayName("Should handle null priority gracefully")
+        void shouldHandleNullPriority() {
+            SavingsGoalQueryPort.SavingsGoalData goal =
+                    new SavingsGoalQueryPort.SavingsGoalData(
+                            UUID.randomUUID(), "No Priority",
+                            new BigDecimal("1000"), new BigDecimal("500"),
+                            LocalDate.now().plusDays(30), null,
+                            LocalDateTime.now()
+                    );
 
-    @Test
-    @DisplayName("Obtener historial mensual")
-    void shouldGetMonthlyHistory() {
-        Transaction expense = createTransaction(Transaction.TransactionType.EXPENSE, "-200.00");
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(expense));
+            when(savingsGoalQueryPort.findAllByUserId(USER_ID))
+                    .thenReturn(List.of(goal));
 
-        var result = dashboardService.getHistory(userId, "month");
+            DashboardGoalsResponseDTO result =
+                    service.getSavingsGoals(USER_ID);
 
-        assertThat(result.period()).isEqualTo("month");
-        assertThat(result.labels()).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("Obtener historial anual")
-    void shouldGetYearlyHistory() {
-        Transaction expense = createTransaction(Transaction.TransactionType.EXPENSE, "-500.00");
-        when(transactionRepository.findByUserIdAndDateBetween(eq(userId), any(), any()))
-                .thenReturn(List.of(expense));
-
-        var result = dashboardService.getHistory(userId, "year");
-
-        assertThat(result.period()).isEqualTo("year");
-        assertThat(result.labels()).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("Obtener historial con período inválido lanza error")
-    void shouldThrowWithInvalidHistoryPeriod() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> dashboardService.getHistory(userId, "invalid"))
-                .withMessage("Invalid period: invalid");
-    }
-
-    @Test
-    @DisplayName("Obtener metas de ahorro")
-    void shouldGetSavingsGoals() {
-        SavingsGoal goal1 = new SavingsGoal(UUID.randomUUID(), userId, "Fondo de Emergencia",
-                new BigDecimal("5000"), new BigDecimal("1000"), LocalDate.now().plusMonths(6),
-                "HIGH", "ACTIVE", null, LocalDateTime.now(), LocalDateTime.now(), true);
-        SavingsGoal goal2 = new SavingsGoal(UUID.randomUUID(), userId, "Vacaciones",
-                new BigDecimal("2000"), new BigDecimal("500"), LocalDate.now().plusMonths(3),
-                "MEDIUM", "ACTIVE", null, LocalDateTime.now().minusDays(1), LocalDateTime.now(), true);
-
-        when(savingsGoalRepository.findAllByUserId(userId))
-                .thenReturn(List.of(goal1, goal2));
-
-        var result = dashboardService.getSavingsGoals(userId);
-
-        assertThat(result.goals()).hasSize(2);
-        assertThat(result.goals().get(0).name()).isEqualTo("Fondo de Emergencia");
-        assertThat(result.goals().get(1).name()).isEqualTo("Vacaciones");
-    }
-
-    @Test
-    @DisplayName("Obtener evolución semanal de inversiones")
-    void shouldGetWeeklyInvestmentEvolution() {
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-
-        var result = dashboardService.getInvestmentEvolution(userId, "week");
-
-        assertThat(result.period()).isEqualTo("week");
-        assertThat(result.labels()).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("Obtener evolución mensual de inversiones")
-    void shouldGetMonthlyInvestmentEvolution() {
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-
-        var result = dashboardService.getInvestmentEvolution(userId, "month");
-
-        assertThat(result.period()).isEqualTo("month");
-    }
-
-    @Test
-    @DisplayName("Obtener evolución anual de inversiones")
-    void shouldGetYearlyInvestmentEvolution() {
-        when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of());
-
-        var result = dashboardService.getInvestmentEvolution(userId, "year");
-
-        assertThat(result.period()).isEqualTo("year");
-    }
-
-    @Test
-    @DisplayName("Evolución con período inválido lanza error")
-    void shouldThrowWithInvalidEvolutionPeriod() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> dashboardService.getInvestmentEvolution(userId, "invalid"))
-                .withMessage("Invalid period: invalid");
+            assertThat(result.goals()).hasSize(1);
+            assertThat(result.goals().get(0).icon()).isEqualTo("default");
+        }
     }
 }

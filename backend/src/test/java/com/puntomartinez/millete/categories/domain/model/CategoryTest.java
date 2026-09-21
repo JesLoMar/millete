@@ -1,163 +1,363 @@
 package com.puntomartinez.millete.categories.domain.model;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("Category - Modelo de dominio")
+@DisplayName("Category aggregate")
 class CategoryTest {
 
-    @Test
-    @DisplayName("Constructor con validación debe crear categoría")
-    void constructorWithValidation_shouldCreateCategory() {
-        UUID userId = UUID.randomUUID();
-        Category cat = new Category(userId, "Comida", "#FF5733", new BigDecimal("500.00"));
+    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String VALID_NAME = "Food";
+    private static final String VALID_COLOR = "#FF5733";
 
-        assertNotNull(cat.getId());
-        assertEquals(userId, cat.getUserId());
-        assertEquals("Comida", cat.getName());
-        assertEquals("#FF5733", cat.getColor());
-        assertEquals(new BigDecimal("500.00"), cat.getBudgetLimit());
-        assertTrue(cat.isActive());
-        assertNotNull(cat.getCreatedAt());
-        assertNotNull(cat.getModifiedAt());
-    }
-
-    @Test
-    @DisplayName("Constructor con validación debe permitir budgetLimit nulo")
-    void constructorWithValidation_shouldAllowNullBudgetLimit() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", null);
-        assertNull(cat.getBudgetLimit());
-    }
-
-    @Test
-    @DisplayName("Constructor con validación debe lanzar error con nombre vacío")
-    void constructorWithValidation_shouldThrow_whenNameBlank() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Category(UUID.randomUUID(), "", "#FF5733", null)
-        );
-        assertThrows(IllegalArgumentException.class, () ->
-            new Category(UUID.randomUUID(), null, "#FF5733", null)
+    private Category createValidCategory() {
+        return Category.create(
+                USER_ID,
+                VALID_NAME,
+                VALID_COLOR,
+                new BigDecimal("100.00")
         );
     }
 
-    @Test
-    @DisplayName("Constructor con validación debe lanzar error con color inválido")
-    void constructorWithValidation_shouldThrow_whenColorInvalid() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Category(UUID.randomUUID(), "Comida", "INVALID", null)
-        );
-        assertThrows(IllegalArgumentException.class, () ->
-            new Category(UUID.randomUUID(), "Comida", null, null)
-        );
-    }
-
-    @Test
-    @DisplayName("Constructor con validación debe lanzar error con budgetLimit negativo")
-    void constructorWithValidation_shouldThrow_whenBudgetLimitNegative() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Category(UUID.randomUUID(), "Comida", "#FF5733", new BigDecimal("-10.00"))
+    private Category reconstituteValidCategory(boolean active) {
+        return Category.reconstitute(
+                UUID.randomUUID(),
+                USER_ID,
+                VALID_NAME,
+                VALID_COLOR,
+                new BigDecimal("100.00"),
+                LocalDateTime.of(2024, 1, 1, 10, 0),
+                LocalDateTime.of(2024, 1, 2, 10, 0),
+                active
         );
     }
 
-    @Test
-    @DisplayName("Constructor completo debe asignar todos los valores")
-    void fullConstructor_shouldAssignAllValues() {
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    @Nested
+    @DisplayName("create")
+    class Create {
 
-        Category cat = new Category(id, userId, "Comida", "#FF5733",
-                new BigDecimal("500.00"), null, null, true);
+        @Test
+        @DisplayName("Should create a valid active category")
+        void shouldCreateValidCategory() {
+            Category category = createValidCategory();
 
-        assertEquals(id, cat.getId());
-        assertEquals(userId, cat.getUserId());
-        assertEquals("Comida", cat.getName());
-        assertEquals("#FF5733", cat.getColor());
-        assertEquals(new BigDecimal("500.00"), cat.getBudgetLimit());
-        assertTrue(cat.isActive());
+            assertThat(category.getId()).isNotNull();
+            assertThat(category.getUserId()).isEqualTo(USER_ID);
+            assertThat(category.getName()).isEqualTo(VALID_NAME);
+            assertThat(category.getColor()).isEqualTo(VALID_COLOR);
+            assertThat(category.getBudgetLimit()).isEqualByComparingTo("100.00");
+            assertThat(category.getCreatedAt()).isNotNull();
+            assertThat(category.getModifiedAt()).isNotNull();
+            assertThat(category.getCreatedAt()).isEqualTo(category.getModifiedAt());
+            assertThat(category.isActive()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should generate different ids for different categories")
+        void shouldGenerateDifferentIds() {
+            Category first = createValidCategory();
+            Category second = createValidCategory();
+
+            assertThat(first.getId()).isNotEqualTo(second.getId());
+        }
+
+        @Test
+        @DisplayName("Should reject null user id")
+        void shouldRejectNullUserId() {
+            assertThatThrownBy(() ->
+                    Category.create(null, VALID_NAME, VALID_COLOR, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {
+                "   ",
+                "123456789012345678901"
+        })
+        @DisplayName("Should reject invalid name")
+        void shouldRejectInvalidName(String name) {
+            assertThatThrownBy(() ->
+                    Category.create(USER_ID, name, VALID_COLOR, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null color")
+        void shouldRejectNullColor() {
+            assertThatThrownBy(() ->
+                    Category.create(USER_ID, VALID_NAME, null, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "",
+                "#GGGGGG",
+                "#12345",
+                "#1234567",
+                "FF5733",
+                "#12345G"
+        })
+        @DisplayName("Should reject invalid color")
+        void shouldRejectInvalidColor(String color) {
+            assertThatThrownBy(() ->
+                    Category.create(USER_ID, VALID_NAME, color, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject negative budget limit")
+        void shouldRejectNegativeBudgetLimit() {
+            assertThatThrownBy(() ->
+                    Category.create(USER_ID, VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should allow null budget limit")
+        void shouldAllowNullBudgetLimit() {
+            Category category = Category.create(USER_ID, VALID_NAME, VALID_COLOR, null);
+
+            assertThat(category.getBudgetLimit()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should allow zero budget limit")
+        void shouldAllowZeroBudgetLimit() {
+            Category category = Category.create(USER_ID, VALID_NAME, VALID_COLOR, BigDecimal.ZERO);
+
+            assertThat(category.getBudgetLimit()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
     }
 
-    @Test
-    @DisplayName("updateDetails debe actualizar campos permitidos")
-    void updateDetails_shouldUpdateFields() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", new BigDecimal("500.00"));
+    @Nested
+    @DisplayName("reconstitute")
+    class Reconstitute {
 
-        cat.updateDetails("Nueva comida", "#00FF00", new BigDecimal("1000.00"));
+        @Test
+        @DisplayName("Should reconstitute an existing category")
+        void shouldReconstituteCategory() {
+            UUID id = UUID.randomUUID();
+            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 12, 30);
+            BigDecimal budgetLimit = new BigDecimal("250.50");
 
-        assertEquals("Nueva comida", cat.getName());
-        assertEquals("#00FF00", cat.getColor());
-        assertEquals(new BigDecimal("1000.00"), cat.getBudgetLimit());
-        assertNotNull(cat.getModifiedAt());
+            Category category = Category.reconstitute(
+                    id,
+                    USER_ID,
+                    "Groceries",
+                    "#00FF00",
+                    budgetLimit,
+                    createdAt,
+                    modifiedAt,
+                    false
+            );
+
+            assertThat(category.getId()).isEqualTo(id);
+            assertThat(category.getUserId()).isEqualTo(USER_ID);
+            assertThat(category.getName()).isEqualTo("Groceries");
+            assertThat(category.getColor()).isEqualTo("#00FF00");
+            assertThat(category.getBudgetLimit()).isEqualByComparingTo(budgetLimit);
+            assertThat(category.getCreatedAt()).isEqualTo(createdAt);
+            assertThat(category.getModifiedAt()).isEqualTo(modifiedAt);
+            assertThat(category.isActive()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should reject null id")
+        void shouldRejectNullId() {
+            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+
+            assertThatThrownBy(() ->
+                    Category.reconstitute(
+                            null,
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_COLOR,
+                            BigDecimal.TEN,
+                            createdAt,
+                            modifiedAt,
+                            true
+                    )
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null user id")
+        void shouldRejectNullUserId() {
+            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+
+            assertThatThrownBy(() ->
+                    Category.reconstitute(
+                            UUID.randomUUID(),
+                            null,
+                            VALID_NAME,
+                            VALID_COLOR,
+                            BigDecimal.TEN,
+                            createdAt,
+                            modifiedAt,
+                            true
+                    )
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null created at")
+        void shouldRejectNullCreatedAt() {
+            assertThatThrownBy(() ->
+                    Category.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_COLOR,
+                            BigDecimal.TEN,
+                            null,
+                            LocalDateTime.of(2024, 1, 2, 10, 0),
+                            true
+                    )
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null modified at")
+        void shouldRejectNullModifiedAt() {
+            assertThatThrownBy(() ->
+                    Category.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_COLOR,
+                            BigDecimal.TEN,
+                            LocalDateTime.of(2024, 1, 1, 10, 0),
+                            null,
+                            true
+                    )
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
-    @Test
-    @DisplayName("updateDetails debe lanzar error con nombre vacío")
-    void updateDetails_shouldThrow_whenNameBlank() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", null);
+    @Nested
+    @DisplayName("updateDetails")
+    class UpdateDetails {
 
-        assertThrows(IllegalArgumentException.class, () ->
-            cat.updateDetails("", "#FF5733", null)
-        );
-        assertThrows(IllegalArgumentException.class, () ->
-            cat.updateDetails(null, "#FF5733", null)
-        );
+        @Test
+        @DisplayName("Should update valid details")
+        void shouldUpdateValidDetails() {
+            Category category = reconstituteValidCategory(true);
+            LocalDateTime previousModifiedAt = category.getModifiedAt();
+
+            category.updateDetails("Updated", "#0000FF", new BigDecimal("20.00"));
+
+            assertThat(category.getName()).isEqualTo("Updated");
+            assertThat(category.getColor()).isEqualTo("#0000FF");
+            assertThat(category.getBudgetLimit()).isEqualByComparingTo("20.00");
+            assertThat(category.getModifiedAt()).isAfter(previousModifiedAt);
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {
+                "   ",
+                "123456789012345678901"
+        })
+        @DisplayName("Should reject invalid name on update")
+        void shouldRejectInvalidNameOnUpdate(String name) {
+            Category category = createValidCategory();
+
+            assertThatThrownBy(() ->
+                    category.updateDetails(name, VALID_COLOR, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null color on update")
+        void shouldRejectNullColorOnUpdate() {
+            Category category = createValidCategory();
+
+            assertThatThrownBy(() ->
+                    category.updateDetails(VALID_NAME, null, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "",
+                "#GGGGGG",
+                "#12345",
+                "#1234567",
+                "FF5733",
+                "#12345G"
+        })
+        @DisplayName("Should reject invalid color on update")
+        void shouldRejectInvalidColorOnUpdate(String color) {
+            Category category = createValidCategory();
+
+            assertThatThrownBy(() ->
+                    category.updateDetails(VALID_NAME, color, BigDecimal.TEN)
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject negative budget limit on update")
+        void shouldRejectNegativeBudgetLimitOnUpdate() {
+            Category category = createValidCategory();
+
+            assertThatThrownBy(() ->
+                    category.updateDetails(VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
+            ).isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should allow null budget limit on update")
+        void shouldAllowNullBudgetLimitOnUpdate() {
+            Category category = createValidCategory();
+
+            category.updateDetails(VALID_NAME, VALID_COLOR, null);
+
+            assertThat(category.getBudgetLimit()).isNull();
+        }
     }
 
-    @Test
-    @DisplayName("updateDetails debe lanzar error con color inválido")
-    void updateDetails_shouldThrow_whenColorInvalid() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", null);
+    @Nested
+    @DisplayName("deactivate")
+    class Deactivate {
 
-        assertThrows(IllegalArgumentException.class, () ->
-            cat.updateDetails("Comida", "INVALID", null)
-        );
-    }
+        @Test
+        @DisplayName("Should deactivate an active category")
+        void shouldDeactivateActiveCategory() {
+            Category category = reconstituteValidCategory(true);
+            LocalDateTime previousModifiedAt = category.getModifiedAt();
 
-    @Test
-    @DisplayName("updateDetails debe lanzar error con budgetLimit negativo")
-    void updateDetails_shouldThrow_whenBudgetLimitNegative() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", null);
+            category.deactivate();
 
-        assertThrows(IllegalArgumentException.class, () ->
-            cat.updateDetails("Comida", "#FF5733", new BigDecimal("-10.00"))
-        );
-    }
+            assertThat(category.isActive()).isFalse();
+            assertThat(category.getModifiedAt()).isAfter(previousModifiedAt);
+        }
 
-    @Test
-    @DisplayName("deactivate debe marcar como inactivo")
-    void deactivate_shouldMarkInactive() {
-        Category cat = new Category(UUID.randomUUID(), "Comida", "#FF5733", null);
-        assertTrue(cat.isActive());
+        @Test
+        @DisplayName("Should not change modified at when category is already inactive")
+        void shouldNotChangeModifiedAtWhenAlreadyInactive() {
+            Category category = reconstituteValidCategory(false);
+            LocalDateTime previousModifiedAt = category.getModifiedAt();
 
-        cat.deactivate();
+            category.deactivate();
 
-        assertFalse(cat.isActive());
-        assertNotNull(cat.getModifiedAt());
-    }
-
-    @Test
-    @DisplayName("Setters y getters deben funcionar correctamente")
-    void settersAndGetters_shouldWork() {
-        Category cat = new Category();
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-
-        cat.setId(id);
-        cat.setUserId(userId);
-        cat.setName("Transporte");
-        cat.setColor("#0000FF");
-        cat.setBudgetLimit(new BigDecimal("200.00"));
-        cat.setActive(false);
-
-        assertEquals(id, cat.getId());
-        assertEquals(userId, cat.getUserId());
-        assertEquals("Transporte", cat.getName());
-        assertEquals("#0000FF", cat.getColor());
-        assertEquals(new BigDecimal("200.00"), cat.getBudgetLimit());
-        assertFalse(cat.isActive());
+            assertThat(category.isActive()).isFalse();
+            assertThat(category.getModifiedAt()).isEqualTo(previousModifiedAt);
+        }
     }
 }

@@ -1,13 +1,17 @@
 package com.puntomartinez.millete.transactions.application.services;
 
+import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
-import com.puntomartinez.millete.transactions.domain.model.Transaction;
-import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
-import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase;
-import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
-import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
+import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase.RegisterTransactionCommand;
+import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase.RegisterTransactionResult;
+import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase.UpdateTransactionCommand;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository.TransactionAggregates;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,186 +25,382 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("TransactionService")
 class TransactionServiceTest {
+
+    private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @Mock
     private TransactionRepository transactionRepository;
+
     @Mock
     private CategoryRepository categoryRepository;
 
     @InjectMocks
     private TransactionService transactionService;
 
-    private UUID userId;
-    private UUID transactionId;
-    private UUID categoryId;
-
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        transactionId = UUID.randomUUID();
-        categoryId = UUID.randomUUID();
+    private Transaction existingTransaction() {
+        return Transaction.create(
+                USER_ID,
+                CATEGORY_ID,
+                new BigDecimal("50.00"),
+                LocalDateTime.now(),
+                TransactionType.EXPENSE,
+                "Original"
+        );
     }
 
-    private Transaction createTransaction() {
-        Transaction tx = new Transaction();
-        tx.setId(transactionId);
-        tx.setUserId(userId);
-        tx.setCategoryId(categoryId);
-        tx.setAmount(new BigDecimal("50.00"));
-        tx.setDate(LocalDateTime.now());
-        tx.setType(Transaction.TransactionType.EXPENSE);
-        tx.setDescription("Almuerzo");
-        tx.setActive(true);
-        return tx;
+    @Nested
+    @DisplayName("register")
+    class Register {
+
+        @Test
+        @DisplayName("Should register transaction when category is null")
+        void shouldRegisterTransactionWhenCategoryIsNull() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    null,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.INCOME,
+                    "Salary"
+            );
+
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            RegisterTransactionResult result = transactionService.register(command);
+
+            assertThat(result.transaction()).isNotNull();
+            assertThat(result.transaction().getUserId()).isEqualTo(USER_ID);
+            assertThat(result.limitExceeded()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should register transaction when category exists and belongs to user")
+        void shouldRegisterTransactionWhenCategoryExists() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    CATEGORY_ID,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Groceries"
+            );
+
+            Category category = Category.create(USER_ID, "Food", "#FF0000", null);
+
+            when(categoryRepository.findByIdAndUserId(CATEGORY_ID, USER_ID))
+                    .thenReturn(Optional.of(category));
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(new TransactionAggregates(
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0L
+            ));
+
+            RegisterTransactionResult result = transactionService.register(command);
+
+            assertThat(result.transaction()).isNotNull();
+            assertThat(result.limitExceeded()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should throw when category does not belong to user")
+        void shouldThrowWhenCategoryDoesNotBelongToUser() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    CATEGORY_ID,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Groceries"
+            );
+
+            when(categoryRepository.findByIdAndUserId(CATEGORY_ID, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> transactionService.register(command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(transactionRepository, never()).save(any(Transaction.class));
+        }
+
+        @Test
+        @DisplayName("Should flag limit exceeded when expense exceeds 70% of income")
+        void shouldFlagLimitExceededWhenExpenseExceeds70Percent() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    null,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Expense"
+            );
+
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(new TransactionAggregates(
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("800.00"),
+                    10L
+            ));
+
+            RegisterTransactionResult result = transactionService.register(command);
+
+            assertThat(result.limitExceeded()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should not flag limit exceeded when expense is below 70% of income")
+        void shouldNotFlagLimitExceededWhenExpenseBelow70Percent() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    null,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Expense"
+            );
+
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+            when(transactionRepository.getAggregatesByUserIdAndDateBetween(
+                    eq(USER_ID), any(), any()
+            )).thenReturn(new TransactionAggregates(
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("500.00"),
+                    10L
+            ));
+
+            RegisterTransactionResult result = transactionService.register(command);
+
+            assertThat(result.limitExceeded()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should not flag limit exceeded for INCOME transactions")
+        void shouldNotFlagLimitExceededForIncome() {
+            RegisterTransactionCommand command = new RegisterTransactionCommand(
+                    USER_ID,
+                    null,
+                    new BigDecimal("100.00"),
+                    LocalDateTime.now(),
+                    TransactionType.INCOME,
+                    "Salary"
+            );
+
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            RegisterTransactionResult result = transactionService.register(command);
+
+            assertThat(result.limitExceeded()).isFalse();
+        }
     }
 
-    @Test
-    void register_shouldSaveTransaction() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command =
-                new RegisterTransactionUseCase.RegisterTransactionCommand(
-                        userId, null, new BigDecimal("50.00"), LocalDateTime.now(),
-                        Transaction.TransactionType.EXPENSE, "Almuerzo"
-                );
+    @Nested
+    @DisplayName("update")
+    class Update {
 
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of());
+        @Test
+        @DisplayName("Should update transaction when it exists and category is valid")
+        void shouldUpdateTransactionWhenItExists() {
+            Transaction transaction = existingTransaction();
+            UpdateTransactionCommand command = new UpdateTransactionCommand(
+                    USER_ID,
+                    new BigDecimal("200.00"),
+                    LocalDateTime.now(),
+                    TransactionType.INCOME,
+                    "Updated",
+                    null
+            );
 
-        RegisterTransactionUseCase.RegisterTransactionResult result = transactionService.register(command);
+            when(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID))
+                    .thenReturn(Optional.of(transaction));
+            when(transactionRepository.save(transaction)).thenReturn(transaction);
 
-        assertNotNull(result.transaction());
-        assertEquals(userId, result.transaction().getUserId());
-        assertEquals(new BigDecimal("50.00"), result.transaction().getAmount());
-        assertFalse(result.limitExceeded());
+            Transaction result = transactionService.update(transaction.getId(), command);
+
+            assertThat(result.getAmount()).isEqualByComparingTo("200.00");
+            assertThat(result.getDescription()).isEqualTo("Updated");
+            verify(transactionRepository).save(transaction);
+        }
+
+        @Test
+        @DisplayName("Should throw when transaction does not exist")
+        void shouldThrowWhenTransactionDoesNotExist() {
+            UUID transactionId = UUID.randomUUID();
+            UpdateTransactionCommand command = new UpdateTransactionCommand(
+                    USER_ID,
+                    new BigDecimal("200.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Updated",
+                    null
+            );
+
+            when(transactionRepository.findByIdAndUserId(transactionId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> transactionService.update(transactionId, command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(transactionRepository, never()).save(any(Transaction.class));
+        }
+
+        @Test
+        @DisplayName("Should throw when new category does not belong to user")
+        void shouldThrowWhenNewCategoryDoesNotBelongToUser() {
+            Transaction transaction = existingTransaction();
+            UUID newCategoryId = UUID.randomUUID();
+            UpdateTransactionCommand command = new UpdateTransactionCommand(
+                    USER_ID,
+                    new BigDecimal("200.00"),
+                    LocalDateTime.now(),
+                    TransactionType.EXPENSE,
+                    "Updated",
+                    newCategoryId
+            );
+
+            when(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID))
+                    .thenReturn(Optional.of(transaction));
+            when(categoryRepository.findByIdAndUserId(newCategoryId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> transactionService.update(transaction.getId(), command))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            verify(transactionRepository, never()).save(any(Transaction.class));
+        }
     }
 
-    @Test
-    void register_shouldCheckCategory_whenProvided() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command =
-                new RegisterTransactionUseCase.RegisterTransactionCommand(
-                        userId, categoryId, new BigDecimal("50.00"), LocalDateTime.now(),
-                        Transaction.TransactionType.EXPENSE, "Almuerzo"
-                );
+    @Nested
+    @DisplayName("deleteByIdAndUserId")
+    class Delete {
 
-        when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("Should deactivate and save transaction")
+        void shouldDeactivateAndSaveTransaction() {
+            Transaction transaction = existingTransaction();
 
-        assertThrows(ResourceNotFoundException.class, () -> transactionService.register(command));
+            when(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID))
+                    .thenReturn(Optional.of(transaction));
+
+            transactionService.deleteByIdAndUserId(transaction.getId(), USER_ID);
+
+            ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+            verify(transactionRepository).save(captor.capture());
+
+            assertThat(captor.getValue().isActive()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should throw when transaction does not exist")
+        void shouldThrowWhenTransactionDoesNotExist() {
+            UUID transactionId = UUID.randomUUID();
+
+            when(transactionRepository.findByIdAndUserId(transactionId, USER_ID))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                    transactionService.deleteByIdAndUserId(transactionId, USER_ID)
+            ).isInstanceOf(ResourceNotFoundException.class);
+
+            verify(transactionRepository, never()).save(any(Transaction.class));
+        }
     }
 
-    @Test
-    void register_shouldDetectLimitExceeded() {
-        Transaction existingIncome = createTransaction();
-        existingIncome.setType(Transaction.TransactionType.INCOME);
-        existingIncome.setAmount(new BigDecimal("1000.00"));
-        existingIncome.setDate(LocalDateTime.now());
+    @Nested
+    @DisplayName("unassignCategory")
+    class UnassignCategory {
 
-        RegisterTransactionUseCase.RegisterTransactionCommand command =
-                new RegisterTransactionUseCase.RegisterTransactionCommand(
-                        userId, null, new BigDecimal("800.00"), LocalDateTime.now(),
-                        Transaction.TransactionType.EXPENSE, "Gasto grande"
-                );
+        @Test
+        @DisplayName("Should delegate to repository")
+        void shouldDelegateToRepository() {
+            transactionService.unassignCategory(CATEGORY_ID, USER_ID);
 
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(existingIncome));
+            ArgumentCaptor<LocalDateTime> captor = ArgumentCaptor.forClass(LocalDateTime.class);
+            verify(transactionRepository).clearCategoryFromActiveTransactions(
+                    eq(CATEGORY_ID),
+                    eq(USER_ID),
+                    captor.capture()
+            );
 
-        RegisterTransactionUseCase.RegisterTransactionResult result = transactionService.register(command);
-
-        assertTrue(result.limitExceeded());
+            assertThat(captor.getValue()).isNotNull();
+        }
     }
 
-    @Test
-    void findAllByUserId_shouldReturnTransactions() {
-        Transaction tx = createTransaction();
-        when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));
+    @Nested
+    @DisplayName("queries")
+    class Queries {
 
-        List<Transaction> result = transactionService.findAllByUserId(userId);
+        @Test
+        @DisplayName("Should return transaction when getByIdAndUserId finds it")
+        void shouldReturnTransactionWhenGetByIdAndUserIdFindsIt() {
+            Transaction transaction = existingTransaction();
 
-        assertEquals(1, result.size());
-        assertEquals(transactionId, result.get(0).getId());
-    }
+            when(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID))
+                    .thenReturn(Optional.of(transaction));
 
-    @Test
-    void getByIdAndUserId_shouldReturnTransaction() {
-        Transaction tx = createTransaction();
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
+            Transaction result = transactionService.getByIdAndUserId(transaction.getId(), USER_ID);
 
-        Transaction result = transactionService.getByIdAndUserId(transactionId, userId);
+            assertThat(result).isSameAs(transaction);
+        }
 
-        assertEquals(transactionId, result.getId());
-    }
+        @Test
+        @DisplayName("Should throw when getByIdAndUserId does not find transaction")
+        void shouldThrowWhenGetByIdAndUserIdDoesNotFindTransaction() {
+            UUID transactionId = UUID.randomUUID();
 
-    @Test
-    void getByIdAndUserId_shouldThrow_whenNotFound() {
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.empty());
+            when(transactionRepository.findByIdAndUserId(transactionId, USER_ID))
+                    .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> transactionService.getByIdAndUserId(transactionId, userId));
-    }
+            assertThatThrownBy(() ->
+                    transactionService.getByIdAndUserId(transactionId, USER_ID)
+            ).isInstanceOf(ResourceNotFoundException.class);
+        }
 
-    @Test
-    void getByIdAndUserId_shouldThrow_whenForbidden() {
-        Transaction tx = createTransaction();
-        tx.setUserId(UUID.randomUUID());
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
+        @Test
+        @DisplayName("Should delegate findAllByUserId to repository")
+        void shouldDelegateFindAllByUserIdToRepository() {
+            Transaction transaction = existingTransaction();
+            List<Transaction> transactions = List.of(transaction);
 
-        assertThrows(ForbiddenOperationException.class, () -> transactionService.getByIdAndUserId(transactionId, userId));
-    }
+            when(transactionRepository.findAllByUserId(USER_ID)).thenReturn(transactions);
 
-    @Test
-    void update_shouldUpdateTransaction() {
-        Transaction tx = createTransaction();
-        UpdateTransactionUseCase.UpdateTransactionCommand command =
-                new UpdateTransactionUseCase.UpdateTransactionCommand(
-                        userId, new BigDecimal("100.00"), LocalDateTime.now(),
-                        Transaction.TransactionType.INCOME, "Nueva descripción", null
-                );
+            List<Transaction> result = transactionService.findAllByUserId(USER_ID);
 
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
+            assertThat(result).containsExactly(transaction);
+        }
 
-        Transaction result = transactionService.update(transactionId, command);
+        @Test
+        @DisplayName("Should delegate countByUserIdAndFilters to repository")
+        void shouldDelegateCountByUserIdAndFiltersToRepository() {
+            when(transactionRepository.countByUserIdAndFilters(
+                    USER_ID, "search", TransactionType.EXPENSE, null, null
+            )).thenReturn(5L);
 
-        assertEquals(new BigDecimal("100.00"), result.getAmount());
-        assertEquals(Transaction.TransactionType.INCOME, result.getType());
-        assertEquals("Nueva descripción", result.getDescription());
-    }
+            long result = transactionService.countByUserIdAndFilters(
+                    USER_ID, "search", TransactionType.EXPENSE, null, null
+            );
 
-    @Test
-    void deleteByIdAndUserId_shouldDeactivateTransaction() {
-        Transaction tx = createTransaction();
-        when(transactionRepository.findById(transactionId)).thenReturn(Optional.of(tx));
-        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        transactionService.deleteByIdAndUserId(transactionId, userId);
-
-        ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
-        verify(transactionRepository).save(captor.capture());
-        assertFalse(captor.getValue().isActive());
-    }
-
-    @Test
-    void register_shouldRejectNegativeAmount() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command =
-                new RegisterTransactionUseCase.RegisterTransactionCommand(
-                        userId, null, new BigDecimal("-50.00"), LocalDateTime.now(),
-                        Transaction.TransactionType.EXPENSE, "Gasto malicioso"
-                );
-
-        assertThrows(IllegalArgumentException.class, () -> transactionService.register(command));
-    }
-
-    @Test
-    void register_shouldRejectZeroAmount() {
-        RegisterTransactionUseCase.RegisterTransactionCommand command =
-                new RegisterTransactionUseCase.RegisterTransactionCommand(
-                        userId, null, BigDecimal.ZERO, LocalDateTime.now(),
-                        Transaction.TransactionType.INCOME, "Ingreso inválido"
-                );
-
-        assertThrows(IllegalArgumentException.class, () -> transactionService.register(command));
+            assertThat(result).isEqualTo(5L);
+        }
     }
 }

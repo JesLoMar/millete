@@ -1,255 +1,691 @@
 package com.puntomartinez.millete.savingsgoals.domain.model;
 
-import org.junit.jupiter.api.Test;
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("SavingsGoal - Modelo de dominio")
+@DisplayName("SavingsGoal aggregate")
 class SavingsGoalTest {
 
-    @Test
-    @DisplayName("Constructor por defecto debe inicializar valores")
-    void defaultConstructor_shouldInitializeValues() {
-        SavingsGoal goal = new SavingsGoal();
+    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String VALID_NAME = "Vacation";
+    private static final BigDecimal VALID_TARGET = new BigDecimal("1000.00");
+    private static final LocalDate VALID_DEADLINE = LocalDate.now().plusDays(30);
 
-        assertNotNull(goal.getId());
-        assertEquals(BigDecimal.ZERO, goal.getCurrentAmount());
-        assertEquals("MEDIUM", goal.getPriority());
-        assertEquals("ACTIVE", goal.getStatus());
-        assertNotNull(goal.getCreatedAt());
-        assertNotNull(goal.getModifiedAt());
-        assertTrue(goal.isActive());
-    }
-
-    @Test
-    @DisplayName("Constructor completo debe asignar todos los valores")
-    void fullConstructor_shouldAssignAllValues() {
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        LocalDate deadline = LocalDate.now().plusMonths(6);
-        LocalDateTime now = LocalDateTime.now();
-
-        SavingsGoal goal = new SavingsGoal(
-                id, userId, "Vacaciones",
-                new BigDecimal("2000.00"), new BigDecimal("500.00"),
-                deadline, "HIGH", "ACTIVE", "http://link.com",
-                now, now, true
-        );
-
-        assertEquals(id, goal.getId());
-        assertEquals(userId, goal.getUserId());
-        assertEquals("Vacaciones", goal.getName());
-        assertEquals(new BigDecimal("2000.00"), goal.getTargetAmount());
-        assertEquals(new BigDecimal("500.00"), goal.getCurrentAmount());
-        assertEquals(deadline, goal.getDeadline());
-        assertEquals("HIGH", goal.getPriority());
-        assertEquals("ACTIVE", goal.getStatus());
-        assertEquals("http://link.com", goal.getLink());
-        assertTrue(goal.isActive());
-    }
-
-    @Test
-    @DisplayName("Constructor debe usar defaults para valores nulos")
-    void fullConstructor_shouldUseDefaultsForNulls() {
-        SavingsGoal goal = new SavingsGoal(
-                null, null, "Test",
-                new BigDecimal("1000.00"), null,
-                null, null, null, null,
-                null, null, true
-        );
-
-        assertNotNull(goal.getId());
-        assertEquals(BigDecimal.ZERO, goal.getCurrentAmount());
-        assertEquals("MEDIUM", goal.getPriority());
-        assertEquals("ACTIVE", goal.getStatus());
-        assertNotNull(goal.getCreatedAt());
-        assertNotNull(goal.getModifiedAt());
-    }
-
-    @Test
-    @DisplayName("addContribution debe aumentar currentAmount")
-    void addContribution_shouldIncreaseCurrentAmount() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setTargetAmount(new BigDecimal("1000.00"));
-        goal.setCurrentAmount(BigDecimal.ZERO);
-
-        goal.addContribution(new BigDecimal("250.00"));
-
-        assertEquals(new BigDecimal("250.00"), goal.getCurrentAmount());
-    }
-
-    @Test
-    @DisplayName("addContribution debe cambiar estado a COMPLETED cuando se alcanza el objetivo")
-    void addContribution_shouldChangeStatusToCompleted() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setTargetAmount(new BigDecimal("1000.00"));
-        goal.setCurrentAmount(new BigDecimal("800.00"));
-        goal.setStatus("ACTIVE");
-
-        goal.addContribution(new BigDecimal("200.00"));
-
-        assertEquals("COMPLETED", goal.getStatus());
-        assertEquals(new BigDecimal("1000.00"), goal.getCurrentAmount());
-    }
-
-    @Test
-    @DisplayName("addContribution debe lanzar error con monto nulo")
-    void addContribution_shouldThrow_whenAmountNull() {
-        SavingsGoal goal = new SavingsGoal();
-        assertThrows(IllegalArgumentException.class, () -> goal.addContribution(null));
-    }
-
-    @Test
-    @DisplayName("addContribution debe lanzar error con monto cero")
-    void addContribution_shouldThrow_whenAmountZero() {
-        SavingsGoal goal = new SavingsGoal();
-        assertThrows(IllegalArgumentException.class, () -> goal.addContribution(BigDecimal.ZERO));
-    }
-
-    @Test
-    @DisplayName("addContribution debe lanzar error con monto negativo")
-    void addContribution_shouldThrow_whenAmountNegative() {
-        SavingsGoal goal = new SavingsGoal();
-        assertThrows(IllegalArgumentException.class, () -> goal.addContribution(new BigDecimal("-10.00")));
-    }
-
-    @Test
-    @DisplayName("deactivate debe marcar como inactivo y cambiar estado")
-    void deactivate_shouldMarkInactive() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setActive(true);
-        goal.setStatus("ACTIVE");
-
-        goal.deactivate();
-
-        assertFalse(goal.isActive());
-        assertEquals("CANCELLED", goal.getStatus());
-    }
-
-    @Test
-    @DisplayName("deactivate no debe cambiar estado si ya es COMPLETED")
-    void deactivate_shouldNotChangeStatusIfCompleted() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setActive(true);
-        goal.setStatus("COMPLETED");
-
-        goal.deactivate();
-
-        assertFalse(goal.isActive());
-        assertEquals("COMPLETED", goal.getStatus());
-    }
-
-    @Test
-    @DisplayName("updateDetails debe actualizar campos permitidos")
-    void updateDetails_shouldUpdateFields() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setTargetAmount(new BigDecimal("1000.00"));
-        goal.setStatus("ACTIVE");
-
-        LocalDate newDeadline = LocalDate.now().plusMonths(12);
-        goal.updateDetails("Nuevo nombre", new BigDecimal("2000.00"), newDeadline, "LOW", "PAUSED", "http://new.com");
-
-        assertEquals("Nuevo nombre", goal.getName());
-        assertEquals(new BigDecimal("2000.00"), goal.getTargetAmount());
-        assertEquals(newDeadline, goal.getDeadline());
-        assertEquals("LOW", goal.getPriority());
-        assertEquals("PAUSED", goal.getStatus());
-        assertEquals("http://new.com", goal.getLink());
-    }
-
-    @Test
-    @DisplayName("updateDetails debe recalcular estado a COMPLETED si se alcanza el objetivo")
-    void updateDetails_shouldRecalculateStatus() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setTargetAmount(new BigDecimal("1000.00"));
-        goal.setCurrentAmount(new BigDecimal("500.00"));
-        goal.setStatus("ACTIVE");
-
-        goal.updateDetails(null, new BigDecimal("400.00"), null, null, null, null);
-
-        assertEquals("COMPLETED", goal.getStatus());
-    }
-
-    @Test
-    @DisplayName("Constructor debe lanzar error con nombre vacío")
-    void constructor_shouldThrow_whenNameBlank() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "", new BigDecimal("1000.00"), null, null, null, null, null, null, null, true)
+    private SavingsGoal createValidGoal() {
+        return SavingsGoal.create(
+                USER_ID,
+                VALID_NAME,
+                VALID_TARGET,
+                VALID_DEADLINE,
+                GoalPriority.HIGH,
+                "https://example.com"
         );
     }
 
-    @Test
-    @DisplayName("Constructor debe lanzar error con targetAmount cero")
-    void constructor_shouldThrow_whenTargetAmountZero() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "Test", BigDecimal.ZERO, null, null, null, null, null, null, null, true)
+    private SavingsGoal reconstituteValidGoal(boolean active) {
+        return SavingsGoal.reconstitute(
+                UUID.randomUUID(),
+                USER_ID,
+                VALID_NAME,
+                VALID_TARGET,
+                BigDecimal.ZERO,
+                VALID_DEADLINE,
+                GoalPriority.MEDIUM,
+                null,
+                LocalDateTime.of(2024, 1, 1, 10, 0),
+                LocalDateTime.of(2024, 1, 2, 10, 0),
+                active
         );
     }
 
-    @Test
-    @DisplayName("Constructor debe lanzar error con currentAmount negativo")
-    void constructor_shouldThrow_whenCurrentAmountNegative() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "Test", new BigDecimal("1000.00"), new BigDecimal("-10.00"), null, null, null, null, null, null, true)
-        );
+    @Nested
+    @DisplayName("create")
+    class Create {
+
+        @Test
+        @DisplayName("Should create a valid active savings goal")
+        void shouldCreateValidSavingsGoal() {
+            SavingsGoal goal = createValidGoal();
+
+            assertThat(goal.getId()).isNotNull();
+            assertThat(goal.getUserId()).isEqualTo(USER_ID);
+            assertThat(goal.getName()).isEqualTo(VALID_NAME);
+            assertThat(goal.getTargetAmount()).isEqualByComparingTo(VALID_TARGET);
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(goal.getDeadline()).isEqualTo(VALID_DEADLINE);
+            assertThat(goal.getPriority()).isEqualTo(GoalPriority.HIGH);
+            assertThat(goal.getLink()).isEqualTo("https://example.com");
+            assertThat(goal.getCreatedAt()).isNotNull();
+            assertThat(goal.getModifiedAt()).isNotNull();
+            assertThat(goal.getCreatedAt()).isEqualTo(goal.getModifiedAt());
+            assertThat(goal.isActive()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should generate different ids for different goals")
+        void shouldGenerateDifferentIds() {
+            SavingsGoal first = createValidGoal();
+            SavingsGoal second = createValidGoal();
+
+            assertThat(first.getId()).isNotEqualTo(second.getId());
+        }
+
+        @Test
+        @DisplayName("Should default priority to MEDIUM when priority is null")
+        void shouldDefaultPriorityToMediumWhenNull() {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    VALID_DEADLINE,
+                    null,
+                    null
+            );
+
+            assertThat(goal.getPriority()).isEqualTo(GoalPriority.MEDIUM);
+        }
+
+        @Test
+        @DisplayName("Should allow null deadline")
+        void shouldAllowNullDeadline() {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    null,
+                    GoalPriority.LOW,
+                    null
+            );
+
+            assertThat(goal.getDeadline()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should allow null link")
+        void shouldAllowNullLink() {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    VALID_DEADLINE,
+                    GoalPriority.LOW,
+                    null
+            );
+
+            assertThat(goal.getLink()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should reject null user id")
+        void shouldRejectNullUserId() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            null,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {"   "})
+        @DisplayName("Should reject invalid name")
+        void shouldRejectInvalidName(String name) {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            name,
+                            VALID_TARGET,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject name exceeding max length")
+        void shouldRejectNameExceedingMaxLength() {
+            String longName = "A".repeat(101);
+
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            longName,
+                            VALID_TARGET,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null target amount")
+        void shouldRejectNullTargetAmount() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            null,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"0.00", "-0.01", "-100.00"})
+        @DisplayName("Should reject non-positive target amount")
+        void shouldRejectNonPositiveTargetAmount(String amount) {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            new BigDecimal(amount),
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject deadline not after today")
+        void shouldRejectDeadlineNotAfterToday() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            LocalDate.now(),
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject deadline in the past")
+        void shouldRejectDeadlineInThePast() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            LocalDate.now().minusDays(1),
+                            GoalPriority.LOW,
+                            null
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Constructor debe lanzar error con deadline pasada")
-    void constructor_shouldThrow_whenDeadlinePast() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "Test", new BigDecimal("1000.00"), null, LocalDate.now().minusDays(1), null, null, null, null, null, true)
-        );
+    @Nested
+    @DisplayName("reconstitute")
+    class Reconstitute {
+
+        @Test
+        @DisplayName("Should reconstitute an existing savings goal")
+        void shouldReconstituteSavingsGoal() {
+            UUID id = UUID.randomUUID();
+            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
+            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 12, 30);
+
+            SavingsGoal goal = SavingsGoal.reconstitute(
+                    id,
+                    USER_ID,
+                    "Car",
+                    new BigDecimal("5000.00"),
+                    new BigDecimal("1500.00"),
+                    VALID_DEADLINE,
+                    GoalPriority.HIGH,
+                    "https://example.com",
+                    createdAt,
+                    modifiedAt,
+                    false
+            );
+
+            assertThat(goal.getId()).isEqualTo(id);
+            assertThat(goal.getUserId()).isEqualTo(USER_ID);
+            assertThat(goal.getName()).isEqualTo("Car");
+            assertThat(goal.getTargetAmount()).isEqualByComparingTo("5000.00");
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo("1500.00");
+            assertThat(goal.getDeadline()).isEqualTo(VALID_DEADLINE);
+            assertThat(goal.getPriority()).isEqualTo(GoalPriority.HIGH);
+            assertThat(goal.getLink()).isEqualTo("https://example.com");
+            assertThat(goal.getCreatedAt()).isEqualTo(createdAt);
+            assertThat(goal.getModifiedAt()).isEqualTo(modifiedAt);
+            assertThat(goal.isActive()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should reject null id")
+        void shouldRejectNullId() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.reconstitute(
+                            null,
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            BigDecimal.ZERO,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null,
+                            LocalDateTime.now(),
+                            LocalDateTime.now(),
+                            true
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null created at")
+        void shouldRejectNullCreatedAt() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            BigDecimal.ZERO,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null,
+                            null,
+                            LocalDateTime.now(),
+                            true
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null modified at")
+        void shouldRejectNullModifiedAt() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            BigDecimal.ZERO,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null,
+                            LocalDateTime.now(),
+                            null,
+                            true
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject negative current amount")
+        void shouldRejectNegativeCurrentAmount() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            new BigDecimal("-0.01"),
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            null,
+                            LocalDateTime.now(),
+                            LocalDateTime.now(),
+                            true
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null priority")
+        void shouldRejectNullPriority() {
+            assertThatThrownBy(() ->
+                    SavingsGoal.reconstitute(
+                            UUID.randomUUID(),
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            BigDecimal.ZERO,
+                            VALID_DEADLINE,
+                            null,
+                            null,
+                            LocalDateTime.now(),
+                            LocalDateTime.now(),
+                            true
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Constructor debe lanzar error con prioridad inválida")
-    void constructor_shouldThrow_whenPriorityInvalid() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "Test", new BigDecimal("1000.00"), null, null, "INVALID", null, null, null, null, true)
-        );
+    @Nested
+    @DisplayName("updateDetails")
+    class UpdateDetails {
+
+        @Test
+        @DisplayName("Should update all provided fields")
+        void shouldUpdateAllProvidedFields() {
+            SavingsGoal goal = reconstituteValidGoal(true);
+            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+
+            goal.updateDetails(
+                    "Updated",
+                    new BigDecimal("2000.00"),
+                    LocalDate.now().plusDays(60),
+                    GoalPriority.HIGH,
+                    "https://updated.com"
+            );
+
+            assertThat(goal.getName()).isEqualTo("Updated");
+            assertThat(goal.getTargetAmount()).isEqualByComparingTo("2000.00");
+            assertThat(goal.getDeadline()).isEqualTo(LocalDate.now().plusDays(60));
+            assertThat(goal.getPriority()).isEqualTo(GoalPriority.HIGH);
+            assertThat(goal.getLink()).isEqualTo("https://updated.com");
+            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+        }
+
+        @Test
+        @DisplayName("Should not update null fields")
+        void shouldNotUpdateNullFields() {
+            SavingsGoal goal = reconstituteValidGoal(true);
+            String originalName = goal.getName();
+            BigDecimal originalTarget = goal.getTargetAmount();
+            LocalDate originalDeadline = goal.getDeadline();
+            GoalPriority originalPriority = goal.getPriority();
+
+            goal.updateDetails(null, null, null, null, null);
+
+            assertThat(goal.getName()).isEqualTo(originalName);
+            assertThat(goal.getTargetAmount()).isEqualByComparingTo(originalTarget);
+            assertThat(goal.getDeadline()).isEqualTo(originalDeadline);
+            assertThat(goal.getPriority()).isEqualTo(originalPriority);
+        }
+
+        @Test
+        @DisplayName("Should set link to null when link is blank")
+        void shouldSetLinkToNullWhenBlank() {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    VALID_DEADLINE,
+                    GoalPriority.LOW,
+                    "https://example.com"
+            );
+
+            goal.updateDetails(null, null, null, null, "   ");
+
+            assertThat(goal.getLink()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should reject invalid name on update")
+        void shouldRejectInvalidNameOnUpdate() {
+            SavingsGoal goal = createValidGoal();
+
+            assertThatThrownBy(() ->
+                    goal.updateDetails("A".repeat(101), null, null, null, null)
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject non-positive target amount on update")
+        void shouldRejectNonPositiveTargetAmountOnUpdate() {
+            SavingsGoal goal = createValidGoal();
+
+            assertThatThrownBy(() ->
+                    goal.updateDetails(null, BigDecimal.ZERO, null, null, null)
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject deadline not after today on update")
+        void shouldRejectDeadlineNotAfterTodayOnUpdate() {
+            SavingsGoal goal = createValidGoal();
+
+            assertThatThrownBy(() ->
+                    goal.updateDetails(null, null, LocalDate.now(), null, null)
+            ).isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Constructor debe lanzar error con estado inválido")
-    void constructor_shouldThrow_whenStatusInvalid() {
-        assertThrows(IllegalArgumentException.class, () ->
-            new SavingsGoal(UUID.randomUUID(), UUID.randomUUID(), "Test", new BigDecimal("1000.00"), null, null, null, "INVALID", null, null, null, true)
-        );
+    @Nested
+    @DisplayName("addContribution")
+    class AddContribution {
+
+        @Test
+        @DisplayName("Should add contribution to current amount")
+        void shouldAddContribution() {
+            SavingsGoal goal = createValidGoal();
+            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+
+            goal.addContribution(new BigDecimal("100.00"));
+
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo("100.00");
+            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+        }
+
+        @Test
+        @DisplayName("Should accumulate multiple contributions")
+        void shouldAccumulateMultipleContributions() {
+            SavingsGoal goal = createValidGoal();
+
+            goal.addContribution(new BigDecimal("50.00"));
+            goal.addContribution(new BigDecimal("75.50"));
+
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo("125.50");
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"0.00", "-0.01", "-100.00"})
+        @DisplayName("Should reject non-positive contribution")
+        void shouldRejectNonPositiveContribution(String amount) {
+            SavingsGoal goal = createValidGoal();
+
+            assertThatThrownBy(() ->
+                    goal.addContribution(new BigDecimal(amount))
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null contribution")
+        void shouldRejectNullContribution() {
+            SavingsGoal goal = createValidGoal();
+
+            assertThatThrownBy(() -> goal.addContribution(null))
+                    .isInstanceOf(InvalidInputException.class);
+        }
     }
 
-    @Test
-    @DisplayName("Setter y getter deben funcionar correctamente")
-    void settersAndGetters_shouldWork() {
-        SavingsGoal goal = new SavingsGoal();
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    @Nested
+    @DisplayName("withdraw")
+    class Withdraw {
 
-        goal.setId(id);
-        goal.setUserId(userId);
-        goal.setName("Test");
-        goal.setTargetAmount(new BigDecimal("1000.00"));
-        goal.setCurrentAmount(new BigDecimal("500.00"));
-        goal.setDeadline(LocalDate.now());
-        goal.setPriority("HIGH");
-        goal.setStatus("PAUSED");
-        goal.setLink("http://test.com");
-        goal.setActive(false);
+        @Test
+        @DisplayName("Should withdraw amount from current amount")
+        void shouldWithdrawAmount() {
+            SavingsGoal goal = createValidGoal();
+            goal.addContribution(new BigDecimal("100.00"));
+            LocalDateTime previousModifiedAt = goal.getModifiedAt();
 
-        assertEquals(id, goal.getId());
-        assertEquals(userId, goal.getUserId());
-        assertEquals("Test", goal.getName());
-        assertEquals(new BigDecimal("1000.00"), goal.getTargetAmount());
-        assertEquals(new BigDecimal("500.00"), goal.getCurrentAmount());
-        assertEquals("HIGH", goal.getPriority());
-        assertEquals("PAUSED", goal.getStatus());
-        assertEquals("http://test.com", goal.getLink());
-        assertFalse(goal.isActive());
+            goal.withdraw(new BigDecimal("30.00"));
+
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo("70.00");
+            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"0.00", "-0.01", "-100.00"})
+        @DisplayName("Should reject non-positive withdrawal")
+        void shouldRejectNonPositiveWithdrawal(String amount) {
+            SavingsGoal goal = createValidGoal();
+            goal.addContribution(new BigDecimal("100.00"));
+
+            assertThatThrownBy(() -> goal.withdraw(new BigDecimal(amount)))
+                    .isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject null withdrawal")
+        void shouldRejectNullWithdrawal() {
+            SavingsGoal goal = createValidGoal();
+            goal.addContribution(new BigDecimal("100.00"));
+
+            assertThatThrownBy(() -> goal.withdraw(null))
+                    .isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject withdrawal exceeding current amount")
+        void shouldRejectWithdrawalExceedingCurrentAmount() {
+            SavingsGoal goal = createValidGoal();
+            goal.addContribution(new BigDecimal("50.00"));
+
+            assertThatThrownBy(() -> goal.withdraw(new BigDecimal("50.01")))
+                    .isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should allow withdrawal equal to current amount")
+        void shouldAllowWithdrawalEqualToCurrentAmount() {
+            SavingsGoal goal = createValidGoal();
+            goal.addContribution(new BigDecimal("50.00"));
+
+            goal.withdraw(new BigDecimal("50.00"));
+
+            assertThat(goal.getCurrentAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+    }
+
+    @Nested
+    @DisplayName("deactivate")
+    class Deactivate {
+
+        @Test
+        @DisplayName("Should deactivate an active goal")
+        void shouldDeactivateActiveGoal() {
+            SavingsGoal goal = reconstituteValidGoal(true);
+            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+
+            goal.deactivate();
+
+            assertThat(goal.isActive()).isFalse();
+            assertThat(goal.getModifiedAt()).isAfter(previousModifiedAt);
+        }
+
+        @Test
+        @DisplayName("Should not change modified at when already inactive")
+        void shouldNotChangeModifiedAtWhenAlreadyInactive() {
+            SavingsGoal goal = reconstituteValidGoal(false);
+            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+
+            goal.deactivate();
+
+            assertThat(goal.isActive()).isFalse();
+            assertThat(goal.getModifiedAt()).isEqualTo(previousModifiedAt);
+        }
+    }
+
+    @Nested
+    @DisplayName("link normalization and validation")
+    class LinkValidation {
+
+        @ParameterizedTest
+        @CsvSource({
+                "example.com, https://example.com",
+                "www.example.com, https://www.example.com",
+                "http://example.com, http://example.com",
+                "https://example.com, https://example.com",
+                "HTTPS://EXAMPLE.COM, HTTPS://EXAMPLE.COM",
+                "https://example.com/path?q=1, https://example.com/path?q=1"
+        })
+        @DisplayName("Should normalize and accept valid links")
+        void shouldNormalizeAndAcceptValidLinks(String input, String expected) {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    VALID_DEADLINE,
+                    GoalPriority.LOW,
+                    input
+            );
+
+            assertThat(goal.getLink()).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("Should set link to null when link is blank")
+        void shouldSetLinkToNullWhenBlank() {
+            SavingsGoal goal = SavingsGoal.create(
+                    USER_ID,
+                    VALID_NAME,
+                    VALID_TARGET,
+                    VALID_DEADLINE,
+                    GoalPriority.LOW,
+                    "   "
+            );
+
+            assertThat(goal.getLink()).isNull();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "ftp://example.com",
+                "https://",
+                "http://[invalid",
+                "not a url with spaces"
+        })
+        @DisplayName("Should reject invalid links")
+        void shouldRejectInvalidLinks(String link) {
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            link
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
+
+        @Test
+        @DisplayName("Should reject link exceeding max length")
+        void shouldRejectLinkExceedingMaxLength() {
+            String longLink = "https://" + "a".repeat(493);
+
+            assertThatThrownBy(() ->
+                    SavingsGoal.create(
+                            USER_ID,
+                            VALID_NAME,
+                            VALID_TARGET,
+                            VALID_DEADLINE,
+                            GoalPriority.LOW,
+                            longLink
+                    )
+            ).isInstanceOf(InvalidInputException.class);
+        }
     }
 }

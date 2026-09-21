@@ -1,13 +1,33 @@
 package com.puntomartinez.millete.savingsgoals.infrastructure.in.controller;
 
-import com.puntomartinez.millete.savingsgoals.application.services.SavingsGoalService;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
-import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.AddContributionToGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.AddContributionToGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.CreateSavingsGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.CreateSavingsGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.DeleteSavingsGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.GetSavingsGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.ListSavingsGoalsUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.UpdateSavingsGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.UpdateSavingsGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.WithdrawFromGoalCommand;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.WithdrawFromGoalUseCase;
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.CreateSavingsGoalRequestDTO;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.SavingsGoalResponseDTO;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.UpdateSavingsGoalRequestDTO;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.WithdrawRequestDTO;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,19 +37,45 @@ import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("SavingsGoalController")
 class SavingsGoalControllerTest {
 
+    private static final UUID USER_ID = UUID.randomUUID();
+
     @Mock
-    private SavingsGoalService savingsGoalService;
+    private CreateSavingsGoalUseCase createSavingsGoalUseCase;
+
+    @Mock
+    private UpdateSavingsGoalUseCase updateSavingsGoalUseCase;
+
+    @Mock
+    private AddContributionToGoalUseCase addContributionToGoalUseCase;
+
+    @Mock
+    private WithdrawFromGoalUseCase withdrawFromGoalUseCase;
+
+    @Mock
+    private ListSavingsGoalsUseCase listSavingsGoalsUseCase;
+
+    @Mock
+    private GetSavingsGoalUseCase getSavingsGoalUseCase;
+
+    @Mock
+    private DeleteSavingsGoalUseCase deleteSavingsGoalUseCase;
 
     @Mock
     private Authentication authentication;
@@ -37,129 +83,361 @@ class SavingsGoalControllerTest {
     @InjectMocks
     private SavingsGoalController controller;
 
-    private UUID userId;
-    private UUID goalId;
-    private JwtUser jwtUser;
-
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        goalId = UUID.randomUUID();
-        jwtUser = new JwtUser(userId, "test@example.com", "Test User");
+    private void mockAuthenticatedUser() {
+        JwtUser jwtUser = new JwtUser(USER_ID, "username", "user@example.com");
         when(authentication.getPrincipal()).thenReturn(jwtUser);
     }
 
-    private SavingsGoal createGoal() {
-        SavingsGoal goal = new SavingsGoal();
-        goal.setId(goalId);
-        goal.setUserId(userId);
-        goal.setName("Vacaciones");
-        goal.setTargetAmount(new BigDecimal("2000.00"));
-        goal.setCurrentAmount(BigDecimal.ZERO);
-        goal.setDeadline(LocalDate.now().plusMonths(6));
-        goal.setPriority("HIGH");
-        goal.setStatus("ACTIVE");
-        goal.setActive(true);
-        goal.setCreatedAt(LocalDateTime.now());
-        goal.setModifiedAt(LocalDateTime.now());
-        return goal;
+    private SavingsGoal validGoal() {
+        return SavingsGoal.create(
+                USER_ID,
+                "Vacation",
+                new BigDecimal("1000.00"),
+                LocalDate.now().plusDays(30),
+                GoalPriority.MEDIUM,
+                null
+        );
     }
 
-    @Test
-    void create_shouldReturnCreatedGoal() {
-        SavingsGoal goal = createGoal();
-        CreateSavingsGoalRequestDTO request = new CreateSavingsGoalRequestDTO();
-        request.setName("Vacaciones");
-        request.setTargetAmount(new BigDecimal("2000.00"));
-        request.setDeadline(LocalDate.now().plusMonths(6));
-        request.setPriority("HIGH");
+    @Nested
+    @DisplayName("create")
+    class Create {
 
-        when(savingsGoalService.create(any())).thenReturn(goal);
+        @Test
+        @DisplayName("Should create savings goal with default MEDIUM priority when priority is null")
+        void shouldCreateSavingsGoalWithDefaultPriority() {
+            mockAuthenticatedUser();
 
-        ResponseEntity<SavingsGoalResponseDTO> response = controller.create(request, authentication);
+            CreateSavingsGoalRequestDTO request = new CreateSavingsGoalRequestDTO(
+                    "Vacation",
+                    new BigDecimal("1000.00"),
+                    LocalDate.now().plusDays(30),
+                    null,
+                    null
+            );
+            SavingsGoal goal = validGoal();
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Vacaciones", response.getBody().getName());
-        assertEquals(new BigDecimal("2000.00"), response.getBody().getTargetAmount());
+            when(createSavingsGoalUseCase.create(any(CreateSavingsGoalCommand.class)))
+                    .thenReturn(goal);
+
+            ResponseEntity<SavingsGoalResponseDTO> response =
+                    controller.create(request, authentication);
+
+            ArgumentCaptor<CreateSavingsGoalCommand> captor =
+                    ArgumentCaptor.forClass(CreateSavingsGoalCommand.class);
+            verify(createSavingsGoalUseCase).create(captor.capture());
+
+            CreateSavingsGoalCommand command = captor.getValue();
+
+            assertThat(command.userId()).isEqualTo(USER_ID);
+            assertThat(command.name()).isEqualTo("Vacation");
+            assertThat(command.targetAmount()).isEqualByComparingTo("1000.00");
+            assertThat(command.priority()).isEqualTo(GoalPriority.MEDIUM);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().id()).isEqualTo(goal.getId());
+        }
+
+        @Test
+        @DisplayName("Should create savings goal with explicit priority")
+        void shouldCreateSavingsGoalWithExplicitPriority() {
+            mockAuthenticatedUser();
+
+            CreateSavingsGoalRequestDTO request = new CreateSavingsGoalRequestDTO(
+                    "Vacation",
+                    new BigDecimal("1000.00"),
+                    null,
+                    GoalPriority.HIGH,
+                    "https://example.com"
+            );
+            SavingsGoal goal = validGoal();
+
+            when(createSavingsGoalUseCase.create(any(CreateSavingsGoalCommand.class)))
+                    .thenReturn(goal);
+
+            controller.create(request, authentication);
+
+            ArgumentCaptor<CreateSavingsGoalCommand> captor =
+                    ArgumentCaptor.forClass(CreateSavingsGoalCommand.class);
+            verify(createSavingsGoalUseCase).create(captor.capture());
+
+            assertThat(captor.getValue().priority()).isEqualTo(GoalPriority.HIGH);
+        }
     }
 
-    @Test
-    void getAll_shouldReturnPaginatedGoals() {
-        SavingsGoal goal = createGoal();
-        when(savingsGoalService.countByUserIdAndFilters(userId, null, null)).thenReturn(1L);
-        when(savingsGoalService.findByUserId(userId, 0, 90, null, null)).thenReturn(List.of(goal));
+    @Nested
+    @DisplayName("getAll")
+    class GetAll {
 
-        ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response = controller.getAll(authentication, 0, 90, null, null);
+        @ParameterizedTest
+        @ValueSource(ints = {-1, -100})
+        @DisplayName("Should reject negative page")
+        void shouldRejectNegativePage(int page) {
+            assertThatThrownBy(() -> controller.getAll(authentication, page, 10, null))
+                    .isInstanceOf(InvalidInputException.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().content().size());
-        assertEquals("Vacaciones", response.getBody().content().getFirst().getName());
+            verifyNoInteractions(listSavingsGoalsUseCase);
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {0, -1, 201})
+        @DisplayName("Should reject invalid page size")
+        void shouldRejectInvalidPageSize(int size) {
+            assertThatThrownBy(() -> controller.getAll(authentication, 0, size, null))
+                    .isInstanceOf(InvalidInputException.class);
+
+            verifyNoInteractions(listSavingsGoalsUseCase);
+        }
+
+        @Test
+        @DisplayName("Should throw when requested page is out of range")
+        void shouldThrowWhenRequestedPageIsOutOfRange() {
+            mockAuthenticatedUser();
+
+            when(listSavingsGoalsUseCase.countByUserIdAndFilters(USER_ID, null))
+                    .thenReturn(0L);
+
+            assertThatThrownBy(() -> controller.getAll(authentication, 1, 10, null))
+                    .isInstanceOf(InvalidInputException.class);
+
+            verify(listSavingsGoalsUseCase, never())
+                    .findByUserId(any(), anyInt(), anyInt(), any());
+        }
+
+        @Test
+        @DisplayName("Should return single page result")
+        void shouldReturnSinglePageResult() {
+            mockAuthenticatedUser();
+
+            SavingsGoal goal = validGoal();
+
+            when(listSavingsGoalsUseCase.countByUserIdAndFilters(USER_ID, "vacation"))
+                    .thenReturn(1L);
+            when(listSavingsGoalsUseCase.findByUserId(USER_ID, 0, 10, "vacation"))
+                    .thenReturn(List.of(goal));
+
+            ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response =
+                    controller.getAll(authentication, 0, 10, "vacation");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PaginatedResponseDTO<SavingsGoalResponseDTO> body = response.getBody();
+
+            assertThat(body.content()).hasSize(1);
+            assertThat(body.content().get(0).id()).isEqualTo(goal.getId());
+            assertThat(body.currentPage()).isZero();
+            assertThat(body.totalPages()).isEqualTo(1);
+            assertThat(body.totalElements()).isEqualTo(1L);
+            assertThat(body.size()).isEqualTo(10);
+            assertThat(body.first()).isTrue();
+            assertThat(body.last()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should return first page of multiple pages")
+        void shouldReturnFirstPageOfMultiplePages() {
+            mockAuthenticatedUser();
+
+            SavingsGoal goal = validGoal();
+
+            when(listSavingsGoalsUseCase.countByUserIdAndFilters(USER_ID, null))
+                    .thenReturn(25L);
+            when(listSavingsGoalsUseCase.findByUserId(USER_ID, 0, 10, null))
+                    .thenReturn(List.of(goal));
+
+            ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response =
+                    controller.getAll(authentication, 0, 10, null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PaginatedResponseDTO<SavingsGoalResponseDTO> body = response.getBody();
+
+            assertThat(body.currentPage()).isZero();
+            assertThat(body.totalPages()).isEqualTo(3);
+            assertThat(body.totalElements()).isEqualTo(25L);
+            assertThat(body.first()).isTrue();
+            assertThat(body.last()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return last page of multiple pages")
+        void shouldReturnLastPageOfMultiplePages() {
+            mockAuthenticatedUser();
+
+            SavingsGoal goal = validGoal();
+
+            when(listSavingsGoalsUseCase.countByUserIdAndFilters(USER_ID, null))
+                    .thenReturn(25L);
+            when(listSavingsGoalsUseCase.findByUserId(USER_ID, 2, 10, null))
+                    .thenReturn(List.of(goal));
+
+            ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response =
+                    controller.getAll(authentication, 2, 10, null);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PaginatedResponseDTO<SavingsGoalResponseDTO> body = response.getBody();
+
+            assertThat(body.currentPage()).isEqualTo(2);
+            assertThat(body.totalPages()).isEqualTo(3);
+            assertThat(body.totalElements()).isEqualTo(25L);
+            assertThat(body.first()).isFalse();
+            assertThat(body.last()).isTrue();
+        }
     }
 
-    @Test
-    void getAll_shouldFilterByStatus_whenProvided() {
-        SavingsGoal goal = createGoal();
-        when(savingsGoalService.countByUserIdAndFilters(userId, null, "ACTIVE")).thenReturn(1L);
-        when(savingsGoalService.findByUserId(userId, 0, 90, null, "ACTIVE")).thenReturn(List.of(goal));
+    @Nested
+    @DisplayName("getById")
+    class GetById {
 
-        ResponseEntity<PaginatedResponseDTO<SavingsGoalResponseDTO>> response = controller.getAll(authentication, 0, 90, null, "active");
+        @Test
+        @DisplayName("Should return savings goal when found")
+        void shouldReturnSavingsGoalWhenFound() {
+            mockAuthenticatedUser();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, response.getBody().content().size());
+            SavingsGoal goal = validGoal();
+            UUID goalId = goal.getId();
+
+            when(getSavingsGoalUseCase.getByIdAndUserId(goalId, USER_ID))
+                    .thenReturn(goal);
+
+            ResponseEntity<SavingsGoalResponseDTO> response =
+                    controller.getById(goalId, authentication);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().id()).isEqualTo(goalId);
+            assertThat(response.getBody().name()).isEqualTo("Vacation");
+        }
     }
 
-    @Test
-    void getById_shouldReturnGoal() {
-        SavingsGoal goal = createGoal();
-        when(savingsGoalService.getByIdAndUserId(goalId, userId)).thenReturn(goal);
+    @Nested
+    @DisplayName("update")
+    class Update {
 
-        ResponseEntity<SavingsGoalResponseDTO> response = controller.getById(goalId, authentication);
+        @Test
+        @DisplayName("Should update savings goal and return 200")
+        void shouldUpdateSavingsGoalAndReturnOk() {
+            mockAuthenticatedUser();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(goalId, response.getBody().getId());
+            UUID goalId = UUID.randomUUID();
+            UpdateSavingsGoalRequestDTO request = new UpdateSavingsGoalRequestDTO(
+                    "Updated",
+                    new BigDecimal("2000.00"),
+                    null,
+                    GoalPriority.HIGH,
+                    null
+            );
+            SavingsGoal goal = validGoal();
+
+            when(updateSavingsGoalUseCase.update(any(UpdateSavingsGoalCommand.class)))
+                    .thenReturn(goal);
+
+            ResponseEntity<SavingsGoalResponseDTO> response =
+                    controller.update(goalId, request, authentication);
+
+            ArgumentCaptor<UpdateSavingsGoalCommand> captor =
+                    ArgumentCaptor.forClass(UpdateSavingsGoalCommand.class);
+            verify(updateSavingsGoalUseCase).update(captor.capture());
+
+            UpdateSavingsGoalCommand command = captor.getValue();
+
+            assertThat(command.id()).isEqualTo(goalId);
+            assertThat(command.userId()).isEqualTo(USER_ID);
+            assertThat(command.name()).isEqualTo("Updated");
+            assertThat(command.targetAmount()).isEqualByComparingTo("2000.00");
+            assertThat(command.priority()).isEqualTo(GoalPriority.HIGH);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
     }
 
-    @Test
-    void update_shouldReturnUpdatedGoal() {
-        SavingsGoal goal = createGoal();
-        goal.setName("Nuevo nombre");
-        UpdateSavingsGoalRequestDTO request = new UpdateSavingsGoalRequestDTO();
-        request.setName("Nuevo nombre");
-        request.setTargetAmount(new BigDecimal("3000.00"));
+    @Nested
+    @DisplayName("addContribution")
+    class AddContribution {
 
-        when(savingsGoalService.update(any())).thenReturn(goal);
+        @Test
+        @DisplayName("Should add contribution and return 200")
+        void shouldAddContributionAndReturnOk() {
+            mockAuthenticatedUser();
 
-        ResponseEntity<SavingsGoalResponseDTO> response = controller.update(goalId, request, authentication);
+            UUID goalId = UUID.randomUUID();
+            AddContributionRequestDTO request = new AddContributionRequestDTO(new BigDecimal("100.00"));
+            SavingsGoal goal = validGoal();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Nuevo nombre", response.getBody().getName());
+            when(addContributionToGoalUseCase.addContribution(any(AddContributionToGoalCommand.class)))
+                    .thenReturn(goal);
+
+            ResponseEntity<SavingsGoalResponseDTO> response =
+                    controller.addContribution(goalId, request, authentication);
+
+            ArgumentCaptor<AddContributionToGoalCommand> captor =
+                    ArgumentCaptor.forClass(AddContributionToGoalCommand.class);
+            verify(addContributionToGoalUseCase).addContribution(captor.capture());
+
+            AddContributionToGoalCommand command = captor.getValue();
+
+            assertThat(command.goalId()).isEqualTo(goalId);
+            assertThat(command.userId()).isEqualTo(USER_ID);
+            assertThat(command.amount()).isEqualByComparingTo("100.00");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
     }
 
-    @Test
-    void addContribution_shouldReturnUpdatedGoal() {
-        SavingsGoal goal = createGoal();
-        goal.setCurrentAmount(new BigDecimal("500.00"));
-        AddContributionRequestDTO request = new AddContributionRequestDTO();
-        request.setAmount(new BigDecimal("500.00"));
+    @Nested
+    @DisplayName("withdraw")
+    class Withdraw {
 
-        when(savingsGoalService.addContribution(any())).thenReturn(goal);
+        @Test
+        @DisplayName("Should withdraw amount and return 200")
+        void shouldWithdrawAmountAndReturnOk() {
+            mockAuthenticatedUser();
 
-        ResponseEntity<SavingsGoalResponseDTO> response = controller.addContribution(goalId, request, authentication);
+            UUID goalId = UUID.randomUUID();
+            WithdrawRequestDTO request = new WithdrawRequestDTO(new BigDecimal("50.00"));
+            SavingsGoal goal = validGoal();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(new BigDecimal("500.00"), response.getBody().getCurrentAmount());
+            when(withdrawFromGoalUseCase.withdraw(any(WithdrawFromGoalCommand.class)))
+                    .thenReturn(goal);
+
+            ResponseEntity<SavingsGoalResponseDTO> response =
+                    controller.withdraw(goalId, request, authentication);
+
+            ArgumentCaptor<WithdrawFromGoalCommand> captor =
+                    ArgumentCaptor.forClass(WithdrawFromGoalCommand.class);
+            verify(withdrawFromGoalUseCase).withdraw(captor.capture());
+
+            WithdrawFromGoalCommand command = captor.getValue();
+
+            assertThat(command.goalId()).isEqualTo(goalId);
+            assertThat(command.userId()).isEqualTo(USER_ID);
+            assertThat(command.amount()).isEqualByComparingTo("50.00");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
     }
 
-    @Test
-    void delete_shouldReturnNoContent() {
-        doNothing().when(savingsGoalService).deleteByIdAndUserId(goalId, userId);
+    @Nested
+    @DisplayName("delete")
+    class Delete {
 
-        ResponseEntity<Void> response = controller.delete(goalId, authentication);
+        @Test
+        @DisplayName("Should delete savings goal and return 204")
+        void shouldDeleteSavingsGoalAndReturnNoContent() {
+            mockAuthenticatedUser();
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(savingsGoalService).deleteByIdAndUserId(goalId, userId);
+            UUID goalId = UUID.randomUUID();
+
+            ResponseEntity<Void> response = controller.delete(goalId, authentication);
+
+            verify(deleteSavingsGoalUseCase).deleteByIdAndUserId(goalId, USER_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response.getBody()).isNull();
+        }
     }
 }
