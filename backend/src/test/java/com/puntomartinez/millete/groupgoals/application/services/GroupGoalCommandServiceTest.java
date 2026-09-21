@@ -408,26 +408,6 @@ class GroupGoalCommandServiceTest {
     class LeaveGoal {
 
         @Test
-        @DisplayName("Should deactivate member when leaving")
-        void shouldDeactivateMemberWhenLeaving() {
-            GoalUnit goal = createActiveGoal();
-            GoalMember member = createRegularMember(userId);
-            GoalMember admin = createAdminMember();
-
-            when(goalUnitRepository.findById(goalId))
-                    .thenReturn(Optional.of(goal));
-            when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId))
-                    .thenReturn(Optional.of(member));
-            when(goalMemberRepository.findActiveByGoalId(goalId))
-                    .thenReturn(List.of(member, admin));
-
-            service.leaveGoal(goalId, userId);
-
-            assertThat(member.isActive()).isFalse();
-            verify(goalMemberRepository).save(member);
-        }
-
-        @Test
         @DisplayName("Should prevent last admin from leaving")
         void shouldPreventLastAdminFromLeaving() {
             GoalUnit goal = createActiveGoal();

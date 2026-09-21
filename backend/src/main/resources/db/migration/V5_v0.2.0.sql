@@ -42,3 +42,6 @@ ALTER TABLE goal_contributions
 ALTER TABLE goal_contributions
     ADD CONSTRAINT chk_contribution_type
         CHECK (type IN ('DEPOSIT', 'WITHDRAWAL'));
+
+ALTER TABLE goal_contributions 
+ADD COLUMN IF NOT EXISTS type VARCHAR(20) NOT NULL DEFAULT 'DEPOSIT';
