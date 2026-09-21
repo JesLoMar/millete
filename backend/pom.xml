@@ -15,7 +15,7 @@
     <artifactId>millete</artifactId>
     <version>0.2.0</version>
     <name>millete</name>
-    <description>API gestión financiera familiar</description>
+    <description>Self-hosted financial management API</description>
 
     <properties>
         <java.version>25</java.version>
@@ -216,6 +216,26 @@
                 </configuration>
             </plugin>
 
+            <!-- JaCoCo Code Coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.15</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
