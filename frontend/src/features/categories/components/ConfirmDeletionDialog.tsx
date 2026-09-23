@@ -1,24 +1,25 @@
-import { useTranslation } from "react-i18next"
-import { AlertTriangle } from "lucide-react"
-import { Spinner } from "@/shared/components/Spinner"
-import { Button } from "@/shared/components/core/button"
+import { AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/shared/components/core/dialog"
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/core/dialog';
 
 interface ConfirmDeletionDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  itemName: string
-  onConfirm: () => void
-  isDeleting?: boolean
-  title?: string
-  description?: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  itemName: string;
+  onConfirm: () => void;
+  isDeleting?: boolean;
+  title?: string;
+  description?: string;
 }
 
 export function ConfirmDeletionDialog({
@@ -30,25 +31,46 @@ export function ConfirmDeletionDialog({
   title,
   description,
 }: ConfirmDeletionDialogProps) {
-  const { t } = useTranslation(['categories', 'common'])
+  const { t } = useTranslation([
+    'categories',
+    'common',
+  ]);
+
+  const dialogTitle =
+    title ?? t('categories:deleteTitle');
+
+  const dialogDescription =
+    description ??
+    t('categories:deleteConfirmation', {
+      name: itemName,
+    });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border sm:max-w-md">
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className="border-border bg-card sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto mb-4 bg-destructive/10 p-3 rounded-full w-fit">
-            <AlertTriangle className="size-8 text-destructive" />
+          <div className="mx-auto mb-4 w-fit rounded-full bg-destructive/10 p-3">
+            <AlertTriangle
+              className="size-8 text-destructive"
+              aria-hidden="true"
+            />
           </div>
-          <DialogTitle className="text-xl font-semibold text-center">
-            {title || t('categories:deleteTitle')}
+
+          <DialogTitle className="text-center text-xl font-semibold">
+            {dialogTitle}
           </DialogTitle>
-          <DialogDescription className="text-center pt-2">
-            {description || t('categories:deleteConfirmation', { name: itemName })}
+
+          <DialogDescription className="pt-2 text-center">
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="gap-2 sm:justify-center">
           <Button
+            type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
@@ -56,16 +78,22 @@ export function ConfirmDeletionDialog({
           >
             {t('common:actions.cancel')}
           </Button>
+
           <Button
+            type="button"
+            variant="destructive"
             onClick={onConfirm}
             disabled={isDeleting}
-            variant="destructive"
             className="gap-2"
           >
-            {isDeleting ? <Spinner size={20} /> : t('common:actions.delete')}
+            {isDeleting ? (
+              <Spinner size={20} />
+            ) : (
+              t('common:actions.delete')
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

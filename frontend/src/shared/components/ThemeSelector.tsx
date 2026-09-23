@@ -1,33 +1,30 @@
-import { useTranslation } from "react-i18next"
-import { Palette, Check } from "lucide-react"
-import { Button } from "@/shared/components/core/button"
+import { Check, Palette } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/shared/components/core/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/shared/components/core/dropdown-menu"
-import { useTheme } from "@/shared/hooks/useTheme"
-import { notify } from "@/shared/utils/notifications/notify"
-import type { Theme } from "@/shared/themes/palettes"
-import { cn } from "@/lib/utils"
+} from '@/shared/components/core/dropdown-menu';
+import { useTheme } from '@/shared/hooks/useTheme';
 
 interface ThemeSelectorProps {
-  className?: string
+  className?: string;
 }
 
-export function ThemeSelector({ className }: ThemeSelectorProps) {
-  const { t } = useTranslation(['nav', 'common'])
-  const { theme, setTheme, availableThemes } = useTheme()
-
-  const handleThemeChange = (selectedTheme: Theme) => {
-    try {
-      setTheme(selectedTheme)
-    } catch {
-      notify.error(t('nav:theme.errors.themeChangeFailed'))
-    }
-  }
+export function ThemeSelector({
+  className,
+}: ThemeSelectorProps) {
+  const { t } = useTranslation('nav');
+  const {
+    theme,
+    setTheme,
+    availableThemes,
+  } = useTheme();
 
   return (
     <DropdownMenu>
@@ -36,35 +33,57 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
           variant="ghost"
           size="icon"
           className={cn(
-            "size-10 text-muted-foreground hover:text-foreground",
-            className
+            'size-10 text-muted-foreground hover:text-foreground',
+            className,
           )}
           aria-label={t('nav:theme.selector')}
         >
-          <Palette className="size-5" aria-hidden="true" />
-          <span className="sr-only">{t('nav:theme.selector')}</span>
+          <Palette
+            className="size-5"
+            aria-hidden="true"
+          />
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>{t('nav:theme.palette')}</DropdownMenuLabel>
-        {availableThemes.map((t: Theme) => {
-          const isSelected = theme.name === t.name
+        <DropdownMenuLabel>
+          {t('nav:theme.palette')}
+        </DropdownMenuLabel>
+
+        {availableThemes.map((availableTheme) => {
+          const isSelected =
+            theme.name === availableTheme.name;
+
           return (
             <DropdownMenuItem
-              key={t.name}
-              onClick={() => handleThemeChange(t)}
+              key={availableTheme.name}
+              onClick={() => setTheme(availableTheme)}
               className={cn(
-                "flex items-center gap-2 cursor-pointer",
-                isSelected && "bg-accent font-medium"
+                'flex cursor-pointer items-center gap-2',
+                isSelected && 'bg-accent font-medium',
               )}
             >
-              <span className="text-base" aria-hidden="true">{t.icon}</span>
-              <span className="flex-1">{t.label}</span>
-              {isSelected && <Check className="size-4 text-primary" aria-hidden="true" />}
+              <span
+                className="text-base"
+                aria-hidden="true"
+              >
+                {availableTheme.icon}
+              </span>
+
+              <span className="flex-1">
+                {availableTheme.label}
+              </span>
+
+              {isSelected && (
+                <Check
+                  className="size-4 text-primary"
+                  aria-hidden="true"
+                />
+              )}
             </DropdownMenuItem>
-          )
+          );
         })}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

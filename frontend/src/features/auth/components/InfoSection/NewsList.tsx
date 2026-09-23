@@ -1,52 +1,73 @@
-import { useTranslation } from "react-i18next"
+import { useTranslation } from 'react-i18next';
+
+interface NewsItem {
+  tag?: string;
+  title: string;
+  description: string;
+}
 
 export function NewsList() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const newsItems = t('info:news.items', { returnObjects: true }) as unknown as Array<{
-    tag?: string
-    title: string
-    description: string
-  }>
+  const newsItemsValue = t('info:news.items', {
+    returnObjects: true,
+  });
+
+  const newsItems: NewsItem[] = Array.isArray(newsItemsValue)
+    ? (newsItemsValue as NewsItem[])
+    : [];
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6 lg:space-y-8">
-      <div className="w-[80%] max-w-2xl space-y-6 lg:space-y-10 px-4 sm:px-0">
+    <div className="mx-auto w-full max-w-xl space-y-6 lg:space-y-8">
+      <div className="w-[80%] max-w-2xl space-y-6 px-4 lg:space-y-10 sm:px-0">
         <div className="space-y-3">
-          <h2 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
+          <h2 className="font-serif text-4xl leading-tight text-foreground sm:text-5xl">
             {t('info:news.title')}
           </h2>
-          <p className="text-muted-foreground text-sm">
+
+          <p className="text-sm text-muted-foreground">
             {t('info:news.subtitle')}
           </p>
         </div>
 
-        <div className="space-y-6 lg:space-y-8">
-          {newsItems?.map((item, index) => (
-            <div
-              key={item.title}
-              className={`relative pl-10 border-l-2 ${index === 0 ? 'border-primary/30' : 'border-border/50'}`}
+        <ul className="list-none space-y-6 lg:space-y-8">
+          {newsItems.map((item, index) => (
+            <li
+              key={`${item.title}-${index}`}
+              className={`relative border-l-2 pl-10 ${
+                index === 0
+                  ? 'border-primary/30'
+                  : 'border-border/50'
+              }`}
             >
-              <div className={`absolute -left-1.25 top-0 w-2 h-2 rounded-full ${index === 0 ? 'bg-primary' : 'bg-border'}`} />
+              <div
+                className={`absolute -left-1.25 top-0 size-2 rounded-full ${
+                  index === 0 ? 'bg-primary' : 'bg-border'
+                }`}
+                aria-hidden="true"
+              />
+
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-foreground font-semibold text-base lg:text-lg">
+                  <h3 className="text-base font-semibold text-foreground lg:text-lg">
                     {item.title}
-                  </h4>
+                  </h3>
+
                   {item.tag && (
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-bold tracking-wider whitespace-nowrap">
+                    <span className="whitespace-nowrap rounded-full border border-primary/30 bg-primary/20 px-2.5 py-0.5 text-xs font-bold tracking-wider text-primary">
                       {item.tag}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-foreground/70 leading-relaxed">
+
+                <p className="text-sm leading-relaxed text-foreground/70">
                   {item.description}
                 </p>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
-  )
+  );
 }

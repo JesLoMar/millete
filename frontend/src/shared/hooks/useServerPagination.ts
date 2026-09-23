@@ -1,23 +1,32 @@
-import { useEffect, useMemo, useState } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 export interface PaginatedResponse<T> {
-  content: T[]
-  currentPage: number
-  totalPages: number
-  totalElements: number
-  size: number
-  first: boolean
-  last: boolean
+  content: T[];
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  first: boolean;
+  last: boolean;
 }
 
 interface UseServerPaginationOptions<T> {
-  queryKey: string[]
-  fetchPage: (page: number) => Promise<PaginatedResponse<T>>
-  serverSize: number
-  displaySize: number
-  initialPage?: number
-  enabled?: boolean
+  queryKey: readonly string[];
+  fetchPage: (
+    page: number,
+  ) => Promise<PaginatedResponse<T>>;
+  serverSize: number;
+  displaySize: number;
+  initialPage?: number;
+  enabled?: boolean;
 }
 
 export function useServerPagination<T>({
@@ -28,67 +37,139 @@ export function useServerPagination<T>({
   initialPage = 0,
   enabled = true,
 }: UseServerPaginationOptions<T>) {
-  const queryClient = useQueryClient()
-  const [displayPage, setDisplayPageState] = useState(initialPage)
+  const queryClient = useQueryClient();
 
-  const queryKeyString = queryKey.join(",")
+  const [displayPage, setDisplayPageState] =
+    useState(initialPage);
 
-  // Reset to the first display page whenever the underlying query/filters change.
+  const queryKeyString = useMemo(
+    () => JSON.stringify(queryKey),
+    [queryKey],
+  );
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- a new filter makes the current page stale
-    setDisplayPageState(0)
-  }, [queryKeyString])
+    setDisplayPageState(initialPage);
+  }, [initialPage, queryKeyString]);
 
-  const serverPage = Math.floor((displayPage * displaySize) / serverSize)
-  const offsetInChunk = (displayPage * displaySize) % serverSize
+  const serverPage = Math.floor(
+    (displayPage * displaySize) / serverSize,
+  );
 
-  const { data, isLoading, isFetching, error, refetch } = useQuery<PaginatedResponse<T>>({
-    queryKey: [...queryKey, String(serverPage)],
+  const offsetInChunk =
+    (displayPage * displaySize) % serverSize;
+
+  const serverQueryKey = [
+    ...queryKey,
+    String(serverPage),
+  ];
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery<PaginatedResponse<T>>({
+    queryKey: serverQueryKey,
     queryFn: () => fetchPage(serverPage),
     staleTime: 30_000,
     placeholderData: (previousData) => previousData,
     enabled,
-  })
+  });
 
   const displayItems = useMemo(() => {
-    if (!data) return []
-    return data.content.slice(offsetInChunk, offsetInChunk + displaySize)
-  }, [data, offsetInChunk, displaySize])
-
-  const totalElements = data?.totalElements ?? 0
-  const totalDisplayPages = useMemo(
-    () => Math.max(1, Math.ceil(totalElements / displaySize)),
-    [totalElements, displaySize]
-  )
-
-  useEffect(() => {
-    if (displayPage > 0 && displayPage >= totalDisplayPages) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- keep current page in range if total shrinks
-      setDisplayPageState(totalDisplayPages - 1)
+    if (!data) {
+      return [];
     }
-  }, [displayPage, totalDisplayPages])
+
+    return data.content.slice(
+      offsetInChunk,
+      offsetInChunk + displaySize,
+    );
+  }, [data, offsetInChunk, displaySize]);
+
+  const totalElements = data?.totalElements ?? 0;
+
+  const totalDisplayPages = useMemo(
+    () =>
+      Math.max(
+        1,
+        Math.ceil(totalElements / displaySize),
+      ),
+    [totalElements, displaySize],
+  );
 
   const setDisplayPage = (page: number) => {
-    setDisplayPageState(Math.max(0, Math.min(page, totalDisplayPages - 1)))
-  }
+    setDisplayPageState(
+      Math.max(
+        0,
+        Math.min(
+          page,
+          totalDisplayPages - 1,
+        ),
+      ),
+    );
+  };
 
-  const nextPage = () => setDisplayPage(displayPage + 1)
-  const prevPage = () => setDisplayPage(displayPage - 1)
+  const nextPage = () => {
+    setDisplayPage(displayPage + 1);
+  };
 
-  const isLastPageOfChunk = ((displayPage + 1) * displaySize) % serverSize === 0
-  const hasMoreChunks = data ? (serverPage + 1) * serverSize < data.totalElements : false
+  const prevPage = () => {
+    setDisplayPage(displayPage - 1);
+  };
 
-  // Prefetch the next server chunk when we land on the last display page of the current chunk.
   useEffect(() => {
-    if (data && !isFetching && isLastPageOfChunk && hasMoreChunks) {
-      const nextServerPage = serverPage + 1
-      queryClient.prefetchQuery({
-        queryKey: [...queryKey, String(nextServerPage)],
-        queryFn: () => fetchPage(nextServerPage),
-        staleTime: 30_000,
-      })
+    if (
+      displayPage > 0 &&
+      displayPage >= totalDisplayPages
+    ) {
+      setDisplayPageState(
+        totalDisplayPages - 1,
+      );
     }
-  }, [data, isFetching, isLastPageOfChunk, hasMoreChunks, queryKey, serverPage, fetchPage, queryClient])
+  }, [displayPage, totalDisplayPages]);
+
+  const isLastPageOfChunk =
+    ((displayPage + 1) * displaySize) %
+      serverSize ===
+    0;
+
+  const hasMoreChunks =
+    data !== undefined &&
+    (serverPage + 1) * serverSize <
+      data.totalElements;
+
+  useEffect(() => {
+    if (
+      !data ||
+      isFetching ||
+      !isLastPageOfChunk ||
+      !hasMoreChunks
+    ) {
+      return;
+    }
+
+    const nextServerPage = serverPage + 1;
+
+    queryClient.prefetchQuery({
+      queryKey: [
+        ...queryKey,
+        String(nextServerPage),
+      ],
+      queryFn: () => fetchPage(nextServerPage),
+      staleTime: 30_000,
+    });
+  }, [
+    data,
+    isFetching,
+    isLastPageOfChunk,
+    hasMoreChunks,
+    serverPage,
+    queryKey,
+    fetchPage,
+    queryClient,
+  ]);
 
   return {
     displayItems,
@@ -104,5 +185,5 @@ export function useServerPagination<T>({
     isFetching,
     error,
     refetch,
-  }
+  };
 }

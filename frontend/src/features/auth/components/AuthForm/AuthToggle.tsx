@@ -1,39 +1,53 @@
-import { useTranslation } from "react-i18next"
-import { cn } from "@/lib/utils"
+import { useTranslation } from 'react-i18next';
+
+import { cn } from '@/lib/utils';
 
 interface AuthToggleProps {
-  mode: "login" | "register"
-  onToggle: (mode: "login" | "register") => void
+  mode: 'login' | 'register';
+  onToggle: (mode: 'login' | 'register') => void;
 }
-export function AuthToggle({ mode, onToggle }: AuthToggleProps) {
-  const { t } = useTranslation()
+
+export function AuthToggle({
+  mode,
+  onToggle,
+}: AuthToggleProps) {
+  const { t } = useTranslation();
 
   return (
-    <div className="flex p-2 bg-secondary/50 backdrop-blur-sm rounded-2xl w-fit border border-border/50">
+    <div
+      className="flex w-fit rounded-2xl border border-border/50 bg-secondary/50 p-2 backdrop-blur-sm"
+      role="tablist"
+      aria-label={t('auth:form.toggle.label')}
+    >
       <button
         type="button"
-        onClick={() => onToggle("login")}
+        role="tab"
+        aria-selected={mode === 'login'}
+        onClick={() => onToggle('login')}
         className={cn(
-          "px-8 py-3 text-sm font-bold uppercase tracking-widest rounded-xl transition-all",
-          mode === "login"
-            ? "bg-primary text-primary-foreground shadow-lg"
-            : "text-foreground hover:text-primary"
+          'rounded-xl px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all',
+          mode === 'login'
+            ? 'bg-primary text-primary-foreground shadow-lg'
+            : 'text-foreground hover:text-primary',
         )}
       >
         {t('auth:form.toggle.login')}
       </button>
+
       <button
         type="button"
-        onClick={() => onToggle("register")}
+        role="tab"
+        aria-selected={mode === 'register'}
+        onClick={() => onToggle('register')}
         className={cn(
-          "px-8 py-3 text-sm font-bold uppercase tracking-widest rounded-xl transition-all",
-          mode === "register"
-            ? "bg-primary text-primary-foreground shadow-lg"
-            : "text-foreground hover:text-primary"
+          'rounded-xl px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all',
+          mode === 'register'
+            ? 'bg-primary text-primary-foreground shadow-lg'
+            : 'text-foreground hover:text-primary',
         )}
       >
         {t('auth:form.toggle.register')}
       </button>
     </div>
-  )
+  );
 }

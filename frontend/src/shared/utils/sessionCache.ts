@@ -1,60 +1,92 @@
 /**
  * sessionCache — caché de sesión para datos NO sensibles.
  *
- * Contrato (léelo antes de guardar nada aquí):
- * - Es sessionStorage con prefijo: legible por CUALQUIER JS que corra en la
- *   página, incluido un posible XSS. No ofrece ninguna garantía de seguridad.
- * - Uso permitido: datos de display no sensibles (nombre, email, ids de UI).
- * - PROHIBIDO: tokens, contraseñas, credenciales o cualquier secreto.
- *   La sesión real vive en la cookie httpOnly y la valida el backend.
+ * Contrato:
+ * - Usa sessionStorage con un prefijo propio.
+ * - Cualquier JavaScript que se ejecute en la página puede leer estos datos.
+ * - No ofrece ninguna garantía de seguridad frente a XSS.
+ * - Solo debe almacenar datos de display no sensibles.
+ * - Nunca guardar tokens, contraseñas, credenciales ni secretos.
  *
- * (Antes se llamaba "secureStorage"; el nombre sugería una garantía que no existe.)
+ * La sesión real vive en una cookie httpOnly y es validada por el backend.
  */
 const STORAGE_PREFIX = 'ms_';
 
+const getStorageKey = (key: string): string =>
+  `${STORAGE_PREFIX}${key}`;
+
+const setStorageItem = (key: string, value: string): void => {
+  try {
+    sessionStorage.setItem(getStorageKey(key), value);
+  } catch {
+    // sessionStorage puede no estar disponible o puede haber fallado.
+    removeStorageItem(key);
+  }
+};
+
+const getStorageItem = (key: string): string | null => {
+  try {
+    return sessionStorage.getItem(getStorageKey(key));
+  } catch {
+    removeStorageItem(key);
+    return null;
+  }
+};
+
+const removeStorageItem = (key: string): void => {
+  try {
+    sessionStorage.removeItem(getStorageKey(key));
+  } catch {
+    // Ignoramos errores de acceso a sessionStorage.
+  }
+};
+
 export const sessionCache = {
   setItem(key: string, value: string): void {
-    try {
-      sessionStorage.setItem(`${STORAGE_PREFIX}${key}`, value);
-    } catch {
-      sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
-    }
+    setStorageItem(key, value);
   },
+
   getItem(key: string): string | null {
-    try {
-      return sessionStorage.getItem(`${STORAGE_PREFIX}${key}`);
-    } catch {
-      sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
-      return null;
-    }
+    return getStorageItem(key);
   },
+
   removeItem(key: string): void {
-    sessionStorage.removeItem(`${STORAGE_PREFIX}${key}`);
+    removeStorageItem(key);
   },
+
   setUser(user: unknown): void {
     try {
-      sessionStorage.setItem(`${STORAGE_PREFIX}user`, JSON.stringify(user));
+      setStorageItem('user', JSON.stringify(user));
     } catch {
-      sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
+      removeStorageItem('user');
     }
   },
+
   getUser<T>(): T | null {
+    const raw = getStorageItem('user');
+
+    if (!raw) {
+      return null;
+    }
+
     try {
-      const raw = sessionStorage.getItem(`${STORAGE_PREFIX}user`);
-      return raw ? (JSON.parse(raw) as T) : null;
+      return JSON.parse(raw) as T;
     } catch {
-      sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
+      removeStorageItem('user');
       return null;
     }
   },
+
   setSessionId(sessionId: string): void {
-    this.setItem('sessionId', sessionId);
+    setStorageItem('sessionId', sessionId);
   },
+
   getSessionId(): string | null {
-    return this.getItem('sessionId');
+    return getStorageItem('sessionId');
   },
+
   clear(): void {
-    sessionStorage.removeItem(`${STORAGE_PREFIX}user`);
-    sessionStorage.removeItem(`${STORAGE_PREFIX}sessionId`);
+    removeStorageItem('user');
+    removeStorageItem('sessionId');
   },
 };

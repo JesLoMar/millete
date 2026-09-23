@@ -1,28 +1,32 @@
-import { useTranslation } from "react-i18next"
-import { LanguageSelector } from "@/shared/components/LanguageSelector"
-import { ThemeSelector } from "@/shared/components/ThemeSelector"
+import { useTranslation } from 'react-i18next';
+
+import { LanguageSelector } from '@/shared/components/LanguageSelector';
+import { ThemeSelector } from '@/shared/components/ThemeSelector';
 
 export function AuthHeader() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
-    <div className="flex items-center justify-between mb-12">
+    <header className="mb-12 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="bg-primary/20 p-1 rounded-xl flex items-center justify-center">
+        <div className="flex items-center justify-center rounded-xl bg-primary/20 p-1">
           <img
             src="/web-app-icon.webp"
-            alt={t("auth:brand.name")}
+            alt=""
+            aria-hidden="true"
             className="size-13 object-contain"
           />
         </div>
+
         <span className="text-2xl font-bold tracking-tight text-foreground">
-          {t("auth:brand.name")}
+          {t('auth:brand.name')}
         </span>
       </div>
+
       <div className="flex items-center gap-2">
         <LanguageSelector />
         <ThemeSelector />
       </div>
-    </div>
-  )
+    </header>
+  );
 }

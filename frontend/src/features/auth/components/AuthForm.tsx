@@ -1,84 +1,134 @@
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation, Trans } from "react-i18next"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowRight } from "lucide-react"
-import { Spinner } from "@/shared/components/Spinner"
-import { Button } from "@/shared/components/core/button"
-import { useLoginMutation } from "../hooks/useAuthMutations"
-import { useRegisterMutation } from "../hooks/useRegisterMutation"
-import { AuthHeader } from "./AuthForm/AuthHeader"
-import { AuthToggle } from "./AuthForm/AuthToggle"
-import { LoginFields } from "./AuthForm/LoginFields"
-import { RegisterFields } from "./AuthForm/RegisterFields"
-import { PasswordField } from "./AuthForm/PasswordField"
-import { AuthFooter } from "./AuthForm/AuthFooter"
+import { useState } from 'react';
 import {
-  loginSchema,
-  registerSchema,
-  type CombinedAuthFormData
-} from "@/features/auth/schemas/auth.schema"
-import type { RegisterUserRequest } from "../types"
+  useForm,
+  useWatch,
+} from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowRight } from 'lucide-react';
+
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
+import { loginSchema, registerSchema } from '@/features/auth/schemas/auth.schema';
+import type { CombinedAuthFormData } from '@/features/auth/schemas/auth.schema';
+
+import { useLoginMutation } from '../hooks/useAuthMutations';
+import { useRegisterMutation } from '../hooks/useRegisterMutation';
+import type { RegisterUserRequest } from '../types';
+
+import { AuthHeader } from './AuthForm/AuthHeader';
+import { AuthToggle } from './AuthForm/AuthToggle';
+import { LoginFields } from './AuthForm/LoginFields';
+import { RegisterFields } from './AuthForm/RegisterFields';
+import { PasswordField } from './AuthForm/PasswordField';
+import { AuthFooter } from './AuthForm/AuthFooter';
 
 export function AuthForm() {
-  const [mode, setMode] = useState<"login" | "register">("login")
-  const { t } = useTranslation(['auth', 'common'])
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const { t } = useTranslation(['auth', 'common']);
 
-  const currentSchema = mode === "login" ? loginSchema : registerSchema
+  const currentSchema =
+    mode === 'login' ? loginSchema : registerSchema;
+
   const {
     register,
     handleSubmit,
-    watch,
     reset,
+    control,
     formState: { errors, isValid },
   } = useForm<CombinedAuthFormData>({
     resolver: zodResolver(currentSchema),
-    mode: "onChange",
-  })
+    mode: 'onChange',
+  });
 
-  const { mutate: loginMutate, isPending: isLoginPending, isError: isLoginError } = useLoginMutation()
-  const { mutate: registerMutate, isPending: isRegisterPending, isError: isRegisterError } = useRegisterMutation()
-  const isPending = isLoginPending || isRegisterPending
+  const {
+    mutate: loginMutate,
+    isPending: isLoginPending,
+    isError: isLoginError,
+  } = useLoginMutation();
 
-  const usernameWatch = watch("usernameRegistro")
-  const emailWatch = watch("emailRegistro")
-  const hasIdentifier = !!usernameWatch?.trim() || !!emailWatch?.trim()
+  const {
+    mutate: registerMutate,
+    isPending: isRegisterPending,
+    isError: isRegisterError,
+  } = useRegisterMutation();
 
-  const handleModeChange = (newMode: "login" | "register") => {
-    setMode(newMode)
-    reset()
-  }
+  const isPending = isLoginPending || isRegisterPending;
+
+  const usernameWatch = useWatch({
+    control,
+    name: 'usernameRegistro',
+  });
+
+  const emailWatch = useWatch({
+    control,
+    name: 'emailRegistro',
+  });
+
+  const hasIdentifier =
+    !!usernameWatch?.trim() || !!emailWatch?.trim();
+
+  const handleModeChange = (newMode: 'login' | 'register') => {
+    setMode(newMode);
+    reset();
+  };
 
   const onSubmit = (data: CombinedAuthFormData) => {
-    if (mode === "login") {
-      loginMutate({ identifier: data.identifier!, password: data.password })
-    } else {
-      const registerData: RegisterUserRequest = {
+    if (mode === 'login') {
+      loginMutate({
+        identifier: data.identifier!,
         password: data.password,
-        email: data.emailRegistro?.trim() || "",
-        username: data.usernameRegistro?.trim() || "",
-      }
-      registerMutate(registerData)
+      });
+      return;
     }
-  }
+
+    const registerData: RegisterUserRequest = {
+      password: data.password,
+      email: data.emailRegistro?.trim() || '',
+      username: data.usernameRegistro?.trim() || '',
+    };
+
+    registerMutate(registerData);
+  };
+
+  const hasSubmissionError =
+    (mode === 'login' && isLoginError) ||
+    (mode === 'register' && isRegisterError);
 
   return (
-    <div className="w-full flex flex-col justify-center space-y-8 sm:space-y-12 py-6">
+    <div className="flex w-full flex-col justify-center space-y-8 py-6 sm:space-y-12">
       <AuthHeader />
+
       <div className="space-y-3 sm:space-y-4">
-        {/* El saludo se interpola con <Trans>: el <br /> se declara en el JSX y
-            el texto de la traducción se renderiza escapado — nada de HTML crudo. */}
-        <h1 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
-          <Trans i18nKey="greeting" ns="auth" components={{ br: <br /> }} />
+        <h1 className="font-serif text-4xl leading-tight text-foreground sm:text-5xl">
+          <Trans
+            i18nKey="greeting"
+            ns="auth"
+            components={{ br: <br /> }}
+          />
         </h1>
-        <p className="text-muted-foreground text-xs sm:text-sm font-medium uppercase tracking-[0.15em] sm:tracking-[0.2em]">
+
+        <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground sm:text-sm sm:tracking-[0.2em]">
           {t('auth:subtitle')}
         </p>
       </div>
-      <AuthToggle mode={mode} onToggle={handleModeChange} />
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6" noValidate>
-        {mode === "login" ? (
-          <LoginFields register={register} errors={errors} disabled={isPending} />
+
+      <AuthToggle
+        mode={mode}
+        onToggle={handleModeChange}
+      />
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-5 sm:space-y-6"
+        noValidate
+      >
+        {mode === 'login' ? (
+          <LoginFields
+            register={register}
+            errors={errors}
+            disabled={isPending}
+          />
         ) : (
           <RegisterFields
             register={register}
@@ -87,31 +137,53 @@ export function AuthForm() {
             disabled={isPending}
           />
         )}
-        <PasswordField register={register} errors={errors} disabled={isPending} mode={mode} />
+
+        <PasswordField
+          register={register}
+          errors={errors}
+          disabled={isPending}
+          mode={mode}
+        />
+
         <Button
           type="submit"
           disabled={isPending || !isValid}
-          className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold bg-primary hover:bg-primary/90 transition-all duration-200"
-          aria-label={mode === "login" ? t('auth:submit.default') : t('auth:submit.register')}
+          className="h-12 w-full bg-primary text-base font-semibold transition-all duration-200 hover:bg-primary/90 sm:h-14 sm:text-lg"
+          aria-label={
+            mode === 'login'
+              ? t('auth:submit.default')
+              : t('auth:submit.register')
+          }
         >
           {isPending ? (
             <Spinner size={24} />
           ) : (
             <>
-              {mode === "login" ? t('auth:submit.default') : t('auth:submit.register')}
-              <ArrowRight className="ml-2 size-5" aria-hidden="true" />
+              {mode === 'login'
+                ? t('auth:submit.default')
+                : t('auth:submit.register')}
+
+              <ArrowRight
+                className="ml-2 size-5"
+                aria-hidden="true"
+              />
             </>
           )}
         </Button>
-        {(isLoginError || isRegisterError) && (
-          <p className="text-destructive text-sm text-center" role="alert">
-            {mode === "login"
+
+        {hasSubmissionError && (
+          <p
+            className="text-center text-sm text-destructive"
+            role="alert"
+          >
+            {mode === 'login'
               ? t('auth:errors.login_failed')
               : t('auth:errors.register_failed')}
           </p>
         )}
       </form>
+
       <AuthFooter />
     </div>
-  )
+  );
 }

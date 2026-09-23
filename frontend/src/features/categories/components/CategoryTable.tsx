@@ -1,30 +1,100 @@
-import { useState, useMemo, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { m } from "framer-motion"
-import { useQuery } from "@tanstack/react-query"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { Input } from "@/shared/components/core/input"
-import { Button } from "@/shared/components/core/button"
-import { useCategories, type Category } from "@/shared/hooks/useCategories"
-import { useCategoryMutations } from "../hooks/useCategoryMutation"
-import { apiClient } from "@/shared/api/axiosClient"
-import { notify } from "@/shared/utils/notifications/notify"
-import { EditCategoryDialog } from "./EditCategoryDialog"
-import { ConfirmDeletionDialog } from "./ConfirmDeletionDialog"
-import { CategoryRow } from "./CategoryRow"
-import { CategoryTableSkeleton } from "./CategoryTableSkeleton"
-import type { PeriodFilter } from "@/shared/components/PeriodSelector"
-import type { CategoriesExpenseResponse } from "../types"
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { m } from 'framer-motion';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from 'lucide-react';
+
+import {
+  useCategories,
+} from '@/features/categories/hooks/useCategories';
+import type { Category } from '@/features/categories/types';
+import type { PeriodFilter } from '@/shared/components/PeriodSelector';
+import { Input } from '@/shared/components/core/input';
+import { Button } from '@/shared/components/core/button';
+
+import { useCategoryExpenses } from '../hooks/useCategoryExpenses';
+import { useCategoryMutations } from '../hooks/useCategoryMutation';
+import { EditCategoryDialog } from './EditCategoryDialog';
+import { ConfirmDeletionDialog } from './ConfirmDeletionDialog';
+import { CategoryRow } from './CategoryRow';
+import { CategoryTableSkeleton } from './CategoryTableSkeleton';
 
 interface CategoryTableProps {
-  period: PeriodFilter
+  period: PeriodFilter;
 }
 
-export function CategoryTable({ period }: CategoryTableProps) {
-  const { t } = useTranslation(['categories', 'common', 'dashboard', 'transactions'])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
+const categoryListVariants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
+
+const categoryRowVariants = {
+  hidden: {
+    opacity: 0,
+    x: -20,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+  },
+};
+
+const categoryRowTransition = {
+  duration: 0.3,
+  ease: 'easeOut' as const,
+};
+
+const getAdjustedBudgetLimit = (
+  budgetLimit: number | null | undefined,
+  period: PeriodFilter,
+): number | null => {
+  if (
+    budgetLimit === null ||
+    budgetLimit === undefined ||
+    budgetLimit === 0
+  ) {
+    return null;
+  }
+
+  switch (period) {
+    case 'week':
+      return budgetLimit / 4;
+
+    case 'month':
+      return budgetLimit;
+
+    case 'year':
+      return budgetLimit * 12;
+
+    default:
+      return budgetLimit;
+  }
+};
+
+export function CategoryTable({
+  period,
+}: CategoryTableProps) {
+  const { t } = useTranslation([
+    'categories',
+    'dashboard',
+    'transactions',
+  ]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingCategory, setEditingCategory] =
+    useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] =
+    useState<Category | null>(null);
 
   const {
     displayItems: categories,
@@ -35,135 +105,200 @@ export function CategoryTable({ period }: CategoryTableProps) {
     isLoading,
     nextPage,
     prevPage,
-  } = useCategories({ search: searchTerm })
+  } = useCategories({
+    search: searchTerm,
+  });
 
-  const { deleteCategory, isDeleting } = useCategoryMutations()
+  const { deleteCategory, isDeleting } =
+    useCategoryMutations();
 
-  const { data: expensesData } = useQuery<CategoriesExpenseResponse>({
-    queryKey: ['categoryExpenses', period],
-    queryFn: async () => {
-      const response = await apiClient.get(`/dashboard/categories?period=${period}`)
-      return response.data
-    },
-    staleTime: 60_000,
-  })
+  const { data: expensesData } =
+    useCategoryExpenses(period);
 
   const expensesMap = useMemo(() => {
-    if (!expensesData?.categories) return {}
-    const map: Record<string, number> = {}
-    expensesData.categories.forEach((cat) => {
-      map[cat.name] = cat.amount
-    })
-    return map
-  }, [expensesData])
-
-  const getAdjustedBudgetLimit = useCallback((budgetLimit: number | null | undefined): number | null => {
-    if (!budgetLimit) return null
-    switch (period) {
-      case "week": return budgetLimit / 4
-      case "month": return budgetLimit
-      case "year": return budgetLimit * 12
-      default: return budgetLimit
+    if (!expensesData?.categories) {
+      return {};
     }
-  }, [period])
+
+    return expensesData.categories.reduce<
+      Record<string, number>
+    >((map, category) => {
+      map[category.name] = category.amount;
+      return map;
+    }, {});
+  }, [expensesData]);
 
   const handleDelete = async () => {
-    if (!deletingCategory) return
+    if (!deletingCategory) {
+      return;
+    }
 
     try {
-      await deleteCategory.mutateAsync(deletingCategory.id)
-      setDeletingCategory(null)
+      await deleteCategory.mutateAsync(
+        deletingCategory.id,
+      );
+
+      setDeletingCategory(null);
     } catch {
-      notify.error('Error al eliminar la categoría')
+      // useCategoryMutations already handles the error notification.
     }
+  };
+
+  const getSpentPercentage = (
+    category: Category,
+  ): number => {
+    const budgetLimit = getAdjustedBudgetLimit(
+      category.budgetLimit,
+      period,
+    );
+
+    if (!budgetLimit) {
+      return 0;
+    }
+
+    const spent =
+      expensesMap[category.name] ?? 0;
+
+    return Math.min(
+      (spent / budgetLimit) * 100,
+      100,
+    );
+  };
+
+  if (isLoading && categories.length === 0) {
+    return <CategoryTableSkeleton />;
   }
 
-  const getSpentPercentage = (cat: Category): number => {
-    const limit = getAdjustedBudgetLimit(cat.budgetLimit)
-    if (!limit) return 0
-    const spent = expensesMap[cat.name] || 0
-    return Math.min((spent / limit) * 100, 100)
-  }
+  const from =
+    totalElements === 0
+      ? 0
+      : displayPage * displaySize + 1;
 
-  if (isLoading && categories.length === 0) return <CategoryTableSkeleton />
-
-  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
-  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+  const to = Math.min(
+    (displayPage + 1) * displaySize,
+    totalElements,
+  );
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="relative w-full sm:w-[320px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Search
+            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+
           <Input
             placeholder={t('categories:search')}
-            className="pl-10 bg-card border-border h-10"
+            aria-label={t('categories:search')}
+            className="h-10 border-border bg-card pl-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
           />
         </div>
+
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-lg">
+          <span className="rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground">
             {t(`dashboard:header.period.${period}`)}
           </span>
+
           <p className="text-sm text-muted-foreground">
-            {t('categories:showing', { total: totalElements })}
+            {t('categories:showing', {
+              total: totalElements,
+            })}
           </p>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <m.div
           className="flex flex-col"
           initial="hidden"
           animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.04 }
-            }
-          }}
+          variants={categoryListVariants}
         >
           {categories.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12 text-sm">
+            <p className="py-12 text-center text-sm text-muted-foreground">
               {t('categories:empty')}
             </p>
           ) : (
-            categories.map((cat) => (
-              <m.div
-                key={cat.id}
-                variants={{
-                  hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
-                }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <CategoryRow
-                  category={cat}
-                  spent={expensesMap[cat.name] || 0}
-                  budgetLimit={getAdjustedBudgetLimit(cat.budgetLimit)}
-                  percentage={getSpentPercentage(cat)}
-                  onEdit={setEditingCategory}
-                  onDelete={setDeletingCategory}
-                />
-              </m.div>
-            ))
+            categories.map((category) => {
+              const spent =
+                expensesMap[category.name] ?? 0;
+
+              const budgetLimit =
+                getAdjustedBudgetLimit(
+                  category.budgetLimit,
+                  period,
+                );
+
+              const percentage =
+                getSpentPercentage(category);
+
+              return (
+                <m.div
+                  key={category.id}
+                  variants={categoryRowVariants}
+                  transition={categoryRowTransition}
+                >
+                  <CategoryRow
+                    category={category}
+                    spent={spent}
+                    budgetLimit={budgetLimit}
+                    percentage={percentage}
+                    onEdit={setEditingCategory}
+                    onDelete={setDeletingCategory}
+                  />
+                </m.div>
+              );
+            })
           )}
         </m.div>
 
         {totalDisplayPages > 1 && (
-          <div className="px-6 py-4 flex items-center justify-between border-t border-border bg-background/20">
-            <p className="text-xs text-muted-foreground font-medium">
-              {t('transactions:showingInterval', { from, to, total: totalElements })}
+          <div className="flex items-center justify-between border-t border-border bg-background/20 px-6 py-4">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t('transactions:showingInterval', {
+                from,
+                to,
+                total: totalElements,
+              })}
             </p>
+
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={prevPage} disabled={displayPage === 0} className="h-8 border-border">
-                <ChevronLeft size={16} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prevPage}
+                disabled={displayPage === 0}
+                className="h-8 border-border"
+              >
+                <ChevronLeft
+                  size={16}
+                  aria-hidden="true"
+                />
               </Button>
-              <span className="text-sm text-muted-foreground min-w-15 text-center">{displayPage + 1} / {totalDisplayPages}</span>
-              <Button variant="outline" size="sm" onClick={nextPage} disabled={displayPage >= totalDisplayPages - 1} className="h-8 border-border">
-                <ChevronRight size={16} />
+
+              <span className="min-w-15 text-center text-sm text-muted-foreground">
+                {displayPage + 1} / {totalDisplayPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={nextPage}
+                disabled={
+                  displayPage >=
+                  totalDisplayPages - 1
+                }
+                className="h-8 border-border"
+              >
+                <ChevronRight
+                  size={16}
+                  aria-hidden="true"
+                />
               </Button>
             </div>
           </div>
@@ -174,16 +309,24 @@ export function CategoryTable({ period }: CategoryTableProps) {
         key={editingCategory?.id}
         category={editingCategory}
         open={!!editingCategory}
-        onOpenChange={(open) => { if (!open) setEditingCategory(null) }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingCategory(null);
+          }
+        }}
       />
 
       <ConfirmDeletionDialog
         open={!!deletingCategory}
-        onOpenChange={(open) => { if (!open) setDeletingCategory(null) }}
-        itemName={deletingCategory?.name || ""}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingCategory(null);
+          }
+        }}
+        itemName={deletingCategory?.name ?? ''}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
       />
     </div>
-  )
+  );
 }

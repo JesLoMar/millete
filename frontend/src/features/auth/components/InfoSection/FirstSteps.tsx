@@ -1,63 +1,85 @@
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Info, ExternalLink } from "lucide-react"
+import { Info, ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
+import { ROUTES } from '@/app/router/routes';
+
+interface Step {
+  number: string;
+  title: string;
+  description: string;
+}
 
 export function FirstSteps() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { t } = useTranslation();
 
-  const steps = t('info:steps.items', { returnObjects: true }) as unknown as Array<{
-    number: string
-    title: string
-    description: string
-  }>
+  const stepsValue = t('info:steps.items', {
+    returnObjects: true,
+  });
+
+  const steps: Step[] = Array.isArray(stepsValue)
+    ? (stepsValue as Step[])
+    : [];
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6 lg:space-y-8 px-4 sm:px-0 py-4">
+    <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-4 sm:px-0 lg:space-y-8">
       <div className="space-y-3">
-        <h2 className="text-4xl sm:text-5xl font-serif text-foreground leading-tight">
+        <h2 className="font-serif text-4xl leading-tight text-foreground sm:text-5xl">
           {t('info:steps.title')}
         </h2>
-        <p className="text-muted-foreground text-base max-w-md">
+
+        <p className="max-w-md text-base text-muted-foreground">
           {t('info:steps.subtitle')}
         </p>
       </div>
 
-      <div className="space-y-6 lg:space-y-8 py-2">
-        {steps?.map((step) => (
-          <div key={step.number} className="flex gap-4 sm:gap-6 items-start group">
-            <div className="shrink-0 size-10 sm:size-12 rounded-full border-2 border-primary/50 flex items-center justify-center bg-primary/30 text-foreground font-mono text-xs sm:text-sm tracking-tighter font-bold">
+      <ol className="list-none space-y-6 py-2 lg:space-y-8">
+        {steps.map((step) => (
+          <li
+            key={step.number}
+            className="group flex items-start gap-4 sm:gap-6"
+          >
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-primary/50 bg-primary/30 text-xs font-bold tracking-tighter text-foreground font-mono sm:size-12 sm:text-sm">
               {step.number}
             </div>
-            <div className="space-y-1.5 min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <h3 className="text-base font-semibold text-foreground transition-colors group-hover:text-primary sm:text-lg">
                 {step.title}
               </h3>
-              <p className="text-sm text-secondary-foreground/70 leading-relaxed">
+
+              <p className="text-sm leading-relaxed text-secondary-foreground/70">
                 {step.description}
               </p>
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
 
       <div className="pt-4">
-        <button
-          type="button"
-          onClick={() => navigate('/wiki')}
-          className="w-full p-4 sm:p-5 rounded-xl bg-secondary/20 border border-border/50 flex items-center justify-between group cursor-pointer hover:bg-secondary/40 transition-all"
+        <Link
+          to={ROUTES.wiki}
+          className="group flex w-full cursor-pointer items-center justify-between rounded-xl border border-border/50 bg-secondary/20 p-4 transition-all hover:bg-secondary/40 sm:p-5"
         >
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="bg-primary/10 p-2 rounded-lg shrink-0">
-              <Info className="size-4 sm:size-5 text-primary" />
+            <div className="shrink-0 rounded-lg bg-primary/10 p-2">
+              <Info
+                className="size-4 text-primary sm:size-5"
+                aria-hidden="true"
+              />
             </div>
-            <span className="text-sm sm:text-base font-medium text-primary">
+
+            <span className="text-sm font-medium text-primary sm:text-base">
               {t('info:wiki.link')}
             </span>
           </div>
-          <ExternalLink className="size-4 sm:size-5 text-primary group-hover:translate-x-1 transition-transform shrink-0" />
-        </button>
+
+          <ExternalLink
+            className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1 sm:size-5"
+            aria-hidden="true"
+          />
+        </Link>
       </div>
     </div>
-  )
+  );
 }

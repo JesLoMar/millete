@@ -1,24 +1,30 @@
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { getLanguageFromCode } from "@/shared/utils/languages"
-import type { Language } from "@/shared/utils/languages"
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import {
+  getLanguageFromCode,
+  type Language,
+} from '@/shared/utils/languages';
 
 export function useAvailableLanguages(): Language[] {
-  const { i18n } = useTranslation()
+  const { i18n } = useTranslation();
 
   return useMemo(() => {
-    const supportedLngs = i18n.options.supportedLngs as string[] | undefined
+    const supportedLanguages = i18n.options.supportedLngs;
 
-    if (!supportedLngs || supportedLngs.length === 0) {
-      return [getLanguageFromCode(i18n.language)]
+    if (
+      !Array.isArray(supportedLanguages) ||
+      supportedLanguages.length === 0
+    ) {
+      return [getLanguageFromCode(i18n.language)];
     }
 
+    const languages = supportedLanguages
+      .filter((code) => code !== 'cimode')
+      .map((code) => getLanguageFromCode(code));
 
-    return supportedLngs.reduce<Language[]>((acc, code) => {
-      if (typeof code === "string" && code !== "cimode") {
-        acc.push(getLanguageFromCode(code))
-      }
-      return acc
-    }, [])
-  }, [i18n.options.supportedLngs, i18n.language])
+    return languages.length > 0
+      ? languages
+      : [getLanguageFromCode(i18n.language)];
+  }, [i18n.language, i18n.options.supportedLngs]);
 }

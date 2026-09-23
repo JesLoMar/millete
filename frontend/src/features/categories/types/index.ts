@@ -1,33 +1,33 @@
 export interface Category {
-  id: string
-  userId: string
-  name: string
-  color: string
-  budgetLimit: number | null
-  createdAt: string
-  modifiedAt: string
-  active: boolean
+  readonly id: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly color: string;
+  readonly budgetLimit: number | null;
+  readonly createdAt: string;
+  readonly modifiedAt: string;
+  readonly active: boolean;
 }
 
 export interface RegisterCategoryRequest {
-  name: string
-  color: string
-  budgetLimit?: number | null
+  name: string;
+  color: string;
+  budgetLimit?: number | null;
 }
 
 export interface UpdateCategoryRequest {
-  name: string
-  color: string
-  budgetLimit: number | null
+  name: string;
+  color: string;
+  budgetLimit: number | null;
 }
 
 export interface CategoryExpense {
-  name: string
-  amount: number
-  percentage: number
+  readonly name: string;
+  readonly amount: number;
+  readonly percentage: number;
 }
 
 export interface CategoriesExpenseResponse {
-  totalExpenses: number
-  categories: CategoryExpense[]
+  readonly totalExpenses: number;
+  readonly categories: CategoryExpense[];
 }

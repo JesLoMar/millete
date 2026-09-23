@@ -1,127 +1,233 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { CheckCircle } from "lucide-react"
-import { Spinner } from "@/shared/components/Spinner"
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/shared/components/core/dialog"
-import { Button } from "@/shared/components/core/button"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
-import { ColorPicker } from "./ColorPicker"
-import { useCategoryMutations } from "../hooks/useCategoryMutation"
-import type { Category } from "@/shared/hooks/useCategories"
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
+
+import { useCategoryMutations } from '../hooks/useCategoryMutation';
+import type { Category } from '../types';
+import {
+  CATEGORY_NAME_MAX_LENGTH,
+  categoryFormSchema,
+  parseCategoryBudget,
+} from '../schemas/category.schema';
+import { ColorPicker } from './ColorPicker';
 
 interface EditCategoryDialogProps {
-  category: Category | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  category: Category | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function getInitialState(category: Category | null) {
-  return {
-    name: category?.name ?? "",
-    color: category?.color ?? "",
-    budgetLimit: category?.budgetLimit !== null && category?.budgetLimit !== undefined ? String(category.budgetLimit) : "",
-    error: null as string | null,
-  }
+interface EditCategoryFormState {
+  name: string;
+  color: string;
+  budgetLimit: string;
+  error: string | null;
 }
 
-export function EditCategoryDialog({ category, open, onOpenChange }: EditCategoryDialogProps) {
-  const { t } = useTranslation(['categories', 'common'])
-  const { updateCategory, isUpdating } = useCategoryMutations()
+const getInitialState = (
+  category: Category | null,
+): EditCategoryFormState => ({
+  name: category?.name ?? '',
+  color: category?.color ?? '',
+  budgetLimit:
+    category?.budgetLimit !== null &&
+    category?.budgetLimit !== undefined
+      ? String(category.budgetLimit)
+      : '',
+  error: null,
+});
 
-  const [{ name, color, budgetLimit, error }, setState] = useState(() => getInitialState(category))
+export function EditCategoryDialog({
+  category,
+  open,
+  onOpenChange,
+}: EditCategoryDialogProps) {
+  const { t } = useTranslation([
+    'categories',
+    'common',
+    'auth',
+  ]);
 
-  const setName = (name: string) => setState((prev) => ({ ...prev, name }))
-  const setColor = (color: string) => setState((prev) => ({ ...prev, color }))
-  const setBudgetLimit = (budgetLimit: string) => setState((prev) => ({ ...prev, budgetLimit }))
-  const setError = (error: string | null) => setState((prev) => ({ ...prev, error }))
+  const { updateCategory, isUpdating } =
+    useCategoryMutations();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!category) return
-    setError(null)
+  const [form, setForm] =
+    useState<EditCategoryFormState>(
+      () => getInitialState(category),
+    );
 
-    const trimmedName = name.trim()
-    if (!trimmedName) {
-      setError(t('categories:nameRequired'))
-      return
+  useEffect(() => {
+    if (open) {
+      setForm(getInitialState(category));
+    }
+  }, [open, category]);
+
+  const updateField = <
+    K extends keyof EditCategoryFormState,
+  >(
+    field: K,
+    value: EditCategoryFormState[K],
+  ) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+      error: null,
+    }));
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (!category) {
+      return;
     }
 
-    const parsedBudget = budgetLimit.trim() === "" ? null : parseFloat(budgetLimit)
-    if (parsedBudget !== null && (isNaN(parsedBudget) || parsedBudget < 0)) {
-      setError(t('categories:invalidBudget'))
-      return
+    const validation =
+      categoryFormSchema.safeParse(form);
+
+    if (!validation.success) {
+      setForm((previous) => ({
+        ...previous,
+        error:
+          validation.error.issues[0]?.message ??
+          t('categories:updateError'),
+      }));
+      return;
     }
+
+    const {
+      name,
+      color,
+      budgetLimit,
+    } = validation.data;
 
     try {
-      updateCategory.mutate({
+      await updateCategory.mutateAsync({
         id: category.id,
         data: {
-          name: trimmedName,
+          name,
           color,
-          budgetLimit: parsedBudget,
+          budgetLimit:
+            parseCategoryBudget(budgetLimit),
         },
-      })
-      onOpenChange(false)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : t('categories:updateError')
-      setError(message)
+      });
+
+      onOpenChange(false);
+    } catch (error) {
+      const message =
+        error instanceof Error &&
+        error.message
+          ? error.message
+          : t('categories:updateError');
+
+      setForm((previous) => ({
+        ...previous,
+        error: message,
+      }));
     }
-  }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-card border-border rounded-lg">
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className="rounded-lg border-border bg-card sm:max-w-lg">
         <div className="max-h-[85dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
-              {t('categories:editTitle', { name: category?.name ?? "" })}
+              {t('categories:editTitle', {
+                name: category?.name ?? '',
+              })}
             </DialogTitle>
+
             <DialogDescription className="text-sm text-muted-foreground">
               {t('categories:editDescription')}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5 pt-2"
+            noValidate
+          >
             <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-sm font-medium text-foreground/80">
+              <Label
+                htmlFor="edit-name"
+                className="text-sm font-medium text-foreground/80"
+              >
                 {t('categories:nameLabel')}
               </Label>
+
               <Input
                 id="edit-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(event) =>
+                  updateField(
+                    'name',
+                    event.target.value,
+                  )
+                }
                 disabled={isUpdating}
-                placeholder={t('categories:namePlaceholder')}
-                className="bg-background border-border h-11 rounded-xl text-base"
-                maxLength={50}
+                placeholder={t(
+                  'categories:namePlaceholder',
+                )}
+                className="h-11 rounded-xl border-border bg-background text-base"
+                maxLength={CATEGORY_NAME_MAX_LENGTH}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-budget" className="text-sm font-medium text-foreground/80">
+              <Label
+                htmlFor="edit-budget"
+                className="text-sm font-medium text-foreground/80"
+              >
                 {t('categories:budgetLabel')}
-                <span className="text-xs text-muted-foreground ml-1">({t('auth:form.optional')})</span>
+
+                <span className="ml-1 text-xs text-muted-foreground">
+                  ({t('auth:form.optional')})
+                </span>
               </Label>
+
               <div className="relative">
                 <Input
                   id="edit-budget"
                   type="number"
+                  inputMode="decimal"
                   step="0.01"
                   min="0"
-                  value={budgetLimit}
-                  onChange={(e) => setBudgetLimit(e.target.value)}
+                  value={form.budgetLimit}
+                  onChange={(event) =>
+                    updateField(
+                      'budgetLimit',
+                      event.target.value,
+                    )
+                  }
                   disabled={isUpdating}
-                  placeholder={t('categories:budgetPlaceholder')}
-                  className="bg-background border-border h-11 rounded-xl pr-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder={t(
+                    'categories:budgetPlaceholder',
+                  )}
+                  className="h-11 rounded-xl border-border bg-background pr-12 text-base [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground select-none">
+
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 select-none text-sm font-semibold text-muted-foreground">
                   EUR
                 </span>
               </div>
@@ -131,40 +237,50 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
               <Label className="text-sm font-medium text-foreground/80">
                 {t('categories:colorLabel')}
               </Label>
+
               <ColorPicker
-                value={color}
-                onChange={setColor}
+                value={form.color}
+                onChange={(color) =>
+                  updateField(
+                    'color',
+                    color,
+                  )
+                }
                 disabled={isUpdating}
               />
             </div>
 
-            {error && (
-              <p className="text-destructive text-xs font-medium bg-destructive/10 p-3 rounded-xl border border-destructive/20">
-                {error}
+            {form.error && (
+              <p
+                className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs font-medium text-destructive"
+                role="alert"
+              >
+                {form.error}
               </p>
             )}
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-border/40">
+            <div className="flex justify-end gap-3 border-t border-border/40 pt-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() =>
+                  onOpenChange(false)
+                }
                 disabled={isUpdating}
-                className="border-border hover:bg-secondary text-foreground h-10 rounded-xl px-4"
+                className="h-10 rounded-xl border-border px-4 text-foreground hover:bg-secondary"
               >
                 {t('common:actions.cancel')}
               </Button>
+
               <Button
                 type="submit"
                 disabled={isUpdating}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-10 rounded-xl px-5 transition-all min-h-11"
+                className="min-h-11 h-10 rounded-xl bg-primary px-5 font-semibold text-primary-foreground transition-all hover:bg-primary/90"
               >
                 {isUpdating ? (
                   <Spinner size={20} />
                 ) : (
-                  <>
-                    {t('common:actions.save')}
-                  </>
+                  t('common:actions.save')
                 )}
               </Button>
             </div>
@@ -172,5 +288,5 @@ export function EditCategoryDialog({ category, open, onOpenChange }: EditCategor
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

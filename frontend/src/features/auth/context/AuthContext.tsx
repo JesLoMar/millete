@@ -1,13 +1,28 @@
-import { createContext, useState, useEffect, useCallback, use, useMemo, useEffectEvent } from 'react';
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  use,
+  useState,
+} from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import type { ReactNode } from 'react';
+
 import { apiClient } from '@/shared/api/axiosClient';
 import { sessionCache } from '@/shared/utils/sessionCache';
-import type { ReactNode } from 'react';
 
 interface User {
   name: string;
   email: string;
+}
+
+interface CurrentUserResponse {
+  username?: string;
+  email?: string;
+  sessionId?: string;
 }
 
 interface AuthContextType {
@@ -21,88 +36,145 @@ interface AuthContextType {
   retryAuth: () => void;
 }
 
+type FetchUserResult =
+  | {
+      status: 'ok';
+      user: User;
+      sessionId: string;
+    }
+  | {
+      status: 'unauthenticated';
+    }
+  | {
+      status: 'network-error';
+    };
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
-type FetchUserResult =
-  | { status: 'ok'; user: User; sessionId: string }
-  | { status: 'unauthenticated' }
-  | { status: 'network-error' };
+const formatUser = (userData: CurrentUserResponse): User => ({
+  name:
+    userData.username ||
+    userData.email?.split('@')[0] ||
+    'Usuario',
+  email: userData.email || '',
+});
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+
   const queryClient = useQueryClient();
 
-  const fetchCurrentUser = useCallback(async (): Promise<FetchUserResult> => {
-    try {
-      const response = await apiClient.get('/auth/me/topnav', {
-        skipGlobalErrorNotify: true,
-        skipAuthErrorHandler: true,
-      });
-      const userData = response.data;
-      const formattedUser: User = {
-        name: userData.username || userData.email?.split('@')[0] || 'Usuario',
-        email: userData.email || '',
-      };
-      const currentSessionId = userData.sessionId ?? '';
-      return { status: 'ok', user: formattedUser, sessionId: currentSessionId };
-    } catch (error) {
-      // 401 = no autenticado; cualquier otro fallo (red caída, 5xx) se trata aparte.
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        return { status: 'unauthenticated' };
+  const fetchCurrentUser = useCallback(
+    async (): Promise<FetchUserResult> => {
+      try {
+        const response = await apiClient.get<CurrentUserResponse>(
+          '/auth/me/topnav',
+          {
+            skipGlobalErrorNotify: true,
+            skipAuthErrorHandler: true,
+          },
+        );
+
+        const userData = response.data;
+        const formattedUser = formatUser(userData);
+        const currentSessionId = userData.sessionId ?? '';
+
+        return {
+          status: 'ok',
+          user: formattedUser,
+          sessionId: currentSessionId,
+        };
+      } catch (error) {
+        // 401 = sesión no autenticada.
+        // El resto de errores se consideran problemas de conexión/disponibilidad.
+        if (
+          axios.isAxiosError(error) &&
+          error.response?.status === 401
+        ) {
+          return { status: 'unauthenticated' };
+        }
+
+        return { status: 'network-error' };
       }
-      return { status: 'network-error' };
-    }
+    },
+    [],
+  );
+
+  const applyAuthenticatedState = useCallback(
+    (result: Extract<FetchUserResult, { status: 'ok' }>) => {
+      setUser(result.user);
+      setSessionId(result.sessionId);
+      setIsOffline(false);
+
+      sessionCache.setUser(result.user);
+      sessionCache.setSessionId(result.sessionId);
+    },
+    [],
+  );
+
+  const clearAuthenticatedState = useCallback(() => {
+    setUser(null);
+    setSessionId(null);
+    setIsOffline(false);
+    sessionCache.clear();
   }, []);
 
   const logout = useCallback(async () => {
     try {
       await apiClient.post('/auth/logout');
     } catch {
+      // El estado local debe limpiarse aunque el logout remoto falle.
     } finally {
-      setUser(null);
-      setSessionId(null);
-      setIsOffline(false);
-      sessionCache.clear();
+      clearAuthenticatedState();
       queryClient.clear();
     }
-  }, [queryClient]);
+  }, [clearAuthenticatedState, queryClient]);
 
   const onLogout = useEffectEvent(logout);
 
   const initAuth = useCallback(async () => {
     setIsLoading(true);
+
     const result = await fetchCurrentUser();
+
     if (result.status === 'ok') {
-      setUser(result.user);
-      setSessionId(result.sessionId);
-      sessionCache.setUser(result.user);
-      sessionCache.setSessionId(result.sessionId);
-      setIsOffline(false);
+      applyAuthenticatedState(result);
     } else if (result.status === 'unauthenticated') {
-      // Sesión inválida: limpiamos cualquier resto cacheado.
-      sessionCache.clear();
-      setUser(null);
-      setSessionId(null);
-      setIsOffline(false);
+      clearAuthenticatedState();
     } else {
-      // Error de red: NO autenticamos con datos cacheados (sesión zombie).
-      // El usuario verá la pantalla de "sin conexión" con opción de reintentar.
+      // No restauramos una sesión desde la caché durante un error de red.
       setUser(null);
       setSessionId(null);
       setIsOffline(true);
     }
+
     setIsLoading(false);
-  }, [fetchCurrentUser]);
+  }, [
+    applyAuthenticatedState,
+    clearAuthenticatedState,
+    fetchCurrentUser,
+  ]);
 
   useEffect(() => {
-    initAuth();
-    const handleForcedLogout = () => onLogout();
+    void initAuth();
+
+    const handleForcedLogout = () => {
+      onLogout();
+    };
+
     window.addEventListener('auth:logout', handleForcedLogout);
-    return () => window.removeEventListener('auth:logout', handleForcedLogout);
-  }, [initAuth]);
+
+    return () => {
+      window.removeEventListener('auth:logout', handleForcedLogout);
+    };
+  }, [initAuth, onLogout]);
 
   const retryAuth = useCallback(() => {
     void initAuth();
@@ -114,31 +186,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userData);
         sessionCache.setUser(userData);
       }
+
       const result = await fetchCurrentUser();
+
       if (result.status === 'ok') {
-        setUser(result.user);
-        setSessionId(result.sessionId);
-        sessionCache.setUser(result.user);
-        sessionCache.setSessionId(result.sessionId);
-        setIsOffline(false);
-      } else {
-        await logout();
-        throw new Error('Fallo al obtener perfil tras login');
+        applyAuthenticatedState(result);
+        return;
       }
+
+      await logout();
+
+      throw new Error('Fallo al obtener perfil tras login');
     },
-    [fetchCurrentUser, logout],
+    [applyAuthenticatedState, fetchCurrentUser, logout],
   );
 
-  const value = useMemo(() => ({
-    isAuthenticated: !!user,
-    isLoading,
-    isOffline,
-    user,
-    sessionId,
-    login,
-    logout,
-    retryAuth,
-  }), [isLoading, isOffline, user, sessionId, login, logout, retryAuth]);
+  const value = useMemo<AuthContextType>(
+    () => ({
+      isAuthenticated: !!user,
+      isLoading,
+      isOffline,
+      user,
+      sessionId,
+      login,
+      logout,
+      retryAuth,
+    }),
+    [
+      isLoading,
+      isOffline,
+      user,
+      sessionId,
+      login,
+      logout,
+      retryAuth,
+    ],
+  );
 
   return (
     <AuthContext.Provider value={value}>
@@ -149,6 +232,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = use(AuthContext);
-  if (!context) throw new Error('useAuth debe usarse dentro de un AuthProvider');
+
+  if (!context) {
+    throw new Error(
+      'useAuth debe usarse dentro de un AuthProvider',
+    );
+  }
+
   return context;
 };

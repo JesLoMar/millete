@@ -1,40 +1,55 @@
-import { useTranslation } from "react-i18next"
-import type { UseFormRegister, FieldErrors } from "react-hook-form"
-import type { CombinedAuthFormData } from "@/features/auth/schemas/auth.schema"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
-import { cn } from "@/lib/utils"
+import { useTranslation } from 'react-i18next';
+import type {
+  FieldErrors,
+  UseFormRegister,
+} from 'react-hook-form';
+
+import type { CombinedAuthFormData } from '@/features/auth/schemas/auth.schema';
+import { cn } from '@/lib/utils';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 
 interface LoginFieldsProps {
-  register: UseFormRegister<CombinedAuthFormData>
-  disabled: boolean
-  errors: FieldErrors<CombinedAuthFormData>
+  register: UseFormRegister<CombinedAuthFormData>;
+  disabled: boolean;
+  errors: FieldErrors<CombinedAuthFormData>;
 }
 
-export function LoginFields({ register, disabled, errors }: LoginFieldsProps) {
-  const { t } = useTranslation()
+export function LoginFields({
+  register,
+  disabled,
+  errors,
+}: LoginFieldsProps) {
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-3">
-      <Label htmlFor="identifier" className="text-lg text-secondary-foreground/70 ml-1">
+      <Label
+        htmlFor="identifier"
+        className="ml-1 text-lg text-secondary-foreground/70"
+      >
         {t('auth:form.fields.identifier.login')}
       </Label>
+
       <Input
         id="identifier"
         type="text"
         autoComplete="username"
         placeholder={t('auth:form.fields.placeholder.login')}
         disabled={disabled}
-        aria-invalid={errors.identifier ? "true" : "false"}
+        aria-invalid={errors.identifier ? 'true' : 'false'}
         className={cn(
-          "bg-secondary/30 border-border/50 h-14 text-lg focus:ring-2 focus:ring-primary/50 transition-all rounded-xl px-5 text-foreground",
-          errors.identifier && "animate-shake"
+          'h-14 rounded-xl border-border/50 bg-secondary/30 px-5 text-lg text-foreground transition-all focus:ring-2 focus:ring-primary/50',
+          errors.identifier && 'animate-shake',
         )}
-        {...register("identifier", { required: true })}
+        {...register('identifier')}
       />
-      {errors.identifier && (
-        <p className="text-crust text-xs ml-1">{t('validations:required')}</p>
+
+      {errors.identifier?.message && (
+        <p className="ml-1 text-xs text-crust">
+          {t(errors.identifier.message)}
+        </p>
       )}
     </div>
-  )
+  );
 }

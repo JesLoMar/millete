@@ -1,24 +1,36 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
-import { notify } from "@/shared/utils/notifications/notify";
-import i18n from '@/lib/i18n';
+import { ROUTES } from '@/app/router/routes';
+import type {
+  RegisterUserRequest,
+  LoginRequest,
+  LoginResponse,
+} from '../types';
 import type { ApiError } from '@/shared/types/api';
-import type { RegisterUserRequest, LoginRequest, LoginResponse } from '../types';
+import { notify } from '@/shared/utils/notifications/notify';
+
+const isApiError = (error: ApiError | Error): error is ApiError => {
+  return 'response' in error;
+};
 
 export const useRegisterMutation = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
-  return useMutation<LoginResponse, ApiError, RegisterUserRequest>({
+  return useMutation<LoginResponse, ApiError | Error, RegisterUserRequest>({
     mutationFn: async (data: RegisterUserRequest) => {
       await authService.register(data);
 
-      const identifier = data.username || data.email || "";
+      const identifier = data.username || data.email || '';
+
       if (!identifier) {
-        throw new Error(i18n.t('auth:errors.no_identifier'));
+        throw new Error(t('auth:errors.no_identifier'));
       }
 
       const loginData: LoginRequest = {
@@ -29,20 +41,31 @@ export const useRegisterMutation = () => {
       try {
         return await authService.login(loginData);
       } catch {
-        throw new Error(i18n.t('auth:errors.auto_login_failed'));
+        throw new Error(t('auth:errors.auto_login_failed'));
       }
     },
+
     onSuccess: async () => {
       await login();
       queryClient.clear();
 
-      notify.success(i18n.t('auth:alerts.register_success'));
-      navigate('/dashboard', { replace: true });
+      notify.success(t('auth:alerts.register_success'));
+      navigate(ROUTES.dashboard, { replace: true });
     },
-    onError: (error: ApiError) => {
-      const errorMessage = error.response?.data?.message || i18n.t('auth:errors.register_failed');
-      console.error('[registerCategory] Error:', errorMessage);
-      notify.error(errorMessage);
-    }
+
+    onError: (error: ApiError | Error) => {
+      if (isApiError(error)) {
+        const errorMessage =
+          error.response?.data?.message ||
+          t('auth:errors.register_failed');
+
+        notify.error(errorMessage);
+        return;
+      }
+
+      notify.error(
+        error.message || t('auth:errors.register_failed'),
+      );
+    },
   });
 };

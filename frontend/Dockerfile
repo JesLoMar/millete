@@ -7,7 +7,7 @@ WORKDIR /app
 # Install pnpm globally (exact version required)
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
+RUN corepack enable && corepack prepare pnpm@12.5.1 --activate
 
 # Copy dependency definition files first (Leverages Docker layer caching)
 COPY package.json pnpm-lock.yaml* ./
