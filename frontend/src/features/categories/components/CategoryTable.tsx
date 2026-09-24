@@ -10,9 +10,6 @@ import {
 import {
   useCategories,
 } from '@/features/categories/hooks/useCategories';
-import {
-  useCategoryBudgets,
-} from '@/features/categories/hooks/useCategoryBudgets';
 import type { Category } from '@/features/categories/types';
 import type { PeriodFilter } from '@/shared/components/PeriodSelector';
 import { Input } from '@/shared/components/core/input';
@@ -95,34 +92,6 @@ export function CategoryTable({
     isFetching: isExpensesFetching,
   } = useCategoryExpenses(period);
 
-  const { data: budgetsData } =
-    useCategoryBudgets(period);
-
-  const budgetsByCategoryId = useMemo(() => {
-    if (!budgetsData?.budgets) {
-      return {};
-    }
-
-    return budgetsData.budgets.reduce<
-      Record<
-        string,
-        {
-          spent: number;
-          limit: number;
-          percentage: number;
-        }
-      >
-    >((map, budget) => {
-      map[budget.categoryId] = {
-        spent: budget.spent,
-        limit: budget.limit,
-        percentage: budget.percentage,
-      };
-
-      return map;
-    }, {});
-  }, [budgetsData]);
-
   const expensesByCategoryId = useMemo(() => {
     if (!expensesData?.categories) {
       return {};
@@ -138,6 +107,30 @@ export function CategoryTable({
       return map;
     }, {});
   }, [expensesData]);
+
+  /**
+   * Categories store their budget as a monthly amount.
+   * The displayed budget depends on the selected period.
+   */
+  const getAdjustedBudgetLimit = (
+    budgetLimit: number | null | undefined,
+  ): number | null => {
+    if (!budgetLimit) {
+      return null;
+    }
+
+    switch (period) {
+      case 'week':
+        return budgetLimit / 4;
+
+      case 'year':
+        return budgetLimit * 12;
+
+      case 'month':
+      default:
+        return budgetLimit;
+    }
+  };
 
   const handleDelete = async () => {
     if (!deletingCategory) {
@@ -237,19 +230,24 @@ export function CategoryTable({
             </p>
           ) : (
             categories.map((category) => {
-              const budget =
-                budgetsByCategoryId[category.id];
-
               const spent =
-                budget?.spent ??
-                expensesByCategoryId[category.id] ??
-                0;
+                expensesByCategoryId[category.id] ?? 0;
 
               const budgetLimit =
-                budget?.limit ?? null;
+                getAdjustedBudgetLimit(
+                  category.budgetLimit,
+                );
 
-              const percentage =
-                budget?.percentage ?? 0;
+              const percentageValue =
+                budgetLimit !== null &&
+                budgetLimit > 0
+                  ? (spent / budgetLimit) * 100
+                  : 0;
+
+              const percentage = Math.min(
+                percentageValue,
+                100,
+              );
 
               return (
                 <m.div

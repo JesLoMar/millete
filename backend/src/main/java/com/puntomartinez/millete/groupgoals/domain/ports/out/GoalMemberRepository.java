@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface GoalMemberRepository {
 
-    GoalMember save(GoalMember member);
+    GoalMember save(GoalMember goalMember);
 
     Optional<GoalMember> findById(UUID id);
 
@@ -17,9 +17,16 @@ public interface GoalMemberRepository {
             UUID userId
     );
 
-    List<GoalMember> findActiveByGoalId(UUID goalId);
     List<GoalMember> findActiveByUserId(UUID userId);
+
+    List<GoalMember> findActiveByGoalId(UUID goalId);
+
     List<GoalMember> findActiveByGoalIdIn(List<UUID> goalIds);
 
     void deactivateByGoalId(UUID goalId);
+
+    void deleteByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    );
 }

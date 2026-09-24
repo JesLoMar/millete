@@ -5,6 +5,7 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepositor
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalMemberEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalMemberEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalMemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -13,30 +14,19 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class GoalMemberPostgresAdapter implements GoalMemberRepository {
 
-    private final JpaGoalMemberRepository repository;
+    private final JpaGoalMemberRepository jpaRepository;
     private final GoalMemberEntityMapper mapper;
 
-    public GoalMemberPostgresAdapter(
-            JpaGoalMemberRepository repository,
-            GoalMemberEntityMapper mapper
-    ) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
-
     @Override
-    public GoalMember save(GoalMember member) {
-        GoalMemberEntity entity = mapper.toEntity(member);
-        GoalMemberEntity saved = repository.save(entity);
-        return mapper.toDomain(saved);
-    }
+    public GoalMember save(GoalMember goalMember) {
+        GoalMemberEntity entity = mapper.toEntity(goalMember);
 
-    @Override
-    public Optional<GoalMember> findById(UUID id) {
-        return repository.findByIdAndActiveTrue(id)
-                .map(mapper::toDomain);
+        GoalMemberEntity savedEntity = jpaRepository.save(entity);
+
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
@@ -44,13 +34,31 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
             UUID goalId,
             UUID userId
     ) {
-        return repository.findByGoalIdAndUserId(goalId, userId)
+        return jpaRepository
+                .findByGoalIdAndUserId(goalId, userId)
                 .map(mapper::toDomain);
     }
 
     @Override
+    public Optional<GoalMember> findById(UUID id) {
+        return jpaRepository
+                .findById(id)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<GoalMember> findActiveByUserId(UUID userId) {
+        return jpaRepository
+                .findByUserIdAndActiveTrue(userId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GoalMember> findActiveByGoalId(UUID goalId) {
-        return repository.findByGoalIdAndActiveTrue(goalId)
+        return jpaRepository
+                .findByGoalIdAndActiveTrue(goalId)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
@@ -61,7 +69,9 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
         if (goalIds == null || goalIds.isEmpty()) {
             return List.of();
         }
-        return repository.findByGoalIdInAndActiveTrue(goalIds)
+
+        return jpaRepository
+                .findByGoalIdInAndActiveTrue(goalIds)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
@@ -69,14 +79,20 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
 
     @Override
     public void deactivateByGoalId(UUID goalId) {
-        repository.deactivateByGoalId(goalId, LocalDateTime.now());
+        jpaRepository.deactivateByGoalId(
+                goalId,
+                LocalDateTime.now()
+        );
     }
 
     @Override
-public List<GoalMember> findActiveByUserId(UUID userId) {
-    return repository.findByUserIdAndActiveTrue(userId)
-            .stream()
-            .map(mapper::toDomain)
-            .toList();
-}
+    public void deleteByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    ) {
+        jpaRepository.deleteByGoalIdAndUserId(
+                goalId,
+                userId
+        );
+    }
 }

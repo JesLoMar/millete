@@ -121,10 +121,7 @@ export function NewRecurringTransactionDialog() {
         typeof createRecurring.mutateAsync
       >[0] = {
         categoryId: form.category,
-        amount:
-          form.type === 'EXPENSE'
-            ? -Math.abs(amount)
-            : Math.abs(amount),
+        amount: Math.abs(amount),
         type: form.type,
         description: form.description.trim(),
         frequencyType: form.frequencyType,

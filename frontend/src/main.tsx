@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import App from './App';
-import './app/globals.css';
 import './index.css';
 import '@/lib/i18n';
 import { MotionProvider } from '@/shared/components/MotionProvider';

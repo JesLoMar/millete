@@ -7,6 +7,7 @@ public record GoalListItemResponseDTO(
         UUID id,
         String name,
         BigDecimal monthlyTarget,
+        long memberCount,
         boolean isAdmin
 ) {
 }

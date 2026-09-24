@@ -54,8 +54,8 @@ public class GroupGoalQueryService implements
     @Override
     @Transactional(readOnly = true)
     public List<GoalSummary> listGoals(UUID userId) {
-        List<GoalMember> memberships = goalMemberRepository
-                .findActiveByUserId(userId);
+        List<GoalMember> memberships =
+                goalMemberRepository.findActiveByUserId(userId);
 
         if (memberships.isEmpty()) {
             return List.of();
@@ -65,22 +65,54 @@ public class GroupGoalQueryService implements
                 .map(GoalMember::getGoalId)
                 .toList();
 
-        List<GoalUnit> goals = goalUnitRepository.findByIds(goalIds);
+        List<GoalUnit> goals =
+                goalUnitRepository.findByIds(goalIds);
 
-        Map<UUID, GoalMember> memberByGoal = memberships.stream()
-                .collect(Collectors.toMap(
-                        GoalMember::getGoalId, m -> m, (a, b) -> a
-                ));
+        Map<UUID, GoalMember> memberByGoal =
+                memberships.stream()
+                        .collect(Collectors.toMap(
+                                GoalMember::getGoalId,
+                                m -> m,
+                                (a, b) -> a
+                        ));
+
+        /*
+         * IMPORTANTE:
+         *
+         * Obtenemos todos los miembros activos de todas las metas
+         * en una única consulta batch.
+         *
+         * NO hacer findActiveByGoalId() dentro del map()
+         * porque eso introduciría un N+1.
+         */
+        List<GoalMember> allActiveMembers =
+                goalMemberRepository.findActiveByGoalIdIn(goalIds);
+
+        Map<UUID, Long> memberCountByGoal =
+                allActiveMembers.stream()
+                        .collect(Collectors.groupingBy(
+                                GoalMember::getGoalId,
+                                Collectors.counting()
+                        ));
 
         return goals.stream()
                 .filter(GoalUnit::isActive)
                 .map(goal -> {
-                    GoalMember membership = memberByGoal.get(goal.getId());
+                    GoalMember membership =
+                            memberByGoal.get(goal.getId());
+
+                    long memberCount =
+                            memberCountByGoal.getOrDefault(
+                                    goal.getId(),
+                                    0L
+                            );
+
                     return new GoalSummary(
                             goal.getId(),
                             goal.getName(),
                             goal.getMonthlyTarget(),
                             goal.getDistributionMode(),
+                            memberCount,
                             membership != null && membership.isAdmin(),
                             goal.getCreatedAt()
                     );
@@ -90,24 +122,30 @@ public class GroupGoalQueryService implements
 
     @Override
     @Transactional(readOnly = true)
-    public GoalDetail getGoalDetail(UUID goalId, UUID userId) {
+    public GoalDetail getGoalDetail(
+            UUID goalId,
+            UUID userId
+    ) {
         GoalUnit goal = goalUnitRepository.findById(goalId)
                 .filter(GoalUnit::isActive)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Objetivo no encontrado")
-                );
-
-        GoalMember requester = goalMemberRepository
-                .findByGoalIdAndUserId(goalId, userId)
-                .filter(GoalMember::isActive)
-                .orElseThrow(() ->
-                        new ForbiddenOperationException(
-                                "No perteneces a este objetivo"
+                        new ResourceNotFoundException(
+                                "Objetivo no encontrado"
                         )
                 );
 
-        List<GoalMember> members = goalMemberRepository
-                .findActiveByGoalId(goalId);
+        GoalMember requester =
+                goalMemberRepository
+                        .findByGoalIdAndUserId(goalId, userId)
+                        .filter(GoalMember::isActive)
+                        .orElseThrow(() ->
+                                new ForbiddenOperationException(
+                                        "No perteneces a este objetivo"
+                                )
+                        );
+
+        List<GoalMember> members =
+                goalMemberRepository.findActiveByGoalId(goalId);
 
         List<UUID> memberUserIds = members.stream()
                 .map(GoalMember::getUserId)
@@ -118,26 +156,37 @@ public class GroupGoalQueryService implements
 
         boolean requesterIsAdmin = requester.isAdmin();
 
-        List<MemberDetail> memberDetails = members.stream()
-                .map(member -> {
-                    UserLookupPort.UserInfo userInfo = usersById.get(
-                            member.getUserId()
-                    );
-                    boolean canSeeFinancialData = requesterIsAdmin
-                            || member.getUserId().equals(userId);
+        List<MemberDetail> memberDetails =
+                members.stream()
+                        .map(member -> {
+                            UserLookupPort.UserInfo userInfo =
+                                    usersById.get(member.getUserId());
 
-                    return new MemberDetail(
-                            member.getId(),
-                            member.getUserId(),
-                            userInfo != null ? userInfo.username() : null,
-                            userInfo != null ? userInfo.email() : null,
-                            member.getRole(),
-                            canSeeFinancialData ? member.getSalary() : null,
-                            canSeeFinancialData ? member.getCustomPercentage() : null,
-                            member.getJoinedAt()
-                    );
-                })
-                .toList();
+                            boolean canSeeFinancialData =
+                                    requesterIsAdmin
+                                            || member.getUserId()
+                                            .equals(userId);
+
+                            return new MemberDetail(
+                                    member.getId(),
+                                    member.getUserId(),
+                                    userInfo != null
+                                            ? userInfo.username()
+                                            : null,
+                                    userInfo != null
+                                            ? userInfo.email()
+                                            : null,
+                                    member.getRole(),
+                                    canSeeFinancialData
+                                            ? member.getSalary()
+                                            : null,
+                                    canSeeFinancialData
+                                            ? member.getCustomPercentage()
+                                            : null,
+                                    member.getJoinedAt()
+                            );
+                        })
+                        .toList();
 
         List<MemberContributionTotals> totals =
                 goalContributionRepository.sumByGoalId(goalId);
@@ -156,69 +205,107 @@ public class GroupGoalQueryService implements
     @Override
     @Transactional(readOnly = true)
     public PaginatedContributions getContributionHistory(
-            UUID goalId, UUID userId, int page, int size
+            UUID goalId,
+            UUID userId,
+            int page,
+            int size
     ) {
         requireActiveMember(goalId, userId);
-        return goalContributionRepository.findByGoalId(goalId, page, size);
+
+        return goalContributionRepository.findByGoalId(
+                goalId,
+                page,
+                size
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MemberContributionTotals> getTotalsByMember(
-            UUID goalId, UUID userId
+            UUID goalId,
+            UUID userId
     ) {
         requireActiveMember(goalId, userId);
+
         return goalContributionRepository.sumByGoalId(goalId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ContributionsCalculation calculateContributions(
-            UUID goalId, UUID userId
+            UUID goalId,
+            UUID userId
     ) {
         GoalUnit goal = goalUnitRepository.findById(goalId)
                 .filter(GoalUnit::isActive)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Objetivo no encontrado")
+                        new ResourceNotFoundException(
+                                "Objetivo no encontrado"
+                        )
                 );
 
         requireActiveMember(goalId, userId);
 
-        List<GoalMember> members = goalMemberRepository
-                .findActiveByGoalId(goalId);
+        List<GoalMember> members =
+                goalMemberRepository.findActiveByGoalId(goalId);
 
         BigDecimal target = goal.getMonthlyTarget();
         DistributionMode mode = goal.getDistributionMode();
 
         List<MemberContribution> contributions = switch (mode) {
-            case EQUITATIVE -> calculateEquitative(members, target);
-            case PROPORTIONAL -> calculateProportional(members, target);
-            case CUSTOM -> calculateCustom(members, target);
+            case EQUITATIVE ->
+                    calculateEquitative(members, target);
+            case PROPORTIONAL ->
+                    calculateProportional(members, target);
+            case CUSTOM ->
+                    calculateCustom(members, target);
         };
 
-        return new ContributionsCalculation(target, mode, contributions);
+        return new ContributionsCalculation(
+                target,
+                mode,
+                contributions
+        );
     }
 
     private List<MemberContribution> calculateEquitative(
-            List<GoalMember> members, BigDecimal target
+            List<GoalMember> members,
+            BigDecimal target
     ) {
         if (members.isEmpty()) {
             return List.of();
         }
+
         BigDecimal perMember = target.divide(
-                new BigDecimal(members.size()), 2, RoundingMode.HALF_UP
+                new BigDecimal(members.size()),
+                2,
+                RoundingMode.HALF_UP
         );
+
         return members.stream()
-                .map(m -> new MemberContribution(m.getUserId(), perMember))
+                .map(member ->
+                        new MemberContribution(
+                                member.getUserId(),
+                                perMember
+                        )
+                )
                 .toList();
     }
 
     private List<MemberContribution> calculateProportional(
-            List<GoalMember> members, BigDecimal target
+            List<GoalMember> members,
+            BigDecimal target
     ) {
         BigDecimal totalSalary = members.stream()
-                .map(m -> m.getSalary() != null ? m.getSalary() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(member ->
+                        member.getSalary() != null
+                                ? member.getSalary()
+                                : BigDecimal.ZERO
+                )
+                .reduce(
+                        BigDecimal.ZERO,
+                        BigDecimal::add
+                );
 
         if (totalSalary.compareTo(BigDecimal.ZERO) == 0) {
             throw new InvalidInputException(
@@ -228,49 +315,86 @@ public class GroupGoalQueryService implements
         }
 
         return members.stream()
-                .map(m -> {
-                    BigDecimal salary = m.getSalary() != null
-                            ? m.getSalary() : BigDecimal.ZERO;
+                .map(member -> {
+                    BigDecimal salary =
+                            member.getSalary() != null
+                                    ? member.getSalary()
+                                    : BigDecimal.ZERO;
+
                     BigDecimal share = target
                             .multiply(salary)
-                            .divide(totalSalary, 2, RoundingMode.HALF_UP);
-                    return new MemberContribution(m.getUserId(), share);
+                            .divide(
+                                    totalSalary,
+                                    2,
+                                    RoundingMode.HALF_UP
+                            );
+
+                    return new MemberContribution(
+                            member.getUserId(),
+                            share
+                    );
                 })
                 .toList();
     }
 
     private List<MemberContribution> calculateCustom(
-            List<GoalMember> members, BigDecimal target
+            List<GoalMember> members,
+            BigDecimal target
     ) {
-        List<MemberContribution> result = new ArrayList<>();
-        BigDecimal totalPercentage = BigDecimal.ZERO;
+        List<MemberContribution> result =
+                new ArrayList<>();
+
+        BigDecimal totalPercentage =
+                BigDecimal.ZERO;
 
         for (GoalMember member : members) {
-            BigDecimal percentage = member.getCustomPercentage();
+            BigDecimal percentage =
+                    member.getCustomPercentage();
+
             if (percentage == null) {
                 throw new InvalidInputException(
-                        "En modo CUSTOM todos los miembros deben tener "
-                                + "un porcentaje asignado"
+                        "En modo CUSTOM todos los miembros deben "
+                                + "tener un porcentaje asignado"
                 );
             }
-            totalPercentage = totalPercentage.add(percentage);
+
+            totalPercentage =
+                    totalPercentage.add(percentage);
+
             BigDecimal share = target
                     .multiply(percentage)
-                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-            result.add(new MemberContribution(member.getUserId(), share));
+                    .divide(
+                            new BigDecimal("100"),
+                            2,
+                            RoundingMode.HALF_UP
+                    );
+
+            result.add(
+                    new MemberContribution(
+                            member.getUserId(),
+                            share
+                    )
+            );
         }
 
-        if (totalPercentage.compareTo(new BigDecimal("100")) != 0) {
+        if (totalPercentage.compareTo(
+                new BigDecimal("100")
+        ) != 0) {
             throw new InvalidInputException(
                     "Los porcentajes personalizados deben sumar 100. "
                             + "Actual: " + totalPercentage
             );
         }
+
         return result;
     }
 
-    private void requireActiveMember(UUID goalId, UUID userId) {
-        goalMemberRepository.findByGoalIdAndUserId(goalId, userId)
+    private void requireActiveMember(
+            UUID goalId,
+            UUID userId
+    ) {
+        goalMemberRepository
+                .findByGoalIdAndUserId(goalId, userId)
                 .filter(GoalMember::isActive)
                 .orElseThrow(() ->
                         new ForbiddenOperationException(

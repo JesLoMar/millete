@@ -12,6 +12,6 @@ public record GoalDetailResponseDTO(
         String distributionMode,
         boolean isAdmin,
         List<GoalMemberDTO> members,
+        List<GoalContributionDTO> contributions,
         Map<UUID, BigDecimal> contributionTotals
-) {
-}
+) {}

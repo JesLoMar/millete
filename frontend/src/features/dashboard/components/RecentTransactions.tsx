@@ -2,7 +2,6 @@ import { ArrowDownRight, ArrowUpRight, ShoppingCart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { CATEGORY_COLORS, CATEGORY_ICONS } from '../constants'
 import type { TransactionItem } from '../types'
 import { formatDate } from '../utils'
 
@@ -94,11 +93,8 @@ export function RecentTransactions({
             </p>
           ) : (
             transactions.map((tx) => {
-              const categoryKey = tx.category || 'other'
-              const Icon =
-                CATEGORY_ICONS[categoryKey] || ShoppingCart
+              const Icon = ShoppingCart
               const color =
-                CATEGORY_COLORS[categoryKey] ||
                 'text-muted-foreground bg-muted/10'
               const isExpense = tx.type === 'EXPENSE'
 

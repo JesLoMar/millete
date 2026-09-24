@@ -12,8 +12,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,52 +41,49 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             LocalDateTime startDate,
             LocalDateTime endDate
     ) {
-        Specification<TransactionEntity> spec =
-                (root, query, cb) -> cb.equal(root.get("userId"), userId);
+        return (root, _, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        spec = spec.and(
-                (root, query, cb) -> cb.equal(root.get("active"), true)
-        );
+            predicates.add(cb.equal(root.get("userId"), userId));
+            predicates.add(cb.equal(root.get("active"), true));
 
-        if (search != null && !search.isBlank()) {
-            String pattern = "%" + search.toLowerCase() + "%";
-            spec = spec.and(
-                    (root, query, cb) ->
-                            cb.like(
-                                    cb.lower(root.get("description")),
-                                    pattern
-                            )
-            );
-        }
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.toLowerCase() + "%";
 
-        if (type != null) {
-            spec = spec.and(
-                    (root, query, cb) ->
-                            cb.equal(root.get("type"), type.name())
-            );
-        }
+                predicates.add(
+                        cb.like(
+                                cb.lower(root.get("description")),
+                                pattern
+                        )
+                );
+            }
 
-        if (startDate != null) {
-            spec = spec.and(
-                    (root, query, cb) ->
-                            cb.greaterThanOrEqualTo(
-                                    root.get("date"),
-                                    startDate
-                            )
-            );
-        }
+            if (type != null) {
+                predicates.add(
+                        cb.equal(root.get("type"), type.name())
+                );
+            }
 
-        if (endDate != null) {
-            spec = spec.and(
-                    (root, query, cb) ->
-                            cb.lessThanOrEqualTo(
-                                    root.get("date"),
-                                    endDate
-                            )
-            );
-        }
+            if (startDate != null) {
+                predicates.add(
+                        cb.greaterThanOrEqualTo(
+                                root.get("date"),
+                                startDate
+                        )
+                );
+            }
 
-        return spec;
+            if (endDate != null) {
+                predicates.add(
+                        cb.lessThanOrEqualTo(
+                                root.get("date"),
+                                endDate
+                        )
+                );
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     @Override
@@ -119,7 +118,12 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             LocalDateTime start,
             LocalDateTime end
     ) {
-        return repository.findByUserIdAndDateBetween(userId, start, end).stream()
+        return repository.findByUserIdAndDateBetween(
+                        userId,
+                        start,
+                        end
+                )
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
@@ -129,6 +133,7 @@ public class TransactionPostgresAdapter implements TransactionRepository {
         if (limit <= 0) {
             return List.of();
         }
+
         return repository.findByUserIdAndActiveTrueOrderByDateDesc(
                         userId,
                         PageRequest.of(0, limit)
@@ -179,7 +184,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
                 )
         );
 
-        return result.getContent().stream()
+        return result.getContent()
+                .stream()
                 .map(mapper::toDomain)
                 .toList();
     }
@@ -209,22 +215,20 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             LocalDateTime start,
             LocalDateTime end
     ) {
-        Object[] result = repository.getAggregatesByUserIdAndDateBetween(
-                userId,
-                start,
-                end
-        );
+        List<Object[]> results =
+                repository.getAggregatesByUserIdAndDateBetween(
+                        userId,
+                        start,
+                        end
+                );
 
-        BigDecimal totalIncome = result[0] != null
-                ? new BigDecimal(result[0].toString())
-                : BigDecimal.ZERO;
+        Object[] result = results.getFirst();
 
-        BigDecimal totalExpense = result[1] != null
-                ? new BigDecimal(result[1].toString())
-                : BigDecimal.ZERO;
+        BigDecimal totalIncome = toBigDecimal(result[0]);
+        BigDecimal totalExpense = toBigDecimal(result[1]);
 
         long count = result[2] != null
-                ? Long.parseLong(result[2].toString())
+                ? ((Number) result[2]).longValue()
                 : 0L;
 
         return new TransactionAggregates(
@@ -232,5 +236,17 @@ public class TransactionPostgresAdapter implements TransactionRepository {
                 totalExpense,
                 count
         );
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        return switch (value) {
+            case null -> BigDecimal.ZERO;
+            case BigDecimal bigDecimal -> bigDecimal;
+            case Number number -> new BigDecimal(number.toString());
+            default -> throw new IllegalStateException(
+                    "El resultado del agregado no es numérico: "
+                            + value.getClass().getName()
+            );
+        };
     }
 }

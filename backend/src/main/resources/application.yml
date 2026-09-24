@@ -36,9 +36,9 @@ spring:
     driver-class-name: org.postgresql.Driver
 
 app:
-  version: 0.1.3
+  version: 0.2.0
   frontend:
-    url: http://localhost:3000
+    url: http://localhost:5173
 
 jwt:
   secret: U3VwZXJTZWNy5XRfSldUX0tleV9Gb3JfVGVzdGluZ187MDI2X01pbGxldGUK

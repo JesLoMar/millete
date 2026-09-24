@@ -36,8 +36,6 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Ocio: ShoppingCart,
 }
 
-export { CATEGORY_COLORS } from '@/shared/constants/categoryColors'
-
 export type ExportFormat = 'json' | 'zip' | 'csv' | 'pdf'
 
 export interface ExportFormatOption {

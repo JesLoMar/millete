@@ -3,7 +3,6 @@ import {
   use,
   useCallback,
   useEffect,
-  useEffectEvent,
   useMemo,
   useState,
 } from 'react';
@@ -127,12 +126,13 @@ export const AuthProvider = ({
     [],
   );
 
-  const clearAuthenticatedState = useCallback(() => {
-    setUser(null);
-    setSessionId(null);
-    setIsOffline(false);
-    sessionCache.clear();
-  }, []);
+  const clearAuthenticatedState =
+    useCallback(() => {
+      setUser(null);
+      setSessionId(null);
+      setIsOffline(false);
+      sessionCache.clear();
+    }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -151,8 +151,6 @@ export const AuthProvider = ({
       queryClient.clear();
     }
   }, [clearAuthenticatedState, queryClient]);
-
-  const onLogout = useEffectEvent(logout);
 
   const initAuth = useCallback(async () => {
     setIsLoading(true);
@@ -180,7 +178,7 @@ export const AuthProvider = ({
     void initAuth();
 
     const handleForcedLogout = () => {
-      onLogout();
+      void logout();
     };
 
     window.addEventListener(
@@ -194,7 +192,7 @@ export const AuthProvider = ({
         handleForcedLogout,
       );
     };
-  }, [initAuth, onLogout]);
+  }, [initAuth, logout]);
 
   const retryAuth = useCallback(() => {
     void initAuth();

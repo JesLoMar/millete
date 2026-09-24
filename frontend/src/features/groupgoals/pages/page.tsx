@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { AddContributionDialog } from '@/features/groupgoals/components/dialogs/AddContributionDialog'
 import { CreateGroupGoalDialog } from '@/features/groupgoals/components/dialogs/CreateGroupGoalDialog'
@@ -27,6 +28,7 @@ import { Pagination } from '@/shared/components/Pagination'
 import { TopNav } from '@/shared/components/TopNav'
 
 export const GroupGoalsPage = () => {
+  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [internalSelectedGoalId, setInternalSelectedGoalId] =
@@ -51,10 +53,10 @@ export const GroupGoalsPage = () => {
 
           return next
         },
-        { replace: true },
+        { replace: true }
       )
     },
-    [setSearchParams],
+    [setSearchParams]
   )
 
   const [dialogs, setDialogs] = useState({
@@ -83,10 +85,8 @@ export const GroupGoalsPage = () => {
     prevPage,
   } = useGroupGoals()
 
-  const { selectedGoal } =
-    useGroupGoalDetail(selectedGoalId)
-  const mutations =
-    useGroupGoalMutations(selectedGoalId)
+  const { selectedGoal } = useGroupGoalDetail(selectedGoalId)
+  const mutations = useGroupGoalMutations(selectedGoalId)
 
   const from =
     totalElements === 0
@@ -95,7 +95,7 @@ export const GroupGoalsPage = () => {
 
   const to = Math.min(
     (displayPage + 1) * displaySize,
-    totalElements,
+    totalElements
   )
 
   const totalCustomPercentage = useMemo(() => {
@@ -104,7 +104,7 @@ export const GroupGoalsPage = () => {
     return selectedGoal.members.reduce(
       (sum, member) =>
         sum + (member.customPercentage || 0),
-      0,
+      0
     )
   }, [selectedGoal])
 
@@ -114,15 +114,14 @@ export const GroupGoalsPage = () => {
 
       return calculateContributions(
         selectedGoal,
-        totalCustomPercentage,
+        totalCustomPercentage
       )
     }, [selectedGoal, totalCustomPercentage])
 
-  const totalContributed =
-    contributionMembers.reduce(
-      (sum, member) => sum + member.contributed,
-      0,
-    )
+  const totalContributed = contributionMembers.reduce(
+    (sum, member) => sum + member.contributed,
+    0
+  )
 
   const percentageCompleted = selectedGoal
     ? selectedGoal.monthlyTarget > 0
@@ -142,7 +141,7 @@ export const GroupGoalsPage = () => {
     }
 
     const adminCount = selectedGoal.members.filter(
-      (member) => member.role === 'ADMIN',
+      (member) => member.role === 'ADMIN'
     ).length
 
     return adminCount <= 1
@@ -151,13 +150,17 @@ export const GroupGoalsPage = () => {
   const handleCreateGoal = async (
     name: string,
     monthlyTarget: number,
-    distributionMode: string,
+    distributionMode: string
   ) => {
     await mutations.createGoal.mutateAsync({
       name,
       monthlyTarget,
       distributionMode:
         distributionMode as DistributionMode,
+    })
+
+    await queryClient.invalidateQueries({
+      queryKey: ['group-goals'],
     })
 
     setDialogs((prev) => ({
@@ -167,7 +170,7 @@ export const GroupGoalsPage = () => {
   }
 
   const handleEditGoalName = async (
-    newName: string,
+    newName: string
   ) => {
     if (!actions.editingGoal) return
 
@@ -186,11 +189,12 @@ export const GroupGoalsPage = () => {
     if (!actions.deletingGoal) return
 
     await mutations.deleteGoal.mutateAsync(
-      actions.deletingGoal.id,
+      actions.deletingGoal.id
     )
 
     if (
-      selectedGoalId === actions.deletingGoal.id
+      selectedGoalId ===
+      actions.deletingGoal.id
     ) {
       setSelectedGoalId(null)
     }
@@ -203,7 +207,7 @@ export const GroupGoalsPage = () => {
 
   const handleUpdateGoal = async (
     monthlyTarget: number,
-    distributionMode: string,
+    distributionMode: string
   ) => {
     if (!selectedGoalId) return
 
@@ -221,12 +225,12 @@ export const GroupGoalsPage = () => {
   }
 
   const handleInviteMember = async (
-    identifier: string,
+    identifier: string
   ) => {
     if (!selectedGoalId) return
 
     await mutations.inviteMember.mutateAsync(
-      identifier,
+      identifier
     )
 
     setDialogs((prev) => ({
@@ -239,7 +243,7 @@ export const GroupGoalsPage = () => {
     memberId: string,
     role: string,
     salary: number,
-    customPercentage?: number,
+    customPercentage?: number
   ) => {
     if (!selectedGoalId) return
 
@@ -277,21 +281,24 @@ export const GroupGoalsPage = () => {
     }))
   }
 
-  const openDeleteMember = (memberId: string) => {
+  const openDeleteMember = (
+    memberId: string
+  ) => {
     const member = contributionMembers.find(
       (contributionMember) =>
-        contributionMember.id === memberId,
+        contributionMember.id === memberId
     )
 
     setActions((prev) => ({
       ...prev,
       deleteMemberId: memberId,
-      deletingMemberName: member?.name || '',
+      deletingMemberName:
+        member?.name || '',
     }))
   }
 
   const handleAddContribution = async (
-    amount: number,
+    amount: number
   ) => {
     if (!selectedGoalId) return
 
@@ -306,7 +313,9 @@ export const GroupGoalsPage = () => {
     }))
   }
 
-  const handleModeChange = (mode: string) => {
+  const handleModeChange = (
+    mode: string
+  ) => {
     if (!selectedGoalId) return
 
     mutations.updateGoal.mutate({

@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
 import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +16,7 @@ public interface ListGoalsUseCase {
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode,
+            long memberCount,
             boolean admin,
             LocalDateTime createdAt
     ) {

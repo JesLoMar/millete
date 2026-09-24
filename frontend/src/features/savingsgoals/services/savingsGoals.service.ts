@@ -46,7 +46,7 @@ export const savingsGoalsService = {
     dto: UpdateSavingsGoalDTO,
   ): Promise<SavingsGoal> => {
     const { data } =
-      await apiClient.put<SavingsGoal>(
+      await apiClient.patch<SavingsGoal>(
         `/savings-goals/${id}`,
         dto,
         {

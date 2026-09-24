@@ -21,7 +21,10 @@ public interface SpringDataTransactionRepository
 
     List<TransactionEntity> findAllByUserIdOrderByDateDesc(UUID userId);
 
-    Optional<TransactionEntity> findByIdAndUserId(UUID id, UUID userId);
+    Optional<TransactionEntity> findByIdAndUserId(
+            UUID id,
+            UUID userId
+    );
 
     @Query("""
             SELECT t
@@ -51,24 +54,40 @@ public interface SpringDataTransactionRepository
               AND t.userId = :userId
               AND t.active = true
             """)
-    int clearCategoryFromActiveTransactions(
+    void clearCategoryFromActiveTransactions(
             @Param("categoryId") UUID categoryId,
             @Param("userId") UUID userId,
             @Param("modifiedAt") LocalDateTime modifiedAt
     );
 
     @Query("""
-            SELECT
-                COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0),
-                COUNT(t)
-            FROM TransactionEntity t
-            WHERE t.userId = :userId
-              AND t.date >= :start
-              AND t.date <= :end
-              AND t.active = true
-            """)
-    Object[] getAggregatesByUserIdAndDateBetween(
+        SELECT
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN t.type = 'INCOME' THEN t.amount
+                        ELSE 0
+                    END
+                ),
+                0
+            ),
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN t.type = 'EXPENSE' THEN t.amount
+                        ELSE 0
+                    END
+                ),
+                0
+            ),
+            COUNT(t)
+        FROM TransactionEntity t
+        WHERE t.userId = :userId
+          AND t.date >= :start
+          AND t.date <= :end
+          AND t.active = true
+        """)
+    List<Object[]> getAggregatesByUserIdAndDateBetween(
             @Param("userId") UUID userId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end

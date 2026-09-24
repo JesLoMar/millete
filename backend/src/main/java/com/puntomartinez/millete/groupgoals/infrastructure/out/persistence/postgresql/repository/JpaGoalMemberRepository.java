@@ -23,11 +23,22 @@ public interface JpaGoalMemberRepository
             UUID userId
     );
 
-    List<GoalMemberEntity> findByGoalIdAndActiveTrue(UUID goalId);
+    List<GoalMemberEntity> findByGoalIdAndActiveTrue(
+            UUID goalId
+    );
 
-    List<GoalMemberEntity> findByGoalIdInAndActiveTrue(List<UUID> goalIds);
+    List<GoalMemberEntity> findByGoalIdInAndActiveTrue(
+            List<UUID> goalIds
+    );
 
-    List<GoalMemberEntity> findByUserIdAndActiveTrue(UUID userId);
+    List<GoalMemberEntity> findByUserIdAndActiveTrue(
+            UUID userId
+    );
+
+    void deleteByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    );
 
     @Modifying
     @Query("""

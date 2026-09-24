@@ -1,17 +1,20 @@
-import { useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Plus, TrendingUp } from 'lucide-react'
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Plus, TrendingUp } from 'lucide-react';
 
 import {
   INVESTMENT_TYPES,
-} from '../constants'
+} from '../constants';
 import {
   useInvestmentMutations,
-} from '../hooks/useInvestmentMutations'
-import type { InvestmentAssetType, RegisterInvestmentRequest } from '../types'
+} from '../hooks/useInvestmentMutations';
+import type {
+  InvestmentAssetType,
+  RegisterInvestmentRequest,
+} from '../types';
 
-import { Spinner } from '@/shared/components/Spinner'
-import { Button } from '@/shared/components/core/button'
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
@@ -19,24 +22,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/shared/components/core/dialog'
-import { Input } from '@/shared/components/core/input'
-import { Label } from '@/shared/components/core/label'
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/core/select'
+} from '@/shared/components/core/select';
 
 interface InvestmentForm {
-  assetName: string
-  ticker: string
-  quantity: string
-  purchasePrice: string
-  type: InvestmentAssetType
-  purchaseDate: string
+  assetName: string;
+  ticker: string;
+  quantity: string;
+  purchasePrice: string;
+  type: InvestmentAssetType;
+  purchaseDate: string;
 }
 
 const getInitialForm = (): InvestmentForm => ({
@@ -46,91 +49,92 @@ const getInitialForm = (): InvestmentForm => ({
   purchasePrice: '',
   type: 'STOCK',
   purchaseDate: new Date().toISOString().split('T')[0],
-})
+});
 
 export function NewInvestmentDialog() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
+
   const {
     createInvestment,
     isCreating,
-  } = useInvestmentMutations()
+  } = useInvestmentMutations();
 
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState<InvestmentForm>(
     getInitialForm,
-  )
+  );
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
-    setForm(getInitialForm())
-  }
+    setForm(getInitialForm());
+  };
 
   const handleSave = async () => {
     if (
-      !form.assetName ||
+      !form.assetName.trim() ||
       !form.quantity ||
       !form.purchasePrice
     ) {
-      return
+      return;
     }
 
     const request: RegisterInvestmentRequest = {
-      name: form.assetName.trim(),
-      tickerSymbol:
+      assetName: form.assetName.trim(),
+      ticker:
         form.ticker.toUpperCase().trim() || undefined,
-      assetType: form.type,
       quantity: Number(form.quantity),
       purchasePrice: Number(form.purchasePrice),
+      type: form.type,
       purchaseDate: form.purchaseDate,
-    }
+    };
 
     try {
-      await createInvestment.mutateAsync(request)
+      await createInvestment.mutateAsync(request);
 
-      setOpen(false)
-      resetForm()
+      setOpen(false);
+      resetForm();
     } catch {
       // El feedback del error lo gestiona la mutation.
     }
-  }
+  };
 
   const isValid =
     form.assetName.trim() &&
     form.quantity &&
     Number(form.quantity) > 0 &&
     form.purchasePrice &&
-    Number(form.purchasePrice) > 0
+    Number(form.purchasePrice) > 0;
 
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        setOpen(isOpen)
+        setOpen(isOpen);
 
         if (!isOpen) {
-          resetForm()
+          resetForm();
         }
       }}
     >
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-primary hover:bg-primary/90 font-semibold h-9 px-4 shrink-0">
+        <Button className="h-9 shrink-0 gap-2 bg-primary px-4 font-semibold hover:bg-primary/90">
           <Plus size={16} />
           {t('investments:new')}
         </Button>
       </DialogTrigger>
 
       <DialogContent
-        className="bg-card border-border sm:max-w-lg"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          inputRef.current?.focus()
+        className="border-border bg-card sm:max-w-lg"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          inputRef.current?.focus();
         }}
       >
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <TrendingUp className="text-primary size-5" />
+            <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
+              <TrendingUp className="size-5 text-primary" />
               {t('investments:newTitle')}
             </DialogTitle>
           </DialogHeader>
@@ -148,14 +152,14 @@ export function NewInvestmentDialog() {
                     'investments:assetNamePlaceholder',
                   )}
                   value={form.assetName}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      assetName: e.target.value,
+                  onChange={(event) =>
+                    setForm((previous) => ({
+                      ...previous,
+                      assetName: event.target.value,
                     }))
                   }
                   disabled={isCreating}
-                  className="bg-background border-border"
+                  className="border-border bg-background"
                 />
               </div>
 
@@ -167,14 +171,15 @@ export function NewInvestmentDialog() {
                 <Input
                   placeholder="AAPL"
                   value={form.ticker}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      ticker: e.target.value.toUpperCase(),
+                  onChange={(event) =>
+                    setForm((previous) => ({
+                      ...previous,
+                      ticker:
+                        event.target.value.toUpperCase(),
                     }))
                   }
                   disabled={isCreating}
-                  className="bg-background border-border"
+                  className="border-border bg-background"
                 />
               </div>
             </div>
@@ -191,37 +196,37 @@ export function NewInvestmentDialog() {
                     INVESTMENT_TYPES.find(
                       (investmentType) =>
                         investmentType.value === value,
-                    )
+                    );
 
-                  if (!selectedType) return
+                  if (!selectedType) {
+                    return;
+                  }
 
-                  setForm((prev) => ({
-                    ...prev,
+                  setForm((previous) => ({
+                    ...previous,
                     type: selectedType.value,
-                  }))
+                  }));
                 }}
               >
-                <SelectTrigger className="bg-background border-border">
+                <SelectTrigger className="border-border bg-background">
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent className="bg-card border-border">
-                  {INVESTMENT_TYPES.map(
-                    (invType) => (
-                      <SelectItem
-                        key={invType.value}
-                        value={invType.value}
-                      >
-                        <div className="flex items-center gap-2">
-                          <invType.icon
-                            size={14}
-                            className={invType.color}
-                          />
-                          {t(invType.labelKey)}
-                        </div>
-                      </SelectItem>
-                    ),
-                  )}
+                <SelectContent className="border-border bg-card">
+                  {INVESTMENT_TYPES.map((investmentType) => (
+                    <SelectItem
+                      key={investmentType.value}
+                      value={investmentType.value}
+                    >
+                      <div className="flex items-center gap-2">
+                        <investmentType.icon
+                          size={14}
+                          className={investmentType.color}
+                        />
+                        {t(investmentType.labelKey)}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -236,14 +241,14 @@ export function NewInvestmentDialog() {
                   type="number"
                   placeholder="0.00"
                   value={form.quantity}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      quantity: e.target.value,
+                  onChange={(event) =>
+                    setForm((previous) => ({
+                      ...previous,
+                      quantity: event.target.value,
                     }))
                   }
                   disabled={isCreating}
-                  className="bg-background border-border"
+                  className="border-border bg-background"
                   min="0.0001"
                   step="any"
                 />
@@ -258,14 +263,14 @@ export function NewInvestmentDialog() {
                   type="number"
                   placeholder="0.00"
                   value={form.purchasePrice}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      purchasePrice: e.target.value,
+                  onChange={(event) =>
+                    setForm((previous) => ({
+                      ...previous,
+                      purchasePrice: event.target.value,
                     }))
                   }
                   disabled={isCreating}
-                  className="bg-background border-border"
+                  className="border-border bg-background"
                   min="0.01"
                   step="0.01"
                 />
@@ -280,19 +285,19 @@ export function NewInvestmentDialog() {
               <Input
                 type="date"
                 value={form.purchaseDate}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    purchaseDate: e.target.value,
+                onChange={(event) =>
+                  setForm((previous) => ({
+                    ...previous,
+                    purchaseDate: event.target.value,
                   }))
                 }
                 disabled={isCreating}
-                className="bg-background border-border"
+                className="border-border bg-background"
               />
             </div>
           </div>
 
-          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+          <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">
             <Button
               variant="outline"
               onClick={() => setOpen(false)}
@@ -305,7 +310,7 @@ export function NewInvestmentDialog() {
             <Button
               onClick={handleSave}
               disabled={isCreating || !isValid}
-              className="bg-primary hover:bg-primary/90 px-6"
+              className="bg-primary px-6 hover:bg-primary/90"
             >
               {isCreating ? (
                 <Spinner size={20} />
@@ -317,5 +322,5 @@ export function NewInvestmentDialog() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
