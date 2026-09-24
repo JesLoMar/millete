@@ -1,6 +1,7 @@
-import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/core/button"
-import { PlusCircle, FolderPlus, FileUp, FileDown, Loader2 } from "lucide-react"
+import { FileDown, FileUp, FolderPlus, Loader2, PlusCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import { Button } from '@/shared/components/core/button'
 
 interface QuickActionsProps {
   onImportClick: () => void
@@ -29,51 +30,67 @@ export function QuickActions({
   isExporting = false,
   isImporting = false,
 }: QuickActionsProps) {
-
   const { t } = useTranslation(['dashboard', 'common'])
   const isAnyLoading = isExporting || isImporting
 
   const allActions: Action[] = [
     {
       icon: PlusCircle,
-      labelKey: "dashboard:quickActions.addExpense",
-      ariaLabelKey: "dashboard:quickActions.addExpenseAria",
-      color: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
+      labelKey: 'dashboard:quickActions.addExpense',
+      ariaLabelKey: 'dashboard:quickActions.addExpenseAria',
+      color:
+        'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground',
       onClick: onAddClick,
     },
     {
       icon: FolderPlus,
-      labelKey: "dashboard:quickActions.createCategory",
-      ariaLabelKey: "dashboard:quickActions.createCategoryAria",
-      color: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
+      labelKey: 'dashboard:quickActions.createCategory',
+      ariaLabelKey:
+        'dashboard:quickActions.createCategoryAria',
+      color:
+        'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground',
       onClick: onAddCategoryClick,
     },
     {
       icon: isImporting ? Loader2 : FileUp,
-      labelKey: isImporting ? "dashboard:quickActions.importing" : "dashboard:quickActions.importData",
-      ariaLabelKey: isImporting ? "dashboard:quickActions.importingAria" : "dashboard:quickActions.importDataAria",
-      color: "bg-warning/10 text-warning group-hover:bg-warning group-hover:text-warning-foreground",
+      labelKey: isImporting
+        ? 'dashboard:quickActions.importing'
+        : 'dashboard:quickActions.importData',
+      ariaLabelKey: isImporting
+        ? 'dashboard:quickActions.importingAria'
+        : 'dashboard:quickActions.importDataAria',
+      color:
+        'bg-warning/10 text-warning group-hover:bg-warning group-hover:text-warning-foreground',
       onClick: onImportClick,
       disabled: isAnyLoading,
       isLoading: isImporting,
     },
     {
       icon: isExporting ? Loader2 : FileDown,
-      labelKey: isExporting ? "dashboard:quickActions.exporting" : "dashboard:quickActions.exportData",
-      ariaLabelKey: isExporting ? "dashboard:quickActions.exportingAria" : "dashboard:quickActions.exportDataAria",
-      color: "bg-chart-5/10 text-chart-5 group-hover:bg-chart-5 group-hover:text-primary-foreground",
+      labelKey: isExporting
+        ? 'dashboard:quickActions.exporting'
+        : 'dashboard:quickActions.exportData',
+      ariaLabelKey: isExporting
+        ? 'dashboard:quickActions.exportingAria'
+        : 'dashboard:quickActions.exportDataAria',
+      color:
+        'bg-chart-5/10 text-chart-5 group-hover:bg-chart-5 group-hover:text-primary-foreground',
       onClick: onExportClick,
       disabled: isAnyLoading,
       isLoading: isExporting,
     },
   ]
 
-  const actions = allActions.filter((action) => action.onClick !== undefined)
+  const actions = allActions.filter(
+    (action) => action.onClick !== undefined
+  )
 
   return (
     <fieldset
       className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full border-0 p-0 m-0"
-      aria-label={String(t('dashboard:quickActions.groupLabel'))}
+      aria-label={String(
+        t('dashboard:quickActions.groupLabel')
+      )}
     >
       {actions.map((action) => (
         <Button
@@ -91,8 +108,15 @@ export function QuickActions({
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
           `}
         >
-          <div className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 shrink-0 ${action.color}`}>
-            <action.icon className={`size-5 sm:size-5.5 ${action.isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
+          <div
+            className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 shrink-0 ${action.color}`}
+          >
+            <action.icon
+              className={`size-5 sm:size-5.5 ${
+                action.isLoading ? 'animate-spin' : ''
+              }`}
+              aria-hidden="true"
+            />
           </div>
 
           <span className="font-medium text-xs sm:text-sm md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">

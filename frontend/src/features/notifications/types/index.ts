@@ -1,18 +1,20 @@
-export type NotificationType = 'GOAL_INVITATION' | 'SYSTEM';
+export type NotificationType =
+  | 'GOAL_INVITATION'
+  | 'SYSTEM';
 
 export interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  metadata: Record<string, string>;
-  read: boolean;
-  actionRequired: boolean;
-  actionedAt: string | null;
-  createdAt: string;
-  expiresAt: string | null;
+  readonly id: string;
+  readonly type: NotificationType;
+  readonly title: string;
+  readonly message: string;
+  readonly metadata: Readonly<Record<string, string>>;
+  readonly read: boolean;
+  readonly actionRequired: boolean;
+  readonly actionedAt: string | null;
+  readonly createdAt: string;
+  readonly expiresAt: string | null;
 }
 
 export interface NotificationCountResponse {
-  count: number;
+  readonly count: number;
 }

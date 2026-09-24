@@ -1,4 +1,4 @@
-import { AssetSkeletonRow } from "./AssetSkeletonRow"
+import { AssetSkeletonRow } from './AssetSkeletonRow'
 
 export function AssetListSkeleton() {
   return (
@@ -7,6 +7,7 @@ export function AssetListSkeleton() {
         <div className="h-10 w-48 bg-muted animate-pulse rounded" />
         <div className="h-10 w-64 bg-muted animate-pulse rounded ml-auto" />
       </div>
+
       {Array.from({ length: 5 }).map((_, i) => (
         <AssetSkeletonRow key={`skeleton-${i}`} />
       ))}

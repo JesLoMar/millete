@@ -1,13 +1,20 @@
-import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
-import { Button } from "@/shared/components/core/button"
-import { ProgressBar } from "@/shared/components/core/progress-bar"
-import { ArrowLeft, UserPlus, Target } from "lucide-react"
-import { MemberCard } from "./MemberCard"
-import { DistributionCard } from "./DistributionCard"
-import { ContributionHistory } from "./ContributionHistory"
-import type { GroupGoalDetail, ContributionMember } from "../types"
-import { MEMBER_COLORS } from "../constants"
+import { ArrowLeft, Target, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import type { ContributionMember, GroupGoalDetail } from '../types'
+import { MEMBER_COLORS } from '../constants'
+import { ContributionHistory } from './ContributionHistory'
+import { DistributionCard } from './DistributionCard'
+import { MemberCard } from './MemberCard'
+
+import { Button } from '@/shared/components/core/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/core/card'
+import { ProgressBar } from '@/shared/components/core/progress-bar'
 
 interface GroupGoalDetailProps {
   goal: GroupGoalDetail
@@ -40,9 +47,12 @@ export function GroupGoalDetail({
 }: GroupGoalDetailProps) {
   const goalId = goal.id
   const { t } = useTranslation()
+
   const isAdmin = goal.isAdmin
-  const isCustomMode = goal.distributionMode === "CUSTOM"
-  const isPercentageInvalid = isCustomMode && Math.abs(totalCustomPercentage - 100) > 0.01
+  const isCustomMode = goal.distributionMode === 'CUSTOM'
+
+  const isPercentageInvalid =
+    isCustomMode && Math.abs(totalCustomPercentage - 100) > 0.01
 
   return (
     <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-4 sm:px-0">
@@ -55,12 +65,17 @@ export function GroupGoalDetail({
             className="size-8 shrink-0"
             aria-label={t('groupGoals:back')}
           >
-            <ArrowLeft className="size-5" aria-hidden="true" />
+            <ArrowLeft
+              className="size-5"
+              aria-hidden="true"
+            />
           </Button>
+
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold font-serif truncate">
               {goal.name}
             </h1>
+
             <p className="text-muted-foreground text-xs sm:text-sm">
               {goal.members.length} {t('groupGoals:members')}
             </p>
@@ -69,15 +84,37 @@ export function GroupGoalDetail({
 
         {isAdmin && (
           <div className="flex gap-2 sm:gap-3 sm:shrink-0">
-            <Button onClick={onInviteClick} className="gap-1.5 sm:gap-2 flex-1 sm:flex-none" size="sm">
+            <Button
+              onClick={onInviteClick}
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
+              size="sm"
+            >
               <UserPlus className="size-3.5 sm:size-4" />
-              <span className="hidden xs:inline">{t('groupGoals:inviteMember')}</span>
-              <span className="xs:hidden">{t('groupGoals:inviteShort')}</span>
+
+              <span className="hidden xs:inline">
+                {t('groupGoals:inviteMember')}
+              </span>
+
+              <span className="xs:hidden">
+                {t('groupGoals:inviteShort')}
+              </span>
             </Button>
-            <Button variant="outline" onClick={onGoalClick} className="gap-1.5 sm:gap-2 flex-1 sm:flex-none" size="sm">
+
+            <Button
+              variant="outline"
+              onClick={onGoalClick}
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-none"
+              size="sm"
+            >
               <Target className="size-3.5 sm:size-4" />
-              <span className="hidden xs:inline">{t('groupGoals:changeGoal')}</span>
-              <span className="xs:hidden">{t('groupGoals:goalShort')}</span>
+
+              <span className="hidden xs:inline">
+                {t('groupGoals:changeGoal')}
+              </span>
+
+              <span className="xs:hidden">
+                {t('groupGoals:goalShort')}
+              </span>
             </Button>
           </div>
         )}
@@ -86,17 +123,28 @@ export function GroupGoalDetail({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         <Card className="lg:col-span-9 border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base sm:text-lg">{t('groupGoals:goalProgress')}</CardTitle>
+            <CardTitle className="text-base sm:text-lg">
+              {t('groupGoals:goalProgress')}
+            </CardTitle>
           </CardHeader>
+
           <CardContent>
             <div className="flex flex-col xs:flex-row xs:items-end justify-between gap-2 mb-4">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">{t('groupGoals:collected')}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('groupGoals:collected')}
+                </p>
+
                 <p className="text-2xl sm:text-3xl font-serif truncate">
                   {totalContributed.toLocaleString()} €
-                  <span className="text-sm text-muted-foreground"> / {(goal.monthlyTarget ?? 0).toLocaleString()} €</span>
+
+                  <span className="text-sm text-muted-foreground">
+                    {' '}
+                    / {(goal.monthlyTarget ?? 0).toLocaleString()} €
+                  </span>
                 </p>
               </div>
+
               <p className="text-2xl sm:text-3xl font-semibold text-primary tabular-nums">
                 {Math.round(percentageCompleted)}%
               </p>
@@ -105,10 +153,17 @@ export function GroupGoalDetail({
             <div className="space-y-1.5">
               <ProgressBar
                 segments={contributions.map((member, index) => ({
-                  value: goal.monthlyTarget > 0
-                    ? Math.min((member.contributed / goal.monthlyTarget) * 100, 100)
-                    : 0,
-                  className: MEMBER_COLORS[index % MEMBER_COLORS.length],
+                  value:
+                    goal.monthlyTarget > 0
+                      ? Math.min(
+                          (member.contributed /
+                            goal.monthlyTarget) *
+                            100,
+                          100
+                        )
+                      : 0,
+                  className:
+                    MEMBER_COLORS[index % MEMBER_COLORS.length],
                   label: `${member.name}: ${member.contributed.toLocaleString()} €`,
                 }))}
                 size="lg"
@@ -118,8 +173,13 @@ export function GroupGoalDetail({
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {totalContributed.toLocaleString()} € / <span className="hidden xs:inline">{t('groupGoals:progressBar.of')}</span> {goal.monthlyTarget.toLocaleString()} €
+                  {totalContributed.toLocaleString()} € /{' '}
+                  <span className="hidden xs:inline">
+                    {t('groupGoals:progressBar.of')}
+                  </span>{' '}
+                  {goal.monthlyTarget.toLocaleString()} €
                 </span>
+
                 <span className="font-medium tabular-nums">
                   {Math.round(percentageCompleted)}%
                 </span>
@@ -129,14 +189,29 @@ export function GroupGoalDetail({
             <div className="mt-4">
               <div className="hidden sm:block space-y-2">
                 {contributions.map((member, index) => (
-                  <div key={member.id} className="flex items-center justify-between text-sm gap-2">
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between text-sm gap-2"
+                  >
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className={`size-3 rounded-full shrink-0 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`} />
-                      <span className="text-muted-foreground truncate">{member.name}</span>
+                      <div
+                        className={`size-3 rounded-full shrink-0 ${
+                          MEMBER_COLORS[index % MEMBER_COLORS.length]
+                        }`}
+                      />
+
+                      <span className="text-muted-foreground truncate">
+                        {member.name}
+                      </span>
                     </div>
+
                     <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
-                      {member.contributed.toLocaleString()} € / {member.expectedContribution.toLocaleString()} €
-                      <span className="text-muted-foreground ml-1">({member.percentage.toFixed(0)}%)</span>
+                      {member.contributed.toLocaleString()} € /{' '}
+                      {member.expectedContribution.toLocaleString()} €
+
+                      <span className="text-muted-foreground ml-1">
+                        ({member.percentage.toFixed(0)}%)
+                      </span>
                     </span>
                   </div>
                 ))}
@@ -144,15 +219,35 @@ export function GroupGoalDetail({
 
               <div className="sm:hidden space-y-2">
                 {contributions.map((member, index) => (
-                  <div key={member.id} className="flex items-center justify-between gap-2">
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between gap-2"
+                  >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className={`size-2.5 rounded-full shrink-0 ${MEMBER_COLORS[index % MEMBER_COLORS.length]}`} />
-                      <span className="text-xs text-muted-foreground truncate">{member.name}</span>
+                      <div
+                        className={`size-2.5 rounded-full shrink-0 ${
+                          MEMBER_COLORS[index % MEMBER_COLORS.length]
+                        }`}
+                      />
+
+                      <span className="text-xs text-muted-foreground truncate">
+                        {member.name}
+                      </span>
                     </div>
+
                     <div className="text-xs font-medium whitespace-nowrap shrink-0 tabular-nums text-right">
-                      <span>{member.contributed.toLocaleString()} €</span>
-                      <span className="text-muted-foreground"> / {member.expectedContribution.toLocaleString()} €</span>
-                      <span className="text-muted-foreground ml-1">({member.percentage.toFixed(0)}%)</span>
+                      <span>
+                        {member.contributed.toLocaleString()} €
+                      </span>
+
+                      <span className="text-muted-foreground">
+                        {' '}
+                        / {member.expectedContribution.toLocaleString()} €
+                      </span>
+
+                      <span className="text-muted-foreground ml-1">
+                        ({member.percentage.toFixed(0)}%)
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -168,14 +263,14 @@ export function GroupGoalDetail({
               isAdmin
                 ? isCustomMode
                   ? isPercentageInvalid
-                    ? "admin-custom-invalid"
-                    : "admin-custom-valid"
-                  : "admin-equitative"
+                    ? 'admin-custom-invalid'
+                    : 'admin-custom-valid'
+                  : 'admin-equitative'
                 : isCustomMode
                   ? isPercentageInvalid
-                    ? "member-custom-invalid"
-                    : "member-custom-valid"
-                  : "member-equitative"
+                    ? 'member-custom-invalid'
+                    : 'member-custom-valid'
+                  : 'member-equitative'
             }
             onModeChange={onModeChange}
             totalCustomPercentage={totalCustomPercentage}
@@ -184,7 +279,10 @@ export function GroupGoalDetail({
       </div>
 
       <div>
-        <h2 className="text-lg sm:text-xl font-serif mb-3 sm:mb-4">{t('groupGoals:memberDetails')}</h2>
+        <h2 className="text-lg sm:text-xl font-serif mb-3 sm:mb-4">
+          {t('groupGoals:memberDetails')}
+        </h2>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {contributions.map((member, index) => (
             <MemberCard
@@ -201,7 +299,10 @@ export function GroupGoalDetail({
         </div>
       </div>
 
-      <ContributionHistory goalId={goalId} onAddClick={onAddContribution} />
+      <ContributionHistory
+        goalId={goalId}
+        onAddClick={onAddContribution}
+      />
     </div>
   )
 }

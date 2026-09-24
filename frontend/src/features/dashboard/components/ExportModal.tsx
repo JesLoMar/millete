@@ -1,50 +1,72 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { ArrowLeft } from "lucide-react"
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ArrowLeft } from 'lucide-react'
+
+import {
+  EXPORT_ENTITY_TYPES,
+  EXPORT_FORMATS,
+  EXPORT_PERIOD_OPTIONS,
+  type ExportFormat,
+} from '../constants'
+import { useExport } from '../hooks/useExport'
+import { ExportCard } from './ExportCard.tsx'
+
+import { notify } from '@/shared/utils/notifications/notify'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/shared/components/core/dialog"
-import { notify } from "@/shared/utils/notifications/notify"
-import { ExportCard } from "./ExportCard.tsx"
-import { useExport } from "../hooks/useExport"
-import {
-  EXPORT_FORMATS,
-  EXPORT_ENTITY_TYPES,
-  EXPORT_PERIOD_OPTIONS,
-  type ExportFormat,
-} from "../constants"
+} from '@/shared/components/core/dialog'
 
 interface ExportModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function ExportModal({ open, onOpenChange }: ExportModalProps) {
-  const { t } = useTranslation(["dashboard", "nav", "common"])
+export function ExportModal({
+  open,
+  onOpenChange,
+}: ExportModalProps) {
+  const { t } = useTranslation([
+    'dashboard',
+    'nav',
+    'common',
+  ])
+
   const { performExport, isExporting } = useExport()
-  const [step, setStep] = useState<"format" | "config">("format")
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("json")
+
+  const [step, setStep] = useState<'format' | 'config'>(
+    'format'
+  )
+
+  const [selectedFormat, setSelectedFormat] =
+    useState<ExportFormat>('json')
 
   const resetState = () => {
-    setStep("format")
-    setSelectedFormat("json")
+    setStep('format')
+    setSelectedFormat('json')
   }
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) resetState()
+    if (!isOpen) {
+      resetState()
+    }
+
     onOpenChange(isOpen)
   }
 
   const handleFormatSelect = (format: ExportFormat) => {
     setSelectedFormat(format)
-    if (!EXPORT_FORMATS.find(f => f.id === format)?.needsConfig) {
+
+    if (
+      !EXPORT_FORMATS.find((item) => item.id === format)
+        ?.needsConfig
+    ) {
       handleExport(format)
     } else {
-      setStep("config")
+      setStep('config')
     }
   }
 
@@ -52,14 +74,21 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
     handleExport(selectedFormat, value)
   }
 
-  const handleExport = async (format: ExportFormat, configValue?: string) => {
-    const success = await performExport(format, configValue)
+  const handleExport = async (
+    format: ExportFormat,
+    configValue?: string
+  ) => {
+    const success = await performExport(
+      format,
+      configValue
+    )
+
     if (success) {
-      notify.success(t("export.success"))
+      notify.success(t('export.success'))
       onOpenChange(false)
       resetState()
     } else {
-      notify.error(t("export.error"))
+      notify.error(t('export.error'))
     }
   }
 
@@ -68,41 +97,47 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
       <DialogContent className="bg-card border-border sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            {step === "format" ? t("export.title") : t("export.configTitle")}
+            {step === 'format'
+              ? t('export.title')
+              : t('export.configTitle')}
           </DialogTitle>
+
           <DialogDescription className="sr-only">
-            Opciones para exportar tus datos financieros en múltiples formatos.
+            Opciones para exportar tus datos financieros en
+            múltiples formatos.
           </DialogDescription>
         </DialogHeader>
 
-        {step === "format" && (
+        {step === 'format' && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 py-4">
-            {EXPORT_FORMATS.map((fmt) => (
+            {EXPORT_FORMATS.map((format) => (
               <ExportCard
-                key={fmt.id}
-                icon={fmt.icon}
-                label={t(fmt.labelKey)}
-                description={t(fmt.descKey)}
-                color={fmt.color}
-                onClick={() => handleFormatSelect(fmt.id)}
+                key={format.id}
+                icon={format.icon}
+                label={t(format.labelKey)}
+                description={t(format.descKey)}
+                color={format.color}
+                onClick={() =>
+                  handleFormatSelect(format.id)
+                }
                 disabled={isExporting}
               />
             ))}
           </div>
         )}
 
-        {step === "config" && (
+        {step === 'config' && (
           <div className="space-y-4 py-4">
             <button
               type="button"
-              onClick={() => setStep("format")}
+              onClick={() => setStep('format')}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="size-4" />
-              {t("common:actions.back")}
+              {t('common:actions.back')}
             </button>
 
-            {selectedFormat === "csv" && (
+            {selectedFormat === 'csv' && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {EXPORT_ENTITY_TYPES.map((entity) => (
                   <ExportCard
@@ -110,14 +145,16 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
                     icon={EXPORT_FORMATS[2].icon}
                     label={t(`common:${entity.labelKey}`)}
                     color="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
-                    onClick={() => handleConfigSelect(entity.value)}
+                    onClick={() =>
+                      handleConfigSelect(entity.value)
+                    }
                     disabled={isExporting}
                   />
                 ))}
               </div>
             )}
 
-            {selectedFormat === "pdf" && (
+            {selectedFormat === 'pdf' && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {EXPORT_PERIOD_OPTIONS.map((period) => (
                   <ExportCard
@@ -125,7 +162,9 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
                     icon={EXPORT_FORMATS[3].icon}
                     label={t(period.labelKey)}
                     color="bg-destructive/10 text-destructive group-hover:bg-destructive group-hover:text-primary-foreground"
-                    onClick={() => handleConfigSelect(period.value)}
+                    onClick={() =>
+                      handleConfigSelect(period.value)
+                    }
                     disabled={isExporting}
                   />
                 ))}

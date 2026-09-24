@@ -1,68 +1,63 @@
-import { useState, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { Spinner } from "@/shared/components/Spinner"
-import { Button } from "@/shared/components/core/button"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
+import { useId, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/shared/components/core/dialog"
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/core/select"
-import { apiClient } from "@/shared/api/axiosClient"
-import { useQueryClient } from "@tanstack/react-query"
-import { FREQUENCY_TYPES } from "../../constants"
+} from '@/shared/components/core/select';
+import type { PlannedTransaction } from '@/features/transactions/hooks/usePlannedTransactions';
 
-interface PlannedTransaction {
-  id: string
-  description: string
-  categoryId: string | null
-  amount: number
-  type: "INCOME" | "EXPENSE"
-  frequencyType: string
-  frequencyInterval: number
-  startDate: string
-  endDate: string | null
-  lastExecutedDate: string | null
-}
+import { FREQUENCY_TYPES } from '../../constants';
+import { useTransactionMutations } from '../../hooks/useTransactionMutation';
 
 interface EditRecurringTransactionDialogProps {
-  transaction: PlannedTransaction | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  transaction: PlannedTransaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface FormState {
-  description: string
-  amount: string
-  type: "INCOME" | "EXPENSE"
-  frequencyType: string
-  frequencyInterval: string
-  categoryId: string | null
-  error: string | null
-  isSubmitting: boolean
+  description: string;
+  amount: string;
+  type: 'INCOME' | 'EXPENSE';
+  frequencyType: string;
+  frequencyInterval: string;
+  categoryId: string | null;
+  error: string | null;
 }
 
-function getInitialForm(transaction: PlannedTransaction | null): FormState {
+function getInitialForm(
+  transaction: PlannedTransaction | null,
+): FormState {
   return {
-    description: transaction?.description || "",
-    amount: transaction?.amount ? String(Math.abs(transaction.amount)) : "",
-    type: transaction?.type || "EXPENSE",
-    frequencyType: transaction?.frequencyType || "MONTHS",
-    frequencyInterval: transaction?.frequencyInterval ? String(transaction.frequencyInterval) : "1",
-    categoryId: transaction?.categoryId || null,
+    description: transaction?.description ?? '',
+    amount:
+      transaction?.amount !== undefined
+        ? String(Math.abs(transaction.amount))
+        : '',
+    type: transaction?.type ?? 'EXPENSE',
+    frequencyType: transaction?.frequencyType ?? 'MONTHS',
+    frequencyInterval:
+      transaction?.frequencyInterval !== undefined
+        ? String(transaction.frequencyInterval)
+        : '1',
+    categoryId: transaction?.categoryId ?? null,
     error: null,
-    isSubmitting: false,
-  }
+  };
 }
 
 export function EditRecurringTransactionDialog({
@@ -70,52 +65,81 @@ export function EditRecurringTransactionDialog({
   open,
   onOpenChange,
 }: EditRecurringTransactionDialogProps) {
-  const { t } = useTranslation(['transactions', 'common', 'categories'])
-  const queryClient = useQueryClient()
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation(['transactions', 'common']);
+  const { updateRecurring, isUpdating } =
+    useTransactionMutations();
 
-  const [form, setForm] = useState<FormState>(() => getInitialForm(transaction))
+  const [form, setForm] = useState<FormState>(() =>
+    getInitialForm(transaction),
+  );
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const descriptionId = useId();
+  const amountId = useId();
+  const frequencyId = useId();
+  const intervalId = useId();
+  const typeId = useId();
 
   const updateForm = (updates: Partial<FormState>) => {
-    setForm(prev => ({ ...prev, ...updates }))
-  }
+    setForm((previous) => ({
+      ...previous,
+      ...updates,
+    }));
+  };
+
+  const amount = Number(form.amount);
+  const interval = Number(form.frequencyInterval);
+
+  const isValid =
+    transaction !== null &&
+    form.description.trim().length > 0 &&
+    Number.isFinite(amount) &&
+    amount > 0 &&
+    form.frequencyType.length > 0 &&
+    Number.isInteger(interval) &&
+    interval > 0;
 
   const handleSave = async () => {
-    if (!transaction || !form.description || !form.amount) return
-    updateForm({ error: null, isSubmitting: true })
+    if (!transaction || !isValid) {
+      return;
+    }
+
+    updateForm({ error: null });
 
     try {
-      await apiClient.put(`/planned-transactions/${transaction.id}`, {
-        description: form.description.trim(),
-        categoryId: form.categoryId,
-        amount: Math.abs(Number(form.amount)),
-        type: form.type,
-        frequencyType: form.frequencyType,
-        frequencyInterval: Number(form.frequencyInterval),
-        startDate: transaction.startDate,
-        endDate: transaction.endDate,
-      })
+      await updateRecurring.mutateAsync({
+        id: transaction.id,
+        data: {
+          description: form.description.trim(),
+          categoryId: form.categoryId,
+          amount: Math.abs(amount),
+          type: form.type,
+          frequencyType: form.frequencyType,
+          frequencyInterval: interval,
+          startDate: transaction.startDate,
+          endDate: transaction.endDate,
+        },
+      });
 
-      queryClient.invalidateQueries({ queryKey: ['plannedTransactions'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] })
-
-      onOpenChange(false)
-    } catch (err) {
-      const axiosError = err as { response?: { data?: { message?: string } } }
-      const message = axiosError?.response?.data?.message || t('transactions:alerts.updateRecurringError')
-      updateForm({ error: message, isSubmitting: false })
+      onOpenChange(false);
+    } catch (error) {
+      updateForm({
+        error:
+          error instanceof Error
+            ? error.message
+            : t('transactions:alerts.updateRecurringError'),
+      });
     }
-  }
-
-  const isValid = form.description.trim() && form.amount && Number(form.amount) > 0
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border-border sm:max-w-md"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          inputRef.current?.focus()
+        className="border-border bg-card sm:max-w-md"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          inputRef.current?.focus();
         }}
       >
         <div className="max-h-[85dvh] overflow-y-auto">
@@ -127,117 +151,189 @@ export function EditRecurringTransactionDialog({
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-recurring-description" className="text-sm font-semibold">
+              <Label
+                htmlFor={descriptionId}
+                className="text-sm font-semibold"
+              >
                 {t('transactions:description')}
               </Label>
+
               <Input
-                id="edit-recurring-description"
+                id={descriptionId}
                 ref={inputRef}
                 value={form.description}
-                onChange={(e) => updateForm({ description: e.target.value })}
-                placeholder={t('transactions:descriptionPlaceholder')}
-                disabled={form.isSubmitting}
-                className="bg-background border-border text-base"
+                onChange={(event) =>
+                  updateForm({
+                    description: event.target.value,
+                  })
+                }
+                placeholder={t(
+                  'transactions:descriptionPlaceholder',
+                )}
+                disabled={isUpdating}
+                className="border-border bg-background text-base"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-recurring-type" className="text-sm font-semibold">{t('transactions:type')}</Label>
+                <Label
+                  htmlFor={typeId}
+                  className="text-sm font-semibold"
+                >
+                  {t('transactions:type')}
+                </Label>
+
                 <Select
                   value={form.type}
-                  onValueChange={(value: "INCOME" | "EXPENSE") => updateForm({ type: value })}
-                  disabled={form.isSubmitting}
+                  onValueChange={(value) =>
+                    updateForm({
+                      type: value as 'INCOME' | 'EXPENSE',
+                    })
+                  }
+                  disabled={isUpdating}
                 >
-                  <SelectTrigger id="edit-recurring-type" className="bg-background border-border">
+                  <SelectTrigger
+                    id={typeId}
+                    className="border-border bg-background"
+                  >
                     <SelectValue />
                   </SelectTrigger>
+
                   <SelectContent>
-                    <SelectItem value="INCOME">{t('transactions:income')}</SelectItem>
-                    <SelectItem value="EXPENSE">{t('transactions:expense')}</SelectItem>
+                    <SelectItem value="INCOME">
+                      {t('income')}
+                    </SelectItem>
+
+                    <SelectItem value="EXPENSE">
+                      {t('expense')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="edit-recurring-amount" className="text-sm font-semibold">
+                <Label
+                  htmlFor={amountId}
+                  className="text-sm font-semibold"
+                >
                   {t('transactions:amount')}
                 </Label>
+
                 <Input
-                  id="edit-recurring-amount"
+                  id={amountId}
                   type="number"
-                  value={form.amount}
-                  onChange={(e) => updateForm({ amount: e.target.value })}
-                  disabled={form.isSubmitting}
-                  className="bg-background border-border text-base"
                   min="0.01"
                   step="0.01"
+                  value={form.amount}
+                  onChange={(event) =>
+                    updateForm({
+                      amount: event.target.value,
+                    })
+                  }
+                  disabled={isUpdating}
+                  className="border-border bg-background text-base"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-recurring-frequency" className="text-sm font-semibold">
-                  {t('transactions:recurring.frequency')}
+                <Label
+                  htmlFor={frequencyId}
+                  className="text-sm font-semibold"
+                >
+                  {t('recurring.frequency')}
                 </Label>
+
                 <Select
                   value={form.frequencyType}
-                  onValueChange={(value) => updateForm({ frequencyType: value })}
-                  disabled={form.isSubmitting}
+                  onValueChange={(frequencyType) =>
+                    updateForm({ frequencyType })
+                  }
+                  disabled={isUpdating}
                 >
-                  <SelectTrigger id="edit-recurring-frequency" className="bg-background border-border">
+                  <SelectTrigger
+                    id={frequencyId}
+                    className="border-border bg-background"
+                  >
                     <SelectValue />
                   </SelectTrigger>
+
                   <SelectContent>
-                    {FREQUENCY_TYPES.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>
-                        {t(freq.labelKey)}
+                    {FREQUENCY_TYPES.map((frequency) => (
+                      <SelectItem
+                        key={frequency.value}
+                        value={frequency.value}
+                      >
+                        {t(frequency.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="edit-recurring-interval" className="text-sm font-semibold">
-                  {t('transactions:recurring.interval')}
+                <Label
+                  htmlFor={intervalId}
+                  className="text-sm font-semibold"
+                >
+                  {t('recurring.interval')}
                 </Label>
+
                 <Input
-                  id="edit-recurring-interval"
+                  id={intervalId}
                   type="number"
-                  value={form.frequencyInterval}
-                  onChange={(e) => updateForm({ frequencyInterval: e.target.value })}
-                  disabled={form.isSubmitting}
-                  className="bg-background border-border text-base"
                   min="1"
                   step="1"
+                  value={form.frequencyInterval}
+                  onChange={(event) =>
+                    updateForm({
+                      frequencyInterval: event.target.value,
+                    })
+                  }
+                  disabled={isUpdating}
+                  className="border-border bg-background text-base"
                 />
               </div>
             </div>
 
             {form.error && (
-              <p className="text-destructive text-sm text-center font-medium">{form.error}</p>
+              <p
+                role="alert"
+                className="text-center text-sm font-medium text-destructive"
+              >
+                {form.error}
+              </p>
             )}
           </div>
 
-          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+          <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">
             <Button
+              type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={form.isSubmitting}
+              disabled={isUpdating}
               className="border-border"
             >
               {t('common:actions.cancel')}
             </Button>
+
             <Button
+              type="button"
               onClick={handleSave}
-              disabled={form.isSubmitting || !isValid}
-              className="bg-primary hover:bg-primary/90 px-6 min-h-11"
+              disabled={isUpdating || !isValid}
+              className="min-h-11 bg-primary px-6 hover:bg-primary/90"
             >
-              {form.isSubmitting ? <Spinner size={20} /> : t('transactions:save')}
+              {isUpdating ? (
+                <Spinner size={20} />
+              ) : (
+                t('transactions:save')
+              )}
             </Button>
           </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

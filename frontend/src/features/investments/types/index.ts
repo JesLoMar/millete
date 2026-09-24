@@ -1,4 +1,8 @@
-export type InvestmentAssetType = 'STOCK' | 'CRYPTO' | 'REAL_ESTATE' | 'OTHER';
+export type InvestmentAssetType =
+  | 'STOCK'
+  | 'CRYPTO'
+  | 'REAL_ESTATE'
+  | 'OTHER'
 
 export interface InvestmentResponse {
   id: string

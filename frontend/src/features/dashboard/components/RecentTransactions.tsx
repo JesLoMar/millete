@@ -1,12 +1,19 @@
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/core/card"
-import { Badge } from "@/shared/components/core/badge"
-import { ArrowDownRight, ArrowUpRight, ShoppingCart } from "lucide-react"
-import { CATEGORY_ICONS, CATEGORY_COLORS } from "../constants"
-import { formatDate } from "../utils"
-import type { TransactionItem } from "../types"
-import { formatCurrency } from '@/shared/utils/i18nFormat';
+import { ArrowDownRight, ArrowUpRight, ShoppingCart } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+
+import { CATEGORY_COLORS, CATEGORY_ICONS } from '../constants'
+import type { TransactionItem } from '../types'
+import { formatDate } from '../utils'
+
+import { Badge } from '@/shared/components/core/badge'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/core/card'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface RecentTransactionsProps {
   data?: TransactionItem[]
@@ -19,10 +26,17 @@ export function RecentTransactions({
   loading = false,
   limit = 5,
 }: RecentTransactionsProps) {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t } = useTranslation([
+    'dashboard',
+    'common',
+  ])
+
   const navigate = useNavigate()
 
-  const transactions = (externalData || []).slice(0, limit)
+  const transactions = (externalData || []).slice(
+    0,
+    limit
+  )
   const hasExternalData = !!externalData
 
   if (loading) {
@@ -32,14 +46,20 @@ export function RecentTransactions({
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-4 w-20 bg-muted rounded animate-pulse" />
         </CardHeader>
+
         <CardContent className="p-0">
           {Array.from({ length: limit }).map((_, i) => (
-            <div key={`skeleton-${i}`} className="flex items-center gap-4 p-4 border-b">
+            <div
+              key={`skeleton-${i}`}
+              className="flex items-center gap-4 p-4 border-b"
+            >
               <div className="size-10 rounded-full bg-muted animate-pulse" />
+
               <div className="flex-1 space-y-2">
                 <div className="h-4 w-32 bg-muted rounded animate-pulse" />
                 <div className="h-3 w-24 bg-muted rounded animate-pulse" />
               </div>
+
               <div className="h-4 w-16 bg-muted rounded animate-pulse" />
             </div>
           ))}
@@ -54,16 +74,18 @@ export function RecentTransactions({
         <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:transactions.title')}
         </CardTitle>
+
         {hasExternalData && (
           <button
             type="button"
-            onClick={() => navigate("/transactions")}
+            onClick={() => navigate('/transactions')}
             className="text-sm text-primary hover:underline transition-colors"
           >
             {t('dashboard:transactions.viewAll')}
           </button>
         )}
       </CardHeader>
+
       <CardContent className="p-0">
         <div className="flex flex-col">
           {transactions.length === 0 ? (
@@ -72,47 +94,74 @@ export function RecentTransactions({
             </p>
           ) : (
             transactions.map((tx) => {
-              const categoryKey = tx.category || "other"
-              const Icon = CATEGORY_ICONS[categoryKey] || ShoppingCart
-              const color = CATEGORY_COLORS[categoryKey] || "text-muted-foreground bg-muted/10"
-              const isExpense = tx.type === "EXPENSE"
+              const categoryKey = tx.category || 'other'
+              const Icon =
+                CATEGORY_ICONS[categoryKey] || ShoppingCart
+              const color =
+                CATEGORY_COLORS[categoryKey] ||
+                'text-muted-foreground bg-muted/10'
+              const isExpense = tx.type === 'EXPENSE'
 
               return (
                 <button
                   type="button"
                   key={tx.id}
-                  onClick={() => navigate(`/transactions?id=${tx.id}`)}
+                  onClick={() =>
+                    navigate(`/transactions?id=${tx.id}`)
+                  }
                   className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer w-full text-left"
                 >
                   <div className={`p-3 rounded-full ${color}`}>
                     <Icon className="size-5" />
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
                       {tx.description}
                     </p>
+
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs text-muted-foreground">
                         {formatDate(tx.date)}
                       </span>
+
                       <span className="size-1 rounded-full bg-border" />
-                      <span className="text-xs text-muted-foreground">{tx.category}</span>
+
+                      <span className="text-xs text-muted-foreground">
+                        {tx.category}
+                      </span>
                     </div>
                   </div>
+
                   <div className="text-right">
-                    <p className={`text-sm font-bold flex items-center gap-1 ${isExpense ? "text-foreground" : "text-primary"}`}>
-                      {isExpense
-                        ? <ArrowDownRight className="size-3.5" />
-                        : <ArrowUpRight className="size-3.5" />
-                      }
-                      {isExpense ? "" : "+"}
+                    <p
+                      className={`text-sm font-bold flex items-center gap-1 ${
+                        isExpense
+                          ? 'text-foreground'
+                          : 'text-primary'
+                      }`}
+                    >
+                      {isExpense ? (
+                        <ArrowDownRight className="size-3.5" />
+                      ) : (
+                        <ArrowUpRight className="size-3.5" />
+                      )}
+
+                      {isExpense ? '' : '+'}
                       {formatCurrency(tx.amount)}
                     </p>
+
                     <Badge
                       variant="outline"
-                      className={`mt-1 text-xs h-4 py-0 font-normal ${isExpense ? "opacity-60" : "text-primary border-primary/30"}`}
+                      className={`mt-1 text-xs h-4 py-0 font-normal ${
+                        isExpense
+                          ? 'opacity-60'
+                          : 'text-primary border-primary/30'
+                      }`}
                     >
-                      {isExpense ? t('dashboard:transactions.expense') : t('dashboard:transactions.income')}
+                      {isExpense
+                        ? t('dashboard:transactions.expense')
+                        : t('dashboard:transactions.income')}
                     </Badge>
                   </div>
                 </button>

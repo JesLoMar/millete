@@ -1,13 +1,17 @@
 export interface SavingsGoal {
-  id: string;
-  userId: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline?: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
-  link?: string;
+  readonly id: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly targetAmount: number;
+  readonly currentAmount: number;
+  readonly deadline?: string;
+  readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  readonly status:
+    | 'ACTIVE'
+    | 'PAUSED'
+    | 'COMPLETED'
+    | 'CANCELLED';
+  readonly link?: string;
 }
 
 export interface CreateSavingsGoalDTO {
@@ -23,6 +27,10 @@ export interface UpdateSavingsGoalDTO {
   targetAmount: number;
   deadline?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+  status:
+    | 'ACTIVE'
+    | 'PAUSED'
+    | 'COMPLETED'
+    | 'CANCELLED';
   link?: string;
 }

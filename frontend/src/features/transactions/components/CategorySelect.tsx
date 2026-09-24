@@ -24,7 +24,11 @@ export function CategorySelect({
   onValueChange,
   className,
 }: CategorySelectProps) {
-  const { t } = useTranslation(['transactions', 'common', 'categories']);
+  const { t } = useTranslation([
+    'transactions',
+    'common',
+    'categories',
+  ]);
 
   const { displayItems: categories, isLoading } = useCategories();
 
@@ -53,6 +57,7 @@ export function CategorySelect({
                 className="animate-spin"
                 aria-hidden="true"
               />
+
               <span className="text-muted-foreground">
                 {t('common:status.loading')}
               </span>

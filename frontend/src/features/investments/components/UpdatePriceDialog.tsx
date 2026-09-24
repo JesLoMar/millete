@@ -1,21 +1,23 @@
-import { useState, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { AlertTriangle } from "lucide-react"
-import { Spinner } from "@/shared/components/Spinner"
-import { Button } from "@/shared/components/core/button"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
+import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { AlertTriangle } from 'lucide-react'
+
+import type { ApiError } from '@/shared/types/api'
+import { useInvestmentMutations } from '../hooks/useInvestmentMutations'
+
+import { notify } from '@/shared/utils/notifications/notify'
+import { Spinner } from '@/shared/components/Spinner'
+import { Button } from '@/shared/components/core/button'
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogTrigger,
-} from "@/shared/components/core/dialog"
-import { useInvestmentMutations } from "../hooks/useInvestmentMutations"
-import { notify } from "@/shared/utils/notifications/notify"
-import type { ApiError } from "@/shared/types/api"
+} from '@/shared/components/core/dialog'
+import { Input } from '@/shared/components/core/input'
+import { Label } from '@/shared/components/core/label'
 
 interface UpdatePriceDialogProps {
   investmentId: string
@@ -23,20 +25,34 @@ interface UpdatePriceDialogProps {
   currentPrice: number
 }
 
-export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: UpdatePriceDialogProps) {
+export function UpdatePriceDialog({
+  investmentId,
+  assetName,
+  currentPrice,
+}: UpdatePriceDialogProps) {
   const { t } = useTranslation()
-  const { updatePrice, isUpdating } = useInvestmentMutations()
+  const { updatePrice, isUpdating } =
+    useInvestmentMutations()
+
   const [open, setOpen] = useState(false)
-  const [newPrice, setNewPrice] = useState(() => currentPrice.toString())
-  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [newPrice, setNewPrice] = useState(
+    () => currentPrice.toString()
+  )
+  const [needsConfirmation, setNeedsConfirmation] =
+    useState(false)
+
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isSamePrice = Number(newPrice) === currentPrice
   const targetPrice = Number(newPrice)
 
-  const deviationRatio = currentPrice > 0 ? Math.abs(targetPrice - currentPrice) / currentPrice : 0
-  const isCriticalDeviation = deviationRatio > 0.5
+  const deviationRatio =
+    currentPrice > 0
+      ? Math.abs(targetPrice - currentPrice) /
+        currentPrice
+      : 0
 
+  const isCriticalDeviation = deviationRatio > 0.5
 
   const handleUpdate = async () => {
     if (isSamePrice || targetPrice <= 0) return
@@ -47,23 +63,45 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
     }
 
     try {
-      await updatePrice.mutateAsync({ id: investmentId, price: targetPrice })
+      await updatePrice.mutateAsync({
+        id: investmentId,
+        price: targetPrice,
+      })
+
       setOpen(false)
       setNeedsConfirmation(false)
     } catch (err) {
       const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t('investments:updatePriceError')
+
+      const message =
+        apiError?.response?.data?.message ||
+        t('investments:updatePriceError')
+
       notify.error(message)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) setNeedsConfirmation(false) }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+
+        if (!isOpen) {
+          setNeedsConfirmation(false)
+        }
+      }}
+    >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 text-primary font-semibold hover:bg-primary/10 px-3 rounded-lg">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-primary font-semibold hover:bg-primary/10 px-3 rounded-lg"
+        >
           {t('investments:updatePrice')}
         </Button>
       </DialogTrigger>
+
       <DialogContent
         className="bg-card border-border sm:max-w-sm"
         onOpenAutoFocus={(e) => {
@@ -72,18 +110,29 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">{t('investments:marketPrice')}</DialogTitle>
-          <p className="text-sm text-muted-foreground">{assetName}</p>
+          <DialogTitle className="text-lg font-semibold">
+            {t('investments:marketPrice')}
+          </DialogTitle>
+
+          <p className="text-sm text-muted-foreground">
+            {assetName}
+          </p>
         </DialogHeader>
 
         <div className="py-4 space-y-3">
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">{t('investments:newPrice')}</Label>
+            <Label className="text-sm font-semibold">
+              {t('investments:newPrice')}
+            </Label>
+
             <Input
               ref={inputRef}
               type="number"
               value={newPrice}
-              onChange={(e) => { setNewPrice(e.target.value); setNeedsConfirmation(false) }}
+              onChange={(e) => {
+                setNewPrice(e.target.value)
+                setNeedsConfirmation(false)
+              }}
               disabled={isUpdating}
               className="bg-background border-border text-xl font-semibold"
               min="0.01"
@@ -94,8 +143,12 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
           {needsConfirmation && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
               <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+
               <div>
-                <p className="font-bold">{t('investments:alerts.warningTitle')}</p>
+                <p className="font-bold">
+                  {t('investments:alerts.warningTitle')}
+                </p>
+
                 <p className="text-muted-foreground mt-0.5">
                   {t('investments:alerts.warningDesc')}
                 </p>
@@ -107,11 +160,21 @@ export function UpdatePriceDialog({ investmentId, assetName, currentPrice }: Upd
         <DialogFooter>
           <Button
             onClick={handleUpdate}
-            disabled={isUpdating || isSamePrice || targetPrice <= 0}
-            variant={needsConfirmation ? "destructive" : "default"}
+            disabled={
+              isUpdating ||
+              isSamePrice ||
+              targetPrice <= 0
+            }
+            variant={
+              needsConfirmation
+                ? 'destructive'
+                : 'default'
+            }
             className="w-full font-semibold transition-colors"
           >
-            {isUpdating ? <Spinner size={20} /> : needsConfirmation ? (
+            {isUpdating ? (
+              <Spinner size={20} />
+            ) : needsConfirmation ? (
               t('investments:confirmUpdate')
             ) : (
               t('investments:updateNow')

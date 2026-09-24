@@ -1,11 +1,22 @@
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, Trash2, Users } from 'lucide-react';
+import {
+  Bell,
+  Check,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+import { ROUTES } from '@/app/router/routes';
+import {
+  useAcceptInvitation,
+  useRejectInvitation,
+} from '@/features/groupgoals/hooks/useInvitations';
 import { Button } from '@/shared/components/core/button';
-import { cn } from '@/lib/utils';
-import { useAcceptInvitation, useRejectInvitation } from '@/features/groupgoals/hooks/useInvitations';
 import { notify } from '@/shared/utils/notifications/notify';
+import { cn } from '@/lib/utils';
+
 import type { Notification } from '../types';
 
 interface NotificationItemProps {
@@ -14,130 +25,227 @@ interface NotificationItemProps {
   onDelete: (id: string) => void;
 }
 
-export const NotificationItem = memo(function NotificationItem({ notification, onMarkAsRead, onDelete }: NotificationItemProps) {
-  const { t } = useTranslation(['notifications', 'common', 'groupGoals']);
-  const navigate = useNavigate();
+function getNotificationIcon(
+  type: Notification['type'],
+) {
+  switch (type) {
+    case 'GOAL_INVITATION':
+      return Users;
 
-  const { mutate: acceptInvitation, isPending: isAccepting } = useAcceptInvitation();
-  const { mutate: rejectInvitation, isPending: isRejecting } = useRejectInvitation();
+    case 'SYSTEM':
+    default:
+      return Bell;
+  }
+}
 
-  const isGoalInvitation = notification.type === 'GOAL_INVITATION';
-  const isActionLoading = isAccepting || isRejecting;
+export const NotificationItem = memo(
+  function NotificationItem({
+    notification,
+    onMarkAsRead,
+    onDelete,
+  }: NotificationItemProps) {
+    const { t } = useTranslation([
+      'notifications',
+      'common',
+      'groupGoals',
+    ]);
 
-  const invitationId = notification.metadata?.invitationId || notification.metadata?.id;
+    const navigate = useNavigate();
 
-  const getIcon = () => {
-    switch (notification.type) {
-      case 'GOAL_INVITATION':
-        return Users;
-      default:
-        return Bell;
-    }
-  };
+    const {
+      mutate: acceptInvitation,
+      isPending: isAccepting,
+    } = useAcceptInvitation();
 
-  const Icon = getIcon();
+    const {
+      mutate: rejectInvitation,
+      isPending: isRejecting,
+    } = useRejectInvitation();
 
-  const handleAccept = useCallback(() => {
-    if (!invitationId) return;
-    acceptInvitation(invitationId, {
-      onSuccess: () => {
-        notify.success(t('groupGoals:invitationAccepted'));
-        onMarkAsRead(notification.id);
-      },
-      onError: () => {
-        notify.error(t('groupGoals:invitationError'));
-      },
-    });
-  }, [invitationId, acceptInvitation, notification.id, onMarkAsRead, t]);
+    const isGoalInvitation =
+      notification.type === 'GOAL_INVITATION';
 
-  const handleReject = useCallback(() => {
-    if (!invitationId) return;
-    rejectInvitation(invitationId, {
-      onSuccess: () => {
-        onMarkAsRead(notification.id);
-      },
-      onError: () => {
-        notify.error(t('groupGoals:invitationError'));
-      },
-    });
-  }, [invitationId, rejectInvitation, notification.id, onMarkAsRead, t]);
+    const isActionLoading =
+      isAccepting || isRejecting;
 
-  const handleNavigate = useCallback(() => {
-    navigate('/profile?section=notifications');
-  }, [navigate]);
+    const invitationId =
+      notification.metadata?.invitationId ??
+      notification.metadata?.id;
 
-  return (
-    <div
-      className={cn(
-        'flex items-start gap-3 p-4 rounded-lg border transition-colors',
-        notification.read ? 'bg-card/50' : 'bg-accent/30 border-accent'
-      )}
-    >
-      <div className="mt-1 shrink-0">
-        <Icon className="h-5 w-5 text-primary" />
-      </div>
+    const Icon = getNotificationIcon(
+      notification.type,
+    );
 
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{notification.title}</p>
-        <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-        <p className="text-xs text-muted-foreground mt-2">
-          {new Date(notification.createdAt).toLocaleString()}
-        </p>
+    const handleAccept = useCallback(() => {
+      if (!invitationId) {
+        return;
+      }
 
-        {}
-        {isGoalInvitation && !notification.read && invitationId && (
-          <div className="flex items-center gap-2 mt-3">
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={handleAccept}
-              disabled={isActionLoading}
-            >
-              {t('common:actions.accept')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 text-xs"
-              onClick={handleReject}
-              disabled={isActionLoading}
-            >
-              {t('common:actions.reject')}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 text-xs"
-              onClick={handleNavigate}
-            >
-              {t('common:actions.view')}
-            </Button>
-          </div>
+      acceptInvitation(invitationId, {
+        onSuccess: () => {
+          notify.success(
+            t('groupGoals:invitationAccepted'),
+          );
+
+          onMarkAsRead(notification.id);
+        },
+        onError: () => {
+          notify.error(
+            t('groupGoals:invitationError'),
+          );
+        },
+      });
+    }, [
+      acceptInvitation,
+      invitationId,
+      notification.id,
+      onMarkAsRead,
+      t,
+    ]);
+
+    const handleReject = useCallback(() => {
+      if (!invitationId) {
+        return;
+      }
+
+      rejectInvitation(invitationId, {
+        onSuccess: () => {
+          onMarkAsRead(notification.id);
+        },
+        onError: () => {
+          notify.error(
+            t('groupGoals:invitationError'),
+          );
+        },
+      });
+    }, [
+      invitationId,
+      notification.id,
+      onMarkAsRead,
+      rejectInvitation,
+      t,
+    ]);
+
+    const handleNavigate = useCallback(() => {
+      navigate(
+        `${ROUTES.profile}?section=notifications`,
+      );
+    }, [navigate]);
+
+    const handleMarkAsRead = useCallback(() => {
+      onMarkAsRead(notification.id);
+    }, [notification.id, onMarkAsRead]);
+
+    const handleDelete = useCallback(() => {
+      onDelete(notification.id);
+    }, [notification.id, onDelete]);
+
+    return (
+      <div
+        className={cn(
+          'flex items-start gap-3 rounded-lg border p-4 transition-colors',
+          notification.read
+            ? 'bg-card/50'
+            : 'border-accent bg-accent/30',
         )}
-      </div>
+      >
+        <div
+          className="mt-1 shrink-0"
+          aria-hidden="true"
+        >
+          <Icon className="h-5 w-5 text-primary" />
+        </div>
 
-      <div className="flex flex-col gap-1 shrink-0">
-        {!notification.read && (
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">
+            {notification.title}
+          </p>
+
+          <p className="mt-1 text-sm text-muted-foreground">
+            {notification.message}
+          </p>
+
+          <p className="mt-2 text-xs text-muted-foreground">
+            {new Date(
+              notification.createdAt,
+            ).toLocaleString()}
+          </p>
+
+          {isGoalInvitation &&
+            !notification.read &&
+            invitationId && (
+              <div className="mt-3 flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={handleAccept}
+                  disabled={isActionLoading}
+                >
+                  {t('common:actions.accept')}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  onClick={handleReject}
+                  disabled={isActionLoading}
+                >
+                  {t('common:actions.reject')}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 text-xs"
+                  onClick={handleNavigate}
+                  disabled={isActionLoading}
+                >
+                  {t('common:actions.view')}
+                </Button>
+              </div>
+            )}
+        </div>
+
+        <div className="flex shrink-0 flex-col gap-1">
+          {!notification.read && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleMarkAsRead}
+              title={t('notifications:markAsRead')}
+              aria-label={t(
+                'notifications:markAsRead',
+              )}
+            >
+              <Check
+                className="h-4 w-4"
+                aria-hidden="true"
+              />
+            </Button>
+          )}
+
           <Button
+            type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
-            onClick={() => onMarkAsRead(notification.id)}
-            title={t('notifications:markAsRead')}
+            className="h-8 w-8 text-destructive hover:text-destructive"
+            onClick={handleDelete}
+            title={t('notifications:delete')}
+            aria-label={t('notifications:delete')}
           >
-            <Check className="h-4 w-4" />
+            <Trash2
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
           </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
-          onClick={() => onDelete(notification.id)}
-          title={t('notifications:delete')}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);

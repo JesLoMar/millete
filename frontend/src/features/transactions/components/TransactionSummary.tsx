@@ -1,42 +1,58 @@
-import { useTranslation } from "react-i18next"
-import { useQuery } from "@tanstack/react-query"
-import { ArrowUpRight, ArrowDownLeft, Scale, Activity } from "lucide-react"
-import { apiClient } from "@/shared/api/axiosClient"
-import type { PeriodFilter } from "@/shared/components/Header"
-import { FormattedMetricCard } from "@/shared/components/FormattedMetricCard"
+import { useQuery } from '@tanstack/react-query';
+import { ArrowDownLeft, ArrowUpRight, Scale, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+import { apiClient } from '@/shared/api/axiosClient';
+import { FormattedMetricCard } from '@/shared/components/FormattedMetricCard';
+import type { PeriodFilter } from '@/shared/components/Header';
 
 interface TransactionMetrics {
-  income: number
-  expenses: number
-  balance: number
-  count: number
-  incomeTrend: number
-  expensesTrend: number
-  balanceTrend: number
-  countTrend: number
+  income: number;
+  expenses: number;
+  balance: number;
+  count: number;
+  incomeTrend: number;
+  expensesTrend: number;
+  balanceTrend: number;
+  countTrend: number;
 }
 
 interface TransactionSummaryProps {
-  period: PeriodFilter
+  period: PeriodFilter;
 }
 
 export function TransactionSummary({ period }: TransactionSummaryProps) {
-  const { t } = useTranslation(['dashboard', 'transactions', 'common'])
+  const { t } = useTranslation(['dashboard', 'transactions']);
 
   const { data: metrics, isLoading } = useQuery<TransactionMetrics>({
     queryKey: ['transactionMetrics', period],
-    queryFn: async (): Promise<TransactionMetrics> => {
-      const response = await apiClient.get(`/transactions/metrics?period=${period}`)
-      return response.data
+    queryFn: async () => {
+      const response = await apiClient.get<TransactionMetrics>(
+        '/transactions/metrics',
+        {
+          params: { period },
+        },
+      );
+
+      return response.data;
     },
     staleTime: 60_000,
-  })
+  });
 
-  const periodLabel = t(`dashboard:metrics.vsLast${period === "week" ? "Week" : period === "month" ? "Month" : "Year"}`)
-  const periodName = t(`dashboard:header.period.${period}`)
+  const periodLabel = t(
+    `dashboard:metrics.vsLast${
+      period === 'week'
+        ? 'Week'
+        : period === 'month'
+          ? 'Month'
+          : 'Year'
+    }`,
+  );
+
+  const periodName = t(`dashboard:header.period.${period}`);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <FormattedMetricCard
         title={t('dashboard:metrics.income', { period: periodName })}
         value={metrics?.income ?? 0}
@@ -46,6 +62,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         periodLabel={periodLabel}
         loading={isLoading}
       />
+
       <FormattedMetricCard
         title={t('dashboard:metrics.expenses', { period: periodName })}
         value={metrics?.expenses ?? 0}
@@ -56,6 +73,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         loading={isLoading}
         invertedTrend
       />
+
       <FormattedMetricCard
         title={t('dashboard:metrics.balance')}
         value={metrics?.balance ?? 0}
@@ -65,6 +83,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         periodLabel={periodLabel}
         loading={isLoading}
       />
+
       <FormattedMetricCard
         title={t('transactions:title')}
         value={metrics?.count ?? 0}
@@ -76,5 +95,5 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
         loading={isLoading}
       />
     </div>
-  )
+  );
 }

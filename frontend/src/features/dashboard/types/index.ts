@@ -1,5 +1,3 @@
-
-
 export interface ChartDataPoint {
   label: string
   amount: number
@@ -26,7 +24,7 @@ export interface TransactionItem {
   category: string
   amount: number
   date: string
-  type: "INCOME" | "EXPENSE"
+  type: 'INCOME' | 'EXPENSE'
   icon?: string
 }
 
@@ -79,7 +77,7 @@ export interface TransactionResponse {
   categoryId: string
   amount: number
   date: string
-  type: "INCOME" | "EXPENSE"
+  type: 'INCOME' | 'EXPENSE'
 }
 
 export interface TransactionsResponse {

@@ -1,29 +1,39 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { TopNav } from "@/shared/components/TopNav"
-import { Sidebar } from "@/shared/components/Sidebar"
-import { Header } from "@/shared/components/Header"
-import { Input } from "@/shared/components/core/input"
-import { Loader2 } from "lucide-react"
-import { Pagination } from "@/shared/components/Pagination"
-import { EmptyState } from "../components/EmptyState"
-import { SavingsGoalCard } from "../components/SavingsGoalCard"
-import { ContributionModal } from "../components/ContributionModal"
-import { SavingsGoalDialog } from "../components/SavingsGoalDialog"
-import { SavingsGoalEditDialog } from "../components/SavingsGoalEditDialog"
-import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
-import { useSavingsGoals, useAddContribution, useDeleteSavingsGoal } from "../hooks/useSavingsGoals"
-import type { SavingsGoal } from "../types"
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
+import { Header } from '@/shared/components/Header';
+import { Input } from '@/shared/components/core/input';
+import { Pagination } from '@/shared/components/Pagination';
+import { Sidebar } from '@/shared/components/Sidebar';
+import { TopNav } from '@/shared/components/TopNav';
+
+import { ContributionModal } from '../components/ContributionModal';
+import { EmptyState } from '../components/EmptyState';
+import { SavingsGoalCard } from '../components/SavingsGoalCard';
+import { SavingsGoalDialog } from '../components/SavingsGoalDialog';
+import { SavingsGoalEditDialog } from '../components/SavingsGoalEditDialog';
+import {
+  useAddContribution,
+  useDeleteSavingsGoal,
+  useSavingsGoals,
+} from '../hooks/useSavingsGoals';
+import type { SavingsGoal } from '../types';
 
 export const SavingsGoalsPage = () => {
-  const { t } = useTranslation()
-  const [searchTerm, setSearchTerm] = useState("")
+  const { t } = useTranslation('savingsGoals');
+
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [ui, setUi] = useState({
     isContributionOpen: false,
     isEditOpen: false,
     deletingGoal: null as SavingsGoal | null,
-  })
-  const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null)
+  });
+
+  const [selectedGoal, setSelectedGoal] =
+    useState<SavingsGoal | null>(null);
 
   const {
     displayItems: goals,
@@ -35,167 +45,233 @@ export const SavingsGoalsPage = () => {
     error,
     nextPage,
     prevPage,
-  } = useSavingsGoals({ search: searchTerm })
+  } = useSavingsGoals({
+    search: searchTerm,
+  });
 
-  const { mutateAsync: addContribution } = useAddContribution()
-  const { mutateAsync: deleteGoal, isPending: isDeleting } = useDeleteSavingsGoal()
+  const { mutateAsync: addContribution } =
+    useAddContribution();
 
-  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
-  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+  const {
+    mutateAsync: deleteGoal,
+    isPending: isDeleting,
+  } = useDeleteSavingsGoal();
 
-  const handleAddContribution = async (amount: number) => {
-    if (!selectedGoal) return
-    try {
-      await addContribution({ id: selectedGoal.id, amount })
-      setUi((prev) => ({ ...prev, isContributionOpen: false }))
-      setSelectedGoal(null)
-    } catch {
-      // El toast de error ya sale del hook; el modal queda abierto para reintentar.
-    }
-  }
+  const from =
+    totalElements === 0
+      ? 0
+      : displayPage * displaySize + 1;
 
-  const handleDelete = async () => {
-    if (!ui.deletingGoal) return
-    try {
-      await deleteGoal(ui.deletingGoal.id)
-      setUi((prev) => ({ ...prev, deletingGoal: null }))
-    } catch {
-      // El toast de error ya sale del hook; el diálogo queda abierto.
-    }
-  }
+  const to = Math.min(
+    (displayPage + 1) * displaySize,
+    totalElements,
+  );
 
   const openContribution = (goal: SavingsGoal) => {
-    setSelectedGoal(goal)
-    setUi((prev) => ({ ...prev, isContributionOpen: true }))
-  }
+    setSelectedGoal(goal);
+
+    setUi((previous) => ({
+      ...previous,
+      isContributionOpen: true,
+    }));
+  };
 
   const openEdit = (goal: SavingsGoal) => {
-    setSelectedGoal(goal)
-    setUi((prev) => ({ ...prev, isEditOpen: true }))
-  }
+    setSelectedGoal(goal);
+
+    setUi((previous) => ({
+      ...previous,
+      isEditOpen: true,
+    }));
+  };
 
   const openDelete = (goal: SavingsGoal) => {
-    setUi((prev) => ({ ...prev, deletingGoal: goal }))
-  }
+    setUi((previous) => ({
+      ...previous,
+      deletingGoal: goal,
+    }));
+  };
+
+  const closeContribution = () => {
+    setUi((previous) => ({
+      ...previous,
+      isContributionOpen: false,
+    }));
+
+    setSelectedGoal(null);
+  };
+
+  const handleAddContribution = async (amount: number) => {
+    if (!selectedGoal) {
+      return;
+    }
+
+    try {
+      await addContribution({
+        id: selectedGoal.id,
+        amount,
+      });
+
+      closeContribution();
+    } catch {
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!ui.deletingGoal) {
+      return;
+    }
+
+    try {
+      await deleteGoal(ui.deletingGoal.id);
+
+      setUi((previous) => ({
+        ...previous,
+        deletingGoal: null,
+      }));
+    } catch {
+    }
+  };
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden pt-16">
+
+      <div className="flex flex-1 flex-col overflow-hidden pt-16">
         <TopNav />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+
+        <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Header hidePeriodSelector />
-            <div className="w-full sm:w-auto flex flex-col">
+
+            <div className="flex w-full flex-col sm:w-auto">
               <SavingsGoalDialog />
             </div>
           </div>
+
           {isLoading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          )}
-          {error && (
-            <div className="text-center text-sm text-destructive py-8">
-              {t('savingsGoals:loadingError')}
-            </div>
-          )}
-          {!isLoading && !error && (!goals || goals.length === 0) && (
-            <div className="space-y-4">
-              <div className="relative">
-                <Input
-                  placeholder={t('savingsGoals:searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={t('savingsGoals:clearSearch')}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              <EmptyState />
-            </div>
-          )}
-          {!isLoading && !error && goals && goals.length > 0 && (
-            <div className="space-y-4">
-              <div className="relative">
-                <Input
-                  placeholder={t('savingsGoals:searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={t('savingsGoals:clearSearch')}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {goals.map((goal) => (
-                  <SavingsGoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onAddContribution={openContribution}
-                    onEdit={openEdit}
-                    onDelete={openDelete}
-                  />
-                ))}
-              </div>
-              <Pagination
-                currentPage={displayPage}
-                totalPages={totalDisplayPages}
-                from={from}
-                to={to}
-                total={totalElements}
-                onPrev={prevPage}
-                onNext={nextPage}
+            <div
+              className="flex items-center justify-center py-12"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2
+                className="size-8 animate-spin text-muted-foreground"
+                aria-hidden="true"
               />
+              <span className="sr-only">
+                {t('loading')}
+              </span>
+            </div>
+          )}
+
+          {!isLoading && error && (
+            <div
+              className="py-8 text-center text-sm text-destructive"
+              role="alert"
+            >
+              {t('loadingError')}
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Input
+                  type="search"
+                  placeholder={t('searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
+                  }
+                  className="w-full"
+                />
+
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={t('clearSearch')}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {goals.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {goals.map((goal) => (
+                      <SavingsGoalCard
+                        key={goal.id}
+                        goal={goal}
+                        onAddContribution={openContribution}
+                        onEdit={openEdit}
+                        onDelete={openDelete}
+                      />
+                    ))}
+                  </div>
+
+                  <Pagination
+                    currentPage={displayPage}
+                    totalPages={totalDisplayPages}
+                    from={from}
+                    to={to}
+                    total={totalElements}
+                    onPrev={prevPage}
+                    onNext={nextPage}
+                  />
+                </>
+              )}
             </div>
           )}
         </main>
       </div>
+
       <ContributionModal
         isOpen={ui.isContributionOpen}
-        onClose={() => {
-          setUi((prev) => ({ ...prev, isContributionOpen: false }))
-          setSelectedGoal(null)
-        }}
+        onClose={closeContribution}
         onSubmit={handleAddContribution}
         goal={selectedGoal}
       />
+
       <SavingsGoalEditDialog
         key={selectedGoal?.id}
         open={ui.isEditOpen}
         onOpenChange={(open) => {
-          setUi((prev) => ({ ...prev, isEditOpen: open }))
-          if (!open) setSelectedGoal(null)
+          setUi((previous) => ({
+            ...previous,
+            isEditOpen: open,
+          }));
+
+          if (!open) {
+            setSelectedGoal(null);
+          }
         }}
         goal={selectedGoal}
       />
+
       <ConfirmDeletionDialog
-        open={!!ui.deletingGoal}
+        open={ui.deletingGoal !== null}
         onOpenChange={(open) => {
-          if (!open) setUi((prev) => ({ ...prev, deletingGoal: null }))
+          if (!open) {
+            setUi((previous) => ({
+              ...previous,
+              deletingGoal: null,
+            }));
+          }
         }}
-        itemName={ui.deletingGoal?.name || ""}
+        itemName={ui.deletingGoal?.name ?? ''}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
-        title={t('savingsGoals:deleteGoalTitle')}
-        description={t("savingsGoals:deleteGoalConfirmation", { name: ui.deletingGoal?.name })}
+        title={t('deleteGoalTitle')}
+        description={t('deleteGoalConfirmation', {
+          name: ui.deletingGoal?.name ?? '',
+        })}
       />
     </div>
-  )
-}
+  );
+};

@@ -1,47 +1,73 @@
-import type { GroupGoalDetail, ContributionMember } from "./types"
+import type {
+  ContributionMember,
+  GroupGoalDetail,
+} from './types';
 
 export function calculateContributions(
   selectedGoal: GroupGoalDetail,
-  totalCustomPercentage: number
+  totalCustomPercentage: number,
 ): ContributionMember[] {
-  const { members, monthlyTarget, distributionMode } = selectedGoal
+  const {
+    members,
+    monthlyTarget,
+    distributionMode,
+    contributionTotals,
+  } = selectedGoal;
 
-  const contributedMap: Record<string, number> = selectedGoal.contributionTotals || {}
+  const contributedMap = contributionTotals ?? {};
+  const expectedMap: Record<string, number> = {};
 
-  const expectedMap: Record<string, number> = {}
-
-  if (distributionMode === "CUSTOM") {
-    members.forEach((m) => {
-      expectedMap[m.userId] =
+  if (distributionMode === 'CUSTOM') {
+    members.forEach((member) => {
+      expectedMap[member.userId] =
         totalCustomPercentage > 0
-          ? ((m.customPercentage || 0) / 100) * monthlyTarget
-          : 0
-    })
-  } else if (distributionMode === "EQUITATIVE" && members.length > 0) {
-    const amount = monthlyTarget / members.length
-    members.forEach((m) => {
-      expectedMap[m.userId] = amount
-    })
-  } else if (distributionMode === "PROPORTIONAL") {
-    const totalSalary = members.reduce((sum, m) => sum + m.salary, 0)
-    members.forEach((m) => {
-      expectedMap[m.userId] =
-        totalSalary > 0 ? (m.salary / totalSalary) * monthlyTarget : 0
-    })
+          ? ((member.customPercentage ?? 0) / 100) *
+            monthlyTarget
+          : 0;
+    });
+  } else if (
+    distributionMode === 'EQUITATIVE' &&
+    members.length > 0
+  ) {
+    const amount = monthlyTarget / members.length;
+
+    members.forEach((member) => {
+      expectedMap[member.userId] = amount;
+    });
+  } else if (distributionMode === 'PROPORTIONAL') {
+    const totalSalary = members.reduce(
+      (sum, member) => sum + member.salary,
+      0,
+    );
+
+    members.forEach((member) => {
+      expectedMap[member.userId] =
+        totalSalary > 0
+          ? (member.salary / totalSalary) *
+            monthlyTarget
+          : 0;
+    });
   } else {
-    members.forEach((m) => {
-      expectedMap[m.userId] = 0
-    })
+    members.forEach((member) => {
+      expectedMap[member.userId] = 0;
+    });
   }
 
-  return members.map((m) => {
-    const contributed = contributedMap[m.userId] || 0
-    const expected = expectedMap[m.userId] || 0
+  return members.map((member) => {
+    const contributed =
+      contributedMap[member.userId] ?? 0;
+
+    const expected =
+      expectedMap[member.userId] ?? 0;
+
     return {
-      ...m,
+      ...member,
       expectedContribution: expected,
       contributed,
-      percentage: expected > 0 ? (contributed / expected) * 100 : 0,
-    }
-  })
+      percentage:
+        expected > 0
+          ? (contributed / expected) * 100
+          : 0,
+    };
+  });
 }

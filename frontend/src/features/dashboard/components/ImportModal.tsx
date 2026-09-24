@@ -1,8 +1,22 @@
-import { useState, useCallback, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { Upload, X, FileJson } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/shared/components/core/dialog"
-import { Button } from "@/shared/components/core/button"
+import {
+  useCallback,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type MouseEvent,
+} from 'react'
+import { FileJson, Upload, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/core/dialog'
+import { Button } from '@/shared/components/core/button'
 
 interface ImportModalProps {
   isOpen: boolean
@@ -10,66 +24,110 @@ interface ImportModalProps {
   onImport: (file: File) => void
 }
 
-export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
-  const { t } = useTranslation(['dashboard', 'common'])
-  const [dragOver, setDragOver] = useState(false)
-  const [fileName, setFileName] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function ImportModal({
+  isOpen,
+  onClose,
+  onImport,
+}: ImportModalProps) {
+  const { t } = useTranslation([
+    'dashboard',
+    'common',
+  ])
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }, [])
+  const [dragOver, setDragOver] = useState(false)
+  const [fileName, setFileName] = useState<string | null>(
+    null
+  )
+  const [error, setError] = useState<string | null>(
+    null
+  )
+  const [selectedFile, setSelectedFile] =
+    useState<File | null>(null)
+
+  const fileInputRef =
+    useRef<HTMLInputElement>(null)
+
+  const handleDragOver = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault()
+      setDragOver(true)
+    },
+    []
+  )
 
   const handleDragLeave = useCallback(() => {
     setDragOver(false)
   }, [])
 
-  const validateAndSetFile = useCallback(async (file: File) => {
-    if (file.type !== "application/json" && !file.name.endsWith(".json")) {
-      setError(t('dashboard:importModal.jsonOnly'))
-      return
-    }
-    try {
-      const text = await file.text()
-      JSON.parse(text)
-      setFileName(file.name)
-      setSelectedFile(file)
+  const validateAndSetFile = useCallback(
+    async (file: File) => {
+      if (
+        file.type !== 'application/json' &&
+        !file.name.endsWith('.json')
+      ) {
+        setError(
+          t('dashboard:importModal.jsonOnly')
+        )
+        return
+      }
+
+      try {
+        const text = await file.text()
+        JSON.parse(text)
+
+        setFileName(file.name)
+        setSelectedFile(file)
+        setError(null)
+      } catch {
+        setError(
+          t('dashboard:importModal.invalidContent')
+        )
+      }
+    },
+    [t]
+  )
+
+  const handleDrop = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault()
+      setDragOver(false)
       setError(null)
-    } catch {
-      setError(t('dashboard:importModal.invalidContent'))
-    }
-  }, [t])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    setError(null)
-    const files = e.dataTransfer.files
-    if (files && files.length > 0) {
-      validateAndSetFile(files[0])
-    }
-  }, [validateAndSetFile])
+      const files = e.dataTransfer.files
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null)
-    const files = e.target.files
-    if (files && files.length > 0) {
-      validateAndSetFile(files[0])
-    }
-  }, [validateAndSetFile])
+      if (files && files.length > 0) {
+        validateAndSetFile(files[0])
+      }
+    },
+    [validateAndSetFile]
+  )
+
+  const handleFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setError(null)
+
+      const files = e.target.files
+
+      if (files && files.length > 0) {
+        validateAndSetFile(files[0])
+      }
+    },
+    [validateAndSetFile]
+  )
 
   const triggerFileSelect = () => {
     fileInputRef.current?.click()
   }
 
-  const removeFile = (e: React.MouseEvent<HTMLElement>) => {
+  const removeFile = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation()
+
     setFileName(null)
     setSelectedFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ""
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const handleSubmit = () => {
@@ -81,12 +139,20 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose()
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-lg bg-card border-border text-card-foreground rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">
             {t('dashboard:importModal.title')}
           </DialogTitle>
+
           <DialogDescription className="text-sm text-muted-foreground">
             {t('dashboard:importModal.description')}
           </DialogDescription>
@@ -98,11 +164,21 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
           onDrop={handleDrop}
           className={`my-5 border-2 border-dashed rounded-xl flex flex-col items-center transition-all w-full ${
             dragOver
-              ? "border-primary bg-primary/5 scale-[0.99]"
-              : "border-border/60 hover:border-primary/50 hover:bg-secondary/10"
+              ? 'border-primary bg-primary/5 scale-[0.99]'
+              : 'border-border/60 hover:border-primary/50 hover:bg-secondary/10'
           }`}
         >
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json,application/json" className="hidden" aria-label={t('dashboard:importModal.fileInput')} />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".json,application/json"
+            className="hidden"
+            aria-label={t(
+              'dashboard:importModal.fileInput'
+            )}
+          />
+
           <button
             type="button"
             onClick={triggerFileSelect}
@@ -113,9 +189,19 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                 <div className="p-3 bg-secondary/40 rounded-full text-muted-foreground">
                   <Upload className="size-6" />
                 </div>
+
                 <div className="text-center space-y-1">
-                  <p className="text-sm font-medium">{t('dashboard:importModal.dropHere')}</p>
-                  <p className="text-xs text-muted-foreground">{t('dashboard:importModal.onlyJson')}</p>
+                  <p className="text-sm font-medium">
+                    {t(
+                      'dashboard:importModal.dropHere'
+                    )}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      'dashboard:importModal.onlyJson'
+                    )}
+                  </p>
                 </div>
               </>
             ) : (
@@ -123,7 +209,10 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
                   <FileJson className="size-5" />
                 </div>
-                <p className="text-sm font-medium truncate flex-1 text-left">{fileName}</p>
+
+                <p className="text-sm font-medium truncate flex-1 text-left">
+                  {fileName}
+                </p>
               </div>
             )}
           </button>
@@ -148,10 +237,19 @@ export function ImportModal({ isOpen, onClose, onImport }: ImportModalProps) {
         )}
 
         <div className="flex justify-end gap-3 pt-2">
-          <Button variant="outline" onClick={onClose} className="border-border hover:bg-secondary text-foreground">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="border-border hover:bg-secondary text-foreground"
+          >
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={!selectedFile} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl px-5 transition-all">
+
+          <Button
+            onClick={handleSubmit}
+            disabled={!selectedFile}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl px-5 transition-all"
+          >
             {t('common:actions.accept')}
           </Button>
         </div>

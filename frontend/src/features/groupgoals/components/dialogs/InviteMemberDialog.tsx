@@ -1,17 +1,18 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/components/core/button"
-import { Spinner } from "@/shared/components/Spinner"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { Spinner } from '@/shared/components/Spinner'
+import { Button } from '@/shared/components/core/button'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/shared/components/core/dialog"
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/components/core/dialog'
+import { Input } from '@/shared/components/core/input'
+import { Label } from '@/shared/components/core/label'
 
 interface InviteMemberDialogProps {
   open: boolean
@@ -20,28 +21,36 @@ interface InviteMemberDialogProps {
   isInviting?: boolean
 }
 
-export function InviteMemberDialog({ open, onOpenChange, onInvite, isInviting = false }: InviteMemberDialogProps) {
+export function InviteMemberDialog({
+  open,
+  onOpenChange,
+  onInvite,
+  isInviting = false,
+}: InviteMemberDialogProps) {
   const { t } = useTranslation()
-  const [identifier, setIdentifier] = useState("")
+  const [identifier, setIdentifier] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const handleInvite = async () => {
     const trimmed = identifier.trim()
+
     if (!trimmed) {
       setError(t('groupGoals:invalidIdentifier'))
       return
     }
+
     await onInvite(trimmed)
-    setIdentifier("")
+    setIdentifier('')
     setError(null)
     onOpenChange(false)
   }
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      setIdentifier("")
+      setIdentifier('')
       setError(null)
     }
+
     onOpenChange(isOpen)
   }
 
@@ -49,18 +58,27 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite, isInviting = 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('groupGoals:inviteTitle')}</DialogTitle>
+          <DialogTitle>
+            {t('groupGoals:inviteTitle')}
+          </DialogTitle>
+
           <DialogDescription>
             {t('groupGoals:inviteDesc')}
           </DialogDescription>
         </DialogHeader>
+
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="identifier">{t('groupGoals:identifier')}</Label>
+            <Label htmlFor="identifier">
+              {t('groupGoals:identifier')}
+            </Label>
+
             <Input
               id="identifier"
               type="text"
-              placeholder={t('groupGoals:identifierPlaceholder')}
+              placeholder={t(
+                'groupGoals:identifierPlaceholder'
+              )}
               value={identifier}
               onChange={(e) => {
                 setIdentifier(e.target.value)
@@ -68,17 +86,33 @@ export function InviteMemberDialog({ open, onOpenChange, onInvite, isInviting = 
               }}
               className="bg-background border-border"
             />
+
             {error && (
-              <p className="text-destructive text-xs">{error}</p>
+              <p className="text-destructive text-xs">
+                {error}
+              </p>
             )}
           </div>
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} className="border-border">
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            className="border-border"
+          >
             {t('common:actions.cancel')}
           </Button>
-          <Button onClick={handleInvite} disabled={!identifier.trim() || isInviting}>
-            {isInviting ? <Spinner size={20} /> : t('groupGoals:sendInvitation')}
+
+          <Button
+            onClick={handleInvite}
+            disabled={!identifier.trim() || isInviting}
+          >
+            {isInviting ? (
+              <Spinner size={20} />
+            ) : (
+              t('groupGoals:sendInvitation')
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

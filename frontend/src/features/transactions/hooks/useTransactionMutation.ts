@@ -1,12 +1,18 @@
-import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query"
-import { useTranslation } from "react-i18next"
-import { apiClient } from "@/shared/api/axiosClient"
-import { notify } from "@/shared/utils/notifications/notify"
-import type { ApiError } from "@/shared/types/api"
-import type { TransactionResponse, RegisterTransactionRequest } from "@/features/transactions/index"
+import {
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
+import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
-// Fuente única de las queries que dependen de los datos financieros.
-// Añadir una décima clave = editar solo este array.
+import type {
+  RegisterTransactionRequest,
+  TransactionResponse,
+} from '@/features/transactions/index';
+import { apiClient } from '@/shared/api/axiosClient';
+import { notify } from '@/shared/utils/notifications/notify';
+
 const FINANCIAL_DATA_QUERY_KEYS = [
   'transactions',
   'transactionMetrics',
@@ -17,87 +23,165 @@ const FINANCIAL_DATA_QUERY_KEYS = [
   'recentTransactions',
   'categoryExpenses',
   'plannedTransactions',
-] as const
+] as const;
 
-const invalidateFinancialData = (queryClient: QueryClient) =>
-  Promise.all(
+type RecurringTransactionRequest = {
+  categoryId: string | null;
+  amount: number;
+  type: 'INCOME' | 'EXPENSE';
+  description: string;
+  frequencyType: string;
+  frequencyInterval: number;
+  startDate: string;
+  endDate?: string | null;
+};
+
+function invalidateFinancialData(queryClient: QueryClient) {
+  return Promise.all(
     FINANCIAL_DATA_QUERY_KEYS.map((queryKey) =>
-      queryClient.invalidateQueries({ queryKey: [queryKey] })
-    )
-  )
+      queryClient.invalidateQueries({
+        queryKey: [queryKey],
+      }),
+    ),
+  );
+}
+
+function getErrorMessage(
+  error: unknown,
+  fallback: string,
+): string {
+  if (axios.isAxiosError(error)) {
+    return (
+      error.response?.data?.message ??
+      error.response?.data?.error ??
+      fallback
+    );
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
 
 export const useTransactionMutations = () => {
-  const queryClient = useQueryClient()
-  const { t } = useTranslation()
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('transactions');
 
   const createTransaction = useMutation({
     mutationFn: (data: RegisterTransactionRequest) =>
-      apiClient.post<TransactionResponse>('transactions', data),
+      apiClient.post<TransactionResponse>(
+        'transactions',
+        data,
+      ),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.createSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.createSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.createError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(error, t('alerts.createError')),
+      );
     },
-  })
+  });
 
   const updateTransaction = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<RegisterTransactionRequest> }) =>
-      apiClient.put<TransactionResponse>(`transactions/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<RegisterTransactionRequest>;
+    }) =>
+      apiClient.put<TransactionResponse>(
+        `transactions/${id}`,
+        data,
+      ),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.updateSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.updateSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.updateError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(error, t('alerts.updateError')),
+      );
     },
-  })
+  });
 
   const deleteTransaction = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`transactions/${id}`),
+    mutationFn: (id: string) =>
+      apiClient.delete(`transactions/${id}`),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.deleteSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.deleteSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.deleteError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(error, t('alerts.deleteError')),
+      );
     },
-  })
+  });
 
   const createRecurring = useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiClient.post('planned-transactions', data),
+    mutationFn: (data: RecurringTransactionRequest) =>
+      apiClient.post('planned-transactions', data),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.createRecurringSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.createRecurringSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.createRecurringError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(
+          error,
+          t('alerts.createRecurringError'),
+        ),
+      );
     },
-  })
+  });
 
   const updateRecurring = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      apiClient.put(`planned-transactions/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: RecurringTransactionRequest;
+    }) =>
+      apiClient.put(
+        `planned-transactions/${id}`,
+        data,
+      ),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.updateRecurringSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.updateRecurringSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.updateRecurringError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(
+          error,
+          t('alerts.updateRecurringError'),
+        ),
+      );
     },
-  })
+  });
 
   const deleteRecurring = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`planned-transactions/${id}`),
+    mutationFn: (id: string) =>
+      apiClient.delete(`planned-transactions/${id}`),
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient)
-      notify.success(t('transactions:alerts.deleteRecurringSuccess'))
+      await invalidateFinancialData(queryClient);
+      notify.success(t('alerts.deleteRecurringSuccess'));
     },
-    onError: (err: ApiError) => {
-      notify.error(err.response?.data?.message || t('transactions:alerts.deleteRecurringError'))
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(
+          error,
+          t('alerts.deleteRecurringError'),
+        ),
+      );
     },
-  })
+  });
 
   return {
     createTransaction,
@@ -106,8 +190,17 @@ export const useTransactionMutations = () => {
     createRecurring,
     updateRecurring,
     deleteRecurring,
-    isCreating: createTransaction.isPending || createRecurring.isPending,
-    isUpdating: updateTransaction.isPending || updateRecurring.isPending,
-    isDeleting: deleteTransaction.isPending || deleteRecurring.isPending,
-  }
-}
+
+    isCreating:
+      createTransaction.isPending ||
+      createRecurring.isPending,
+
+    isUpdating:
+      updateTransaction.isPending ||
+      updateRecurring.isPending,
+
+    isDeleting:
+      deleteTransaction.isPending ||
+      deleteRecurring.isPending,
+  };
+};

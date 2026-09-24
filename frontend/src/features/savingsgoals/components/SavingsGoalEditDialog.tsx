@@ -1,87 +1,163 @@
-import { useState, useRef, useEffect } from "react"
-import { useTranslation } from "react-i18next"
-import { PiggyBank } from "lucide-react"
-import { Spinner } from "@/shared/components/Spinner"
-import { Button } from "@/shared/components/core/button"
-import { Input } from "@/shared/components/core/input"
-import { Label } from "@/shared/components/core/label"
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { PiggyBank } from 'lucide-react';
+
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/shared/components/core/dialog"
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/core/select"
-import { useUpdateSavingsGoal } from "../hooks/useSavingsGoals"
-import { notify } from "@/shared/utils/notifications/notify"
-import type { SavingsGoal } from "../types"
-import type { ApiError } from "@/shared/types/api"
+} from '@/shared/components/core/select';
+
+import { useUpdateSavingsGoal } from '../hooks/useSavingsGoals';
+import type { SavingsGoal } from '../types';
 
 const PRIORITIES = [
-  { value: "LOW", labelKey: "savingsGoals:priorities.LOW" },
-  { value: "MEDIUM", labelKey: "savingsGoals:priorities.MEDIUM" },
-  { value: "HIGH", labelKey: "savingsGoals:priorities.HIGH" },
-] as const
+  {
+    value: 'LOW',
+    labelKey: 'priorities.LOW',
+  },
+  {
+    value: 'MEDIUM',
+    labelKey: 'priorities.MEDIUM',
+  },
+  {
+    value: 'HIGH',
+    labelKey: 'priorities.HIGH',
+  },
+] as const;
 
-/**
- * Valida el link tal como lo normalizará el hook:
- * vacío es válido (campo opcional); si no tiene protocolo se asume https://;
- * solo se aceptan http(s) y URLs sintácticamente válidas.
- */
+type Priority = SavingsGoal['priority'];
+
+interface SavingsGoalEditDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  goal: SavingsGoal | null;
+}
+
+interface FormState {
+  name: string;
+  targetAmount: string;
+  priority: Priority;
+  deadline: string;
+  link: string;
+}
+
 const isValidLink = (link: string): boolean => {
-  const trimmed = link.trim()
-  if (!trimmed) return true
+  const trimmed = link.trim();
 
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  if (!trimmed) {
+    return true;
+  }
+
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
 
   try {
-    const url = new URL(withProtocol)
-    return url.protocol === "http:" || url.protocol === "https:"
+    const url = new URL(withProtocol);
+
+    return (
+      url.protocol === 'http:' ||
+      url.protocol === 'https:'
+    );
   } catch {
-    return false
+    return false;
   }
-}
+};
 
-interface Props {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  goal: SavingsGoal | null
-}
-
-function getInitialForm(goal: SavingsGoal | null) {
+function getInitialForm(
+  goal: SavingsGoal | null,
+): FormState {
   return {
-    name: goal?.name || "",
-    targetAmount: goal?.targetAmount ? String(goal.targetAmount) : "",
-    priority: goal?.priority || "MEDIUM" as "LOW" | "MEDIUM" | "HIGH",
-    deadline: goal?.deadline || "",
-    link: goal?.link || "",
-  }
+    name: goal?.name ?? '',
+    targetAmount:
+      goal?.targetAmount !== undefined
+        ? String(goal.targetAmount)
+        : '',
+    priority: goal?.priority ?? 'MEDIUM',
+    deadline: goal?.deadline ?? '',
+    link: goal?.link ?? '',
+  };
 }
 
-export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
-  const { t } = useTranslation()
-  const { mutateAsync: updateGoal, isPending: isUpdating } = useUpdateSavingsGoal()
-  const [form, setForm] = useState(() => getInitialForm(goal))
-  const [linkTouched, setLinkTouched] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+export function SavingsGoalEditDialog({
+  open,
+  onOpenChange,
+  goal,
+}: SavingsGoalEditDialogProps) {
+  const { t } = useTranslation([
+    'savingsGoals',
+    'common',
+  ]);
 
-  // Al cerrar el diálogo, el estado "tocado" se resetea para la próxima apertura
+  const {
+    mutateAsync: updateGoal,
+    isPending: isUpdating,
+  } = useUpdateSavingsGoal();
+
+  const [form, setForm] = useState<FormState>(() =>
+    getInitialForm(goal),
+  );
+
+  const [linkTouched, setLinkTouched] =
+    useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const nameId = useId();
+  const targetAmountId = useId();
+  const priorityId = useId();
+  const deadlineId = useId();
+  const linkId = useId();
+  const linkErrorId = useId();
+
   useEffect(() => {
-    if (!open) setLinkTouched(false)
-  }, [open])
+    if (open) {
+      setForm(getInitialForm(goal));
+      setLinkTouched(false);
+    }
+  }, [goal, open]);
+
+  const updateForm = (updates: Partial<FormState>) => {
+    setForm((previous) => ({
+      ...previous,
+      ...updates,
+    }));
+  };
+
+  const targetAmount = Number(form.targetAmount);
+  const linkError =
+    linkTouched && !isValidLink(form.link);
+
+  const isValid =
+    goal !== null &&
+    form.name.trim().length > 0 &&
+    Number.isFinite(targetAmount) &&
+    targetAmount > 0 &&
+    isValidLink(form.link);
 
   const handleSave = async () => {
-    if (!goal || !form.name.trim() || !form.targetAmount) return
-    if (!isValidLink(form.link)) {
-      setLinkTouched(true)
-      return
+    if (!goal || !isValid) {
+      setLinkTouched(true);
+      return;
     }
 
     try {
@@ -89,83 +165,122 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
         id: goal.id,
         dto: {
           name: form.name.trim(),
-          targetAmount: Number(form.targetAmount),
+          targetAmount,
           priority: form.priority,
           status: goal.status,
           deadline: form.deadline || undefined,
           link: form.link.trim() || undefined,
         },
-      })
-      onOpenChange(false)
-    } catch (err) {
-      const apiError = err as ApiError
-      const message = apiError?.response?.data?.message || t('savingsGoals:alerts.updateError')
-      notify.error(message)
+      });
+
+      onOpenChange(false);
+    } catch {
+      // The mutation hook already displays the error notification.
+      // Keep the dialog open so the user can retry.
     }
-  }
-
-  const linkError = linkTouched && !isValidLink(form.link)
-
-  const isValid =
-    form.name.trim() &&
-    form.targetAmount &&
-    Number(form.targetAmount) > 0 &&
-    isValidLink(form.link)
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border-border sm:max-w-md"
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          inputRef.current?.focus()
+        className="border-border bg-card sm:max-w-md"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          inputRef.current?.focus();
         }}
       >
         <div className="max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <PiggyBank className="text-primary size-5" />
-              {t('savingsGoals:editGoalTitle')}
+            <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
+              <PiggyBank
+                className="size-5 text-primary"
+                aria-hidden="true"
+              />
+              {t('editGoalTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('savingsGoals:name')}</Label>
+              <Label
+                htmlFor={nameId}
+                className="text-sm font-semibold"
+              >
+                {t('name')}
+              </Label>
+
               <Input
+                id={nameId}
                 ref={inputRef}
-                placeholder={t('savingsGoals:namePlaceholder')}
+                placeholder={t('namePlaceholder')}
                 value={form.name}
-                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(event) =>
+                  updateForm({
+                    name: event.target.value,
+                  })
+                }
                 disabled={isUpdating}
-                className="bg-background border-border"
+                className="border-border bg-background"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('savingsGoals:targetAmount')}</Label>
+                <Label
+                  htmlFor={targetAmountId}
+                  className="text-sm font-semibold"
+                >
+                  {t('targetAmount')}
+                </Label>
+
                 <Input
+                  id={targetAmountId}
                   type="number"
-                  placeholder="0.00"
-                  value={form.targetAmount}
-                  onChange={(e) => setForm((prev) => ({ ...prev, targetAmount: e.target.value }))}
-                  disabled={isUpdating}
-                  className="bg-background border-border"
                   min="0.01"
                   step="0.01"
+                  placeholder="0.00"
+                  value={form.targetAmount}
+                  onChange={(event) =>
+                    updateForm({
+                      targetAmount: event.target.value,
+                    })
+                  }
+                  disabled={isUpdating}
+                  className="border-border bg-background"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">{t('savingsGoals:priority')}</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm((prev) => ({ ...prev, priority: v as typeof prev.priority }))}>
-                  <SelectTrigger className="bg-background border-border">
+                <Label
+                  htmlFor={priorityId}
+                  className="text-sm font-semibold"
+                >
+                  {t('priority')}
+                </Label>
+
+                <Select
+                  value={form.priority}
+                  onValueChange={(value) =>
+                    updateForm({
+                      priority: value as Priority,
+                    })
+                  }
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger
+                    id={priorityId}
+                    className="border-border bg-background"
+                  >
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    {PRIORITIES.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {t(p.labelKey)}
+
+                  <SelectContent className="border-border bg-card">
+                    {PRIORITIES.map((priority) => (
+                      <SelectItem
+                        key={priority.value}
+                        value={priority.value}
+                      >
+                        {t(priority.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -174,38 +289,68 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('savingsGoals:deadline')}</Label>
+              <Label
+                htmlFor={deadlineId}
+                className="text-sm font-semibold"
+              >
+                {t('deadline')}
+              </Label>
+
               <Input
+                id={deadlineId}
                 type="date"
                 value={form.deadline}
-                onChange={(e) => setForm((prev) => ({ ...prev, deadline: e.target.value }))}
+                onChange={(event) =>
+                  updateForm({
+                    deadline: event.target.value,
+                  })
+                }
                 disabled={isUpdating}
-                className="bg-background border-border"
+                className="border-border bg-background"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">{t('savingsGoals:link')}</Label>
+              <Label
+                htmlFor={linkId}
+                className="text-sm font-semibold"
+              >
+                {t('link')}
+              </Label>
+
               <Input
-                placeholder={t('savingsGoals:linkPlaceholder')}
+                id={linkId}
+                type="url"
+                placeholder={t('linkPlaceholder')}
                 value={form.link}
-                onChange={(e) => setForm((prev) => ({ ...prev, link: e.target.value }))}
+                onChange={(event) =>
+                  updateForm({
+                    link: event.target.value,
+                  })
+                }
                 onBlur={() => setLinkTouched(true)}
                 disabled={isUpdating}
-                className="bg-background border-border"
                 aria-invalid={linkError}
-                aria-describedby={linkError ? "edit-goal-link-error" : undefined}
+                aria-describedby={
+                  linkError ? linkErrorId : undefined
+                }
+                className="border-border bg-background"
               />
+
               {linkError && (
-                <p id="edit-goal-link-error" className="text-xs text-destructive">
-                  {t('savingsGoals:invalidLink')}
+                <p
+                  id={linkErrorId}
+                  className="text-xs text-destructive"
+                >
+                  {t('invalidLink')}
                 </p>
               )}
             </div>
           </div>
 
-          <DialogFooter className="gap-2 pt-2 pb-1 sticky bottom-0 bg-card">
+          <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">
             <Button
+              type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isUpdating}
@@ -213,16 +358,22 @@ export function SavingsGoalEditDialog({ open, onOpenChange, goal }: Props) {
             >
               {t('common:actions.cancel')}
             </Button>
+
             <Button
+              type="button"
               onClick={handleSave}
               disabled={isUpdating || !isValid}
-              className="bg-primary hover:bg-primary/90 px-6"
+              className="min-h-11 bg-primary px-6 hover:bg-primary/90"
             >
-              {isUpdating ? <Spinner size={20} /> : t('savingsGoals:saveChanges')}
+              {isUpdating ? (
+                <Spinner size={20} />
+              ) : (
+                t('saveChanges')
+              )}
             </Button>
           </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

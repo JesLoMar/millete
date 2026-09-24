@@ -1,41 +1,40 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/shared/api/axiosClient"
-import { EditTransactionDialog } from './dialogs/EditTransactionDialog'
-import { ConfirmDeletionDialog } from "@/features/categories/components/ConfirmDeletionDialog"
-import { type PeriodFilter } from "@/shared/components/Header"
-import { TransactionListFilters } from "./TransactionListFilters"
-import { TransactionListDesktop } from "./TransactionListDesktop"
-import { TransactionListMobile } from "./TransactionListMobile"
-import { TransactionListPagination } from "./TransactionListPagination"
-import { TransactionListSkeleton } from "./TransactionListSkeleton"
-import { useTransactions } from "../hooks/useTransactions"
-import { type Filter } from "../constants"
-import type { Transaction } from "./types"
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
+import { type PeriodFilter } from '@/shared/components/Header';
+
+import { useTransactionMutations } from '../hooks/useTransactionMutation';
+import { useTransactions } from '../hooks/useTransactions';
+import { type Filter } from '../constants';
+import { EditTransactionDialog } from './dialogs/EditTransactionDialog';
+import { TransactionListDesktop } from './TransactionListDesktop';
+import { TransactionListFilters } from './TransactionListFilters';
+import { TransactionListMobile } from './TransactionListMobile';
+import { TransactionListPagination } from './TransactionListPagination';
+import { TransactionListSkeleton } from './TransactionListSkeleton';
+import type { Transaction } from './types';
 
 interface TransactionListProps {
-  period: PeriodFilter
+  period: PeriodFilter;
 }
 
 interface ListState {
-  editingTransaction: Transaction | null
-  deletingTransaction: Transaction | null
-  isDeleting: boolean
+  editingTransaction: Transaction | null;
+  deletingTransaction: Transaction | null;
 }
 
 export function TransactionList({ period }: TransactionListProps) {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
+  const { t } = useTranslation('transactions');
+  const { deleteTransaction } = useTransactionMutations();
 
   const [state, setState] = useState<ListState>({
     editingTransaction: null,
     deletingTransaction: null,
-    isDeleting: false,
-  })
+  });
 
-  const [filter, setFilter] = useState<Filter>("all")
-  const [searchTerm, setSearchTerm] = useState("")
+  const [filter, setFilter] = useState<Filter>('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const {
     displayItems: transactions,
@@ -46,35 +45,45 @@ export function TransactionList({ period }: TransactionListProps) {
     isLoading,
     nextPage,
     prevPage,
-  } = useTransactions({ search: searchTerm, type: filter, period })
+  } = useTransactions({
+    search: searchTerm,
+    type: filter,
+    period,
+  });
 
   const updateState = (updates: Partial<ListState>) => {
-    setState(prev => ({ ...prev, ...updates }))
-  }
+    setState((previous) => ({
+      ...previous,
+      ...updates,
+    }));
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!state.deletingTransaction) return
+    const transaction = state.deletingTransaction;
 
-    updateState({ isDeleting: true })
-    try {
-      await apiClient.delete(`/transactions/${state.deletingTransaction.id}`)
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['transactionMetrics'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboardMetrics'] })
-      updateState({ deletingTransaction: null })
-    } catch (err) {
-      console.error("Error al eliminar transacción:", err)
-    } finally {
-      updateState({ isDeleting: false })
+    if (!transaction) {
+      return;
     }
-  }
+
+    try {
+      await deleteTransaction.mutateAsync(transaction.id);
+      updateState({ deletingTransaction: null });
+    } catch {
+      // useTransactionMutations already handles the error notification.
+    }
+  };
 
   if (isLoading && transactions.length === 0) {
-    return <TransactionListSkeleton />
+    return <TransactionListSkeleton />;
   }
 
-  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
-  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+  const from =
+    totalElements === 0 ? 0 : displayPage * displaySize + 1;
+
+  const to = Math.min(
+    (displayPage + 1) * displaySize,
+    totalElements,
+  );
 
   return (
     <div className="space-y-4">
@@ -86,22 +95,31 @@ export function TransactionList({ period }: TransactionListProps) {
         onSearchChange={setSearchTerm}
       />
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         {transactions.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12 text-sm">
-            {t('transactions:empty')}
+          <p className="py-12 text-center text-sm text-muted-foreground">
+            {t('empty')}
           </p>
         ) : (
           <>
             <TransactionListDesktop
               transactions={transactions}
-              onEdit={(tx) => updateState({ editingTransaction: tx })}
-              onDelete={(tx) => updateState({ deletingTransaction: tx })}
+              onEdit={(transaction) =>
+                updateState({ editingTransaction: transaction })
+              }
+              onDelete={(transaction) =>
+                updateState({ deletingTransaction: transaction })
+              }
             />
+
             <TransactionListMobile
               transactions={transactions}
-              onEdit={(tx) => updateState({ editingTransaction: tx })}
-              onDelete={(tx) => updateState({ deletingTransaction: tx })}
+              onEdit={(transaction) =>
+                updateState({ editingTransaction: transaction })
+              }
+              onDelete={(transaction) =>
+                updateState({ deletingTransaction: transaction })
+              }
             />
           </>
         )}
@@ -120,19 +138,29 @@ export function TransactionList({ period }: TransactionListProps) {
       <EditTransactionDialog
         key={state.editingTransaction?.id}
         transaction={state.editingTransaction}
-        open={!!state.editingTransaction}
-        onOpenChange={(open) => { if (!open) updateState({ editingTransaction: null }) }}
+        open={state.editingTransaction !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            updateState({ editingTransaction: null });
+          }
+        }}
       />
 
       <ConfirmDeletionDialog
-        open={!!state.deletingTransaction}
-        onOpenChange={(open) => { if (!open) updateState({ deletingTransaction: null }) }}
-        itemName={state.deletingTransaction?.description || ""}
+        open={state.deletingTransaction !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            updateState({ deletingTransaction: null });
+          }
+        }}
+        itemName={state.deletingTransaction?.description ?? ''}
         onConfirm={handleDeleteConfirm}
-        isDeleting={state.isDeleting}
-        title={t('transactions:deleteTitle')}
-        description={t("transactions:deleteConfirmation", { name: state.deletingTransaction?.description || "" })}
+        isDeleting={deleteTransaction.isPending}
+        title={t('deleteTitle')}
+        description={t('deleteConfirmation', {
+          name: state.deletingTransaction?.description ?? '',
+        })}
       />
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import type { PlannedTransaction } from "@/shared/hooks/usePlannedTransactions"
+import type { PlannedTransaction } from "@/features/transactions/hooks/usePlannedTransactions"
 import { FREQUENCY_LABELS, FREQUENCY_SINGULAR } from "./constants"
 import i18n from '@/lib/i18n';
 

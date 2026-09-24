@@ -1,17 +1,23 @@
-import { useTranslation } from "react-i18next"
-import { Plus } from "lucide-react"
-import { Button } from "@/shared/components/core/button"
-import { Pagination } from "@/shared/components/Pagination"
-import { formatDate } from "@/shared/utils/date"
-import { useGroupGoalContributions } from "../hooks/useGroupGoalQueries"
+import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import { useGroupGoalContributions } from '../hooks/useGroupGoalQueries'
+
+import { Button } from '@/shared/components/core/button'
+import { Pagination } from '@/shared/components/Pagination'
+import { formatDate } from '@/shared/utils/date'
 
 interface ContributionHistoryProps {
   goalId: string
   onAddClick: () => void
 }
 
-export function ContributionHistory({ goalId, onAddClick }: ContributionHistoryProps) {
+export function ContributionHistory({
+  goalId,
+  onAddClick,
+}: ContributionHistoryProps) {
   const { t } = useTranslation()
+
   const {
     displayItems: contributions,
     displayPage,
@@ -32,10 +38,21 @@ export function ContributionHistory({ goalId, onAddClick }: ContributionHistoryP
         <h2 className="text-lg sm:text-xl font-serif">
           {t('groupGoals:contributionsHistory')}
         </h2>
-        <Button onClick={onAddClick} className="gap-1.5 sm:gap-2 shrink-0 text-sm" size="sm">
+
+        <Button
+          onClick={onAddClick}
+          className="gap-1.5 sm:gap-2 shrink-0 text-sm"
+          size="sm"
+        >
           <Plus className="size-3.5 sm:size-4" />
-          <span className="hidden xs:inline">{t('groupGoals:addContribution')}</span>
-          <span className="xs:hidden">{t('groupGoals:addContributionShort')}</span>
+
+          <span className="hidden xs:inline">
+            {t('groupGoals:addContribution')}
+          </span>
+
+          <span className="xs:hidden">
+            {t('groupGoals:addContributionShort')}
+          </span>
         </Button>
       </div>
 
@@ -55,29 +72,31 @@ export function ContributionHistory({ goalId, onAddClick }: ContributionHistoryP
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {t('groupGoals:member')}
                 </span>
+
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
                   {t('groupGoals:amount')}
                 </span>
+
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
                   {t('groupGoals:date')}
                 </span>
               </div>
 
-              {contributions.map((c) => (
+              {contributions.map((contribution) => (
                 <div
-                  key={c.id}
+                  key={contribution.id}
                   className="grid grid-cols-3 gap-2 sm:gap-4 items-center p-3.5 sm:p-4 hover:bg-accent/30 transition-colors border-b last:border-0"
                 >
                   <span className="font-semibold text-sm sm:text-base truncate min-w-0">
-                    {c.name || t('groupGoals:member')}
+                    {contribution.name || t('groupGoals:member')}
                   </span>
 
                   <span className="font-bold text-sm sm:text-base text-primary text-right whitespace-nowrap tabular-nums">
-                    +{c.amount.toLocaleString()} €
+                    +{contribution.amount.toLocaleString()} €
                   </span>
 
                   <span className="text-xs sm:text-sm text-muted-foreground text-right whitespace-nowrap">
-                    {formatDate(c.date)}
+                    {formatDate(contribution.date)}
                   </span>
                 </div>
               ))}

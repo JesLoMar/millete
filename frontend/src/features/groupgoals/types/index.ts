@@ -1,45 +1,53 @@
-export type GoalRole = 'ADMIN' | 'MEMBER'
-export type DistributionMode = 'EQUITATIVE' | 'PROPORTIONAL' | 'CUSTOM'
-export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+export type GoalRole = 'ADMIN' | 'MEMBER';
+
+export type DistributionMode =
+  | 'EQUITATIVE'
+  | 'PROPORTIONAL'
+  | 'CUSTOM';
+
+export type InvitationStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED';
 
 export interface GoalMember {
-  id: string
-  userId: string
-  name: string
-  role: GoalRole
-  salary: number
-  customPercentage?: number
+  readonly id: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly role: GoalRole;
+  readonly salary: number;
+  readonly customPercentage?: number;
 }
 
 export interface GoalContribution {
-  id: string
-  userId: string
-  name: string
-  amount: number
-  date: string
+  readonly id: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly amount: number;
+  readonly date: string;
 }
 
 export interface GroupGoalDetail {
-  id: string
-  name: string
-  monthlyTarget: number
-  distributionMode: DistributionMode
-  isAdmin: boolean
-  members: GoalMember[]
-  contributions: GoalContribution[]
-  contributionTotals: Record<string, number>
+  readonly id: string;
+  readonly name: string;
+  readonly monthlyTarget: number;
+  readonly distributionMode: DistributionMode;
+  readonly isAdmin: boolean;
+  readonly members: GoalMember[];
+  readonly contributions: GoalContribution[];
+  readonly contributionTotals: Record<string, number>;
 }
 
 export interface GoalListItem {
-  id: string
-  name: string
-  monthlyTarget: number
-  memberCount: number
-  isAdmin: boolean
+  readonly id: string;
+  readonly name: string;
+  readonly monthlyTarget: number;
+  readonly memberCount: number;
+  readonly isAdmin: boolean;
 }
 
 export interface ContributionMember extends GoalMember {
-  expectedContribution: number
-  contributed: number
-  percentage: number
+  readonly expectedContribution: number;
+  readonly contributed: number;
+  readonly percentage: number;
 }

@@ -1,13 +1,15 @@
-import { useTranslation } from "react-i18next"
-import { m } from "framer-motion"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { Input } from "@/shared/components/core/input"
-import { Button } from "@/shared/components/core/button"
-import { Badge } from "@/shared/components/core/badge"
-import { AssetRow } from "./AssetRow"
-import { AssetListSkeleton } from "./AssetListSkeleton"
-import { INVESTMENT_TYPES } from "../constants"
-import type { InvestmentResponse } from "../types"
+import { m } from 'framer-motion'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import type { InvestmentResponse } from '../types'
+import { INVESTMENT_TYPES } from '../constants'
+import { AssetListSkeleton } from './AssetListSkeleton'
+import { AssetRow } from './AssetRow'
+
+import { Badge } from '@/shared/components/core/badge'
+import { Button } from '@/shared/components/core/button'
+import { Input } from '@/shared/components/core/input'
 
 interface AssetListProps {
   investments: InvestmentResponse[]
@@ -42,10 +44,19 @@ export function AssetList({
 }: AssetListProps) {
   const { t } = useTranslation()
 
-  const from = totalElements > 0 ? displayPage * displaySize + 1 : 0
-  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+  const from =
+    totalElements > 0
+      ? displayPage * displaySize + 1
+      : 0
 
-  if (isLoading && investments.length === 0) return <AssetListSkeleton />
+  const to = Math.min(
+    (displayPage + 1) * displaySize,
+    totalElements
+  )
+
+  if (isLoading && investments.length === 0) {
+    return <AssetListSkeleton />
+  }
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-3 sm:space-y-4">
@@ -53,8 +64,10 @@ export function AssetList({
         <h2 className="text-lg sm:text-xl font-semibold text-foreground font-serif">
           {t('investments:myAssets')}
         </h2>
+
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+
           <Input
             placeholder={t('investments:searchAsset')}
             className="pl-10 bg-background border-border h-9 sm:h-10 text-sm"
@@ -66,26 +79,42 @@ export function AssetList({
 
       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         <Button
-          variant={typeFilter === "all" ? "secondary" : "ghost"}
+          variant={typeFilter === 'all' ? 'secondary' : 'ghost'}
           size="sm"
-          onClick={() => onTypeFilterChange("all")}
+          onClick={() => onTypeFilterChange('all')}
           className="h-7 text-xs rounded-md"
         >
           {t('investments:filterAll')}
         </Button>
+
         {INVESTMENT_TYPES.map((invType) => (
           <Button
             key={invType.value}
-            variant={typeFilter === invType.value ? "secondary" : "ghost"}
+            variant={
+              typeFilter === invType.value
+                ? 'secondary'
+                : 'ghost'
+            }
             size="sm"
-            onClick={() => onTypeFilterChange(invType.value)}
+            onClick={() =>
+              onTypeFilterChange(invType.value)
+            }
             className="h-7 text-xs rounded-md gap-1.5"
           >
-            <invType.icon size={12} className={invType.color} aria-hidden="true" />
+            <invType.icon
+              size={12}
+              className={invType.color}
+              aria-hidden="true"
+            />
+
             {t(invType.labelKey)}
           </Button>
         ))}
-        <Badge variant="outline" className="text-xs ml-auto shrink-0">
+
+        <Badge
+          variant="outline"
+          className="text-xs ml-auto shrink-0"
+        >
           {totalElements}
         </Badge>
       </div>
@@ -99,8 +128,10 @@ export function AssetList({
             hidden: { opacity: 0 },
             visible: {
               opacity: 1,
-              transition: { staggerChildren: 0.04 }
-            }
+              transition: {
+                staggerChildren: 0.04,
+              },
+            },
           }}
         >
           {investments.length === 0 ? (
@@ -113,11 +144,17 @@ export function AssetList({
                 key={inv.id}
                 variants={{
                   hidden: { opacity: 0, x: -20 },
-                  visible: { opacity: 1, x: 0 }
+                  visible: { opacity: 1, x: 0 },
                 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                transition={{
+                  duration: 0.3,
+                  ease: 'easeOut',
+                }}
               >
-                <AssetRow investment={inv} onDelete={onDelete} />
+                <AssetRow
+                  investment={inv}
+                  onDelete={onDelete}
+                />
               </m.div>
             ))
           )}
@@ -127,8 +164,13 @@ export function AssetList({
       {totalDisplayPages > 1 && (
         <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col xs:flex-row items-center justify-between gap-3 border-t border-border bg-background/20">
           <p className="text-xs text-muted-foreground font-medium text-center xs:text-left">
-            {t("transactions:showingInterval", { from, to, total: totalElements })}
+            {t('transactions:showingInterval', {
+              from,
+              to,
+              total: totalElements,
+            })}
           </p>
+
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -137,19 +179,29 @@ export function AssetList({
               disabled={displayPage === 0}
               className="h-8 border-border"
             >
-              <ChevronLeft size={16} aria-hidden="true" />
+              <ChevronLeft
+                size={16}
+                aria-hidden="true"
+              />
             </Button>
+
             <span className="text-sm text-muted-foreground min-w-12 text-center tabular-nums">
               {displayPage + 1} / {totalDisplayPages}
             </span>
+
             <Button
               variant="outline"
               size="sm"
               onClick={onNextPage}
-              disabled={displayPage >= totalDisplayPages - 1}
+              disabled={
+                displayPage >= totalDisplayPages - 1
+              }
               className="h-8 border-border"
             >
-              <ChevronRight size={16} aria-hidden="true" />
+              <ChevronRight
+                size={16}
+                aria-hidden="true"
+              />
             </Button>
           </div>
         </div>

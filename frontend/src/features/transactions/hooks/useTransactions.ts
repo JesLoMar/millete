@@ -1,67 +1,102 @@
-import { useCallback } from "react"
-import { apiClient } from "@/shared/api/axiosClient"
-import { useServerPagination, type PaginatedResponse } from "@/shared/hooks/useServerPagination"
-import type { PeriodFilter } from "@/shared/components/Header"
-import type { Transaction } from "../components/types"
+import { useCallback } from 'react';
 
-const SERVER_SIZE = 50
-const DISPLAY_SIZE = 10
+import { apiClient } from '@/shared/api/axiosClient';
+import type { PeriodFilter } from '@/shared/components/Header';
+import {
+  useServerPagination,
+  type PaginatedResponse,
+} from '@/shared/hooks/useServerPagination';
+
+import type { Filter } from '../constants';
+import type { Transaction } from '../components/types';
+
+const SERVER_SIZE = 50;
+const DISPLAY_SIZE = 10;
 
 interface TransactionApiItem {
-  id: string
-  categoryId: string
-  categoryName: string
-  categoryColor: string | null
-  amount: number
-  date: string
-  type: "INCOME" | "EXPENSE"
-  description: string
-  active: boolean
+  id: string;
+  categoryId: string;
+  categoryName: string | null;
+  categoryColor: string | null;
+  amount: number;
+  date: string;
+  type: 'INCOME' | 'EXPENSE';
+  description: string;
+  active: boolean;
 }
 
 interface UseTransactionsOptions {
-  search?: string
-  type?: "all" | "income" | "expense"
-  period?: PeriodFilter
-  enabled?: boolean
+  search?: string;
+  type?: Filter;
+  period?: PeriodFilter;
+  enabled?: boolean;
 }
 
-export function useTransactions(options: UseTransactionsOptions = {}) {
-  const { search = "", type = "all", period = "month", enabled = true } = options
+export function useTransactions(
+  options: UseTransactionsOptions = {},
+) {
+  const {
+    search = '',
+    type = 'all',
+    period = 'month',
+    enabled = true,
+  } = options;
+
+  const normalizedSearch = search.trim();
 
   const fetchPage = useCallback(
-    async (page: number): Promise<PaginatedResponse<Transaction>> => {
+    async (
+      page: number,
+    ): Promise<PaginatedResponse<Transaction>> => {
       const params = new URLSearchParams({
         page: String(page),
         size: String(SERVER_SIZE),
         period,
-      })
-      if (search.trim()) params.set("search", search.trim())
-      if (type !== "all") params.set("type", type.toUpperCase())
+      });
 
-      const response = await apiClient.get(`/transactions?${params.toString()}`)
-      const data = response.data as PaginatedResponse<TransactionApiItem>
+      if (normalizedSearch) {
+        params.set('search', normalizedSearch);
+      }
+
+      if (type !== 'all') {
+        params.set(
+          'type',
+          type === 'income' ? 'INCOME' : 'EXPENSE',
+        );
+      }
+
+      const response = await apiClient.get<
+        PaginatedResponse<TransactionApiItem>
+      >(`/transactions?${params.toString()}`);
+
+      const data = response.data;
+
       return {
         ...data,
-        content: data.content.map((tx) => ({
-          id: tx.id,
-          categoryId: tx.categoryId,
-          category: tx.categoryName || "Sin categoría",
-          categoryColor: tx.categoryColor,
-          amount: tx.amount,
-          date: tx.date,
-          type: tx.type,
-          description: tx.description,
-          active: tx.active,
+        content: data.content.map((transaction) => ({
+          id: transaction.id,
+          categoryId: transaction.categoryId,
+          category: transaction.categoryName ?? '',
+          categoryColor: transaction.categoryColor,
+          amount: transaction.amount,
+          date: transaction.date,
+          type: transaction.type,
+          description: transaction.description,
+          active: transaction.active,
         })),
-      }
+      };
     },
-    [search, type, period]
-  )
+    [normalizedSearch, period, type],
+  );
 
   return {
     ...useServerPagination<Transaction>({
-      queryKey: ["transactions", search, type, period ?? ""],
+      queryKey: [
+        'transactions',
+        normalizedSearch,
+        type,
+        period,
+      ],
       fetchPage,
       serverSize: SERVER_SIZE,
       displaySize: DISPLAY_SIZE,
@@ -69,5 +104,5 @@ export function useTransactions(options: UseTransactionsOptions = {}) {
     }),
     serverSize: SERVER_SIZE,
     displaySize: DISPLAY_SIZE,
-  }
+  };
 }

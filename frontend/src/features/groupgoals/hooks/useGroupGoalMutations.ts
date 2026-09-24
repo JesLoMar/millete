@@ -1,203 +1,260 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiClient } from "@/shared/api/axiosClient"
-import { useTranslation } from "react-i18next"
-import { notify } from "@/shared/utils/notifications/notify"
-import type { ApiError } from "@/shared/types/api"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
+import { useTranslation } from 'react-i18next'
+
+import { apiClient } from '@/shared/api/axiosClient'
+import { notify } from '@/shared/utils/notifications/notify'
+
+import type { DistributionMode, GoalRole } from '../types'
+
+const GROUP_GOALS_QUERY_KEY = ['group-goals'] as const
+const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const
+
+interface CreateGoalRequest {
+  name: string
+  monthlyTarget: number
+  distributionMode: DistributionMode
+}
+
+interface UpdateGoalRequest {
+  goalId: string
+  name?: string
+  monthlyTarget?: number
+  distributionMode?: DistributionMode
+}
+
+interface UpdateMemberRequest {
+  goalId: string
+  memberId: string
+  role?: GoalRole
+  salary?: number
+  customPercentage?: number
+}
+
+interface DeleteMemberRequest {
+  goalId: string
+  memberId: string
+}
+
+interface AddContributionRequest {
+  goalId: string
+  amount: number
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | {
+          message?: string
+          error?: string
+        }
+      | undefined
+
+    return data?.message ?? data?.error ?? fallback
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
 
 export function useGroupGoalMutations(selectedGoalId: string | null) {
   const queryClient = useQueryClient()
-  const { t } = useTranslation()
+  const { t } = useTranslation('groupGoals')
+
+  const invalidateGroupGoals = () =>
+    queryClient.invalidateQueries({
+      queryKey: GROUP_GOALS_QUERY_KEY,
+    })
 
   const createGoal = useMutation({
-    mutationFn: async ({
-      name,
-      monthlyTarget,
-      distributionMode,
-    }: {
-      name: string
-      monthlyTarget: number
-      distributionMode: string
-    }) => {
-      return apiClient.post("/goals", {
-        name,
-        monthlyTarget,
-        distributionMode,
-      })
+    mutationFn: (data: CreateGoalRequest) =>
+      apiClient.post('/goals', data),
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.createSuccess'))
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      notify.success(t('groupGoals:alerts.createSuccess'))
-    },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.createError')
+        getErrorMessage(error, t('alerts.createError'))
       )
     },
   })
 
   const inviteMember = useMutation({
-    mutationFn: async (identifier: string) => {
-      if (!selectedGoalId) throw new Error("No goal selected")
-      return apiClient.post(`/goals/${selectedGoalId}/invitations`, {
-        identifier,
-      })
+    mutationFn: (identifier: string) =>
+      apiClient.post(
+        `/goals/${selectedGoalId}/invitations`,
+        { identifier }
+      ),
+
+    onSuccess: async () => {
+      await Promise.all([
+        invalidateGroupGoals(),
+        queryClient.invalidateQueries({
+          queryKey: NOTIFICATIONS_QUERY_KEY,
+        }),
+      ])
+
+      notify.success(t('alerts.inviteSuccess'))
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      queryClient.invalidateQueries({ queryKey: ["notifications"] })
-      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
-      notify.success(t('groupGoals:alerts.inviteSuccess'))
-    },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.inviteError')
+        getErrorMessage(error, t('alerts.inviteError'))
       )
     },
   })
 
   const updateGoal = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       goalId,
+      name,
       monthlyTarget,
       distributionMode,
-      name,
-    }: {
-      goalId: string
-      monthlyTarget?: number
-      distributionMode?: string
-      name?: string
-    }) => {
-      const payload: Record<string, unknown> = {}
-      if (monthlyTarget !== undefined) payload.monthlyTarget = monthlyTarget
-      if (distributionMode !== undefined) payload.distributionMode = distributionMode
-      if (name !== undefined) payload.name = name
+    }: UpdateGoalRequest) => {
+      const payload: {
+        name?: string
+        monthlyTarget?: number
+        distributionMode?: DistributionMode
+      } = {}
+
+      if (name !== undefined) {
+        payload.name = name
+      }
+
+      if (monthlyTarget !== undefined) {
+        payload.monthlyTarget = monthlyTarget
+      }
+
+      if (distributionMode !== undefined) {
+        payload.distributionMode = distributionMode
+      }
 
       return apiClient.put(`/goals/${goalId}`, payload)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      notify.success(t('groupGoals:alerts.goalSuccess'))
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.goalSuccess'))
     },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.goalError')
+        getErrorMessage(error, t('alerts.goalError'))
       )
     },
   })
 
   const deleteGoal = useMutation({
-    mutationFn: async (goalId: string) => {
-      return apiClient.delete(`/goals/${goalId}`)
+    mutationFn: (goalId: string) =>
+      apiClient.delete(`/goals/${goalId}`),
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.deleteSuccess'))
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      notify.success(t('groupGoals:alerts.deleteSuccess'))
-    },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.deleteError')
+        getErrorMessage(error, t('alerts.deleteError'))
       )
     },
   })
 
   const updateMember = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       goalId,
       memberId,
       role,
       salary,
       customPercentage,
-    }: {
-      goalId: string
-      memberId: string
-      role?: string
-      salary?: number
-      customPercentage?: number
-    }) => {
-      const payload: Record<string, unknown> = {}
-      if (role !== undefined) payload.role = role
-      if (salary !== undefined) payload.salary = salary
-      if (customPercentage !== undefined) payload.customPercentage = customPercentage
+    }: UpdateMemberRequest) => {
+      const payload: {
+        role?: GoalRole
+        salary?: number
+        customPercentage?: number
+      } = {}
 
-      return apiClient.put(`/goals/${goalId}/members/${memberId}`, payload)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
+      if (role !== undefined) {
+        payload.role = role
       }
-      notify.success(t('groupGoals:alerts.memberEditSuccess'))
+
+      if (salary !== undefined) {
+        payload.salary = salary
+      }
+
+      if (customPercentage !== undefined) {
+        payload.customPercentage = customPercentage
+      }
+
+      return apiClient.put(
+        `/goals/${goalId}/members/${memberId}`,
+        payload
+      )
     },
-    onError: (err: ApiError) => {
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.memberEditSuccess'))
+    },
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.memberEditError')
+        getErrorMessage(error, t('alerts.memberEditError'))
       )
     },
   })
 
   const deleteMember = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       goalId,
       memberId,
-    }: {
-      goalId: string
-      memberId: string
-    }) => {
-      return apiClient.delete(`/goals/${goalId}/members/${memberId}`)
+    }: DeleteMemberRequest) =>
+      apiClient.delete(
+        `/goals/${goalId}/members/${memberId}`
+      ),
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.memberDeleteSuccess'))
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      notify.success(t('groupGoals:alerts.memberDeleteSuccess'))
-    },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.memberDeleteError')
+        getErrorMessage(error, t('alerts.memberDeleteError'))
       )
     },
   })
 
   const addContribution = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       goalId,
       amount,
-    }: {
-      goalId: string
-      amount: number
-    }) => {
-      return apiClient.post(`/goals/${goalId}/contributions`, { amount })
+    }: AddContributionRequest) =>
+      apiClient.post(
+        `/goals/${goalId}/contributions`,
+        { amount }
+      ),
+
+    onSuccess: async () => {
+      await invalidateGroupGoals()
+
+      notify.success(t('alerts.contributionSuccess'))
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-goals"] })
-      if (selectedGoalId) {
-        queryClient.invalidateQueries({ queryKey: ["group-goals", selectedGoalId] })
-        queryClient.refetchQueries({ queryKey: ["group-goals", selectedGoalId] })
-      }
-      notify.success(t('groupGoals:alerts.contributionSuccess'))
-    },
-    onError: (err: ApiError) => {
+
+    onError: (error: unknown) => {
       notify.error(
-        err.response?.data?.message || t('groupGoals:alerts.contributionError')
+        getErrorMessage(error, t('alerts.contributionError'))
       )
     },
   })
