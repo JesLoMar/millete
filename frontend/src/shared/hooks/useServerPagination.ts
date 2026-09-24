@@ -58,6 +58,7 @@ export function useServerPagination<T>({
     data,
     isLoading,
     isFetching,
+    isError,
     error,
     refetch,
   } = useQuery<PaginatedResponse<T>>({
@@ -179,6 +180,7 @@ export function useServerPagination<T>({
     totalElements,
     isLoading,
     isFetching,
+    isError,
     error,
     refetch,
   };

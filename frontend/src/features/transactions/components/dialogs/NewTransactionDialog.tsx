@@ -31,7 +31,6 @@ interface FormState {
   category: string;
   amount: string;
   type: TransactionType;
-  error: string | null;
 }
 
 const INITIAL_FORM: FormState = {
@@ -39,7 +38,6 @@ const INITIAL_FORM: FormState = {
   category: '',
   amount: '',
   type: 'EXPENSE',
-  error: null,
 };
 
 export function NewTransactionDialog({
@@ -51,7 +49,8 @@ export function NewTransactionDialog({
     'common',
   ]);
 
-  const { createTransaction, isCreating } = useTransactionMutations();
+  const { createTransaction, isCreating } =
+    useTransactionMutations();
 
   const [internalOpen, setInternalOpen] = useState(false);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -67,7 +66,6 @@ export function NewTransactionDialog({
     setForm((previous) => ({
       ...previous,
       ...updates,
-      error: updates.error ?? null,
     }));
   };
 
@@ -97,8 +95,6 @@ export function NewTransactionDialog({
       return;
     }
 
-    updateForm({ error: null });
-
     try {
       await createTransaction.mutateAsync({
         description: form.description.trim(),
@@ -110,13 +106,9 @@ export function NewTransactionDialog({
 
       setOpen(false);
       resetForm();
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : t('createError');
-
-      updateForm({ error: message });
+    } catch {
+      // La mutation ya muestra el error mediante notify.error.
+      // El diálogo permanece abierto para permitir corregir los datos.
     }
   };
 
@@ -215,15 +207,6 @@ export function NewTransactionDialog({
                 updateForm({ category })
               }
             />
-
-            {form.error && (
-              <p
-                role="alert"
-                className="text-center text-sm text-destructive"
-              >
-                {form.error}
-              </p>
-            )}
           </div>
 
           <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">

@@ -77,6 +77,9 @@ export function TransactionList({ period }: TransactionListProps) {
     return <TransactionListSkeleton />;
   }
 
+  const hasActiveFilters =
+    filter !== 'all' || searchTerm.trim().length > 0;
+
   const from =
     totalElements === 0 ? 0 : displayPage * displaySize + 1;
 
@@ -98,7 +101,11 @@ export function TransactionList({ period }: TransactionListProps) {
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {transactions.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">
-            {t('empty')}
+            {hasActiveFilters
+              ? t('noResults', {
+                  defaultValue: 'No se encontraron transacciones.',
+                })
+              : t('empty')}
           </p>
         ) : (
           <>

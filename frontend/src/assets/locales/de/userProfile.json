@@ -38,20 +38,6 @@
     "success": "Einstellungen gespeichert",
     "error": "Fehler beim Speichern der Einstellungen"
   },
-  "telegram": {
-    "title": "Telegram-Verknüpfung",
-    "description": "Verbindungsstatus mit Ihrem Telegram-Konto",
-    "linked": "Verknüpft",
-    "notLinked": "Nicht verknüpft",
-    "chatId": "Chat-ID",
-    "unlink": "Verknüpfung aufheben",
-    "confirmTitle": "Telegram-Verknüpfung aufheben",
-    "confirmDescription": "Sind Sie sicher, dass Sie die Verknüpfung mit Ihrem Telegram-Konto aufheben möchten?",
-    "success": "Telegram-Verknüpfung erfolgreich aufgehoben",
-    "error": "Fehler beim Aufheben der Telegram-Verknüpfung",
-    "instructions": "Öffnen Sie den Telegram-Bot @Millete_bot und senden Sie /start, um Ihr Konto zu verknüpfen. Laden Sie diese Seite anschließend neu, um den aktualisierten Status zu sehen.",
-    "openBot": "Telegram-Bot öffnen"
-  },
   "notifications": {
     "title": "Ausstehende Einladungen",
     "description": "Benachrichtigungen und Einladungen, die Ihre Aufmerksamkeit erfordern",

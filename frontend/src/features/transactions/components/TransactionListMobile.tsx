@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/core/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/shared/utils/i18nFormat';
 
 import { formatDate } from '../utils';
 import type { Transaction } from './types';
@@ -39,7 +40,8 @@ export const TransactionListMobile = memo(function TransactionListMobile({
       {transactions.map((tx) => {
         const categoryName = tx.category || 'Sin categoría';
         const isIncome = tx.type === 'INCOME';
-        const isOrphan = !tx.category || tx.category === 'Sin categoría';
+        const isOrphan =
+          !tx.category || tx.category === 'Sin categoría';
 
         return (
           <m.div
@@ -70,15 +72,13 @@ export const TransactionListMobile = memo(function TransactionListMobile({
                 <p
                   className={cn(
                     'text-base font-bold tabular-nums',
-                    isIncome ? 'text-primary' : 'text-foreground',
+                    isIncome
+                      ? 'text-primary'
+                      : 'text-foreground',
                   )}
                 >
                   {isIncome ? '+' : '-'}
-                  {Math.abs(tx.amount).toLocaleString('es-ES', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{' '}
-                  €
+                  {formatCurrency(Math.abs(tx.amount))}
                 </p>
               </div>
 
@@ -91,7 +91,10 @@ export const TransactionListMobile = memo(function TransactionListMobile({
                     className="size-8"
                     aria-label={t('moreOptions')}
                   >
-                    <MoreHorizontal size={16} aria-hidden="true" />
+                    <MoreHorizontal
+                      size={16}
+                      aria-hidden="true"
+                    />
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -132,7 +135,10 @@ export const TransactionListMobile = memo(function TransactionListMobile({
 
               {isOrphan ? (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <HelpCircle size={12} aria-hidden="true" />
+                  <HelpCircle
+                    size={12}
+                    aria-hidden="true"
+                  />
                   <span>{categoryName}</span>
                 </span>
               ) : (

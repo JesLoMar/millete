@@ -55,7 +55,8 @@ export function RecurringTransactionsList() {
       await deleteRecurring.mutateAsync(transaction.id);
       setDeletingTransaction(null);
     } catch {
-      // useTransactionMutations already handles the error notification.
+      // La mutation ya muestra el error mediante notify.error.
+      // El diálogo permanece abierto para permitir reintentar.
     }
   };
 

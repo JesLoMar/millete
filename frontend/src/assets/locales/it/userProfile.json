@@ -38,20 +38,6 @@
     "success": "Preferenze salvate",
     "error": "Errore durante il salvataggio delle preferenze"
   },
-  "telegram": {
-    "title": "Collegamento con Telegram",
-    "description": "Stato della connessione con il tuo account Telegram",
-    "linked": "Collegato",
-    "notLinked": "Non collegato",
-    "chatId": "ID Chat",
-    "unlink": "Scollega",
-    "confirmTitle": "Scollega Telegram",
-    "confirmDescription": "Sei sicuro di voler scollegare il tuo account Telegram?",
-    "success": "Telegram scollegato con successo",
-    "error": "Errore durante lo scollegamento di Telegram",
-    "instructions": "Apri il bot di Telegram @Millete_bot e invia /start para collegare il tuo account. Una volta fatto, ricarica questa pagina per vedere lo stato aggiornato.",
-    "openBot": "Apri il bot di Telegram"
-  },
   "notifications": {
     "title": "Inviti in sospeso",
     "description": "Notifiche e inviti che richiedono la tua attenzione",

@@ -84,7 +84,13 @@ export function ChangePasswordSection() {
       title={t('changePassword.title')}
       description={t('changePassword.description')}
     >
-      <div className="space-y-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          handleSubmit();
+        }}
+        className="space-y-4"
+      >
         <div className="space-y-2">
           <Label htmlFor={currentPasswordId}>
             {t('changePassword.currentPassword')}
@@ -98,6 +104,7 @@ export function ChangePasswordSection() {
               setCurrentPassword(event.target.value)
             }
             disabled={isChangingPassword}
+            required
           />
         </div>
 
@@ -152,8 +159,7 @@ export function ChangePasswordSection() {
         </div>
 
         <Button
-          type="button"
-          onClick={handleSubmit}
+          type="submit"
           disabled={isChangingPassword}
         >
           {isChangingPassword ? (
@@ -162,7 +168,7 @@ export function ChangePasswordSection() {
             t('changePassword.save')
           )}
         </Button>
-      </div>
+      </form>
     </SettingsSection>
   );
 }

@@ -36,7 +36,6 @@ interface FormState {
   frequencyInterval: string;
   startDate: string;
   endDate: string;
-  error: string | null;
 }
 
 const INITIAL_FORM: FormState = {
@@ -48,12 +47,12 @@ const INITIAL_FORM: FormState = {
   frequencyInterval: '1',
   startDate: '',
   endDate: '',
-  error: null,
 };
 
 export function NewRecurringTransactionDialog() {
   const { t } = useTranslation(['transactions', 'common', 'auth']);
-  const { createRecurring, isCreating } = useTransactionMutations();
+  const { createRecurring, isCreating } =
+    useTransactionMutations();
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -117,10 +116,10 @@ export function NewRecurringTransactionDialog() {
       return;
     }
 
-    updateForm({ error: null });
-
     try {
-      const payload: Parameters<typeof createRecurring.mutateAsync>[0] = {
+      const payload: Parameters<
+        typeof createRecurring.mutateAsync
+      >[0] = {
         categoryId: form.category,
         amount:
           form.type === 'EXPENSE'
@@ -141,13 +140,9 @@ export function NewRecurringTransactionDialog() {
 
       setOpen(false);
       resetForm();
-    } catch (error) {
-      updateForm({
-        error:
-          error instanceof Error
-            ? error.message
-            : t('transactions:alerts.createRecurringError'),
-      });
+    } catch {
+      // La mutation ya muestra el error mediante notify.error.
+      // El diálogo permanece abierto para permitir corregir los datos.
     }
   };
 
@@ -403,15 +398,6 @@ export function NewRecurringTransactionDialog() {
                   })}
                 </p>
               </div>
-            )}
-
-            {form.error && (
-              <p
-                role="alert"
-                className="text-center text-sm font-medium text-destructive"
-              >
-                {form.error}
-              </p>
             )}
           </div>
 

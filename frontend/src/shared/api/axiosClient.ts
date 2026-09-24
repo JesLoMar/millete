@@ -24,12 +24,15 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
-const AUTH_ENDPOINTS = [
+const AUTH_ENDPOINTS = new Set([
   '/auth/login',
   '/auth/register',
   '/auth/logout',
   '/auth/me/topnav',
-];
+]);
+
+const normalizePath = (path: string): string =>
+  path.replace(/\/+$/, '') || '/';
 
 const isAuthEndpoint = (url?: string): boolean => {
   if (!url) {
@@ -37,25 +40,34 @@ const isAuthEndpoint = (url?: string): boolean => {
   }
 
   try {
-    const normalizedUrl = url.replace(/^\/+/, '');
-
-    const requestUrl = new URL(
-      normalizedUrl,
-      API_URL.endsWith('/') ? API_URL : `${API_URL}/`,
+    const apiBaseUrl = new URL(
+      API_URL,
+      window.location.origin,
     );
 
-    const pathname =
-      requestUrl.pathname.replace(/\/+$/, '') || '/';
+    const basePath = normalizePath(
+      apiBaseUrl.pathname,
+    );
 
-    return AUTH_ENDPOINTS.some((endpoint) => {
-      const normalizedEndpoint =
-        endpoint.replace(/\/+$/, '');
+    let requestPath: string;
 
-      return (
-        pathname === normalizedEndpoint ||
-        pathname.endsWith(normalizedEndpoint)
-      );
-    });
+    if (/^https?:\/\//i.test(url)) {
+      requestPath = new URL(url).pathname;
+    } else {
+      requestPath = normalizePath(url);
+
+      if (
+        requestPath === basePath ||
+        requestPath.startsWith(`${basePath}/`)
+      ) {
+        requestPath =
+          requestPath.slice(basePath.length) || '/';
+      }
+    }
+
+    return AUTH_ENDPOINTS.has(
+      normalizePath(requestPath),
+    );
   } catch {
     return false;
   }
@@ -81,7 +93,9 @@ apiClient.interceptors.response.use(
         !sessionExpiredNotified
       ) {
         sessionExpiredNotified = true;
-        window.dispatchEvent(new Event('auth:logout'));
+        window.dispatchEvent(
+          new Event('auth:logout'),
+        );
       }
 
       return Promise.reject(error);
@@ -97,13 +111,21 @@ apiClient.interceptors.response.use(
       let description = '';
 
       if (status === 403) {
-        description = i18n.t('api:errors.status_403');
+        description = i18n.t(
+          'api:errors.status_403',
+        );
       } else if (status === 404) {
-        description = i18n.t('api:errors.status_404');
+        description = i18n.t(
+          'api:errors.status_404',
+        );
       } else if (status >= 500) {
-        description = i18n.t('api:errors.status_500');
+        description = i18n.t(
+          'api:errors.status_500',
+        );
       } else if (error.code === 'ECONNABORTED') {
-        description = i18n.t('api:errors.timeout');
+        description = i18n.t(
+          'api:errors.timeout',
+        );
       }
 
       notify.error(errorMessage, { description });

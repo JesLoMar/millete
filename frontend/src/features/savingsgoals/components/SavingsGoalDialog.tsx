@@ -1,9 +1,13 @@
 import { useId, useRef, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
+
 import { PiggyBank, Plus } from 'lucide-react';
 
 import { Spinner } from '@/shared/components/Spinner';
+
 import { Button } from '@/shared/components/core/button';
+
 import {
   Dialog,
   DialogContent,
@@ -12,8 +16,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/components/core/dialog';
+
 import { Input } from '@/shared/components/core/input';
+
 import { Label } from '@/shared/components/core/label';
+
 import {
   Select,
   SelectContent,
@@ -22,23 +29,13 @@ import {
   SelectValue,
 } from '@/shared/components/core/select';
 
-import { useCreateSavingsGoal } from '../hooks/useSavingsGoals';
-import type { SavingsGoal } from '../types';
+import { SAVINGS_GOAL_PRIORITIES } from '../constants';
 
-const PRIORITIES = [
-  {
-    value: 'LOW',
-    labelKey: 'priorities.LOW',
-  },
-  {
-    value: 'MEDIUM',
-    labelKey: 'priorities.MEDIUM',
-  },
-  {
-    value: 'HIGH',
-    labelKey: 'priorities.HIGH',
-  },
-] as const;
+import { useCreateSavingsGoal } from '../hooks/useSavingsGoals';
+
+import { isValidHttpLink } from '../utils/links';
+
+import type { SavingsGoal } from '../types';
 
 type Priority = SavingsGoal['priority'];
 
@@ -58,29 +55,6 @@ const INITIAL_FORM: FormState = {
   link: '',
 };
 
-const isValidLink = (link: string): boolean => {
-  const trimmed = link.trim();
-
-  if (!trimmed) {
-    return true;
-  }
-
-  const withProtocol = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-
-  try {
-    const url = new URL(withProtocol);
-
-    return (
-      url.protocol === 'http:' ||
-      url.protocol === 'https:'
-    );
-  } catch {
-    return false;
-  }
-};
-
 export function SavingsGoalDialog() {
   const { t } = useTranslation([
     'savingsGoals',
@@ -93,7 +67,10 @@ export function SavingsGoalDialog() {
   } = useCreateSavingsGoal();
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+
+  const [form, setForm] =
+    useState<FormState>(INITIAL_FORM);
+
   const [linkTouched, setLinkTouched] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,14 +103,15 @@ export function SavingsGoalDialog() {
   };
 
   const targetAmount = Number(form.targetAmount);
+
   const linkError =
-    linkTouched && !isValidLink(form.link);
+    linkTouched && !isValidHttpLink(form.link);
 
   const isValid =
     form.name.trim().length > 0 &&
     Number.isFinite(targetAmount) &&
     targetAmount > 0 &&
-    isValidLink(form.link);
+    isValidHttpLink(form.link);
 
   const handleSave = async () => {
     if (!isValid) {
@@ -159,13 +137,19 @@ export function SavingsGoalDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
       <DialogTrigger asChild>
         <Button
           type="button"
           className="h-9 gap-2 bg-primary px-4 font-semibold hover:bg-primary/90"
         >
-          <Plus size={16} aria-hidden="true" />
+          <Plus
+            size={16}
+            aria-hidden="true"
+          />
           {t('newGoal')}
         </Button>
       </DialogTrigger>
@@ -230,7 +214,8 @@ export function SavingsGoalDialog() {
                   value={form.targetAmount}
                   onChange={(event) =>
                     updateForm({
-                      targetAmount: event.target.value,
+                      targetAmount:
+                        event.target.value,
                     })
                   }
                   disabled={isCreating}
@@ -263,14 +248,16 @@ export function SavingsGoalDialog() {
                   </SelectTrigger>
 
                   <SelectContent className="border-border bg-card">
-                    {PRIORITIES.map((priority) => (
-                      <SelectItem
-                        key={priority.value}
-                        value={priority.value}
-                      >
-                        {t(priority.labelKey)}
-                      </SelectItem>
-                    ))}
+                    {SAVINGS_GOAL_PRIORITIES.map(
+                      (priority) => (
+                        <SelectItem
+                          key={priority.value}
+                          value={priority.value}
+                        >
+                          {t(priority.labelKey)}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>

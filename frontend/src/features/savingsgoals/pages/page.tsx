@@ -49,8 +49,10 @@ export const SavingsGoalsPage = () => {
     search: searchTerm,
   });
 
-  const { mutateAsync: addContribution } =
-    useAddContribution();
+  const {
+    mutateAsync: addContribution,
+    isPending: isAddingContribution,
+  } = useAddContribution();
 
   const {
     mutateAsync: deleteGoal,
@@ -236,6 +238,7 @@ export const SavingsGoalsPage = () => {
         onClose={closeContribution}
         onSubmit={handleAddContribution}
         goal={selectedGoal}
+        isSubmitting={isAddingContribution}
       />
 
       <SavingsGoalEditDialog

@@ -4,11 +4,15 @@ import {
   useRef,
   useState,
 } from 'react';
+
 import { useTranslation } from 'react-i18next';
+
 import { PiggyBank } from 'lucide-react';
 
 import { Spinner } from '@/shared/components/Spinner';
+
 import { Button } from '@/shared/components/core/button';
+
 import {
   Dialog,
   DialogContent,
@@ -16,8 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/core/dialog';
+
 import { Input } from '@/shared/components/core/input';
+
 import { Label } from '@/shared/components/core/label';
+
 import {
   Select,
   SelectContent,
@@ -26,23 +33,13 @@ import {
   SelectValue,
 } from '@/shared/components/core/select';
 
-import { useUpdateSavingsGoal } from '../hooks/useSavingsGoals';
-import type { SavingsGoal } from '../types';
+import { SAVINGS_GOAL_PRIORITIES } from '../constants';
 
-const PRIORITIES = [
-  {
-    value: 'LOW',
-    labelKey: 'priorities.LOW',
-  },
-  {
-    value: 'MEDIUM',
-    labelKey: 'priorities.MEDIUM',
-  },
-  {
-    value: 'HIGH',
-    labelKey: 'priorities.HIGH',
-  },
-] as const;
+import { useUpdateSavingsGoal } from '../hooks/useSavingsGoals';
+
+import { isValidHttpLink } from '../utils/links';
+
+import type { SavingsGoal } from '../types';
 
 type Priority = SavingsGoal['priority'];
 
@@ -59,29 +56,6 @@ interface FormState {
   deadline: string;
   link: string;
 }
-
-const isValidLink = (link: string): boolean => {
-  const trimmed = link.trim();
-
-  if (!trimmed) {
-    return true;
-  }
-
-  const withProtocol = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-
-  try {
-    const url = new URL(withProtocol);
-
-    return (
-      url.protocol === 'http:' ||
-      url.protocol === 'https:'
-    );
-  } catch {
-    return false;
-  }
-};
 
 function getInitialForm(
   goal: SavingsGoal | null,
@@ -136,7 +110,9 @@ export function SavingsGoalEditDialog({
     }
   }, [goal, open]);
 
-  const updateForm = (updates: Partial<FormState>) => {
+  const updateForm = (
+    updates: Partial<FormState>,
+  ) => {
     setForm((previous) => ({
       ...previous,
       ...updates,
@@ -144,15 +120,16 @@ export function SavingsGoalEditDialog({
   };
 
   const targetAmount = Number(form.targetAmount);
+
   const linkError =
-    linkTouched && !isValidLink(form.link);
+    linkTouched && !isValidHttpLink(form.link);
 
   const isValid =
     goal !== null &&
     form.name.trim().length > 0 &&
     Number.isFinite(targetAmount) &&
     targetAmount > 0 &&
-    isValidLink(form.link);
+    isValidHttpLink(form.link);
 
   const handleSave = async () => {
     if (!goal || !isValid) {
@@ -181,7 +158,10 @@ export function SavingsGoalEditDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent
         className="border-border bg-card sm:max-w-md"
         onOpenAutoFocus={(event) => {
@@ -242,7 +222,8 @@ export function SavingsGoalEditDialog({
                   value={form.targetAmount}
                   onChange={(event) =>
                     updateForm({
-                      targetAmount: event.target.value,
+                      targetAmount:
+                        event.target.value,
                     })
                   }
                   disabled={isUpdating}
@@ -275,14 +256,16 @@ export function SavingsGoalEditDialog({
                   </SelectTrigger>
 
                   <SelectContent className="border-border bg-card">
-                    {PRIORITIES.map((priority) => (
-                      <SelectItem
-                        key={priority.value}
-                        value={priority.value}
-                      >
-                        {t(priority.labelKey)}
-                      </SelectItem>
-                    ))}
+                    {SAVINGS_GOAL_PRIORITIES.map(
+                      (priority) => (
+                        <SelectItem
+                          key={priority.value}
+                          value={priority.value}
+                        >
+                          {t(priority.labelKey)}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -332,7 +315,9 @@ export function SavingsGoalEditDialog({
                 disabled={isUpdating}
                 aria-invalid={linkError}
                 aria-describedby={
-                  linkError ? linkErrorId : undefined
+                  linkError
+                    ? linkErrorId
+                    : undefined
                 }
                 className="border-border bg-background"
               />

@@ -29,10 +29,11 @@ interface FormState {
   category: string;
   amount: string;
   type: Transaction['type'];
-  error: string | null;
 }
 
-function getInitialForm(transaction: Transaction | null): FormState {
+function getInitialForm(
+  transaction: Transaction | null,
+): FormState {
   return {
     description: transaction?.description ?? '',
     category: transaction?.categoryId ?? '',
@@ -41,7 +42,6 @@ function getInitialForm(transaction: Transaction | null): FormState {
         ? String(Math.abs(transaction.amount))
         : '',
     type: transaction?.type ?? 'EXPENSE',
-    error: null,
   };
 }
 
@@ -83,8 +83,6 @@ export function EditTransactionDialog({
       return;
     }
 
-    updateForm({ error: null });
-
     try {
       await updateTransaction.mutateAsync({
         id: transaction.id,
@@ -98,13 +96,9 @@ export function EditTransactionDialog({
       });
 
       onOpenChange(false);
-    } catch (error) {
-      updateForm({
-        error:
-          error instanceof Error
-            ? error.message
-            : t('transactions:alerts.updateError'),
-      });
+    } catch {
+      // La mutation ya muestra el error mediante notify.error.
+      // El diálogo permanece abierto para permitir corregir los datos.
     }
   };
 
@@ -193,15 +187,6 @@ export function EditTransactionDialog({
                 updateForm({ category })
               }
             />
-
-            {form.error && (
-              <p
-                role="alert"
-                className="text-center text-sm font-medium text-destructive"
-              >
-                {form.error}
-              </p>
-            )}
           </div>
 
           <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">

@@ -1,15 +1,25 @@
 import { useCallback } from 'react';
+
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import {
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
+
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/axiosClient';
+
 import {
   useServerPagination,
   type PaginatedResponse,
 } from '@/shared/hooks/useServerPagination';
 
 import { savingsGoalsService } from '../services/savingsGoals.service';
+
+import { normalizeHttpLink } from '../utils/links';
+
 import type {
   CreateSavingsGoalDTO,
   SavingsGoal,
@@ -18,30 +28,6 @@ import type {
 
 const SERVER_SIZE = 45;
 const DISPLAY_SIZE = 9;
-
-const sanitizeLink = (link?: string): string | undefined => {
-  const trimmed = link?.trim();
-
-  if (!trimmed) {
-    return undefined;
-  }
-
-  const withProtocol = /^https?:\/\//i.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
-
-  try {
-    const url = new URL(withProtocol);
-
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return undefined;
-    }
-
-    return url.href;
-  } catch {
-    return undefined;
-  }
-};
 
 interface UseSavingsGoalsOptions {
   search?: string;
@@ -112,7 +98,7 @@ export const useCreateSavingsGoal = () => {
     mutationFn: (dto: CreateSavingsGoalDTO) =>
       savingsGoalsService.create({
         ...dto,
-        link: sanitizeLink(dto.link),
+        link: normalizeHttpLink(dto.link),
       }),
 
     onSuccess: () => {
@@ -143,7 +129,7 @@ export const useUpdateSavingsGoal = () => {
     }) =>
       savingsGoalsService.update(id, {
         ...dto,
-        link: sanitizeLink(dto.link),
+        link: normalizeHttpLink(dto.link),
       }),
 
     onSuccess: () => {
@@ -194,18 +180,25 @@ export const useAddContribution = () => {
       id: string;
       amount: number;
     }) =>
-      savingsGoalsService.addContribution(id, amount),
+      savingsGoalsService.addContribution(
+        id,
+        amount,
+      ),
 
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['savings-goals'],
       });
 
-      toast.success(t('alerts.contributionSuccess'));
+      toast.success(
+        t('alerts.contributionSuccess'),
+      );
     },
 
     onError: () => {
-      toast.error(t('alerts.contributionError'));
+      toast.error(
+        t('alerts.contributionError'),
+      );
     },
   });
 };

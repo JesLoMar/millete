@@ -38,20 +38,6 @@
     "success": "Preferences saved",
     "error": "Error saving preferences"
   },
-  "telegram": {
-    "title": "Telegram connection",
-    "description": "Status of your Telegram account connection",
-    "linked": "Linked",
-    "notLinked": "Not linked",
-    "chatId": "Chat ID",
-    "unlink": "Unlink",
-    "confirmTitle": "Unlink Telegram",
-    "confirmDescription": "Are you sure you want to unlink your Telegram account?",
-    "success": "Telegram unlinked successfully",
-    "error": "Error unlinking Telegram",
-    "instructions": "Open the Telegram bot @Millete_bot and send /start to link your account. Once done, reload this page to see the updated status.",
-    "openBot": "Open Telegram bot"
-  },
   "notifications": {
     "title": "Pending invitations",
     "description": "Notifications and invitations that require your attention",

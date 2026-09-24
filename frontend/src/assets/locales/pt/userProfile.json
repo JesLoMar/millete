@@ -38,20 +38,6 @@
     "success": "Preferências salvas",
     "error": "Erro ao salvar preferências"
   },
-  "telegram": {
-    "title": "Vinculação com Telegram",
-    "description": "Status da conexão com sua conta do Telegram",
-    "linked": "Vinculado",
-    "notLinked": "Não vinculado",
-    "chatId": "ID do Chat",
-    "unlink": "Desvincular",
-    "confirmTitle": "Desvincular Telegram",
-    "confirmDescription": "Tem certeza de que deseja desvincular sua conta do Telegram?",
-    "success": "Telegram desvinculado com sucesso",
-    "error": "Erro ao desvincular o Telegram",
-    "instructions": "Abra o bot do Telegram @Millete_bot e envie /start para vincular sua conta. Assim que terminar, recarregue esta página para ver o status atualizado.",
-    "openBot": "Abrir bot do Telegram"
-  },
   "notifications": {
     "title": "Convites pendentes",
     "description": "Notificações e convites que exigem sua atenção",

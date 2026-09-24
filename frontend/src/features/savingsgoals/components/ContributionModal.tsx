@@ -19,6 +19,7 @@ interface ContributionModalProps {
   onClose: () => void;
   onSubmit: (amount: number) => void;
   goal: SavingsGoal | null;
+  isSubmitting: boolean;
 }
 
 export const ContributionModal = ({
@@ -26,6 +27,7 @@ export const ContributionModal = ({
   onClose,
   onSubmit,
   goal,
+  isSubmitting,
 }: ContributionModalProps) => {
   const { t } = useTranslation(['savingsGoals', 'common']);
 
@@ -37,7 +39,9 @@ export const ContributionModal = ({
     }
   }, [isOpen]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     const parsedAmount = Number(amount);
@@ -53,7 +57,7 @@ export const ContributionModal = ({
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) {
+        if (!open && !isSubmitting) {
           onClose();
         }
       }}
@@ -80,7 +84,10 @@ export const ContributionModal = ({
               min="0.01"
               step="0.01"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) =>
+                setAmount(event.target.value)
+              }
+              disabled={isSubmitting}
             />
           </div>
 
@@ -89,11 +96,15 @@ export const ContributionModal = ({
               type="button"
               variant="outline"
               onClick={onClose}
+              disabled={isSubmitting}
             >
               {t('common:actions.cancel')}
             </Button>
 
-            <Button type="submit">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+            >
               {t('add')}
             </Button>
           </DialogFooter>

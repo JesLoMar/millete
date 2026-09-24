@@ -1,39 +1,42 @@
-import "i18next";
-import enCommon from "@/assets/locales/en/common.json";
-import enValidations from "@/assets/locales/en/validations.json";
-import enAuth from "@/assets/locales/en/auth.json";
-import enNav from "@/assets/locales/en/nav.json";
-import enDashboard from "@/assets/locales/en/dashboard.json";
-import enTransactions from "@/assets/locales/en/transactions.json";
-import enCategories from "@/assets/locales/en/categories.json";
-import enInvestments from "@/assets/locales/en/investments.json";
-import enGroupGoals from "@/assets/locales/en/groupGoals.json";
-import enSavingsGoals from "@/assets/locales/en/savingsGoals.json";
-import enSettings from "@/assets/locales/en/settings.json";
-import enApi from "@/assets/locales/en/api.json";
-import enNotifications from "@/assets/locales/en/notifications.json";
-import enUserProfile from "@/assets/locales/en/userProfile.json";
-import enInfo from "@/assets/locales/en/info.json";
+import 'i18next';
 
-declare module "i18next" {
+import enCommon from '@/assets/locales/en/common.json';
+import enValidations from '@/assets/locales/en/validations.json';
+import enAuth from '@/assets/locales/en/auth.json';
+import enNav from '@/assets/locales/en/nav.json';
+import enDashboard from '@/assets/locales/en/dashboard.json';
+import enTransactions from '@/assets/locales/en/transactions.json';
+import enCategories from '@/assets/locales/en/categories.json';
+import enInvestments from '@/assets/locales/en/investments.json';
+import enGroupGoals from '@/assets/locales/en/groupGoals.json';
+import enSavingsGoals from '@/assets/locales/en/savingsGoals.json';
+import enSettings from '@/assets/locales/en/settings.json';
+import enApi from '@/assets/locales/en/api.json';
+import enNotifications from '@/assets/locales/en/notifications.json';
+import enUserProfile from '@/assets/locales/en/userProfile.json';
+import enInfo from '@/assets/locales/en/info.json';
+import enWiki from '@/assets/locales/en/wiki.json';
+
+declare module 'i18next' {
   interface CustomTypeOptions {
-    defaultNS: "common";
+    defaultNS: 'common';
     ns: [
-      "common",
-      "validations",
-      "auth",
-      "nav",
-      "dashboard",
-      "transactions",
-      "categories",
-      "investments",
-      "groupGoals",
-      "savingsGoals",
-      "settings",
-      "api",
-      "userProfile",
-      "notifications",
-      "info"
+      'common',
+      'validations',
+      'auth',
+      'nav',
+      'dashboard',
+      'transactions',
+      'categories',
+      'investments',
+      'groupGoals',
+      'savingsGoals',
+      'settings',
+      'api',
+      'userProfile',
+      'notifications',
+      'info',
+      'wiki',
     ];
     resources: {
       common: typeof enCommon;
@@ -58,19 +61,24 @@ declare module "i18next" {
   }
 
   interface TFunction {
-    <T extends string = string>(key: T, options?: Record<string, unknown>): string;
+    <T extends string = string>(
+      key: T,
+      options?: Record<string, unknown>,
+    ): string;
   }
 }
 
-declare module "react-i18next" {
+declare module 'react-i18next' {
   interface UseTranslationOptions {
-    ns?: CustomTypeOptions["ns"][number] | CustomTypeOptions["ns"];
+    ns?:
+      | CustomTypeOptions['ns'][number]
+      | CustomTypeOptions['ns'];
   }
 
   interface WithTranslation {
     t: <TKeys extends string = string>(
       key: TKeys,
-      options?: Record<string, unknown>
+      options?: Record<string, unknown>,
     ) => string;
   }
 }

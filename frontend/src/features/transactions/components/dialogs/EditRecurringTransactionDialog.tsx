@@ -37,7 +37,6 @@ interface FormState {
   frequencyType: string;
   frequencyInterval: string;
   categoryId: string | null;
-  error: string | null;
 }
 
 function getInitialForm(
@@ -56,7 +55,6 @@ function getInitialForm(
         ? String(transaction.frequencyInterval)
         : '1',
     categoryId: transaction?.categoryId ?? null,
-    error: null,
   };
 }
 
@@ -105,8 +103,6 @@ export function EditRecurringTransactionDialog({
       return;
     }
 
-    updateForm({ error: null });
-
     try {
       await updateRecurring.mutateAsync({
         id: transaction.id,
@@ -123,13 +119,9 @@ export function EditRecurringTransactionDialog({
       });
 
       onOpenChange(false);
-    } catch (error) {
-      updateForm({
-        error:
-          error instanceof Error
-            ? error.message
-            : t('transactions:alerts.updateRecurringError'),
-      });
+    } catch {
+      // La mutation ya muestra el error mediante notify.error.
+      // El diálogo permanece abierto para permitir corregir los datos.
     }
   };
 
@@ -297,15 +289,6 @@ export function EditRecurringTransactionDialog({
                 />
               </div>
             </div>
-
-            {form.error && (
-              <p
-                role="alert"
-                className="text-center text-sm font-medium text-destructive"
-              >
-                {form.error}
-              </p>
-            )}
           </div>
 
           <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2">
