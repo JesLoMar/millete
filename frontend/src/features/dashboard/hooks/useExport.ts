@@ -7,7 +7,7 @@ import type { ExportFormat } from '../constants'
 const FILE_BRAND = 'millete'
 
 const sanitizeFilenamePart = (
-  value: string
+  value: string,
 ): string =>
   value
     .replace(/[^a-zA-Z0-9._-]+/g, '_')
@@ -19,7 +19,7 @@ export function useExport() {
 
   const performExport = async (
     format: ExportFormat,
-    configValue?: string
+    configValue?: string,
   ) => {
     setIsExporting(true)
 
@@ -32,6 +32,7 @@ export function useExport() {
           response = (
             await apiClient.get('/data/export', {
               responseType: 'blob',
+              skipGlobalErrorNotify: true,
             })
           ).data
           filename = `${FILE_BRAND}_export.json`
@@ -41,6 +42,7 @@ export function useExport() {
           response = (
             await apiClient.get('/data/export/zip', {
               responseType: 'blob',
+              skipGlobalErrorNotify: true,
             })
           ).data
           filename = `${FILE_BRAND}_export.zip`
@@ -57,7 +59,8 @@ export function useExport() {
               `/data/export/csv/${encodeURIComponent(configValue)}`,
               {
                 responseType: 'blob',
-              }
+                skipGlobalErrorNotify: true,
+              },
             )
           ).data
 
@@ -78,7 +81,8 @@ export function useExport() {
               })}`,
               {
                 responseType: 'blob',
-              }
+                skipGlobalErrorNotify: true,
+              },
             )
           ).data
 
@@ -88,7 +92,7 @@ export function useExport() {
       }
 
       const url = window.URL.createObjectURL(
-        new Blob([response])
+        new Blob([response]),
       )
 
       const link = document.createElement('a')

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog';
 import { type PeriodFilter } from '@/shared/components/Header';
 
 import { useTransactionMutations } from '../hooks/useTransactionMutation';

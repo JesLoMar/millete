@@ -10,7 +10,10 @@ import { GroupGoalDetail } from '@/features/groupgoals/components/GroupGoalDetai
 import { GroupGoalSelector } from '@/features/groupgoals/components/GroupGoalSelector'
 import { InviteMemberDialog } from '@/features/groupgoals/components/dialogs/InviteMemberDialog'
 import { UpdateGoalDialog } from '@/features/groupgoals/components/dialogs/UpdateGoalDialog'
-import { useGroupGoalDetail, useGroupGoals } from '@/features/groupgoals/hooks/useGroupGoalQueries'
+import {
+  useGroupGoalDetail,
+  useGroupGoals,
+} from '@/features/groupgoals/hooks/useGroupGoalQueries'
 import { useGroupGoalMutations } from '@/features/groupgoals/hooks/useGroupGoalMutations'
 import { calculateContributions } from '@/features/groupgoals/utils'
 import type {
@@ -19,7 +22,7 @@ import type {
   GoalListItem,
   GoalRole,
 } from '@/features/groupgoals/types'
-import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog'
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { Pagination } from '@/shared/components/Pagination'
 import { TopNav } from '@/shared/components/TopNav'
@@ -31,7 +34,8 @@ export const GroupGoalsPage = () => {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [internalSelectedGoalId, setInternalSelectedGoalId] = useState<string | null>(null)
+  const [internalSelectedGoalId, setInternalSelectedGoalId] =
+    useState<string | null>(null)
 
   const selectedGoalId = useMemo(() => {
     return searchParams.get('goalId') || internalSelectedGoalId
@@ -52,10 +56,10 @@ export const GroupGoalsPage = () => {
 
           return next
         },
-        { replace: true }
+        { replace: true },
       )
     },
-    [setSearchParams]
+    [setSearchParams],
   )
 
   const [dialogs, setDialogs] = useState({
@@ -84,45 +88,66 @@ export const GroupGoalsPage = () => {
     prevPage,
   } = useGroupGoals()
 
-  const { selectedGoal } = useGroupGoalDetail(selectedGoalId)
-  const mutations = useGroupGoalMutations(selectedGoalId)
+  const { selectedGoal } =
+    useGroupGoalDetail(selectedGoalId)
+  const mutations =
+    useGroupGoalMutations(selectedGoalId)
 
-  const from = totalElements === 0 ? 0 : displayPage * displaySize + 1
-  const to = Math.min((displayPage + 1) * displaySize, totalElements)
+  const from =
+    totalElements === 0
+      ? 0
+      : displayPage * displaySize + 1
+
+  const to = Math.min(
+    (displayPage + 1) * displaySize,
+    totalElements,
+  )
 
   const totalCustomPercentage = useMemo(() => {
     if (!selectedGoal) return 0
 
     return selectedGoal.members.reduce(
-      (sum, member) => sum + (member.customPercentage || 0),
-      0
+      (sum, member) =>
+        sum + (member.customPercentage || 0),
+      0,
     )
   }, [selectedGoal])
 
-  const contributionMembers: ContributionMember[] = useMemo(() => {
-    if (!selectedGoal) return []
+  const contributionMembers: ContributionMember[] =
+    useMemo(() => {
+      if (!selectedGoal) return []
 
-    return calculateContributions(selectedGoal, totalCustomPercentage)
-  }, [selectedGoal, totalCustomPercentage])
+      return calculateContributions(
+        selectedGoal,
+        totalCustomPercentage,
+      )
+    }, [selectedGoal, totalCustomPercentage])
 
-  const totalContributed = contributionMembers.reduce(
-    (sum, member) => sum + member.contributed,
-    0
-  )
+  const totalContributed =
+    contributionMembers.reduce(
+      (sum, member) => sum + member.contributed,
+      0,
+    )
 
   const percentageCompleted = selectedGoal
     ? selectedGoal.monthlyTarget > 0
-      ? (totalContributed / selectedGoal.monthlyTarget) * 100
+      ? (totalContributed /
+          selectedGoal.monthlyTarget) *
+        100
       : 0
     : 0
 
   const isEditingLastAdmin = useMemo(() => {
-    if (!actions.editMember || actions.editMember.role !== 'ADMIN' || !selectedGoal) {
+    if (
+      !actions.editMember ||
+      actions.editMember.role !== 'ADMIN' ||
+      !selectedGoal
+    ) {
       return false
     }
 
     const adminCount = selectedGoal.members.filter(
-      (member) => member.role === 'ADMIN'
+      (member) => member.role === 'ADMIN',
     ).length
 
     return adminCount <= 1
@@ -131,12 +156,13 @@ export const GroupGoalsPage = () => {
   const handleCreateGoal = async (
     name: string,
     monthlyTarget: number,
-    distributionMode: string
+    distributionMode: string,
   ) => {
     await mutations.createGoal.mutateAsync({
       name,
       monthlyTarget,
-      distributionMode: distributionMode as DistributionMode,
+      distributionMode:
+        distributionMode as DistributionMode,
     })
 
     setDialogs((prev) => ({
@@ -145,13 +171,21 @@ export const GroupGoalsPage = () => {
     }))
   }
 
-  const handleEditGoalName = async (newName: string) => {
+  const handleEditGoalName = async (
+    newName: string,
+  ) => {
     if (!actions.editingGoal) return
 
     try {
-      await apiClient.put(`/goals/${actions.editingGoal.id}`, {
-        name: newName,
-      })
+      await apiClient.put(
+        `/goals/${actions.editingGoal.id}`,
+        {
+          name: newName,
+        },
+        {
+          skipGlobalErrorNotify: true,
+        },
+      )
 
       await queryClient.invalidateQueries({
         queryKey: ['group-goals'],
@@ -162,12 +196,15 @@ export const GroupGoalsPage = () => {
         editingGoal: null,
       }))
 
-      notify.success('Nombre actualizado correctamente')
+      notify.success(
+        'Nombre actualizado correctamente',
+      )
     } catch (err) {
       const apiError = err as ApiError
 
       notify.error(
-        apiError?.response?.data?.message || 'Error al actualizar el nombre'
+        apiError?.response?.data?.message ||
+          'Error al actualizar el nombre',
       )
     }
   }
@@ -175,9 +212,13 @@ export const GroupGoalsPage = () => {
   const handleDeleteGoal = async () => {
     if (!actions.deletingGoal) return
 
-    await mutations.deleteGoal.mutateAsync(actions.deletingGoal.id)
+    await mutations.deleteGoal.mutateAsync(
+      actions.deletingGoal.id,
+    )
 
-    if (selectedGoalId === actions.deletingGoal.id) {
+    if (
+      selectedGoalId === actions.deletingGoal.id
+    ) {
       setSelectedGoalId(null)
     }
 
@@ -189,14 +230,15 @@ export const GroupGoalsPage = () => {
 
   const handleUpdateGoal = async (
     monthlyTarget: number,
-    distributionMode: string
+    distributionMode: string,
   ) => {
     if (!selectedGoalId) return
 
     await mutations.updateGoal.mutateAsync({
       goalId: selectedGoalId,
       monthlyTarget,
-      distributionMode: distributionMode as DistributionMode,
+      distributionMode:
+        distributionMode as DistributionMode,
     })
 
     setDialogs((prev) => ({
@@ -205,10 +247,14 @@ export const GroupGoalsPage = () => {
     }))
   }
 
-  const handleInviteMember = async (identifier: string) => {
+  const handleInviteMember = async (
+    identifier: string,
+  ) => {
     if (!selectedGoalId) return
 
-    await mutations.inviteMember.mutateAsync(identifier)
+    await mutations.inviteMember.mutateAsync(
+      identifier,
+    )
 
     setDialogs((prev) => ({
       ...prev,
@@ -220,7 +266,7 @@ export const GroupGoalsPage = () => {
     memberId: string,
     role: string,
     salary: number,
-    customPercentage?: number
+    customPercentage?: number,
   ) => {
     if (!selectedGoalId) return
 
@@ -239,7 +285,12 @@ export const GroupGoalsPage = () => {
   }
 
   const handleDeleteMember = async () => {
-    if (!selectedGoalId || !actions.deleteMemberId) return
+    if (
+      !selectedGoalId ||
+      !actions.deleteMemberId
+    ) {
+      return
+    }
 
     await mutations.deleteMember.mutateAsync({
       goalId: selectedGoalId,
@@ -255,7 +306,8 @@ export const GroupGoalsPage = () => {
 
   const openDeleteMember = (memberId: string) => {
     const member = contributionMembers.find(
-      (contributionMember) => contributionMember.id === memberId
+      (contributionMember) =>
+        contributionMember.id === memberId,
     )
 
     setActions((prev) => ({
@@ -265,7 +317,9 @@ export const GroupGoalsPage = () => {
     }))
   }
 
-  const handleAddContribution = async (amount: number) => {
+  const handleAddContribution = async (
+    amount: number,
+  ) => {
     if (!selectedGoalId) return
 
     await mutations.addContribution.mutateAsync({
@@ -284,7 +338,8 @@ export const GroupGoalsPage = () => {
 
     mutations.updateGoal.mutate({
       goalId: selectedGoalId,
-      distributionMode: mode as DistributionMode,
+      distributionMode:
+        mode as DistributionMode,
     })
   }
 
@@ -337,9 +392,15 @@ export const GroupGoalsPage = () => {
               goal={selectedGoal}
               contributions={contributionMembers}
               totalContributed={totalContributed}
-              percentageCompleted={percentageCompleted}
-              totalCustomPercentage={totalCustomPercentage}
-              onBack={() => setSelectedGoalId(null)}
+              percentageCompleted={
+                percentageCompleted
+              }
+              totalCustomPercentage={
+                totalCustomPercentage
+              }
+              onBack={() =>
+                setSelectedGoalId(null)
+              }
               onInviteClick={() =>
                 setDialogs((prev) => ({
                   ...prev,
@@ -386,7 +447,9 @@ export const GroupGoalsPage = () => {
           }))
         }
         onCreate={handleCreateGoal}
-        isCreating={mutations.createGoal.isPending}
+        isCreating={
+          mutations.createGoal.isPending
+        }
       />
 
       <EditGoalNameDialog
@@ -399,7 +462,9 @@ export const GroupGoalsPage = () => {
             editingGoal: null,
           }))
         }
-        currentName={actions.editingGoal?.name || ''}
+        currentName={
+          actions.editingGoal?.name || ''
+        }
         onSave={handleEditGoalName}
         isSaving={false}
       />
@@ -413,9 +478,13 @@ export const GroupGoalsPage = () => {
             deletingGoal: null,
           }))
         }
-        itemName={actions.deletingGoal?.name || ''}
+        itemName={
+          actions.deletingGoal?.name || ''
+        }
         onConfirm={handleDeleteGoal}
-        isDeleting={mutations.deleteGoal.isPending}
+        isDeleting={
+          mutations.deleteGoal.isPending
+        }
         title="Eliminar Group Goal"
         description={`¿Estás seguro de que deseas eliminar el Group Goal "${actions.deletingGoal?.name}"? Esta acción no se puede deshacer y todos los miembros serán eliminados.`}
       />
@@ -429,10 +498,17 @@ export const GroupGoalsPage = () => {
             isGoalEditOpen: open,
           }))
         }
-        currentMonthlyTarget={selectedGoal?.monthlyTarget || 0}
-        currentDistributionMode={selectedGoal?.distributionMode || 'EQUITATIVE'}
+        currentMonthlyTarget={
+          selectedGoal?.monthlyTarget || 0
+        }
+        currentDistributionMode={
+          selectedGoal?.distributionMode ||
+          'EQUITATIVE'
+        }
         onSave={handleUpdateGoal}
-        isSaving={mutations.updateGoal.isPending}
+        isSaving={
+          mutations.updateGoal.isPending
+        }
       />
 
       <InviteMemberDialog
@@ -444,11 +520,16 @@ export const GroupGoalsPage = () => {
           }))
         }
         onInvite={handleInviteMember}
-        isInviting={mutations.inviteMember.isPending}
+        isInviting={
+          mutations.inviteMember.isPending
+        }
       />
 
       <EditMemberDialog
-        key={actions.editMember?.id ?? 'edit-member'}
+        key={
+          actions.editMember?.id ??
+          'edit-member'
+        }
         member={actions.editMember}
         open={!!actions.editMember}
         onOpenChange={(open) =>
@@ -459,9 +540,13 @@ export const GroupGoalsPage = () => {
           }))
         }
         onSave={handleEditMember}
-        isSaving={mutations.updateMember.isPending}
+        isSaving={
+          mutations.updateMember.isPending
+        }
         isLastAdmin={isEditingLastAdmin}
-        totalCustomPercentage={totalCustomPercentage}
+        totalCustomPercentage={
+          totalCustomPercentage
+        }
       />
 
       <ConfirmDeletionDialog
@@ -473,15 +558,21 @@ export const GroupGoalsPage = () => {
             deleteMemberId: null,
           }))
         }
-        itemName={actions.deletingMemberName}
+        itemName={
+          actions.deletingMemberName
+        }
         onConfirm={handleDeleteMember}
-        isDeleting={mutations.deleteMember.isPending}
+        isDeleting={
+          mutations.deleteMember.isPending
+        }
         title="Eliminar miembro"
         description={`¿Estás seguro de que deseas eliminar a "${actions.deletingMemberName}" del Group Goal? Esta acción no se puede deshacer.`}
       />
 
       <AddContributionDialog
-        open={dialogs.isAddContributionOpen}
+        open={
+          dialogs.isAddContributionOpen
+        }
         onOpenChange={(open) =>
           setDialogs((prev) => ({
             ...prev,
@@ -489,7 +580,9 @@ export const GroupGoalsPage = () => {
           }))
         }
         onSave={handleAddContribution}
-        isSaving={mutations.addContribution.isPending}
+        isSaving={
+          mutations.addContribution.isPending
+        }
       />
     </div>
   )

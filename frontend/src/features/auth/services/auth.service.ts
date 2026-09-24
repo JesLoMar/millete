@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/axiosClient';
+
 import type {
   LoginRequest,
   RegisterUserRequest,
@@ -6,21 +7,30 @@ import type {
 } from '../types';
 
 export const authService = {
-  login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>(
-      '/auth/login',
-      credentials,
-      {
-        skipGlobalErrorNotify: true,
-      },
-    );
+  login: async (
+    credentials: LoginRequest,
+  ): Promise<LoginResponse> => {
+    const response =
+      await apiClient.post<LoginResponse>(
+        '/auth/login',
+        credentials,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
     return response.data;
   },
 
-  register: async (data: RegisterUserRequest): Promise<void> => {
-    await apiClient.post('/auth/register', data, {
-      skipGlobalErrorNotify: true,
-    });
+  register: async (
+    data: RegisterUserRequest,
+  ): Promise<void> => {
+    await apiClient.post(
+      '/auth/register',
+      data,
+      {
+        skipGlobalErrorNotify: true,
+      },
+    );
   },
 };

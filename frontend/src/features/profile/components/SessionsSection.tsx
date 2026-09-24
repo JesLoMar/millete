@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Monitor, X } from 'lucide-react';
 
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog';
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
 

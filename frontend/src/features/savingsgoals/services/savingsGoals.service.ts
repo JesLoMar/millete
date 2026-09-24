@@ -8,17 +8,20 @@ import type {
 
 export const savingsGoalsService = {
   getAll: async (): Promise<SavingsGoal[]> => {
-    const { data } = await apiClient.get<SavingsGoal[]>(
-      '/savings-goals',
-    );
+    const { data } = await apiClient.get<
+      SavingsGoal[]
+    >('/savings-goals');
 
     return data;
   },
 
-  getById: async (id: string): Promise<SavingsGoal> => {
-    const { data } = await apiClient.get<SavingsGoal>(
-      `/savings-goals/${id}`,
-    );
+  getById: async (
+    id: string,
+  ): Promise<SavingsGoal> => {
+    const { data } =
+      await apiClient.get<SavingsGoal>(
+        `/savings-goals/${id}`,
+      );
 
     return data;
   },
@@ -26,10 +29,14 @@ export const savingsGoalsService = {
   create: async (
     dto: CreateSavingsGoalDTO,
   ): Promise<SavingsGoal> => {
-    const { data } = await apiClient.post<SavingsGoal>(
-      '/savings-goals',
-      dto,
-    );
+    const { data } =
+      await apiClient.post<SavingsGoal>(
+        '/savings-goals',
+        dto,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
     return data;
   },
@@ -38,26 +45,41 @@ export const savingsGoalsService = {
     id: string,
     dto: UpdateSavingsGoalDTO,
   ): Promise<SavingsGoal> => {
-    const { data } = await apiClient.put<SavingsGoal>(
-      `/savings-goals/${id}`,
-      dto,
-    );
+    const { data } =
+      await apiClient.put<SavingsGoal>(
+        `/savings-goals/${id}`,
+        dto,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
     return data;
   },
 
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/savings-goals/${id}`);
+  delete: async (
+    id: string,
+  ): Promise<void> => {
+    await apiClient.delete(
+      `/savings-goals/${id}`,
+      {
+        skipGlobalErrorNotify: true,
+      },
+    );
   },
 
   addContribution: async (
     id: string,
     amount: number,
   ): Promise<SavingsGoal> => {
-    const { data } = await apiClient.patch<SavingsGoal>(
-      `/savings-goals/${id}/contribute`,
-      { amount },
-    );
+    const { data } =
+      await apiClient.patch<SavingsGoal>(
+        `/savings-goals/${id}/contribute`,
+        { amount },
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
     return data;
   },

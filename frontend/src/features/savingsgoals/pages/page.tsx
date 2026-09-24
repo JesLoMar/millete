@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog';
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog';
 import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/core/input';
 import { Pagination } from '@/shared/components/Pagination';

@@ -18,7 +18,7 @@ import { Button } from '@/shared/components/core/button';
 import { useCategoryExpenses } from '../hooks/useCategoryExpenses';
 import { useCategoryMutations } from '../hooks/useCategoryMutation';
 import { EditCategoryDialog } from './EditCategoryDialog';
-import { ConfirmDeletionDialog } from './ConfirmDeletionDialog';
+import { ConfirmDeletionDialog } from '../../../shared/components/ConfirmDeletionDialog';
 import { CategoryRow } from './CategoryRow';
 import { CategoryTableSkeleton } from './CategoryTableSkeleton';
 

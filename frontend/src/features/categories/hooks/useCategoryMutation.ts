@@ -80,6 +80,9 @@ export const useCategoryMutations = () => {
           color: data.color,
           budgetLimit: data.budgetLimit ?? null,
         },
+        {
+          skipGlobalErrorNotify: true,
+        },
       );
 
       return response.data;
@@ -122,6 +125,9 @@ export const useCategoryMutations = () => {
           color: data.color,
           budgetLimit: data.budgetLimit ?? null,
         },
+        {
+          skipGlobalErrorNotify: true,
+        },
       );
 
       return response.data;
@@ -153,6 +159,9 @@ export const useCategoryMutations = () => {
     mutationFn: async (id: string) => {
       await apiClient.delete(
         `/categories/${id}`,
+        {
+          skipGlobalErrorNotify: true,
+        },
       );
 
       return id;

@@ -13,26 +13,41 @@ const BASE = '/profile';
 
 export const profileService = {
   getProfile: async (): Promise<ProfileResponse> => {
-    const { data } = await apiClient.get<ProfileResponse>(BASE);
+    const { data } =
+      await apiClient.get<ProfileResponse>(BASE);
+
     return data;
   },
 
   updateProfile: async (
     data: UpdateProfileRequest,
   ): Promise<void> => {
-    await apiClient.put<void>(BASE, data);
+    await apiClient.put<void>(
+      BASE,
+      data,
+      {
+        skipGlobalErrorNotify: true,
+      },
+    );
   },
 
   changePassword: async (
     data: ChangePasswordRequest,
   ): Promise<void> => {
-    await apiClient.put<void>(`${BASE}/password`, data);
+    await apiClient.put<void>(
+      `${BASE}/password`,
+      data,
+      {
+        skipGlobalErrorNotify: true,
+      },
+    );
   },
 
   getPreferences: async (): Promise<UserPreferences> => {
-    const { data } = await apiClient.get<UserPreferences>(
-      `${BASE}/preferences`,
-    );
+    const { data } =
+      await apiClient.get<UserPreferences>(
+        `${BASE}/preferences`,
+      );
 
     return data;
   },
@@ -43,13 +58,19 @@ export const profileService = {
     await apiClient.put<void>(
       `${BASE}/preferences`,
       prefs,
+      {
+        skipGlobalErrorNotify: true,
+      },
     );
   },
 
-  getSessions: async (): Promise<SessionResponse[]> => {
-    const { data } = await apiClient.get<SessionResponse[]>(
-      `${BASE}/sessions`,
-    );
+  getSessions: async (): Promise<
+    SessionResponse[]
+  > => {
+    const { data } =
+      await apiClient.get<SessionResponse[]>(
+        `${BASE}/sessions`,
+      );
 
     return data;
   },
@@ -59,11 +80,19 @@ export const profileService = {
   ): Promise<void> => {
     await apiClient.delete<void>(
       `${BASE}/sessions/${sessionId}`,
+      {
+        skipGlobalErrorNotify: true,
+      },
     );
   },
 
   deleteAllOtherSessions: async (): Promise<void> => {
-    await apiClient.delete<void>(`${BASE}/sessions`);
+    await apiClient.delete<void>(
+      `${BASE}/sessions`,
+      {
+        skipGlobalErrorNotify: true,
+      },
+    );
   },
 
   deactivateAccount: async (
@@ -72,6 +101,9 @@ export const profileService = {
     await apiClient.post<void>(
       `${BASE}/deactivate`,
       data,
+      {
+        skipGlobalErrorNotify: true,
+      },
     );
   },
 };

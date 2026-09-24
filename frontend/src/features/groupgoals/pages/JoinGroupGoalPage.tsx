@@ -1,46 +1,59 @@
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useState } from 'react';
+import {
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   CheckCircle,
   Loader2,
   UserX,
   Users,
   XCircle,
-} from 'lucide-react'
+} from 'lucide-react';
 
-import { ROUTES } from '@/app/router/routes'
-import { useAuth } from '@/features/auth/context/AuthContext'
-import { apiClient } from '@/shared/api/axiosClient'
-import { Button } from '@/shared/components/core/button'
-import { Card, CardContent } from '@/shared/components/core/card'
-import type { ApiError } from '@/shared/types/api'
-import { notify } from '@/shared/utils/notifications/notify'
+import { ROUTES } from '@/app/router/routes';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import { apiClient } from '@/shared/api/axiosClient';
+import { Button } from '@/shared/components/core/button';
+import {
+  Card,
+  CardContent,
+} from '@/shared/components/core/card';
+import type { ApiError } from '@/shared/types/api';
+import { notify } from '@/shared/utils/notifications/notify';
 
 type JoinStatus =
   | 'ready'
   | 'processing'
   | 'accepted'
   | 'rejected'
-  | 'error'
+  | 'error';
 
 export const JoinGroupGoalPage = () => {
-  const { t } = useTranslation()
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const { isLoading: authLoading } = useAuth()
+  const { t } = useTranslation();
+  const [searchParams] =
+    useSearchParams();
+  const navigate = useNavigate();
+  const { isLoading: authLoading } =
+    useAuth();
 
-  const invitationId = searchParams.get('invitationId')
+  const invitationId =
+    searchParams.get(
+      'invitationId',
+    );
 
-  const [status, setStatus] = useState<JoinStatus>('ready')
-  const [message, setMessage] = useState('')
+  const [status, setStatus] =
+    useState<JoinStatus>('ready');
+  const [message, setMessage] =
+    useState('');
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Loader2 className="size-12 text-primary animate-spin" />
       </div>
-    )
+    );
   }
 
   if (!invitationId) {
@@ -57,74 +70,104 @@ export const JoinGroupGoalPage = () => {
             </h2>
 
             <p className="text-muted-foreground">
-              {t('groupGoals:invalidToken')}
+              {t(
+                'groupGoals:invalidToken',
+              )}
             </p>
 
             <Button
               variant="outline"
-              onClick={() => navigate(ROUTES.dashboard)}
+              onClick={() =>
+                navigate(
+                  ROUTES.dashboard,
+                )
+              }
             >
-              {t('nav:goToDashboard')}
+              {t(
+                'nav:goToDashboard',
+              )}
             </Button>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   const handleAccept = async () => {
-    setStatus('processing')
+    setStatus('processing');
 
     try {
       await apiClient.post(
-        `/goals/invitations/${invitationId}/accept`
-      )
+        `/goals/invitations/${invitationId}/accept`,
+        undefined,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
-      setStatus('accepted')
+      setStatus('accepted');
 
-      const successMsg = t('groupGoals:invitationAccepted')
-      setMessage(successMsg)
-      notify.success(successMsg)
+      const successMsg = t(
+        'groupGoals:invitationAccepted',
+      );
+
+      setMessage(successMsg);
+      notify.success(successMsg);
     } catch (err) {
-      const apiError = err as ApiError
+      const apiError =
+        err as ApiError;
 
-      setStatus('error')
+      setStatus('error');
 
       const errorMsg =
-        apiError.response?.data?.message ||
-        t('groupGoals:invitationError')
+        apiError.response?.data
+          ?.message ||
+        t(
+          'groupGoals:invitationError',
+        );
 
-      setMessage(errorMsg)
-      notify.error(errorMsg)
+      setMessage(errorMsg);
+      notify.error(errorMsg);
     }
-  }
+  };
 
   const handleReject = async () => {
-    setStatus('processing')
+    setStatus('processing');
 
     try {
       await apiClient.post(
-        `/goals/invitations/${invitationId}/reject`
-      )
+        `/goals/invitations/${invitationId}/reject`,
+        undefined,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
 
-      setStatus('rejected')
+      setStatus('rejected');
 
-      const rejectedMsg = t('groupGoals:invitationRejectedMessage')
-      setMessage(rejectedMsg)
-      notify.info(rejectedMsg)
+      const rejectedMsg = t(
+        'groupGoals:invitationRejectedMessage',
+      );
+
+      setMessage(rejectedMsg);
+      notify.info(rejectedMsg);
     } catch (err) {
-      const apiError = err as ApiError
+      const apiError =
+        err as ApiError;
 
-      setStatus('error')
+      setStatus('error');
 
       const errorMsg =
-        apiError.response?.data?.message ||
-        t('groupGoals:rejectError')
+        apiError.response?.data
+          ?.message ||
+        t(
+          'groupGoals:rejectError',
+        );
 
-      setMessage(errorMsg)
-      notify.error(errorMsg)
+      setMessage(errorMsg);
+      notify.error(errorMsg);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -137,22 +180,40 @@ export const JoinGroupGoalPage = () => {
               </div>
 
               <h2 className="text-xl font-semibold">
-                {t('groupGoals:invitationReceived')}
+                {t(
+                  'groupGoals:invitationReceived',
+                )}
               </h2>
 
               <p className="text-muted-foreground">
-                {t('groupGoals:invitationMessage')}
+                {t(
+                  'groupGoals:invitationMessage',
+                )}
               </p>
 
               <div className="flex gap-3 justify-center">
-                <Button onClick={handleAccept} className="gap-2">
+                <Button
+                  onClick={
+                    handleAccept
+                  }
+                  className="gap-2"
+                >
                   <CheckCircle className="size-4" />
-                  {t('common:actions.accept')}
+                  {t(
+                    'common:actions.accept',
+                  )}
                 </Button>
 
-                <Button variant="outline" onClick={handleReject}>
+                <Button
+                  variant="outline"
+                  onClick={
+                    handleReject
+                  }
+                >
                   <XCircle className="size-4" />
-                  {t('common:actions.reject')}
+                  {t(
+                    'common:actions.reject',
+                  )}
                 </Button>
               </div>
             </>
@@ -161,8 +222,11 @@ export const JoinGroupGoalPage = () => {
           {status === 'processing' && (
             <div className="space-y-4 py-6">
               <Loader2 className="size-12 text-primary animate-spin mx-auto" />
+
               <p className="text-muted-foreground text-sm">
-                {t('groupGoals:processingInvitation')}
+                {t(
+                  'groupGoals:processingInvitation',
+                )}
               </p>
             </div>
           )}
@@ -174,17 +238,27 @@ export const JoinGroupGoalPage = () => {
               </div>
 
               <h2 className="text-xl font-semibold">
-                {t('groupGoals:welcome')}
+                {t(
+                  'groupGoals:welcome',
+                )}
               </h2>
 
-              <p className="text-muted-foreground">{message}</p>
+              <p className="text-muted-foreground">
+                {message}
+              </p>
 
               <Button
-                onClick={() => navigate(ROUTES.groupGoals)}
+                onClick={() =>
+                  navigate(
+                    ROUTES.groupGoals,
+                  )
+                }
                 className="gap-2"
               >
                 <Users className="size-4" />
-                {t('groupGoals:goToFamily')}
+                {t(
+                  'groupGoals:goToFamily',
+                )}
               </Button>
             </>
           )}
@@ -196,16 +270,26 @@ export const JoinGroupGoalPage = () => {
               </div>
 
               <h2 className="text-xl font-semibold">
-                {t('groupGoals:invitationRejected')}
+                {t(
+                  'groupGoals:invitationRejected',
+                )}
               </h2>
 
-              <p className="text-muted-foreground">{message}</p>
+              <p className="text-muted-foreground">
+                {message}
+              </p>
 
               <Button
                 variant="outline"
-                onClick={() => navigate(ROUTES.dashboard)}
+                onClick={() =>
+                  navigate(
+                    ROUTES.dashboard,
+                  )
+                }
               >
-                {t('nav:goToDashboard')}
+                {t(
+                  'nav:goToDashboard',
+                )}
               </Button>
             </>
           )}
@@ -217,21 +301,31 @@ export const JoinGroupGoalPage = () => {
               </div>
 
               <h2 className="text-xl font-semibold">
-                {t('groupGoals:error')}
+                {t(
+                  'groupGoals:error',
+                )}
               </h2>
 
-              <p className="text-muted-foreground">{message}</p>
+              <p className="text-muted-foreground">
+                {message}
+              </p>
 
               <Button
                 variant="outline"
-                onClick={() => navigate(ROUTES.dashboard)}
+                onClick={() =>
+                  navigate(
+                    ROUTES.dashboard,
+                  )
+                }
               >
-                {t('nav:goToDashboard')}
+                {t(
+                  'nav:goToDashboard',
+                )}
               </Button>
             </>
           )}
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

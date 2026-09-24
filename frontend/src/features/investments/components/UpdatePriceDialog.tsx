@@ -1,13 +1,11 @@
-import { useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { AlertTriangle } from 'lucide-react'
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { AlertTriangle } from 'lucide-react';
 
-import type { ApiError } from '@/shared/types/api'
-import { useInvestmentMutations } from '../hooks/useInvestmentMutations'
+import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
 
-import { notify } from '@/shared/utils/notifications/notify'
-import { Spinner } from '@/shared/components/Spinner'
-import { Button } from '@/shared/components/core/button'
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
@@ -15,14 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/shared/components/core/dialog'
-import { Input } from '@/shared/components/core/input'
-import { Label } from '@/shared/components/core/label'
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 
 interface UpdatePriceDialogProps {
-  investmentId: string
-  assetName: string
-  currentPrice: number
+  investmentId: string;
+  assetName: string;
+  currentPrice: number;
 }
 
 export function UpdatePriceDialog({
@@ -30,65 +28,70 @@ export function UpdatePriceDialog({
   assetName,
   currentPrice,
 }: UpdatePriceDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const { updatePrice, isUpdating } =
-    useInvestmentMutations()
+    useInvestmentMutations();
 
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   const [newPrice, setNewPrice] = useState(
-    () => currentPrice.toString()
-  )
+    () => currentPrice.toString(),
+  );
   const [needsConfirmation, setNeedsConfirmation] =
-    useState(false)
+    useState(false);
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef =
+    useRef<HTMLInputElement>(null);
 
-  const isSamePrice = Number(newPrice) === currentPrice
-  const targetPrice = Number(newPrice)
+  const isSamePrice =
+    Number(newPrice) === currentPrice;
+  const targetPrice = Number(newPrice);
 
   const deviationRatio =
     currentPrice > 0
       ? Math.abs(targetPrice - currentPrice) /
         currentPrice
-      : 0
+      : 0;
 
-  const isCriticalDeviation = deviationRatio > 0.5
+  const isCriticalDeviation =
+    deviationRatio > 0.5;
 
   const handleUpdate = async () => {
-    if (isSamePrice || targetPrice <= 0) return
+    if (
+      isSamePrice ||
+      targetPrice <= 0
+    ) {
+      return;
+    }
 
-    if (isCriticalDeviation && !needsConfirmation) {
-      setNeedsConfirmation(true)
-      return
+    if (
+      isCriticalDeviation &&
+      !needsConfirmation
+    ) {
+      setNeedsConfirmation(true);
+      return;
     }
 
     try {
       await updatePrice.mutateAsync({
         id: investmentId,
         price: targetPrice,
-      })
+      });
 
-      setOpen(false)
-      setNeedsConfirmation(false)
-    } catch (err) {
-      const apiError = err as ApiError
-
-      const message =
-        apiError?.response?.data?.message ||
-        t('investments:updatePriceError')
-
-      notify.error(message)
+      setOpen(false);
+      setNeedsConfirmation(false);
+    } catch {
+      // El feedback del error lo gestiona la mutation.
     }
-  }
+  };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        setOpen(isOpen)
+        setOpen(isOpen);
 
         if (!isOpen) {
-          setNeedsConfirmation(false)
+          setNeedsConfirmation(false);
         }
       }}
     >
@@ -105,8 +108,8 @@ export function UpdatePriceDialog({
       <DialogContent
         className="bg-card border-border sm:max-w-sm"
         onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          inputRef.current?.focus()
+          e.preventDefault();
+          inputRef.current?.focus();
         }}
       >
         <DialogHeader>
@@ -130,8 +133,8 @@ export function UpdatePriceDialog({
               type="number"
               value={newPrice}
               onChange={(e) => {
-                setNewPrice(e.target.value)
-                setNeedsConfirmation(false)
+                setNewPrice(e.target.value);
+                setNeedsConfirmation(false);
               }}
               disabled={isUpdating}
               className="bg-background border-border text-xl font-semibold"
@@ -146,11 +149,15 @@ export function UpdatePriceDialog({
 
               <div>
                 <p className="font-bold">
-                  {t('investments:alerts.warningTitle')}
+                  {t(
+                    'investments:alerts.warningTitle',
+                  )}
                 </p>
 
                 <p className="text-muted-foreground mt-0.5">
-                  {t('investments:alerts.warningDesc')}
+                  {t(
+                    'investments:alerts.warningDesc',
+                  )}
                 </p>
               </div>
             </div>
@@ -175,13 +182,17 @@ export function UpdatePriceDialog({
             {isUpdating ? (
               <Spinner size={20} />
             ) : needsConfirmation ? (
-              t('investments:confirmUpdate')
+              t(
+                'investments:confirmUpdate',
+              )
             ) : (
-              t('investments:updateNow')
+              t(
+                'investments:updateNow',
+              )
             )}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

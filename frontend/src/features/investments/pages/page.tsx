@@ -6,7 +6,7 @@ import { PeriodSelector } from '@/shared/components/PeriodSelector'
 import { Header } from '@/shared/components/Header'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { TopNav } from '@/shared/components/TopNav'
-import { ConfirmDeletionDialog } from '@/features/categories/components/ConfirmDeletionDialog'
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog'
 
 import { AssetList } from '../components/AssetList'
 import { DistributionChart } from '../components/DistributionChart'

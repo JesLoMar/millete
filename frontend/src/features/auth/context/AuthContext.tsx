@@ -1,10 +1,10 @@
 import {
   createContext,
+  use,
   useCallback,
   useEffect,
   useEffectEvent,
   useMemo,
-  use,
   useState,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -46,12 +46,14 @@ type FetchUserResult =
       status: 'unauthenticated';
     }
   | {
-      status: 'network-error';
+      status: 'unavailable';
     };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const formatUser = (userData: CurrentUserResponse): User => ({
+const formatUser = (
+  userData: CurrentUserResponse,
+): User => ({
   name:
     userData.username ||
     userData.email?.split('@')[0] ||
@@ -65,7 +67,8 @@ export const AuthProvider = ({
   children: ReactNode;
 }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] =
+    useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
 
@@ -74,17 +77,15 @@ export const AuthProvider = ({
   const fetchCurrentUser = useCallback(
     async (): Promise<FetchUserResult> => {
       try {
-        const response = await apiClient.get<CurrentUserResponse>(
-          '/auth/me/topnav',
-          {
-            skipGlobalErrorNotify: true,
-            skipAuthErrorHandler: true,
-          },
-        );
+        const response =
+          await apiClient.get<CurrentUserResponse>(
+            '/auth/me/topnav',
+          );
 
         const userData = response.data;
         const formattedUser = formatUser(userData);
-        const currentSessionId = userData.sessionId ?? '';
+        const currentSessionId =
+          userData.sessionId ?? '';
 
         return {
           status: 'ok',
@@ -92,23 +93,30 @@ export const AuthProvider = ({
           sessionId: currentSessionId,
         };
       } catch (error) {
-        // 401 = sesión no autenticada.
-        // El resto de errores se consideran problemas de conexión/disponibilidad.
         if (
           axios.isAxiosError(error) &&
           error.response?.status === 401
         ) {
-          return { status: 'unauthenticated' };
+          return {
+            status: 'unauthenticated',
+          };
         }
 
-        return { status: 'network-error' };
+        return {
+          status: 'unavailable',
+        };
       }
     },
     [],
   );
 
   const applyAuthenticatedState = useCallback(
-    (result: Extract<FetchUserResult, { status: 'ok' }>) => {
+    (
+      result: Extract<
+        FetchUserResult,
+        { status: 'ok' }
+      >,
+    ) => {
       setUser(result.user);
       setSessionId(result.sessionId);
       setIsOffline(false);
@@ -128,9 +136,16 @@ export const AuthProvider = ({
 
   const logout = useCallback(async () => {
     try {
-      await apiClient.post('/auth/logout');
+      await apiClient.post(
+        '/auth/logout',
+        undefined,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
     } catch {
-      // El estado local debe limpiarse aunque el logout remoto falle.
+      // El estado local debe limpiarse aunque
+      // el logout remoto falle.
     } finally {
       clearAuthenticatedState();
       queryClient.clear();
@@ -149,7 +164,6 @@ export const AuthProvider = ({
     } else if (result.status === 'unauthenticated') {
       clearAuthenticatedState();
     } else {
-      // No restauramos una sesión desde la caché durante un error de red.
       setUser(null);
       setSessionId(null);
       setIsOffline(true);
@@ -169,10 +183,16 @@ export const AuthProvider = ({
       onLogout();
     };
 
-    window.addEventListener('auth:logout', handleForcedLogout);
+    window.addEventListener(
+      'auth:logout',
+      handleForcedLogout,
+    );
 
     return () => {
-      window.removeEventListener('auth:logout', handleForcedLogout);
+      window.removeEventListener(
+        'auth:logout',
+        handleForcedLogout,
+      );
     };
   }, [initAuth, onLogout]);
 
@@ -196,7 +216,9 @@ export const AuthProvider = ({
 
       await logout();
 
-      throw new Error('Fallo al obtener perfil tras login');
+      throw new Error(
+        'Fallo al obtener perfil tras login',
+      );
     },
     [applyAuthenticatedState, fetchCurrentUser, logout],
   );

@@ -1,96 +1,115 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
-import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
-import { apiClient } from '@/shared/api/axiosClient'
-import { notify } from '@/shared/utils/notifications/notify'
+import { apiClient } from '@/shared/api/axiosClient';
+import { notify } from '@/shared/utils/notifications/notify';
 
-import type { DistributionMode, GoalRole } from '../types'
+import type { DistributionMode, GoalRole } from '../types';
 
-const GROUP_GOALS_QUERY_KEY = ['group-goals'] as const
-const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const
+const GROUP_GOALS_QUERY_KEY = ['group-goals'] as const;
+const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const;
 
 interface CreateGoalRequest {
-  name: string
-  monthlyTarget: number
-  distributionMode: DistributionMode
+  name: string;
+  monthlyTarget: number;
+  distributionMode: DistributionMode;
 }
 
 interface UpdateGoalRequest {
-  goalId: string
-  name?: string
-  monthlyTarget?: number
-  distributionMode?: DistributionMode
+  goalId: string;
+  name?: string;
+  monthlyTarget?: number;
+  distributionMode?: DistributionMode;
 }
 
 interface UpdateMemberRequest {
-  goalId: string
-  memberId: string
-  role?: GoalRole
-  salary?: number
-  customPercentage?: number
+  goalId: string;
+  memberId: string;
+  role?: GoalRole;
+  salary?: number;
+  customPercentage?: number;
 }
 
 interface DeleteMemberRequest {
-  goalId: string
-  memberId: string
+  goalId: string;
+  memberId: string;
 }
 
 interface AddContributionRequest {
-  goalId: string
-  amount: number
+  goalId: string;
+  amount: number;
 }
 
-function getErrorMessage(error: unknown, fallback: string): string {
+function getErrorMessage(
+  error: unknown,
+  fallback: string,
+): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as
       | {
-          message?: string
-          error?: string
+          message?: string;
+          error?: string;
         }
-      | undefined
+      | undefined;
 
-    return data?.message ?? data?.error ?? fallback
+    return (
+      data?.message ??
+      data?.error ??
+      fallback
+    );
   }
 
   if (error instanceof Error && error.message) {
-    return error.message
+    return error.message;
   }
 
-  return fallback
+  return fallback;
 }
 
-export function useGroupGoalMutations(selectedGoalId: string | null) {
-  const queryClient = useQueryClient()
-  const { t } = useTranslation('groupGoals')
+export function useGroupGoalMutations(
+  selectedGoalId: string | null,
+) {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('groupGoals');
 
   const invalidateGroupGoals = () =>
     queryClient.invalidateQueries({
       queryKey: GROUP_GOALS_QUERY_KEY,
-    })
+    });
 
   const createGoal = useMutation({
     mutationFn: (data: CreateGoalRequest) =>
-      apiClient.post('/goals', data),
+      apiClient.post('/goals', data, {
+        skipGlobalErrorNotify: true,
+      }),
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.createSuccess'))
+      notify.success(
+        t('alerts.createSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.createError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.createError'),
+        ),
+      );
     },
-  })
+  });
 
   const inviteMember = useMutation({
     mutationFn: (identifier: string) =>
       apiClient.post(
         `/goals/${selectedGoalId}/invitations`,
-        { identifier }
+        { identifier },
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
 
     onSuccess: async () => {
@@ -99,17 +118,22 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
         queryClient.invalidateQueries({
           queryKey: NOTIFICATIONS_QUERY_KEY,
         }),
-      ])
+      ]);
 
-      notify.success(t('alerts.inviteSuccess'))
+      notify.success(
+        t('alerts.inviteSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.inviteError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.inviteError'),
+        ),
+      );
     },
-  })
+  });
 
   const updateGoal = useMutation({
     mutationFn: ({
@@ -119,55 +143,77 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       distributionMode,
     }: UpdateGoalRequest) => {
       const payload: {
-        name?: string
-        monthlyTarget?: number
-        distributionMode?: DistributionMode
-      } = {}
+        name?: string;
+        monthlyTarget?: number;
+        distributionMode?: DistributionMode;
+      } = {};
 
       if (name !== undefined) {
-        payload.name = name
+        payload.name = name;
       }
 
       if (monthlyTarget !== undefined) {
-        payload.monthlyTarget = monthlyTarget
+        payload.monthlyTarget = monthlyTarget;
       }
 
       if (distributionMode !== undefined) {
-        payload.distributionMode = distributionMode
+        payload.distributionMode =
+          distributionMode;
       }
 
-      return apiClient.put(`/goals/${goalId}`, payload)
+      return apiClient.put(
+        `/goals/${goalId}`,
+        payload,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
     },
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.goalSuccess'))
+      notify.success(
+        t('alerts.goalSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.goalError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.goalError'),
+        ),
+      );
     },
-  })
+  });
 
   const deleteGoal = useMutation({
     mutationFn: (goalId: string) =>
-      apiClient.delete(`/goals/${goalId}`),
+      apiClient.delete(
+        `/goals/${goalId}`,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      ),
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.deleteSuccess'))
+      notify.success(
+        t('alerts.deleteSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.deleteError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.deleteError'),
+        ),
+      );
     },
-  })
+  });
 
   const updateMember = useMutation({
     mutationFn: ({
@@ -178,41 +224,50 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       customPercentage,
     }: UpdateMemberRequest) => {
       const payload: {
-        role?: GoalRole
-        salary?: number
-        customPercentage?: number
-      } = {}
+        role?: GoalRole;
+        salary?: number;
+        customPercentage?: number;
+      } = {};
 
       if (role !== undefined) {
-        payload.role = role
+        payload.role = role;
       }
 
       if (salary !== undefined) {
-        payload.salary = salary
+        payload.salary = salary;
       }
 
       if (customPercentage !== undefined) {
-        payload.customPercentage = customPercentage
+        payload.customPercentage =
+          customPercentage;
       }
 
       return apiClient.put(
         `/goals/${goalId}/members/${memberId}`,
-        payload
-      )
+        payload,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
     },
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.memberEditSuccess'))
+      notify.success(
+        t('alerts.memberEditSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.memberEditError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.memberEditError'),
+        ),
+      );
     },
-  })
+  });
 
   const deleteMember = useMutation({
     mutationFn: ({
@@ -220,21 +275,29 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
       memberId,
     }: DeleteMemberRequest) =>
       apiClient.delete(
-        `/goals/${goalId}/members/${memberId}`
+        `/goals/${goalId}/members/${memberId}`,
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.memberDeleteSuccess'))
+      notify.success(
+        t('alerts.memberDeleteSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.memberDeleteError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.memberDeleteError'),
+        ),
+      );
     },
-  })
+  });
 
   const addContribution = useMutation({
     mutationFn: ({
@@ -243,21 +306,29 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     }: AddContributionRequest) =>
       apiClient.post(
         `/goals/${goalId}/contributions`,
-        { amount }
+        { amount },
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
 
     onSuccess: async () => {
-      await invalidateGroupGoals()
+      await invalidateGroupGoals();
 
-      notify.success(t('alerts.contributionSuccess'))
+      notify.success(
+        t('alerts.contributionSuccess'),
+      );
     },
 
     onError: (error: unknown) => {
       notify.error(
-        getErrorMessage(error, t('alerts.contributionError'))
-      )
+        getErrorMessage(
+          error,
+          t('alerts.contributionError'),
+        ),
+      );
     },
-  })
+  });
 
   return {
     createGoal,
@@ -267,5 +338,5 @@ export function useGroupGoalMutations(selectedGoalId: string | null) {
     updateMember,
     deleteMember,
     addContribution,
-  }
+  };
 }

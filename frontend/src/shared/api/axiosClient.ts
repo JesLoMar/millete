@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import i18n from '@/lib/i18n';
+
 import { notify } from '@/shared/utils/notifications/notify';
 
 declare module 'axios' {
@@ -11,7 +12,8 @@ declare module 'axios' {
 }
 
 const API_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8080/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -26,6 +28,7 @@ const AUTH_ENDPOINTS = [
   '/auth/login',
   '/auth/register',
   '/auth/logout',
+  '/auth/me/topnav',
 ];
 
 const isAuthEndpoint = (url?: string): boolean => {
@@ -35,6 +38,7 @@ const isAuthEndpoint = (url?: string): boolean => {
 
   try {
     const normalizedUrl = url.replace(/^\/+/, '');
+
     const requestUrl = new URL(
       normalizedUrl,
       API_URL.endsWith('/') ? API_URL : `${API_URL}/`,
@@ -44,7 +48,8 @@ const isAuthEndpoint = (url?: string): boolean => {
       requestUrl.pathname.replace(/\/+$/, '') || '/';
 
     return AUTH_ENDPOINTS.some((endpoint) => {
-      const normalizedEndpoint = endpoint.replace(/\/+$/, '');
+      const normalizedEndpoint =
+        endpoint.replace(/\/+$/, '');
 
       return (
         pathname === normalizedEndpoint ||
@@ -71,7 +76,10 @@ apiClient.interceptors.response.use(
         !isAuthEndpoint(error.config?.url) &&
         !error.config?.skipAuthErrorHandler;
 
-      if (shouldForceLogout && !sessionExpiredNotified) {
+      if (
+        shouldForceLogout &&
+        !sessionExpiredNotified
+      ) {
         sessionExpiredNotified = true;
         window.dispatchEvent(new Event('auth:logout'));
       }

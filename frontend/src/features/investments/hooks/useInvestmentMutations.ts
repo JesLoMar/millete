@@ -1,24 +1,34 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
-import { apiClient } from '@/shared/api/axiosClient'
-import type { ApiError } from '@/shared/types/api'
-import { notify } from '@/shared/utils/notifications/notify'
+import { apiClient } from '@/shared/api/axiosClient';
+import type { ApiError } from '@/shared/types/api';
+import { notify } from '@/shared/utils/notifications/notify';
 
 export const useInvestmentMutations = () => {
-  const queryClient = useQueryClient()
-  const { t } = useTranslation()
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const createInvestment = useMutation({
     mutationFn: (data: Record<string, unknown>) => {
-      const sanitizedData = { ...data }
+      const sanitizedData = { ...data };
 
       if (typeof sanitizedData.purchaseDate === 'string') {
-        const date = new Date(sanitizedData.purchaseDate as string)
-        sanitizedData.purchaseDate = date.toISOString()
+        const date = new Date(
+          sanitizedData.purchaseDate as string,
+        );
+
+        sanitizedData.purchaseDate =
+          date.toISOString();
       }
 
-      return apiClient.post('/investments', sanitizedData)
+      return apiClient.post(
+        '/investments',
+        sanitizedData,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      );
     },
 
     onSuccess: async () => {
@@ -35,25 +45,39 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ])
+      ]);
 
-      notify.success(t('investments:alerts.createSuccess'))
+      notify.success(
+        t('investments:alerts.createSuccess'),
+      );
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
           t('investments:alerts.createError') ||
-          'Error al crear la inversión'
-      )
+          'Error al crear la inversión',
+      );
     },
-  })
+  });
 
   const updatePrice = useMutation({
-    mutationFn: ({ id, price }: { id: string; price: number }) =>
-      apiClient.patch(`investments/${id}/price`, {
-        newPrice: price,
-      }),
+    mutationFn: ({
+      id,
+      price,
+    }: {
+      id: string;
+      price: number;
+    }) =>
+      apiClient.patch(
+        `investments/${id}/price`,
+        {
+          newPrice: price,
+        },
+        {
+          skipGlobalErrorNotify: true,
+        },
+      ),
 
     onSuccess: async () => {
       await Promise.all([
@@ -69,23 +93,30 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ])
+      ]);
 
-      notify.success(t('investments:alerts.updatePriceSuccess'))
+      notify.success(
+        t('investments:alerts.updatePriceSuccess'),
+      );
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
           t('investments:alerts.updatePriceError') ||
-          'Error al actualizar el precio'
-      )
+          'Error al actualizar el precio',
+      );
     },
-  })
+  });
 
   const deleteInvestment = useMutation({
     mutationFn: (id: string) =>
-      apiClient.delete(`investments/${id}`),
+      apiClient.delete(
+        `investments/${id}`,
+        {
+          skipGlobalErrorNotify: true,
+        },
+      ),
 
     onSuccess: async () => {
       await Promise.all([
@@ -101,19 +132,21 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ])
+      ]);
 
-      notify.success(t('investments:alerts.deleteSuccess'))
+      notify.success(
+        t('investments:alerts.deleteSuccess'),
+      );
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
           t('investments:alerts.deleteError') ||
-          'Error al eliminar la inversión'
-      )
+          'Error al eliminar la inversión',
+      );
     },
-  })
+  });
 
   return {
     createInvestment,
@@ -122,5 +155,5 @@ export const useInvestmentMutations = () => {
     isCreating: createInvestment.isPending,
     isUpdating: updatePrice.isPending,
     isDeleting: deleteInvestment.isPending,
-  }
-}
+  };
+};

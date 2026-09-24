@@ -74,6 +74,9 @@ export const useTransactionMutations = () => {
       apiClient.post<TransactionResponse>(
         'transactions',
         data,
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
@@ -97,6 +100,9 @@ export const useTransactionMutations = () => {
       apiClient.put<TransactionResponse>(
         `transactions/${id}`,
         data,
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
@@ -111,7 +117,9 @@ export const useTransactionMutations = () => {
 
   const deleteTransaction = useMutation({
     mutationFn: (id: string) =>
-      apiClient.delete(`transactions/${id}`),
+      apiClient.delete(`transactions/${id}`, {
+        skipGlobalErrorNotify: true,
+      }),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
       notify.success(t('alerts.deleteSuccess'));
@@ -125,7 +133,9 @@ export const useTransactionMutations = () => {
 
   const createRecurring = useMutation({
     mutationFn: (data: RecurringTransactionRequest) =>
-      apiClient.post('planned-transactions', data),
+      apiClient.post('planned-transactions', data, {
+        skipGlobalErrorNotify: true,
+      }),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
       notify.success(t('alerts.createRecurringSuccess'));
@@ -151,6 +161,9 @@ export const useTransactionMutations = () => {
       apiClient.put(
         `planned-transactions/${id}`,
         data,
+        {
+          skipGlobalErrorNotify: true,
+        },
       ),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
@@ -168,7 +181,9 @@ export const useTransactionMutations = () => {
 
   const deleteRecurring = useMutation({
     mutationFn: (id: string) =>
-      apiClient.delete(`planned-transactions/${id}`),
+      apiClient.delete(`planned-transactions/${id}`, {
+        skipGlobalErrorNotify: true,
+      }),
     onSuccess: async () => {
       await invalidateFinancialData(queryClient);
       notify.success(t('alerts.deleteRecurringSuccess'));
