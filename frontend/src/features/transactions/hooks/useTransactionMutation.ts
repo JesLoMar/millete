@@ -1,221 +1,140 @@
 import {
   useMutation,
   useQueryClient,
-  type QueryClient,
 } from '@tanstack/react-query';
-import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  RegisterTransactionRequest,
-  TransactionResponse,
-} from '@/features/transactions/index';
 import { apiClient } from '@/shared/api/axiosClient';
+import type { ApiError } from '@/shared/types/api';
 import { notify } from '@/shared/utils/notifications/notify';
 
-const FINANCIAL_DATA_QUERY_KEYS = [
-  'transactions',
-  'transactionMetrics',
-  'dashboardMetrics',
-  'historyChart',
-  'categoryStats',
-  'budgets',
-  'recentTransactions',
-  'categoryExpenses',
-  'plannedTransactions',
-] as const;
-
-type RecurringTransactionRequest = {
-  categoryId: string | null;
-  amount: number;
-  type: 'INCOME' | 'EXPENSE';
-  description: string;
-  frequencyType: string;
-  frequencyInterval: number;
-  startDate: string;
-  endDate?: string | null;
-};
-
-function invalidateFinancialData(queryClient: QueryClient) {
-  return Promise.all(
-    FINANCIAL_DATA_QUERY_KEYS.map((queryKey) =>
-      queryClient.invalidateQueries({
-        queryKey: [queryKey],
-      }),
-    ),
-  );
-}
-
-function getErrorMessage(
-  error: unknown,
-  fallback: string,
-): string {
-  if (axios.isAxiosError(error)) {
-    return (
-      error.response?.data?.message ??
-      error.response?.data?.error ??
-      fallback
-    );
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return fallback;
-}
-
-export const useTransactionMutations = () => {
+export const useInvestmentMutations = () => {
   const queryClient = useQueryClient();
-  const { t } = useTranslation('transactions');
+  const { t } = useTranslation('investments');
 
-  const createTransaction = useMutation({
-    mutationFn: (data: RegisterTransactionRequest) =>
-      apiClient.post<TransactionResponse>(
-        'transactions',
-        data,
+  const invalidateInvestmentQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ['investments'],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['investmentMetrics'],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['investmentEvolution'],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['investmentDistribution'],
+      }),
+    ]);
+  };
+
+  const createInvestment = useMutation({
+    mutationFn: (data: Record<string, unknown>) => {
+      const sanitizedData = { ...data };
+
+      if (
+        typeof sanitizedData.purchaseDate ===
+        'string'
+      ) {
+        const date = new Date(
+          sanitizedData.purchaseDate as string,
+        );
+
+        sanitizedData.purchaseDate =
+          date.toISOString();
+      }
+
+      return apiClient.post(
+        '/investments',
+        sanitizedData,
         {
           skipGlobalErrorNotify: true,
         },
-      ),
-    onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.createSuccess'));
+      );
     },
-    onError: (error: unknown) => {
+
+    onSuccess: async () => {
+      await invalidateInvestmentQueries();
+
+      notify.success(
+        t('alerts.createSuccess'),
+      );
+    },
+
+    onError: (error: ApiError) => {
       notify.error(
-        getErrorMessage(error, t('alerts.createError')),
+        error.response?.data?.message ||
+          t('alerts.createError'),
       );
     },
   });
 
-  const updateTransaction = useMutation({
+  const updatePrice = useMutation({
     mutationFn: ({
       id,
-      data,
+      price,
     }: {
       id: string;
-      data: Partial<RegisterTransactionRequest>;
+      price: number;
     }) =>
-      apiClient.put<TransactionResponse>(
-        `transactions/${id}`,
-        data,
+      apiClient.patch(
+        `/investments/${id}/price`,
+        {
+          newPrice: price,
+        },
         {
           skipGlobalErrorNotify: true,
         },
       ),
+
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.updateSuccess'));
+      await invalidateInvestmentQueries();
+
+      notify.success(
+        t('alerts.updatePriceSuccess'),
+      );
     },
-    onError: (error: unknown) => {
+
+    onError: (error: ApiError) => {
       notify.error(
-        getErrorMessage(error, t('alerts.updateError')),
+        error.response?.data?.message ||
+          t('alerts.updatePriceError'),
       );
     },
   });
 
-  const deleteTransaction = useMutation({
+  const deleteInvestment = useMutation({
     mutationFn: (id: string) =>
-      apiClient.delete(`transactions/${id}`, {
-        skipGlobalErrorNotify: true,
-      }),
-    onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.deleteSuccess'));
-    },
-    onError: (error: unknown) => {
-      notify.error(
-        getErrorMessage(error, t('alerts.deleteError')),
-      );
-    },
-  });
-
-  const createRecurring = useMutation({
-    mutationFn: (data: RecurringTransactionRequest) =>
-      apiClient.post('planned-transactions', data, {
-        skipGlobalErrorNotify: true,
-      }),
-    onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.createRecurringSuccess'));
-    },
-    onError: (error: unknown) => {
-      notify.error(
-        getErrorMessage(
-          error,
-          t('alerts.createRecurringError'),
-        ),
-      );
-    },
-  });
-
-  const updateRecurring = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: RecurringTransactionRequest;
-    }) =>
-      apiClient.put(
-        `planned-transactions/${id}`,
-        data,
+      apiClient.delete(
+        `/investments/${id}`,
         {
           skipGlobalErrorNotify: true,
         },
       ),
+
     onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.updateRecurringSuccess'));
-    },
-    onError: (error: unknown) => {
-      notify.error(
-        getErrorMessage(
-          error,
-          t('alerts.updateRecurringError'),
-        ),
+      await invalidateInvestmentQueries();
+
+      notify.success(
+        t('alerts.deleteSuccess'),
       );
     },
-  });
 
-  const deleteRecurring = useMutation({
-    mutationFn: (id: string) =>
-      apiClient.delete(`planned-transactions/${id}`, {
-        skipGlobalErrorNotify: true,
-      }),
-    onSuccess: async () => {
-      await invalidateFinancialData(queryClient);
-      notify.success(t('alerts.deleteRecurringSuccess'));
-    },
-    onError: (error: unknown) => {
+    onError: (error: ApiError) => {
       notify.error(
-        getErrorMessage(
-          error,
-          t('alerts.deleteRecurringError'),
-        ),
+        error.response?.data?.message ||
+          t('alerts.deleteError'),
       );
     },
   });
 
   return {
-    createTransaction,
-    updateTransaction,
-    deleteTransaction,
-    createRecurring,
-    updateRecurring,
-    deleteRecurring,
-
-    isCreating:
-      createTransaction.isPending ||
-      createRecurring.isPending,
-
-    isUpdating:
-      updateTransaction.isPending ||
-      updateRecurring.isPending,
-
-    isDeleting:
-      deleteTransaction.isPending ||
-      deleteRecurring.isPending,
+    createInvestment,
+    updatePrice,
+    deleteInvestment,
+    isCreating: createInvestment.isPending,
+    isUpdating: updatePrice.isPending,
+    isDeleting: deleteInvestment.isPending,
   };
 };

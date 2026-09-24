@@ -61,10 +61,15 @@ public class DashboardCategoryService {
             }
 
             amountByCategory.merge(
-                    tx.categoryId(), amount, BigDecimal::add
+                    tx.categoryId(),
+                    amount,
+                    BigDecimal::add
             );
+
             countByCategory.merge(
-                    tx.categoryId(), 1, Integer::sum
+                    tx.categoryId(),
+                    1,
+                    Integer::sum
             );
         }
 
@@ -91,17 +96,25 @@ public class DashboardCategoryService {
             if (category == null) {
                 orphanAmount = orphanAmount.add(amount);
                 orphanCount += countByCategory.getOrDefault(
-                        categoryId, 0
+                        categoryId,
+                        0
                 );
                 continue;
             }
 
             categoryItems.add(
                     new CategoryExpenseItemResponseDTO(
+                            category.id(),
                             category.name(),
                             amount,
-                            calculatePercentage(amount, totalExpenses),
-                            countByCategory.getOrDefault(categoryId, 0)
+                            calculatePercentage(
+                                    amount,
+                                    totalExpenses
+                            ),
+                            countByCategory.getOrDefault(
+                                    categoryId,
+                                    0
+                            )
                     )
             );
         }
@@ -109,10 +122,12 @@ public class DashboardCategoryService {
         if (orphanAmount.compareTo(BigDecimal.ZERO) > 0) {
             categoryItems.add(
                     new CategoryExpenseItemResponseDTO(
+                            null,
                             "Sin categoría",
                             orphanAmount,
                             calculatePercentage(
-                                    orphanAmount, totalExpenses
+                                    orphanAmount,
+                                    totalExpenses
                             ),
                             orphanCount
                     )
@@ -125,16 +140,27 @@ public class DashboardCategoryService {
 
         return new DashboardCategoriesResponseDTO(
                 totalExpenses,
-                groupSmallCategories(categoryItems, totalExpenses)
+                groupSmallCategories(
+                        categoryItems,
+                        totalExpenses
+                )
         );
     }
 
-    private double calculatePercentage(BigDecimal part, BigDecimal total) {
+    private double calculatePercentage(
+            BigDecimal part,
+            BigDecimal total
+    ) {
         if (total.compareTo(BigDecimal.ZERO) == 0) {
             return 0.0;
         }
+
         return part.multiply(new BigDecimal("100"))
-                .divide(total, 1, RoundingMode.HALF_UP)
+                .divide(
+                        total,
+                        1,
+                        RoundingMode.HALF_UP
+                )
                 .doubleValue();
     }
 
@@ -144,6 +170,7 @@ public class DashboardCategoryService {
     ) {
         List<CategoryExpenseItemResponseDTO> mainCategories =
                 new ArrayList<>();
+
         BigDecimal othersAmount = BigDecimal.ZERO;
         int othersCount = 0;
 
@@ -158,10 +185,13 @@ public class DashboardCategoryService {
 
         if (othersAmount.compareTo(BigDecimal.ZERO) > 0) {
             double othersPercentage = calculatePercentage(
-                    othersAmount, totalExpenses
+                    othersAmount,
+                    totalExpenses
             );
+
             mainCategories.add(
                     new CategoryExpenseItemResponseDTO(
+                            null,
                             "Otros",
                             othersAmount,
                             othersPercentage,

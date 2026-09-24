@@ -17,7 +17,7 @@ import {
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
 
-import { useCategoryMutations } from '../hooks/useCategoryMutation';
+import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import type { Category } from '../types';
 import {
   CATEGORY_NAME_MAX_LENGTH,

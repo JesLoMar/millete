@@ -1,26 +1,26 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 
-import { apiClient } from '@/shared/api/axiosClient';
-import type { ApiError } from '@/shared/types/api';
-import { notify } from '@/shared/utils/notifications/notify';
+import { apiClient } from '@/shared/api/axiosClient'
+import type { ApiError } from '@/shared/types/api'
+import { notify } from '@/shared/utils/notifications/notify'
+
+import type {
+  RegisterInvestmentRequest,
+  UpdateInvestmentPriceRequest,
+} from '../types'
 
 export const useInvestmentMutations = () => {
-  const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
 
   const createInvestment = useMutation({
-    mutationFn: (data: Record<string, unknown>) => {
-      const sanitizedData = { ...data };
+    mutationFn: (data: RegisterInvestmentRequest) => {
+      const sanitizedData = { ...data }
 
-      if (typeof sanitizedData.purchaseDate === 'string') {
-        const date = new Date(
-          sanitizedData.purchaseDate as string,
-        );
+      const date = new Date(sanitizedData.purchaseDate)
 
-        sanitizedData.purchaseDate =
-          date.toISOString();
-      }
+      sanitizedData.purchaseDate = date.toISOString()
 
       return apiClient.post(
         '/investments',
@@ -28,7 +28,7 @@ export const useInvestmentMutations = () => {
         {
           skipGlobalErrorNotify: true,
         },
-      );
+      )
     },
 
     onSuccess: async () => {
@@ -45,34 +45,30 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ]);
+      ])
 
       notify.success(
         t('investments:alerts.createSuccess'),
-      );
+      )
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
-          t('investments:alerts.createError') ||
-          'Error al crear la inversión',
-      );
+          t('investments:alerts.createError'),
+      )
     },
-  });
+  })
 
   const updatePrice = useMutation({
     mutationFn: ({
       id,
-      price,
-    }: {
-      id: string;
-      price: number;
-    }) =>
+      currentPrice,
+    }: UpdateInvestmentPriceRequest) =>
       apiClient.patch(
         `investments/${id}/price`,
         {
-          newPrice: price,
+          newPrice: currentPrice,
         },
         {
           skipGlobalErrorNotify: true,
@@ -93,21 +89,20 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ]);
+      ])
 
       notify.success(
         t('investments:alerts.updatePriceSuccess'),
-      );
+      )
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
-          t('investments:alerts.updatePriceError') ||
-          'Error al actualizar el precio',
-      );
+          t('investments:alerts.updatePriceError'),
+      )
     },
-  });
+  })
 
   const deleteInvestment = useMutation({
     mutationFn: (id: string) =>
@@ -132,21 +127,20 @@ export const useInvestmentMutations = () => {
         queryClient.invalidateQueries({
           queryKey: ['investmentDistribution'],
         }),
-      ]);
+      ])
 
       notify.success(
         t('investments:alerts.deleteSuccess'),
-      );
+      )
     },
 
     onError: (err: ApiError) => {
       notify.error(
         err.response?.data?.message ||
-          t('investments:alerts.deleteError') ||
-          'Error al eliminar la inversión',
-      );
+          t('investments:alerts.deleteError'),
+      )
     },
-  });
+  })
 
   return {
     createInvestment,
@@ -155,5 +149,5 @@ export const useInvestmentMutations = () => {
     isCreating: createInvestment.isPending,
     isUpdating: updatePrice.isPending,
     isDeleting: deleteInvestment.isPending,
-  };
-};
+  }
+}

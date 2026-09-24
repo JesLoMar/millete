@@ -78,7 +78,7 @@ Ambos componentes dependen de `AuthContext`:
 
 ## Integración con useLoginMutation
 
-La mutación de login en `useAuthMutations.ts` utiliza `location.state?.from` para la redirección post-login:
+La mutación de login en `useLoginMutations.ts` utiliza `location.state?.from` para la redirección post-login:
 
 1. `onSuccess` de la mutación obtiene `location.state?.from?.pathname` (con search y hash si existen).
 2. También considera el query param `?redirect=` de la URL actual.

@@ -12,7 +12,7 @@ import { Button } from '@/shared/components/core/button';
 import { loginSchema, registerSchema } from '@/features/auth/schemas/auth.schema';
 import type { CombinedAuthFormData } from '@/features/auth/schemas/auth.schema';
 
-import { useLoginMutation } from '../hooks/useAuthMutations';
+import { useLoginMutation } from '../hooks/useLoginMutation.ts';
 import { useRegisterMutation } from '../hooks/useRegisterMutation';
 import type { RegisterUserRequest } from '../types';
 

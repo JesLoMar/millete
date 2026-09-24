@@ -4,31 +4,25 @@ import { useTranslation } from 'react-i18next'
 import type { DistributionResponse } from '../types'
 
 import { ChartTooltip } from '@/shared/components/core/chart-tooltip'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/core/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/core/card'
 import { DonutChart } from '@/shared/components/core/donut-chart'
+import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat'
 
 interface DistributionChartProps {
   data: DistributionResponse | undefined
   isLoading: boolean
 }
 
-function formatCurrency(value: number, lng: string): string {
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M`
-  }
-
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}k`
-  }
-
-  return value.toLocaleString(lng)
-}
-
 export function DistributionChart({
   data,
   isLoading,
 }: DistributionChartProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [tooltip, setTooltip] = useState<{
     label: string
     value: string
@@ -94,9 +88,9 @@ export function DistributionChart({
                 <div className="text-lg font-bold tabular-nums">
                   {formatCurrency(
                     totalValue,
-                    i18n.language
-                  )}{' '}
-                  €
+                    undefined,
+                    { compact: true },
+                  )}
                 </div>
 
                 <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold">
@@ -127,12 +121,16 @@ export function DistributionChart({
                   color: item.color,
                 })
               }
-              onMouseLeave={() => setTooltip(null)}
+              onMouseLeave={() =>
+                setTooltip(null)
+              }
             >
               <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                 <span
                   className="size-2 sm:size-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: item.color }}
+                  style={{
+                    backgroundColor: item.color,
+                  }}
                 />
 
                 <span className="text-muted-foreground truncate">
@@ -142,11 +140,14 @@ export function DistributionChart({
 
               <div className="flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0">
                 <span className="text-muted-foreground text-xs sm:text-xs tabular-nums hidden xs:inline">
-                  ({item.value.toLocaleString(i18n.language)} €)
+                  {formatCurrency(item.value)}
                 </span>
 
                 <span className="text-foreground tabular-nums text-xs sm:text-sm">
-                  {item.percentage.toLocaleString(i18n.language)}%
+                  {formatNumber(item.percentage, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  })}%
                 </span>
               </div>
             </div>

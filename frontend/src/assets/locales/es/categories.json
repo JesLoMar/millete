@@ -37,5 +37,7 @@
   "nameLabel": "Nombre de la categoría",
   "budgetLabel": "Presupuesto mensual",
   "budgetPlaceholder": "Ej: 500",
-  "colorLabel": "Color de la categoría"
+  "colorLabel": "Color de la categoría",
+  "expensesError": "No se han podido cargar los gastos por categoría.",
+  "retry": "Reintentar"
 }

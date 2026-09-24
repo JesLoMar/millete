@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/core/dropdown-menu'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 import { TYPE_COLORS } from '../constants'
 import type { InvestmentResponse } from '../types'
@@ -22,7 +23,9 @@ import { UpdatePriceDialog } from './UpdatePriceDialog'
 
 interface AssetRowProps {
   investment: InvestmentResponse
-  onDelete: (investment: InvestmentResponse) => void
+  onDelete: (
+    investment: InvestmentResponse,
+  ) => void
 }
 
 export const AssetRow = memo(function AssetRow({
@@ -36,7 +39,8 @@ export const AssetRow = memo(function AssetRow({
       ? 'up'
       : 'down'
 
-  const percentage = inv.roiPercentage ?? 0
+  const percentage =
+    inv.roiPercentage ?? 0
 
   return (
     <>
@@ -44,11 +48,14 @@ export const AssetRow = memo(function AssetRow({
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div
             className={`size-8 rounded-xl flex items-center justify-center font-bold text-xs text-primary-foreground shrink-0 ${
-              TYPE_COLORS[inv.type] || 'bg-primary'
+              TYPE_COLORS[inv.type] ||
+              'bg-primary'
             }`}
           >
             {inv.ticker ||
-              inv.assetName.substring(0, 3).toUpperCase()}
+              inv.assetName
+                .substring(0, 3)
+                .toUpperCase()}
           </div>
 
           <div className="min-w-0">
@@ -57,9 +64,10 @@ export const AssetRow = memo(function AssetRow({
             </p>
 
             <p className="text-xs text-muted-foreground truncate">
-              {inv.quantity} {t('investments:shares')} •{' '}
+              {inv.quantity}{' '}
+              {t('investments:shares')} •{' '}
               {t(
-                `investments:types.${inv.type.toLowerCase()}`
+                `investments:types.${inv.type.toLowerCase()}`,
               )}
             </p>
           </div>
@@ -78,7 +86,7 @@ export const AssetRow = memo(function AssetRow({
                 'text-sm font-bold flex items-center gap-1 whitespace-nowrap',
                 trend === 'up'
                   ? 'text-primary'
-                  : 'text-destructive'
+                  : 'text-destructive',
               )}
             >
               {trend === 'up' ? (
@@ -87,10 +95,9 @@ export const AssetRow = memo(function AssetRow({
                 <TrendingDown size={14} />
               )}
 
-              {inv.currentValue?.toLocaleString('es-ES', {
-                minimumFractionDigits: 2,
-              })}{' '}
-              €
+              {formatCurrency(
+                inv.currentValue,
+              )}
             </p>
 
             <span
@@ -98,7 +105,7 @@ export const AssetRow = memo(function AssetRow({
                 'text-xs font-bold px-2 py-0.5 rounded-full mt-1 border whitespace-nowrap',
                 trend === 'up'
                   ? 'bg-primary/10 text-primary border-primary/20'
-                  : 'bg-destructive/10 text-destructive border-destructive/20'
+                  : 'bg-destructive/10 text-destructive border-destructive/20',
               )}
             >
               {percentage != null
@@ -115,7 +122,9 @@ export const AssetRow = memo(function AssetRow({
                 className="size-8"
                 aria-label={t(
                   'investments:assetOptions',
-                  { name: inv.assetName }
+                  {
+                    name: inv.assetName,
+                  },
                 )}
               >
                 <MoreHorizontal
@@ -131,7 +140,9 @@ export const AssetRow = memo(function AssetRow({
             >
               <DropdownMenuItem
                 className="text-destructive cursor-pointer"
-                onClick={() => onDelete(inv)}
+                onClick={() =>
+                  onDelete(inv)
+                }
               >
                 <Trash2
                   className="mr-2 size-4"
@@ -148,11 +159,14 @@ export const AssetRow = memo(function AssetRow({
         <div className="flex items-center gap-2 mb-1.5">
           <div
             className={`size-6 rounded-lg flex items-center justify-center font-bold text-xs text-primary-foreground shrink-0 ${
-              TYPE_COLORS[inv.type] || 'bg-primary'
+              TYPE_COLORS[inv.type] ||
+              'bg-primary'
             }`}
           >
             {inv.ticker ||
-              inv.assetName.substring(0, 3).toUpperCase()}
+              inv.assetName
+                .substring(0, 3)
+                .toUpperCase()}
           </div>
 
           <div className="min-w-0 flex-1">
@@ -161,9 +175,10 @@ export const AssetRow = memo(function AssetRow({
             </p>
 
             <p className="text-xs text-muted-foreground truncate">
-              {inv.quantity} {t('investments:shares')} •{' '}
+              {inv.quantity}{' '}
+              {t('investments:shares')} •{' '}
               {t(
-                `investments:types.${inv.type.toLowerCase()}`
+                `investments:types.${inv.type.toLowerCase()}`,
               )}
             </p>
           </div>
@@ -176,7 +191,9 @@ export const AssetRow = memo(function AssetRow({
                 className="size-7 shrink-0 -mr-1"
                 aria-label={t(
                   'investments:assetOptions',
-                  { name: inv.assetName }
+                  {
+                    name: inv.assetName,
+                  },
                 )}
               >
                 <MoreHorizontal
@@ -192,7 +209,9 @@ export const AssetRow = memo(function AssetRow({
             >
               <DropdownMenuItem
                 className="text-destructive cursor-pointer"
-                onClick={() => onDelete(inv)}
+                onClick={() =>
+                  onDelete(inv)
+                }
               >
                 <Trash2
                   className="mr-2 size-4"
@@ -210,7 +229,7 @@ export const AssetRow = memo(function AssetRow({
               'text-base font-bold flex items-center gap-1',
               trend === 'up'
                 ? 'text-primary'
-                : 'text-destructive'
+                : 'text-destructive',
             )}
           >
             {trend === 'up' ? (
@@ -219,10 +238,14 @@ export const AssetRow = memo(function AssetRow({
               <TrendingDown size={14} />
             )}
 
-            {inv.currentValue?.toLocaleString('es-ES', {
-              minimumFractionDigits: 0,
-            })}{' '}
-            €
+            {formatCurrency(
+              inv.currentValue,
+              undefined,
+              {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              },
+            )}
           </p>
 
           <span
@@ -230,7 +253,7 @@ export const AssetRow = memo(function AssetRow({
               'text-xs font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap ml-2',
               trend === 'up'
                 ? 'bg-primary/10 text-primary border-primary/20'
-                : 'bg-destructive/10 text-destructive border-destructive/20'
+                : 'bg-destructive/10 text-destructive border-destructive/20',
             )}
           >
             {percentage != null

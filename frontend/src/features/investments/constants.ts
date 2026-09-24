@@ -7,7 +7,9 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-export const TYPE_COLORS: Record<string, string> = {
+import type { InvestmentAssetType } from './types'
+
+export const TYPE_COLORS: Record<InvestmentAssetType, string> = {
   STOCK: 'bg-chart-4',
   CRYPTO: 'bg-chart-3',
   FUND: 'bg-chart-2',
@@ -16,7 +18,7 @@ export const TYPE_COLORS: Record<string, string> = {
 }
 
 export const INVESTMENT_TYPES: Array<{
-  value: string
+  value: InvestmentAssetType
   labelKey: string
   icon: LucideIcon
   color: string

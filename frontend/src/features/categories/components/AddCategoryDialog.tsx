@@ -29,7 +29,7 @@ import {
   categoryFormSchema,
   parseCategoryBudget,
 } from '../schemas/category.schema';
-import { useCategoryMutations } from '../hooks/useCategoryMutation';
+import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import { ColorPicker } from './ColorPicker';
 
 interface AddCategoryDialogProps {

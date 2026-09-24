@@ -1,20 +1,43 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
+import { handlePostAuthSuccess } from '../utils/handlePostAuthSuccess';
+
 import { ROUTES } from '@/app/router/routes';
 import type {
   RegisterUserRequest,
   LoginRequest,
   LoginResponse,
 } from '../types';
-import type { ApiError } from '@/shared/types/api';
 import { notify } from '@/shared/utils/notifications/notify';
 
-const isApiError = (error: ApiError | Error): error is ApiError => {
-  return 'response' in error;
+const getErrorMessage = (
+  error: unknown,
+  fallback: string,
+): string => {
+  if (axios.isAxiosError(error)) {
+    return (
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      fallback
+    );
+  }
+
+  if (
+    error instanceof Error &&
+    error.message
+  ) {
+    return error.message;
+  }
+
+  return fallback;
 };
 
 export const useRegisterMutation = () => {
@@ -23,14 +46,25 @@ export const useRegisterMutation = () => {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  return useMutation<LoginResponse, ApiError | Error, RegisterUserRequest>({
-    mutationFn: async (data: RegisterUserRequest) => {
+  return useMutation<
+    LoginResponse,
+    unknown,
+    RegisterUserRequest
+  >({
+    mutationFn: async (
+      data: RegisterUserRequest,
+    ) => {
       await authService.register(data);
 
-      const identifier = data.username || data.email || '';
+      const identifier =
+        data.username ||
+        data.email ||
+        '';
 
       if (!identifier) {
-        throw new Error(t('auth:errors.no_identifier'));
+        throw new Error(
+          t('auth:errors.no_identifier'),
+        );
       }
 
       const loginData: LoginRequest = {
@@ -39,33 +73,37 @@ export const useRegisterMutation = () => {
       };
 
       try {
-        return await authService.login(loginData);
+        return await authService.login(
+          loginData,
+        );
       } catch {
-        throw new Error(t('auth:errors.auto_login_failed'));
+        throw new Error(
+          t(
+            'auth:errors.auto_login_failed',
+          ),
+        );
       }
     },
 
     onSuccess: async () => {
-      await login();
-      queryClient.clear();
-
-      notify.success(t('auth:alerts.register_success'));
-      navigate(ROUTES.dashboard, { replace: true });
+      await handlePostAuthSuccess({
+        login,
+        queryClient,
+        navigate,
+        successMessage: t(
+          'auth:alerts.register_success',
+        ),
+        destination: ROUTES.dashboard,
+      });
     },
 
-    onError: (error: ApiError | Error) => {
-      if (isApiError(error)) {
-        const errorMessage =
-          error.response?.data?.message ||
-          t('auth:errors.register_failed');
-
-        notify.error(errorMessage);
-        return;
-      }
-
-      notify.error(
-        error.message || t('auth:errors.register_failed'),
+    onError: (error: unknown) => {
+      const message = getErrorMessage(
+        error,
+        t('auth:errors.register_failed'),
       );
+
+      notify.error(message);
     },
   });
 };

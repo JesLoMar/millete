@@ -14,7 +14,10 @@ import {
 
 import { ROUTES } from '@/app/router/routes';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { apiClient } from '@/shared/api/axiosClient';
+import {
+  useAcceptInvitation,
+  useRejectInvitation,
+} from '@/features/groupgoals/hooks/useInvitations';
 import { Button } from '@/shared/components/core/button';
 import {
   Card,
@@ -37,6 +40,11 @@ export const JoinGroupGoalPage = () => {
   const navigate = useNavigate();
   const { isLoading: authLoading } =
     useAuth();
+
+  const acceptInvitation =
+    useAcceptInvitation();
+  const rejectInvitation =
+    useRejectInvitation();
 
   const invitationId =
     searchParams.get(
@@ -97,12 +105,8 @@ export const JoinGroupGoalPage = () => {
     setStatus('processing');
 
     try {
-      await apiClient.post(
-        `/goals/invitations/${invitationId}/accept`,
-        undefined,
-        {
-          skipGlobalErrorNotify: true,
-        },
+      await acceptInvitation.mutateAsync(
+        invitationId,
       );
 
       setStatus('accepted');
@@ -135,12 +139,8 @@ export const JoinGroupGoalPage = () => {
     setStatus('processing');
 
     try {
-      await apiClient.post(
-        `/goals/invitations/${invitationId}/reject`,
-        undefined,
-        {
-          skipGlobalErrorNotify: true,
-        },
+      await rejectInvitation.mutateAsync(
+        invitationId,
       );
 
       setStatus('rejected');

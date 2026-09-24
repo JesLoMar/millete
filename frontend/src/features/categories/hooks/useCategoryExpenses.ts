@@ -14,6 +14,9 @@ export function useCategoryExpenses(
       const response =
         await apiClient.get<CategoriesExpenseResponse>(
           `/dashboard/categories?period=${period}`,
+          {
+            skipGlobalErrorNotify: true,
+          },
         );
 
       return response.data;

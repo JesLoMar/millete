@@ -1,5 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 import { notify } from '@/shared/utils/notifications/notify';
 
@@ -8,6 +13,7 @@ import type { SessionResponse } from '../types';
 
 export function useSessions() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('userProfile');
 
   const {
     data: sessions,
@@ -27,50 +33,55 @@ export function useSessions() {
         queryKey: ['sessions'],
       });
 
-      notify.success('Sesión cerrada correctamente');
-    },
-
-    onError: (error: unknown) => {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.message ??
-          'Error al gestionar sesiones'
-        : 'Error al gestionar sesiones';
-
-      notify.error(message);
-    },
-  });
-
-  const deleteAllOtherSessionsMutation = useMutation({
-    mutationFn: () =>
-      profileService.deleteAllOtherSessions(),
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['sessions'],
-      });
-
       notify.success(
-        'Todas las demás sesiones han sido cerradas',
+        t('sessions.success'),
       );
     },
 
     onError: (error: unknown) => {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.message ??
-          'Error al gestionar sesiones'
-        : 'Error al gestionar sesiones';
+          t('sessions.error')
+        : t('sessions.error');
 
       notify.error(message);
     },
   });
+
+  const deleteAllOtherSessionsMutation =
+    useMutation({
+      mutationFn: () =>
+        profileService.deleteAllOtherSessions(),
+
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['sessions'],
+        });
+
+        notify.success(
+          t('sessions.successAll'),
+        );
+      },
+
+      onError: (error: unknown) => {
+        const message = axios.isAxiosError(error)
+          ? error.response?.data?.message ??
+            t('sessions.error')
+          : t('sessions.error');
+
+        notify.error(message);
+      },
+    });
 
   return {
     sessions,
     isLoading,
     error,
 
-    deleteSession: deleteSessionMutation.mutate,
-    isDeletingSession: deleteSessionMutation.isPending,
+    deleteSession:
+      deleteSessionMutation.mutate,
+    isDeletingSession:
+      deleteSessionMutation.isPending,
 
     deleteAllOtherSessions:
       deleteAllOtherSessionsMutation.mutate,

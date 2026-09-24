@@ -1,6 +1,7 @@
 export type InvestmentAssetType =
   | 'STOCK'
   | 'CRYPTO'
+  | 'FUND'
   | 'REAL_ESTATE'
   | 'OTHER'
 
@@ -9,7 +10,7 @@ export interface InvestmentResponse {
   userId: string
   assetName: string
   ticker?: string
-  type: string
+  type: InvestmentAssetType
   quantity: number
   purchasePrice: number
   currentPrice: number
@@ -31,6 +32,7 @@ export interface RegisterInvestmentRequest {
 }
 
 export interface UpdateInvestmentPriceRequest {
+  id: string
   currentPrice: number
 }
 

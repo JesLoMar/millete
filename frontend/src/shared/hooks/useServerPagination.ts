@@ -25,7 +25,6 @@ interface UseServerPaginationOptions<T> {
   ) => Promise<PaginatedResponse<T>>;
   serverSize: number;
   displaySize: number;
-  initialPage?: number;
   enabled?: boolean;
 }
 
@@ -34,29 +33,21 @@ export function useServerPagination<T>({
   fetchPage,
   serverSize,
   displaySize,
-  initialPage = 0,
   enabled = true,
 }: UseServerPaginationOptions<T>) {
   const queryClient = useQueryClient();
 
   const [displayPage, setDisplayPageState] =
-    useState(initialPage);
-
-  const queryKeyString = useMemo(
-    () => JSON.stringify(queryKey),
-    [queryKey],
-  );
-
-  useEffect(() => {
-    setDisplayPageState(initialPage);
-  }, [initialPage, queryKeyString]);
+    useState(0);
 
   const serverPage = Math.floor(
-    (displayPage * displaySize) / serverSize,
+    (displayPage * displaySize) /
+      serverSize,
   );
 
   const offsetInChunk =
-    (displayPage * displaySize) % serverSize;
+    (displayPage * displaySize) %
+    serverSize;
 
   const serverQueryKey = [
     ...queryKey,
@@ -88,13 +79,16 @@ export function useServerPagination<T>({
     );
   }, [data, offsetInChunk, displaySize]);
 
-  const totalElements = data?.totalElements ?? 0;
+  const totalElements =
+    data?.totalElements ?? 0;
 
   const totalDisplayPages = useMemo(
     () =>
       Math.max(
         1,
-        Math.ceil(totalElements / displaySize),
+        Math.ceil(
+          totalElements / displaySize,
+        ),
       ),
     [totalElements, displaySize],
   );
@@ -150,14 +144,16 @@ export function useServerPagination<T>({
       return;
     }
 
-    const nextServerPage = serverPage + 1;
+    const nextServerPage =
+      serverPage + 1;
 
     queryClient.prefetchQuery({
       queryKey: [
         ...queryKey,
         String(nextServerPage),
       ],
-      queryFn: () => fetchPage(nextServerPage),
+      queryFn: () =>
+        fetchPage(nextServerPage),
       staleTime: 30_000,
     });
   }, [

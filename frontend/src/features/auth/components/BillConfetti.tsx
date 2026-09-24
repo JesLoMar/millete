@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 
+import './BillConfetti.css';
+
 import {
   useBillConfetti,
   type UseBillConfettiOptions,
@@ -8,9 +10,13 @@ import {
 export function BillConfetti(
   props: UseBillConfettiOptions = {},
 ) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef =
+    useRef<HTMLDivElement>(null);
 
-  useBillConfetti(containerRef, props);
+  useBillConfetti(
+    containerRef,
+    props,
+  );
 
   return (
     <div

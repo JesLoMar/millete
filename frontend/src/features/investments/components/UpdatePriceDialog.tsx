@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
+import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { AlertTriangle } from 'lucide-react'
 
-import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
+import { useInvestmentMutations } from '../hooks/useInvestmentMutations'
 
-import { Spinner } from '@/shared/components/Spinner';
-import { Button } from '@/shared/components/core/button';
+import { Spinner } from '@/shared/components/Spinner'
+import { Button } from '@/shared/components/core/button'
 import {
   Dialog,
   DialogContent,
@@ -13,14 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/shared/components/core/dialog';
-import { Input } from '@/shared/components/core/input';
-import { Label } from '@/shared/components/core/label';
+} from '@/shared/components/core/dialog'
+import { Input } from '@/shared/components/core/input'
+import { Label } from '@/shared/components/core/label'
 
 interface UpdatePriceDialogProps {
-  investmentId: string;
-  assetName: string;
-  currentPrice: number;
+  investmentId: string
+  assetName: string
+  currentPrice: number
 }
 
 export function UpdatePriceDialog({
@@ -28,70 +28,70 @@ export function UpdatePriceDialog({
   assetName,
   currentPrice,
 }: UpdatePriceDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const { updatePrice, isUpdating } =
-    useInvestmentMutations();
+    useInvestmentMutations()
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const [newPrice, setNewPrice] = useState(
     () => currentPrice.toString(),
-  );
+  )
   const [needsConfirmation, setNeedsConfirmation] =
-    useState(false);
+    useState(false)
 
   const inputRef =
-    useRef<HTMLInputElement>(null);
+    useRef<HTMLInputElement>(null)
 
   const isSamePrice =
-    Number(newPrice) === currentPrice;
-  const targetPrice = Number(newPrice);
+    Number(newPrice) === currentPrice
+  const targetPrice = Number(newPrice)
 
   const deviationRatio =
     currentPrice > 0
       ? Math.abs(targetPrice - currentPrice) /
         currentPrice
-      : 0;
+      : 0
 
   const isCriticalDeviation =
-    deviationRatio > 0.5;
+    deviationRatio > 0.5
 
   const handleUpdate = async () => {
     if (
       isSamePrice ||
       targetPrice <= 0
     ) {
-      return;
+      return
     }
 
     if (
       isCriticalDeviation &&
       !needsConfirmation
     ) {
-      setNeedsConfirmation(true);
-      return;
+      setNeedsConfirmation(true)
+      return
     }
 
     try {
       await updatePrice.mutateAsync({
         id: investmentId,
-        price: targetPrice,
-      });
+        currentPrice: targetPrice,
+      })
 
-      setOpen(false);
-      setNeedsConfirmation(false);
+      setOpen(false)
+      setNeedsConfirmation(false)
     } catch {
       // El feedback del error lo gestiona la mutation.
     }
-  };
+  }
 
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        setOpen(isOpen);
+        setOpen(isOpen)
 
         if (!isOpen) {
-          setNeedsConfirmation(false);
+          setNeedsConfirmation(false)
         }
       }}
     >
@@ -108,8 +108,8 @@ export function UpdatePriceDialog({
       <DialogContent
         className="bg-card border-border sm:max-w-sm"
         onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          inputRef.current?.focus();
+          e.preventDefault()
+          inputRef.current?.focus()
         }}
       >
         <DialogHeader>
@@ -133,8 +133,8 @@ export function UpdatePriceDialog({
               type="number"
               value={newPrice}
               onChange={(e) => {
-                setNewPrice(e.target.value);
-                setNeedsConfirmation(false);
+                setNewPrice(e.target.value)
+                setNeedsConfirmation(false)
               }}
               disabled={isUpdating}
               className="bg-background border-border text-xl font-semibold"
@@ -194,5 +194,5 @@ export function UpdatePriceDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

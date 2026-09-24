@@ -22,5 +22,7 @@ export const handlePostAuthSuccess = async ({
   queryClient.clear();
 
   notify.success(successMessage);
-  navigate(destination, { replace: true });
+  navigate(destination, {
+    replace: true,
+  });
 };

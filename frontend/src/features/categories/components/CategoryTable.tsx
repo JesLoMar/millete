@@ -10,13 +10,16 @@ import {
 import {
   useCategories,
 } from '@/features/categories/hooks/useCategories';
+import {
+  useCategoryBudgets,
+} from '@/features/categories/hooks/useCategoryBudgets';
 import type { Category } from '@/features/categories/types';
 import type { PeriodFilter } from '@/shared/components/PeriodSelector';
 import { Input } from '@/shared/components/core/input';
 import { Button } from '@/shared/components/core/button';
 
 import { useCategoryExpenses } from '../hooks/useCategoryExpenses';
-import { useCategoryMutations } from '../hooks/useCategoryMutation';
+import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import { EditCategoryDialog } from './EditCategoryDialog';
 import { ConfirmDeletionDialog } from '../../../shared/components/ConfirmDeletionDialog';
 import { CategoryRow } from './CategoryRow';
@@ -54,33 +57,6 @@ const categoryRowTransition = {
   ease: 'easeOut' as const,
 };
 
-const getAdjustedBudgetLimit = (
-  budgetLimit: number | null | undefined,
-  period: PeriodFilter,
-): number | null => {
-  if (
-    budgetLimit === null ||
-    budgetLimit === undefined ||
-    budgetLimit === 0
-  ) {
-    return null;
-  }
-
-  switch (period) {
-    case 'week':
-      return budgetLimit / 4;
-
-    case 'month':
-      return budgetLimit;
-
-    case 'year':
-      return budgetLimit * 12;
-
-    default:
-      return budgetLimit;
-  }
-};
-
 export function CategoryTable({
   period,
 }: CategoryTableProps) {
@@ -112,10 +88,42 @@ export function CategoryTable({
   const { deleteCategory, isDeleting } =
     useCategoryMutations();
 
-  const { data: expensesData } =
-    useCategoryExpenses(period);
+  const {
+    data: expensesData,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+    isFetching: isExpensesFetching,
+  } = useCategoryExpenses(period);
 
-  const expensesMap = useMemo(() => {
+  const { data: budgetsData } =
+    useCategoryBudgets(period);
+
+  const budgetsByCategoryId = useMemo(() => {
+    if (!budgetsData?.budgets) {
+      return {};
+    }
+
+    return budgetsData.budgets.reduce<
+      Record<
+        string,
+        {
+          spent: number;
+          limit: number;
+          percentage: number;
+        }
+      >
+    >((map, budget) => {
+      map[budget.categoryId] = {
+        spent: budget.spent,
+        limit: budget.limit,
+        percentage: budget.percentage,
+      };
+
+      return map;
+    }, {});
+  }, [budgetsData]);
+
+  const expensesByCategoryId = useMemo(() => {
     if (!expensesData?.categories) {
       return {};
     }
@@ -123,7 +131,10 @@ export function CategoryTable({
     return expensesData.categories.reduce<
       Record<string, number>
     >((map, category) => {
-      map[category.name] = category.amount;
+      if (category.categoryId) {
+        map[category.categoryId] = category.amount;
+      }
+
       return map;
     }, {});
   }, [expensesData]);
@@ -144,27 +155,6 @@ export function CategoryTable({
     }
   };
 
-  const getSpentPercentage = (
-    category: Category,
-  ): number => {
-    const budgetLimit = getAdjustedBudgetLimit(
-      category.budgetLimit,
-      period,
-    );
-
-    if (!budgetLimit) {
-      return 0;
-    }
-
-    const spent =
-      expensesMap[category.name] ?? 0;
-
-    return Math.min(
-      (spent / budgetLimit) * 100,
-      100,
-    );
-  };
-
   if (isLoading && categories.length === 0) {
     return <CategoryTableSkeleton />;
   }
@@ -181,6 +171,26 @@ export function CategoryTable({
 
   return (
     <div className="space-y-4">
+      {isExpensesError && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
+        >
+          <p className="text-sm text-destructive">
+            {t('categories:errors.expenses')}
+          </p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetchExpenses()}
+            disabled={isExpensesFetching}
+          >
+            {t('categories:actions.retry')}
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="relative w-full sm:w-[320px]">
           <Search
@@ -201,7 +211,9 @@ export function CategoryTable({
 
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-            {t(`dashboard:header.period.${period}`)}
+            {t(
+              `dashboard:header.period.${period}`,
+            )}
           </span>
 
           <p className="text-sm text-muted-foreground">
@@ -225,17 +237,19 @@ export function CategoryTable({
             </p>
           ) : (
             categories.map((category) => {
+              const budget =
+                budgetsByCategoryId[category.id];
+
               const spent =
-                expensesMap[category.name] ?? 0;
+                budget?.spent ??
+                expensesByCategoryId[category.id] ??
+                0;
 
               const budgetLimit =
-                getAdjustedBudgetLimit(
-                  category.budgetLimit,
-                  period,
-                );
+                budget?.limit ?? null;
 
               const percentage =
-                getSpentPercentage(category);
+                budget?.percentage ?? 0;
 
               return (
                 <m.div
@@ -260,11 +274,14 @@ export function CategoryTable({
         {totalDisplayPages > 1 && (
           <div className="flex items-center justify-between border-t border-border bg-background/20 px-6 py-4">
             <p className="text-xs font-medium text-muted-foreground">
-              {t('transactions:showingInterval', {
-                from,
-                to,
-                total: totalElements,
-              })}
+              {t(
+                'transactions:showingInterval',
+                {
+                  from,
+                  to,
+                  total: totalElements,
+                },
+              )}
             </p>
 
             <div className="flex items-center gap-2">
@@ -282,7 +299,8 @@ export function CategoryTable({
               </Button>
 
               <span className="min-w-15 text-center text-sm text-muted-foreground">
-                {displayPage + 1} / {totalDisplayPages}
+                {displayPage + 1} /{' '}
+                {totalDisplayPages}
               </span>
 
               <Button

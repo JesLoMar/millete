@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { AddContributionDialog } from '@/features/groupgoals/components/dialogs/AddContributionDialog'
 import { CreateGroupGoalDialog } from '@/features/groupgoals/components/dialogs/CreateGroupGoalDialog'
@@ -26,12 +25,8 @@ import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog
 import { Sidebar } from '@/shared/components/Sidebar'
 import { Pagination } from '@/shared/components/Pagination'
 import { TopNav } from '@/shared/components/TopNav'
-import { apiClient } from '@/shared/api/axiosClient'
-import type { ApiError } from '@/shared/types/api'
-import { notify } from '@/shared/utils/notifications/notify'
 
 export const GroupGoalsPage = () => {
-  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [internalSelectedGoalId, setInternalSelectedGoalId] =
@@ -176,37 +171,15 @@ export const GroupGoalsPage = () => {
   ) => {
     if (!actions.editingGoal) return
 
-    try {
-      await apiClient.put(
-        `/goals/${actions.editingGoal.id}`,
-        {
-          name: newName,
-        },
-        {
-          skipGlobalErrorNotify: true,
-        },
-      )
+    await mutations.updateGoal.mutateAsync({
+      goalId: actions.editingGoal.id,
+      name: newName,
+    })
 
-      await queryClient.invalidateQueries({
-        queryKey: ['group-goals'],
-      })
-
-      setActions((prev) => ({
-        ...prev,
-        editingGoal: null,
-      }))
-
-      notify.success(
-        'Nombre actualizado correctamente',
-      )
-    } catch (err) {
-      const apiError = err as ApiError
-
-      notify.error(
-        apiError?.response?.data?.message ||
-          'Error al actualizar el nombre',
-      )
-    }
+    setActions((prev) => ({
+      ...prev,
+      editingGoal: null,
+    }))
   }
 
   const handleDeleteGoal = async () => {
@@ -466,7 +439,9 @@ export const GroupGoalsPage = () => {
           actions.editingGoal?.name || ''
         }
         onSave={handleEditGoalName}
-        isSaving={false}
+        isSaving={
+          mutations.updateGoal.isPending
+        }
       />
 
       <ConfirmDeletionDialog

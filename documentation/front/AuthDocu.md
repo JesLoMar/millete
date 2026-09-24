@@ -15,7 +15,7 @@
 - components/InfoSection/FirstSteps.tsx — Pasos iniciales + enlace wiki
 - components/InfoSection/NewsList.tsx — Lista de novedades
 - context/AuthContext.tsx — Estado global de autenticación
-- hooks/useAuthMutations.ts — Mutación de login con sanitización de redirect
+- hooks/useLoginMutations.ts — Mutación de login con sanitización de redirect
 - hooks/useRegisterMutation.ts — Mutación de registro con login automático
 - pages/page.tsx — Página completa de login con redirección si autenticado
 - schemas/auth.schema.ts — Esquemas de validación con Zod
@@ -209,7 +209,7 @@ Hook que consume AuthContext. Lanza error si se usa fuera del provider.
 
 ---
 
-## hooks/useAuthMutations.ts — Login
+## hooks/useLoginMutations.ts — Login
 
 Usa useMutation de React Query.
 
