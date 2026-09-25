@@ -1,9 +1,11 @@
 package com.puntomartinez.millete.users.domain.model;
 
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Getter
@@ -14,18 +16,18 @@ public class UserLoginSecurity {
 
     private UUID userId;
     private int failedAttempts;
-    private LocalDateTime blockedUntil;
-    private LocalDateTime lastAttemptAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant blockedUntil;
+    private Instant lastAttemptAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
 
     public UserLoginSecurity() {}
 
-    public boolean isBlocked() {
+    public boolean isBlocked(TimeProvider timeProvider) {
         if (this.blockedUntil != null) {
-            if (LocalDateTime.now().isAfter(this.blockedUntil)) {
+            if (timeProvider.now().isAfter(this.blockedUntil)) {
                 this.blockedUntil = null;
-                this.modifiedAt = LocalDateTime.now();
+                this.modifiedAt = timeProvider.now();
                 return false;
             }
             return true;
@@ -33,28 +35,40 @@ public class UserLoginSecurity {
         return false;
     }
 
-    public void registerFailedAttempt(int maxAttempts, long baseLockDurationMinutes) {
+    public void registerFailedAttempt(
+            TimeProvider timeProvider,
+            int maxAttempts,
+            long baseLockDurationMinutes
+    ) {
         this.failedAttempts++;
-        this.lastAttemptAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
+        this.lastAttemptAt = timeProvider.now();
+        this.modifiedAt = timeProvider.now();
+
         if (this.failedAttempts >= maxAttempts) {
-            this.blockedUntil = LocalDateTime.now()
-                    .plusMinutes(calculateLockDurationMinutes(maxAttempts, baseLockDurationMinutes));
+            long duration = calculateLockDurationMinutes(
+                    maxAttempts, baseLockDurationMinutes
+            );
+            this.blockedUntil = timeProvider.now()
+                    .plus(duration, ChronoUnit.MINUTES);
         }
     }
 
-    private long calculateLockDurationMinutes(int maxAttempts, long baseLockDurationMinutes) {
+    private long calculateLockDurationMinutes(
+            int maxAttempts,
+            long baseLockDurationMinutes
+    ) {
         int extraAttempts = this.failedAttempts - maxAttempts;
-        long duration = baseLockDurationMinutes << Math.min(extraAttempts, 6);
+        long duration = baseLockDurationMinutes
+                << Math.min(extraAttempts, 6);
         return Math.min(duration, MAX_LOCK_DURATION_MINUTES);
     }
 
-    public void resetAttempts() {
+    public void resetAttempts(TimeProvider timeProvider) {
         if (this.failedAttempts > 0 || this.blockedUntil != null) {
             this.failedAttempts = 0;
             this.blockedUntil = null;
-            this.lastAttemptAt = LocalDateTime.now();
-            this.modifiedAt = LocalDateTime.now();
+            this.lastAttemptAt = timeProvider.now();
+            this.modifiedAt = timeProvider.now();
         }
     }
 }

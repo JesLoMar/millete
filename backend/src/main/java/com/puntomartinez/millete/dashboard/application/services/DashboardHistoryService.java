@@ -3,14 +3,13 @@ package com.puntomartinez.millete.dashboard.application.services;
 import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardHistoryResponseDTO;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +41,7 @@ import java.util.List;
 public class DashboardHistoryService {
 
     private final TransactionQueryPort transactionQueryPort;
+    private final TimeProvider timeProvider;
 
     public DashboardHistoryResponseDTO getHistory(
             java.util.UUID userId,
@@ -68,14 +68,14 @@ public class DashboardHistoryService {
                 "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"
         };
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
         LocalDate weekStart = today.with(java.time.DayOfWeek.MONDAY);
 
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        weekStart.atStartOfDay(),
-                        weekStart.plusDays(6).atTime(LocalTime.MAX)
+                        weekStart,
+                        weekStart.plusDays(6)
                 );
 
         for (int i = 0; i < 7; i++) {
@@ -87,13 +87,9 @@ public class DashboardHistoryService {
                 continue;
             }
 
-            LocalDateTime dayStart = day.atStartOfDay();
-            LocalDateTime dayEnd = day.atTime(LocalTime.MAX);
-
             BigDecimal dayExpenses = transactions.stream()
                     .filter(t ->
-                            !t.date().isBefore(dayStart)
-                                    && !t.date().isAfter(dayEnd))
+                            t.date().equals(day))
                     .filter(t -> "EXPENSE".equals(t.type()))
                     .map(t -> t.amount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -110,7 +106,7 @@ public class DashboardHistoryService {
         List<String> labels = new ArrayList<>();
         List<BigDecimal> data = new ArrayList<>();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
         LocalDate monthStart = today.withDayOfMonth(1);
         LocalDate lastDayOfMonth = monthStart.with(
                 java.time.temporal.TemporalAdjusters.lastDayOfMonth()
@@ -119,8 +115,8 @@ public class DashboardHistoryService {
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        monthStart.atStartOfDay(),
-                        lastDayOfMonth.atTime(LocalTime.MAX)
+                        monthStart,
+                        lastDayOfMonth
                 );
 
         int weekNumber = 1;
@@ -133,14 +129,13 @@ public class DashboardHistoryService {
             if (weekEnd.isAfter(lastDayOfMonth)) {
                 weekEnd = lastDayOfMonth;
             }
-
-            LocalDateTime startDateTime = weekStart.atStartOfDay();
-            LocalDateTime endDateTime = weekEnd.atTime(LocalTime.MAX);
+            LocalDate finalWeekStart = weekStart;
+            LocalDate finalWeekEnd = weekEnd;
 
             BigDecimal weekExpenses = transactions.stream()
                     .filter(t ->
-                            !t.date().isBefore(startDateTime)
-                                    && !t.date().isAfter(endDateTime))
+                            !t.date().isBefore(finalWeekStart)
+                                    && !t.date().isAfter(finalWeekEnd))
                     .filter(t -> "EXPENSE".equals(t.type()))
                     .map(t -> t.amount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -166,14 +161,14 @@ public class DashboardHistoryService {
                 "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
         };
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
         int currentYear = today.getYear();
 
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        LocalDate.of(currentYear, 1, 1).atStartOfDay(),
-                        today.atTime(LocalTime.MAX)
+                        LocalDate.of(currentYear, 1, 1),
+                        today
                 );
 
         for (int month = 1; month <= 12; month++) {
@@ -189,14 +184,12 @@ public class DashboardHistoryService {
             if (monthEnd.isAfter(today)) {
                 monthEnd = today;
             }
-
-            LocalDateTime startDateTime = monthStart.atStartOfDay();
-            LocalDateTime endDateTime = monthEnd.atTime(LocalTime.MAX);
+            LocalDate finalMonthEnd = monthEnd;
 
             BigDecimal monthExpenses = transactions.stream()
                     .filter(t ->
-                            !t.date().isBefore(startDateTime)
-                                    && !t.date().isAfter(endDateTime))
+                            !t.date().isBefore(monthStart)
+                                    && !t.date().isAfter(finalMonthEnd))
                     .filter(t -> "EXPENSE".equals(t.type()))
                     .map(t -> t.amount().abs())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);

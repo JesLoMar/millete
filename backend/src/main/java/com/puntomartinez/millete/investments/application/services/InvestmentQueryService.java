@@ -8,14 +8,13 @@ import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentDistri
 import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentEvolutionUseCase;
 import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentMetricsUseCase;
 import com.puntomartinez.millete.investments.domain.ports.out.InvestmentQueryPort;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -40,11 +39,14 @@ public class InvestmentQueryService implements
     };
 
     private final InvestmentQueryPort investmentQueryPort;
+    private final TimeProvider timeProvider;
 
     public InvestmentQueryService(
-            InvestmentQueryPort investmentQueryPort
+            InvestmentQueryPort investmentQueryPort,
+            TimeProvider timeProvider
     ) {
         this.investmentQueryPort = investmentQueryPort;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -55,8 +57,8 @@ public class InvestmentQueryService implements
         List<InvestmentQueryPort.InvestmentData> investments =
                 investmentQueryPort.findAllByUserId(userId);
 
-        LocalDateTime[] currentRange = getDateRange(period);
-        LocalDateTime[] previousRange = getPreviousPeriod(period);
+        LocalDate[] currentRange = getDateRange(period);
+        LocalDate[] previousRange = getPreviousPeriod(period);
 
         BigDecimal currentValue =
                 calculatePortfolioValue(
@@ -205,7 +207,7 @@ public class InvestmentQueryService implements
                 "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"
         };
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
         LocalDate weekStart =
                 today.with(DayOfWeek.MONDAY);
 
@@ -222,7 +224,7 @@ public class InvestmentQueryService implements
             data.add(
                     getPortfolioValueAtDate(
                             investments,
-                            day.atTime(LocalTime.MAX)
+                            day
                     )
             );
         }
@@ -240,7 +242,7 @@ public class InvestmentQueryService implements
         List<String> labels = new ArrayList<>();
         List<BigDecimal> data = new ArrayList<>();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
 
         DateTimeFormatter fmt =
                 DateTimeFormatter.ofPattern(
@@ -265,7 +267,7 @@ public class InvestmentQueryService implements
                                             TemporalAdjusters
                                                     .lastDayOfMonth()
                                     )
-                                    .atTime(LocalTime.MAX)
+                                    
                     )
             );
         }
@@ -288,7 +290,7 @@ public class InvestmentQueryService implements
                 "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
         };
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
 
         for (int m = 1; m <= 12; m++) {
             LocalDate monthStart =
@@ -314,7 +316,7 @@ public class InvestmentQueryService implements
                                             TemporalAdjusters
                                                     .lastDayOfMonth()
                                     )
-                                    .atTime(LocalTime.MAX)
+                                    
                     )
             );
         }
@@ -328,7 +330,7 @@ public class InvestmentQueryService implements
 
     private BigDecimal getPortfolioValueAtDate(
             List<InvestmentQueryPort.InvestmentData> investments,
-            LocalDateTime date
+            LocalDate date
     ) {
         BigDecimal total = BigDecimal.ZERO;
 
@@ -346,10 +348,10 @@ public class InvestmentQueryService implements
         return total;
     }
 
-    private LocalDateTime[] getDateRange(
+    private LocalDate[] getDateRange(
             String period
     ) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
 
         return switch (period.toLowerCase()) {
             case "week" -> {
@@ -359,9 +361,9 @@ public class InvestmentQueryService implements
                 LocalDate end =
                         start.plusDays(6);
 
-                yield new LocalDateTime[]{
-                        start.atStartOfDay(),
-                        end.atTime(LocalTime.MAX)
+                yield new LocalDate[]{
+                        start,
+                        end
                 };
             }
 
@@ -375,9 +377,9 @@ public class InvestmentQueryService implements
                                         .lastDayOfMonth()
                         );
 
-                yield new LocalDateTime[]{
-                        start.atStartOfDay(),
-                        end.atTime(LocalTime.MAX)
+                yield new LocalDate[]{
+                        start,
+                        end
                 };
             }
 
@@ -391,9 +393,9 @@ public class InvestmentQueryService implements
                                         .lastDayOfYear()
                         );
 
-                yield new LocalDateTime[]{
-                        start.atStartOfDay(),
-                        end.atTime(LocalTime.MAX)
+                yield new LocalDate[]{
+                        start,
+                        end
                 };
             }
 
@@ -404,13 +406,13 @@ public class InvestmentQueryService implements
         };
     }
 
-    private LocalDateTime[] getPreviousPeriod(
+    private LocalDate[] getPreviousPeriod(
             String period
     ) {
-        LocalDateTime[] currentRange =
+        LocalDate[] currentRange =
                 getDateRange(period);
 
-        LocalDateTime previousStart =
+        LocalDate previousStart =
                 switch (period.toLowerCase()) {
                     case "week" ->
                             currentRange[0].minusWeeks(1);
@@ -427,10 +429,10 @@ public class InvestmentQueryService implements
                             );
                 };
 
-        LocalDateTime previousEnd =
-                currentRange[0].minusNanos(1);
+        LocalDate previousEnd =
+                currentRange[0].minusDays(1);
 
-        return new LocalDateTime[]{
+        return new LocalDate[]{
                 previousStart,
                 previousEnd
         };
@@ -477,7 +479,7 @@ public class InvestmentQueryService implements
 
     private BigDecimal calculatePortfolioValue(
             List<InvestmentQueryPort.InvestmentData> investments,
-            LocalDateTime date
+            LocalDate date
     ) {
         BigDecimal total = BigDecimal.ZERO;
 
@@ -497,7 +499,7 @@ public class InvestmentQueryService implements
 
     private BigDecimal calculateInvestedCapital(
             List<InvestmentQueryPort.InvestmentData> investments,
-            LocalDateTime date
+            LocalDate date
     ) {
         BigDecimal total = BigDecimal.ZERO;
 

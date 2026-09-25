@@ -1,12 +1,13 @@
 package com.puntomartinez.millete.plannedtransactions.domain.model;
 
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -25,8 +26,8 @@ public class PlannedTransaction {
     private Integer frequencyInterval;
     private LocalDate startDate;
     private LocalDate endDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
     private LocalDate lastExecutedDate;
     private int failureCount;
@@ -42,6 +43,7 @@ public class PlannedTransaction {
     }
 
     public static PlannedTransaction create(
+            TimeProvider timeProvider,
             UUID userId,
             UUID categoryId,
             BigDecimal amount,
@@ -61,7 +63,7 @@ public class PlannedTransaction {
         validateStartDate(startDate);
         validateEndDate(startDate, endDate);
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.now();
 
         PlannedTransaction plannedTransaction =
                 new PlannedTransaction();
@@ -95,8 +97,8 @@ public class PlannedTransaction {
             Integer frequencyInterval,
             LocalDate startDate,
             LocalDate endDate,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active,
             LocalDate lastExecutedDate,
             int failureCount
@@ -144,6 +146,7 @@ public class PlannedTransaction {
     }
 
     public void updateDetails(
+            TimeProvider timeProvider,
             BigDecimal amount,
             TransactionType type,
             String description,
@@ -163,10 +166,10 @@ public class PlannedTransaction {
         this.frequencyType = frequencyType;
         this.frequencyInterval = frequencyInterval;
         this.categoryId = categoryId;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
-    public void markAsExecuted(LocalDate executionDate) {
+    public void markAsExecuted(TimeProvider timeProvider, LocalDate executionDate) {
         if (executionDate == null) {
             throw new InvalidInputException(
                     "La fecha de ejecución es obligatoria"
@@ -182,27 +185,27 @@ public class PlannedTransaction {
                     "La fecha de ejecución no puede ser posterior a la fecha de fin"
             );
         }
-
         this.lastExecutedDate = executionDate;
-        this.modifiedAt = LocalDateTime.now();
+        this.failureCount = 0;
+        this.modifiedAt = timeProvider.now();
     }
 
-    public boolean incrementFailureCount() {
+    public boolean incrementFailureCount(TimeProvider timeProvider) {
         this.failureCount++;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
         return this.failureCount >= MAX_CONSECUTIVE_FAILURES;
     }
 
-    public void resetFailureCount() {
+    public void resetFailureCount(TimeProvider timeProvider) {
         if (this.failureCount > 0) {
             this.failureCount = 0;
-            this.modifiedAt = LocalDateTime.now();
+            this.modifiedAt = timeProvider.now();
         }
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
     private static void validateId(UUID id) {

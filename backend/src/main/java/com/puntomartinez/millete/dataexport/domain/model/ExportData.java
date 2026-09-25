@@ -21,7 +21,7 @@ public record ExportData(
     public record TransactionExportRow(
             String categoryName,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             String type,
             String description
     ) {}

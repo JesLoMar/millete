@@ -3,21 +3,21 @@ package com.puntomartinez.millete.users.domain.exception;
 import com.puntomartinez.millete.shared.domain.exception.DomainException;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 public class AccountLockedException extends DomainException {
 
-    private final LocalDateTime lockTime;
+    private final Instant lockTime;
     private final long remainingMinutes;
 
-    public AccountLockedException(LocalDateTime lockTime, long remainingMinutes) {
+    public AccountLockedException(Instant lockTime, long remainingMinutes) {
         super(String.format(
-                "La cuenta se encuentra temporalmente bloqueada. Inténtalo de nuevo en %d minutos.",
+                "La cuenta se encuentra temporalmente bloqueada. "
+                        + "Inténtalo de nuevo en %d minutos.",
                 remainingMinutes
         ));
         this.lockTime = lockTime;
         this.remainingMinutes = remainingMinutes;
     }
-
 }

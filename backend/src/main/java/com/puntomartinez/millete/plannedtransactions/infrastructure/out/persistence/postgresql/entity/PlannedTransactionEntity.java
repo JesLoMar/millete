@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -64,10 +64,10 @@ public class PlannedTransactionEntity {
             nullable = false,
             updatable = false
     )
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+    private Instant modifiedAt;
 
     @Column(name = "active", nullable = false)
     private boolean active;

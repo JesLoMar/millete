@@ -3,7 +3,7 @@ package com.puntomartinez.millete.users.domain.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -15,8 +15,8 @@ public class UserSession {
     private UUID id;
     private UUID userId;
     private String channel;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     public UserSession() {

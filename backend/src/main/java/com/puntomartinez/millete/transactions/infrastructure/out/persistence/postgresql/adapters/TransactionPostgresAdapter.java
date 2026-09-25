@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component;
 
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +39,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             UUID userId,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         return (root, _, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -115,8 +116,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     @Override
     public List<Transaction> findByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     ) {
         return repository.findByUserIdAndDateBetween(
                         userId,
@@ -147,7 +148,7 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     public void clearCategoryFromActiveTransactions(
             UUID categoryId,
             UUID userId,
-            LocalDateTime modifiedAt
+            Instant modifiedAt
     ) {
         repository.clearCategoryFromActiveTransactions(
                 categoryId,
@@ -163,8 +164,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             int size,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         Specification<TransactionEntity> spec =
                 buildSpecification(
@@ -195,8 +196,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
             UUID userId,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         return repository.count(
                 buildSpecification(
@@ -212,8 +213,8 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     @Override
     public TransactionAggregates getAggregatesByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     ) {
         List<Object[]> results =
                 repository.getAggregatesByUserIdAndDateBetween(

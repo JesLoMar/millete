@@ -10,6 +10,7 @@ import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCas
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -30,14 +31,17 @@ public class CategoryService implements
 
     private final CategoryRepository categoryRepository;
     private final UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase;
+    private final TimeProvider timeProvider;
 
     public CategoryService(
             CategoryRepository categoryRepository,
-            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase
+            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase,
+            TimeProvider timeProvider
     ) {
         this.categoryRepository = categoryRepository;
         this.unassignCategoryFromTransactionsUseCase =
                 unassignCategoryFromTransactionsUseCase;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -53,6 +57,7 @@ public class CategoryService implements
         }
 
         Category category = Category.create(
+                timeProvider,
                 command.userId(),
                 command.name(),
                 command.color(),
@@ -133,6 +138,7 @@ public class CategoryService implements
         }
 
         category.updateDetails(
+                timeProvider,
                 command.name(),
                 command.color(),
                 command.budgetLimit()
@@ -161,7 +167,7 @@ public class CategoryService implements
     ) {
         Category category = getCategory(id, userId);
 
-        category.deactivate();
+        category.deactivate(timeProvider);
         categoryRepository.save(category);
 
         unassignCategoryFromTransactionsUseCase.unassignCategory(

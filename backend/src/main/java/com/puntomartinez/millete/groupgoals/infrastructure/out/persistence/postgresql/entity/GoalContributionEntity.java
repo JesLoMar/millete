@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -43,13 +43,13 @@ public class GoalContributionEntity {
     private String type;
 
     @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    private Instant date;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+    private Instant modifiedAt;
 
     @Column(name = "active", nullable = false)
     private boolean active;

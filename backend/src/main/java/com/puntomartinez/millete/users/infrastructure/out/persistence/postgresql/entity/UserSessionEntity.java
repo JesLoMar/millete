@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 @Entity
 @Table(name = "user_sessions")
@@ -19,9 +19,9 @@ public class UserSessionEntity {
     @Column(name = "channel", nullable = false, length = 20)
     private String channel;
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     @Column(name = "active", nullable = false)
     private boolean active;
     @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+    private Instant modifiedAt;
 }

@@ -1,9 +1,11 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record TransactionSnapshot(
@@ -20,7 +22,8 @@ public record TransactionSnapshot(
         BigDecimal amount,
 
         @JsonProperty("date")
-        LocalDateTime date,
+        @JsonDeserialize(using = LegacyCompatibleLocalDateDeserializer.class)
+        LocalDate date,
 
         @JsonProperty("type")
         String type,
@@ -29,10 +32,12 @@ public record TransactionSnapshot(
         String description,
 
         @JsonProperty("createdAt")
-        LocalDateTime createdAt,
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant createdAt,
 
         @JsonProperty("modifiedAt")
-        LocalDateTime modifiedAt,
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant modifiedAt,
 
         @JsonProperty("active")
         boolean active

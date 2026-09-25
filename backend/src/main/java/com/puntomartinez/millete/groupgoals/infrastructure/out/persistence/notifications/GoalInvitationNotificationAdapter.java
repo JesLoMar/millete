@@ -1,4 +1,4 @@
-package com.puntomartinez.millete.groupgoals.infrastructure.out.notifications;
+package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.notifications;
 
 import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationNotificationPort;
@@ -8,7 +8,6 @@ import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsU
 import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.Map;
 import java.util.UUID;
 

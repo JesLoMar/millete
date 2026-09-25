@@ -3,15 +3,19 @@ package com.puntomartinez.millete.notifications.application.services;
 import com.puntomartinez.millete.notifications.domain.model.Notification;
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
-import com.puntomartinez.millete.notifications.domain.ports.in.*;
+import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase.CreateNotificationCommand;
+import com.puntomartinez.millete.notifications.domain.ports.in.CreateNotificationUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.DeleteNotificationUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsReadUseCase;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,10 +35,12 @@ public class NotificationService implements
     private static final int MAX_PAGE_SIZE = 100;
 
     private final NotificationRepository notificationRepository;
+    private final TimeProvider timeProvider;
 
     @Override
     public Notification create(CreateNotificationCommand command) {
         Notification notification = Notification.create(
+                timeProvider,
                 command.userId(),
                 command.type(),
                 command.title(),
@@ -61,7 +67,7 @@ public class NotificationService implements
                 .findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
                         userId,
                         safeLimit,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 );
     }
 
@@ -79,7 +85,7 @@ public class NotificationService implements
                         userId,
                         page,
                         size,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 );
     }
 
@@ -89,7 +95,7 @@ public class NotificationService implements
         return notificationRepository
                 .countUnreadActiveAndNotExpiredByUserId(
                         userId,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 );
     }
 
@@ -119,7 +125,7 @@ public class NotificationService implements
                 .findActiveAndNotExpiredByIdAndUserId(
                         notificationId,
                         userId,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -143,7 +149,7 @@ public class NotificationService implements
                 .findActiveAndNotExpiredByIdAndUserId(
                         notificationId,
                         userId,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 )
                 .orElse(null);
 
@@ -151,7 +157,7 @@ public class NotificationService implements
             return false;
         }
 
-        boolean changed = notification.markAsActioned();
+        boolean changed = notification.markAsActioned(timeProvider);
 
         if (changed) {
             notificationRepository.save(notification);
@@ -169,7 +175,7 @@ public class NotificationService implements
                 .findActiveAndNotExpiredByIdAndUserId(
                         notificationId,
                         userId,
-                        LocalDateTime.now()
+                        timeProvider.now()
                 )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -178,6 +184,7 @@ public class NotificationService implements
                 );
 
         notification.softDelete();
+
         notificationRepository.save(notification);
     }
 

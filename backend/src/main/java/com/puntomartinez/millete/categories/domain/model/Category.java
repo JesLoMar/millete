@@ -1,9 +1,10 @@
 package com.puntomartinez.millete.categories.domain.model;
 
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -14,8 +15,8 @@ public class Category {
     private String name;
     private String color;
     private BigDecimal budgetLimit;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private Category(
@@ -24,8 +25,8 @@ public class Category {
             String name,
             String color,
             BigDecimal budgetLimit,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateId(id);
@@ -47,12 +48,13 @@ public class Category {
     }
 
     public static Category create(
+            TimeProvider timeProvider,
             UUID userId,
             String name,
             String color,
             BigDecimal budgetLimit
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.now();
 
         return new Category(
                 UUID.randomUUID(),
@@ -72,8 +74,8 @@ public class Category {
             String name,
             String color,
             BigDecimal budgetLimit,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         return new Category(
@@ -89,6 +91,7 @@ public class Category {
     }
 
     public void updateDetails(
+            TimeProvider timeProvider,
             String name,
             String color,
             BigDecimal budgetLimit
@@ -100,16 +103,16 @@ public class Category {
         this.name = name;
         this.color = color;
         this.budgetLimit = budgetLimit;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         if (!this.active) {
             return;
         }
 
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
     private static void validateId(UUID id) {
@@ -159,7 +162,7 @@ public class Category {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new IllegalArgumentException(
                     "La fecha de creación es obligatoria"
@@ -167,7 +170,7 @@ public class Category {
         }
     }
 
-    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+    private static void validateModifiedAt(Instant modifiedAt) {
         if (modifiedAt == null) {
             throw new IllegalArgumentException(
                     "La fecha de modificación es obligatoria"

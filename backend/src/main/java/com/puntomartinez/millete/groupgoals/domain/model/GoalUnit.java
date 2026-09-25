@@ -1,9 +1,10 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public class GoalUnit {
@@ -14,8 +15,8 @@ public class GoalUnit {
     private String name;
     private BigDecimal monthlyTarget;
     private DistributionMode distributionMode;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private GoalUnit(
@@ -23,8 +24,8 @@ public class GoalUnit {
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateId(id);
@@ -44,11 +45,12 @@ public class GoalUnit {
     }
 
     public static GoalUnit create(
+            TimeProvider timeProvider,
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.now();
         return new GoalUnit(
                 UUID.randomUUID(),
                 name,
@@ -65,8 +67,8 @@ public class GoalUnit {
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         return new GoalUnit(
@@ -76,6 +78,7 @@ public class GoalUnit {
     }
 
     public void updateDetails(
+            TimeProvider timeProvider,
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode
@@ -92,15 +95,15 @@ public class GoalUnit {
             validateDistributionMode(distributionMode);
             this.distributionMode = distributionMode;
         }
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         if (!this.active) {
             return;
         }
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.now();
     }
 
     // ── Validaciones ──────────────────────────────────────────
@@ -150,7 +153,7 @@ public class GoalUnit {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación es obligatoria"
@@ -158,7 +161,7 @@ public class GoalUnit {
         }
     }
 
-    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+    private static void validateModifiedAt(Instant modifiedAt) {
         if (modifiedAt == null) {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"
@@ -172,7 +175,7 @@ public class GoalUnit {
     public String getName() { return name; }
     public BigDecimal getMonthlyTarget() { return monthlyTarget; }
     public DistributionMode getDistributionMode() { return distributionMode; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getModifiedAt() { return modifiedAt; }
     public boolean isActive() { return active; }
 }

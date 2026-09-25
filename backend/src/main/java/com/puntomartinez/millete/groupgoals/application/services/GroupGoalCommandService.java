@@ -14,11 +14,12 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,23 +38,27 @@ public class GroupGoalCommandService implements
     private final GoalMemberRepository goalMemberRepository;
     private final GoalContributionRepository goalContributionRepository;
     private final GoalInvitationRepository goalInvitationRepository;
+    private final TimeProvider timeProvider;
 
     public GroupGoalCommandService(
             GoalUnitRepository goalUnitRepository,
             GoalMemberRepository goalMemberRepository,
             GoalContributionRepository goalContributionRepository,
-            GoalInvitationRepository goalInvitationRepository
+            GoalInvitationRepository goalInvitationRepository,
+            TimeProvider timeProvider
     ) {
         this.goalUnitRepository = goalUnitRepository;
         this.goalMemberRepository = goalMemberRepository;
         this.goalContributionRepository = goalContributionRepository;
         this.goalInvitationRepository = goalInvitationRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     @Transactional
     public GoalUnit create(CreateGoalUnitCommand command) {
         GoalUnit goal = GoalUnit.create(
+                timeProvider,
                 command.name(),
                 command.monthlyTarget(),
                 command.distributionMode()
@@ -62,6 +67,7 @@ public class GroupGoalCommandService implements
         GoalUnit saved = goalUnitRepository.save(goal);
 
         GoalMember admin = GoalMember.create(
+                timeProvider,
                 saved.getId(),
                 command.creatorUserId(),
                 GoalRole.ADMIN,
@@ -83,6 +89,7 @@ public class GroupGoalCommandService implements
         requireAdmin(goalId, userId);
 
         goal.updateDetails(
+                timeProvider,
                 command.name(),
                 command.monthlyTarget(),
                 command.distributionMode()
@@ -98,7 +105,7 @@ public class GroupGoalCommandService implements
         requireAdmin(goalId, userId);
 
         goalUnitRepository.findById(goalId).ifPresent(goal -> {
-            goal.deactivate();
+            goal.deactivate(timeProvider);
             goalUnitRepository.save(goal);
         });
 
@@ -136,6 +143,7 @@ public class GroupGoalCommandService implements
         validateDistributionConsistency(goalId, command);
 
         member.updateDetails(
+                timeProvider,
                 command.role(),
                 command.salary(),
                 command.customPercentage()
@@ -165,7 +173,7 @@ public class GroupGoalCommandService implements
 
         preventLastAdminRemoval(goalId, member);
 
-        member.deactivate();
+        member.deactivate(timeProvider);
         goalMemberRepository.save(member);
     }
 
@@ -180,11 +188,12 @@ public class GroupGoalCommandService implements
         requireActiveMember(goalId, userId);
 
         GoalContribution contribution = GoalContribution.create(
+                timeProvider,
                 goalId,
                 userId,
                 command.amount(),
                 ContributionType.DEPOSIT,
-                LocalDateTime.now()
+                timeProvider.now()
         );
 
         goalContributionRepository.save(contribution);
@@ -201,11 +210,12 @@ public class GroupGoalCommandService implements
         requireActiveMember(goalId, userId);
 
         GoalContribution contribution = GoalContribution.create(
+                timeProvider,
                 goalId,
                 userId,
                 command.amount(),
                 ContributionType.WITHDRAWAL,
-                LocalDateTime.now()
+                timeProvider.now()
         );
 
         goalContributionRepository.save(contribution);
@@ -232,7 +242,7 @@ public class GroupGoalCommandService implements
 
         preventLastAdminRemoval(goalId, member);
 
-        member.deactivate();
+        member.deactivate(timeProvider);
         goalMemberRepository.save(member);
     }
 

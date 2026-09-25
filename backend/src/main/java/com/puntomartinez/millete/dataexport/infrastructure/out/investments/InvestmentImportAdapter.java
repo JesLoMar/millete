@@ -50,7 +50,7 @@ public class InvestmentImportAdapter
                             Investment.InvestmentType.valueOf(
                                     investment.type()
                             ),
-                            investment.purchaseDate().atStartOfDay(),
+                            investment.purchaseDate(),
                             investment.createdAt(),
                             investment.modifiedAt(),
                             investment.active()

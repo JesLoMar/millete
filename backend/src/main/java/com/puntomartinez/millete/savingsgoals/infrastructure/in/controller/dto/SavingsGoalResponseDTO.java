@@ -4,7 +4,7 @@ import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record SavingsGoalResponseDTO(
@@ -16,7 +16,7 @@ public record SavingsGoalResponseDTO(
         LocalDate deadline,
         GoalPriority priority,
         String link,
-        LocalDateTime createdAt,
-        LocalDateTime modifiedAt,
+        Instant createdAt,
+        Instant modifiedAt,
         boolean active
 ) {}

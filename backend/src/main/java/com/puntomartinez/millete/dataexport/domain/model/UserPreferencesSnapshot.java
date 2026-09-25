@@ -1,8 +1,9 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record UserPreferencesSnapshot(
@@ -16,9 +17,11 @@ public record UserPreferencesSnapshot(
         String preferencesJson,
 
         @JsonProperty("createdAt")
-        LocalDateTime createdAt,
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant createdAt,
 
         @JsonProperty("modifiedAt")
-        LocalDateTime modifiedAt
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant modifiedAt
 ) {
 }

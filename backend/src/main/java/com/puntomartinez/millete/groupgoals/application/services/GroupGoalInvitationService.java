@@ -18,6 +18,7 @@ import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationExcep
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,19 +39,22 @@ public class GroupGoalInvitationService implements
     private final GoalUnitRepository goalUnitRepository;
     private final UserLookupPort userLookupPort;
     private final GoalInvitationNotificationPort notificationPort;
+    private final TimeProvider timeProvider;
 
     public GroupGoalInvitationService(
             GoalInvitationRepository goalInvitationRepository,
             GoalMemberRepository goalMemberRepository,
             GoalUnitRepository goalUnitRepository,
             UserLookupPort userLookupPort,
-            GoalInvitationNotificationPort notificationPort
+            GoalInvitationNotificationPort notificationPort,
+            TimeProvider timeProvider
     ) {
         this.goalInvitationRepository = goalInvitationRepository;
         this.goalMemberRepository = goalMemberRepository;
         this.goalUnitRepository = goalUnitRepository;
         this.userLookupPort = userLookupPort;
         this.notificationPort = notificationPort;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -108,6 +112,7 @@ public class GroupGoalInvitationService implements
                 });
 
         GoalInvitation invitation = GoalInvitation.create(
+                timeProvider,
                 goalId,
                 inviterUserId,
                 invitedUserId
@@ -154,7 +159,7 @@ public class GroupGoalInvitationService implements
         GoalInvitation invitation = getInvitation(invitationId);
         validateInvitedUser(invitation, userId);
 
-        if (!invitation.isAcceptable()) {
+        if (!invitation.isAcceptable(timeProvider)) {
             throw new ForbiddenOperationException(
                     "La invitación ya no es válida"
             );
@@ -177,6 +182,7 @@ public class GroupGoalInvitationService implements
 
         if (existingMember == null) {
             GoalMember member = GoalMember.create(
+                    timeProvider,
                     invitation.getGoalId(),
                     userId,
                     GoalRole.MEMBER,
@@ -189,11 +195,11 @@ public class GroupGoalInvitationService implements
                         "El usuario ya pertenece a este objetivo"
                 );
             }
-            existingMember.activate();
+            existingMember.activate(timeProvider);
             goalMemberRepository.save(existingMember);
         }
 
-        invitation.markAsAccepted();
+        invitation.markAsAccepted(timeProvider);
         GoalInvitation savedInvitation =
                 goalInvitationRepository.save(invitation);
 
@@ -217,7 +223,7 @@ public class GroupGoalInvitationService implements
             );
         }
 
-        invitation.markAsRejected();
+        invitation.markAsRejected(timeProvider);
         goalInvitationRepository.save(invitation);
 
         notificationPort.markInvitationNotificationAsActioned(

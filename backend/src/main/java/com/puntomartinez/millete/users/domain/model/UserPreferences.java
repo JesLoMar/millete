@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.users.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -10,8 +10,8 @@ public class UserPreferences {
     private UUID id;
     private UUID userId;
     private Map<String, Object> preferences;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
 
     public UserPreferences() {
         this.preferences = new HashMap<>();
@@ -55,19 +55,19 @@ public class UserPreferences {
                 : new HashMap<>();
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getModifiedAt() {
+    public Instant getModifiedAt() {
         return modifiedAt;
     }
 
-    public void setModifiedAt(LocalDateTime modifiedAt) {
+    public void setModifiedAt(Instant modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
 }

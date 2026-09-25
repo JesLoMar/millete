@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ public class DashboardCategoryService {
             UUID userId,
             String period
     ) {
-        LocalDateTime[] range =
+        LocalDate[] range =
                 dashboardPeriodService.getDateRange(period);
 
         List<TransactionQueryPort.TransactionData> expenses =

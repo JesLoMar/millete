@@ -32,10 +32,5 @@ public record CreateSavingsGoalCommand(
                     "targetAmount debe ser mayor que cero."
             );
         }
-        if (deadline != null && !deadline.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException(
-                    "deadline debe ser posterior a hoy."
-            );
-        }
     }
 }

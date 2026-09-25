@@ -5,7 +5,7 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,8 +23,8 @@ public class TransactionQueryPostgresAdapter implements TransactionQueryPort {
     @Override
     public List<TransactionData> findByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     ) {
         return transactionRepository
                 .findByUserIdAndDateBetween(userId, start, end)

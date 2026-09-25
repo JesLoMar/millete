@@ -12,6 +12,7 @@ import com.puntomartinez.millete.dataexport.domain.model.TransactionSnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.*;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ public class DataExportService {
     private final FileZipExportPort fileZipExportPort;
     private final FileCsvExportPort fileCsvExportPort;
     private final FilePdfExportPort filePdfExportPort;
+    private final TimeProvider timeProvider;
 
     @Value("${app.version:0.0.1}")
     private String appVersion;
@@ -55,7 +55,8 @@ public class DataExportService {
             FileZipExportPort fileZipExportPort,
             FileCsvExportPort fileCsvExportPort,
             @Qualifier("pdfFileExportAdapter")
-            FilePdfExportPort filePdfExportPort) {
+            FilePdfExportPort filePdfExportPort,
+            TimeProvider timeProvider) {
 
         this.categoryExportPort = categoryExportPort;
         this.transactionExportPort = transactionExportPort;
@@ -66,6 +67,7 @@ public class DataExportService {
         this.fileZipExportPort = fileZipExportPort;
         this.fileCsvExportPort = fileCsvExportPort;
         this.filePdfExportPort = filePdfExportPort;
+        this.timeProvider = timeProvider;
     }
 
     public UserDataSnapshot exportAllUserData(UUID userId) {
@@ -96,7 +98,7 @@ public class DataExportService {
                 new UserDataSnapshot(
                         new UserDataSnapshot.SnapshotMetadata(
                                 ExportVersion.CURRENT.toString(),
-                                LocalDateTime.now(),
+                                timeProvider.now(),
                                 appVersion
                         ),
                         categories,
@@ -229,18 +231,12 @@ public class DataExportService {
         LocalDate endDate = period.getEndDate();
         LocalDate startDate = period.getStartDate();
 
-        LocalDateTime startDateTime =
-                startDate.atStartOfDay();
-
-        LocalDateTime endDateTime =
-                endDate.atTime(LocalTime.MAX);
-
         List<TransactionSnapshot> periodTransactions =
                 transactionExportPort
                         .findByUserIdAndDateBetween(
                                 userId,
-                                startDateTime,
-                                endDateTime
+                                startDate,
+                                endDate
                         )
                         .stream()
                         .filter(TransactionSnapshot::active)

@@ -30,7 +30,7 @@ public record PdfExportData(
     ) {}
 
     public record TransactionRow(
-            LocalDateTime date,
+            LocalDate date,
             String categoryName,
             String description,
             String type,

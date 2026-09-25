@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -21,10 +21,10 @@ public class TransactionMetricsService implements GetTransactionMetricsUseCase {
     @Override
     @Transactional(readOnly = true)
     public MetricsResult getMetrics(MetricsCommand command) {
-        LocalDateTime[] currentRange =
+        LocalDate[] currentRange =
                 transactionPeriodService.getDateRange(command.period());
 
-        LocalDateTime[] previousRange =
+        LocalDate[] previousRange =
                 transactionPeriodService.getPreviousPeriod(command.period());
 
         TransactionAggregates currentAggregates =

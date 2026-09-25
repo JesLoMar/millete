@@ -4,7 +4,8 @@ import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,8 +22,8 @@ public interface TransactionRepository {
 
     List<Transaction> findByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     );
 
     List<Transaction> findRecentByUserId(
@@ -33,7 +34,7 @@ public interface TransactionRepository {
     void clearCategoryFromActiveTransactions(
             UUID categoryId,
             UUID userId,
-            LocalDateTime modifiedAt
+            Instant modifiedAt
     );
 
     List<Transaction> findAllByUserId(
@@ -42,22 +43,22 @@ public interface TransactionRepository {
             int size,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     );
 
     long countByUserIdAndFilters(
             UUID userId,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     );
 
     TransactionAggregates getAggregatesByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     );
 
     record TransactionAggregates(

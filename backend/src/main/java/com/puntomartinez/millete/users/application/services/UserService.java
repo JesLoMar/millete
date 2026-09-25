@@ -10,9 +10,9 @@ import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedExc
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -21,15 +21,18 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     private final UserRepository userRepository;
     private final PasswordHasherPort passwordHasher;
     private final AccountLockService accountLockService;
+    private final TimeProvider timeProvider;
 
     private final String dummyPasswordHash;
 
     public UserService(UserRepository userRepository,
                        PasswordHasherPort passwordHasher,
-                       AccountLockService accountLockService) {
+                       AccountLockService accountLockService,
+                       TimeProvider timeProvider) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.accountLockService = accountLockService;
+        this.timeProvider = timeProvider;
         this.dummyPasswordHash = passwordHasher.hashPassword(UUID.randomUUID().toString());
     }
 
@@ -54,7 +57,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
             throw new ResourceAlreadyExistsException("El usuario o el email ya están registrados.");
         }
         String encryptedPassword = passwordHasher.hashPassword(command.rawPassword());
-        LocalDateTime now = LocalDateTime.now();
+        var now = timeProvider.now();
         User newUser = new User(
                 UUID.randomUUID(),
                 hasUsername ? command.username() : null,

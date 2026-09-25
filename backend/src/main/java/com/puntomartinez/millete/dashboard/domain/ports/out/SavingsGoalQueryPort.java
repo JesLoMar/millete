@@ -2,7 +2,7 @@ package com.puntomartinez.millete.dashboard.domain.ports.out;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +17,7 @@ public interface SavingsGoalQueryPort {
             BigDecimal currentAmount,
             LocalDate deadline,
             String priority,
-            LocalDateTime createdAt
+            Instant createdAt
     ) {
     }
 }

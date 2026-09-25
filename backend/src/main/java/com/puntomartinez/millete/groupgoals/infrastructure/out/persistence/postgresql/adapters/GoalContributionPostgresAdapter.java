@@ -7,11 +7,12 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRep
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalContributionEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalContributionEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalContributionRepository;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,13 +22,16 @@ public class GoalContributionPostgresAdapter
 
     private final JpaGoalContributionRepository repository;
     private final GoalContributionEntityMapper mapper;
+    private final TimeProvider timeProvider;
 
     public GoalContributionPostgresAdapter(
             JpaGoalContributionRepository repository,
-            GoalContributionEntityMapper mapper
+            GoalContributionEntityMapper mapper,
+            TimeProvider timeProvider
     ) {
         this.repository = repository;
         this.mapper = mapper;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -82,6 +86,6 @@ public class GoalContributionPostgresAdapter
 
     @Override
     public void deactivateByGoalId(UUID goalId) {
-        repository.deactivateByGoalId(goalId, LocalDateTime.now());
+        repository.deactivateByGoalId(goalId, timeProvider.now());
     }
 }

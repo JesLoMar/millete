@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.UserPreferencesImportPort;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.users.domain.model.UserPreferences;
 import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,12 +21,15 @@ public class UserPreferencesImportAdapter
 
     private final UserPreferencesRepository userPreferencesRepository;
     private final ObjectMapper objectMapper;
+    private final TimeProvider timeProvider;
 
     public UserPreferencesImportAdapter(
-            UserPreferencesRepository userPreferencesRepository
+            UserPreferencesRepository userPreferencesRepository,
+            TimeProvider timeProvider
     ) {
         this.userPreferencesRepository = userPreferencesRepository;
         this.objectMapper = new ObjectMapper();
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class UserPreferencesImportAdapter
 
         if (existing != null) {
             existing.setPreferences(preferencesMap);
-            existing.setModifiedAt(LocalDateTime.now());
+            existing.setModifiedAt(timeProvider.now());
             userPreferencesRepository.save(existing);
             return;
         }

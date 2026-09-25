@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.plannedtransactions.application.services;
 
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.CategoryExistencePort;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
@@ -16,6 +17,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class PlannedTransactionExecutionService {
+
+    private final TimeProvider timeProvider;
 
     private static final String RECURRING_SUFFIX = " (Recurring)";
     private static final int MAX_DESCRIPTION_LENGTH = 50;
@@ -35,30 +38,26 @@ public class PlannedTransactionExecutionService {
                 executionDate
         );
 
-        UUID effectiveCategoryId =
-                resolveCategoryId(template);
+        UUID effectiveCategoryId = resolveCategoryId(template);
 
         RegisterTransactionUseCase.RegisterTransactionCommand command =
                 new RegisterTransactionUseCase.RegisterTransactionCommand(
                         template.getUserId(),
                         effectiveCategoryId,
                         template.getAmount(),
-                        executionDate.atStartOfDay(),
+                        executionDate,
                         template.getType(),
-                        buildRecurringDescription(
-                                template.getDescription()
-                        )
+                        buildRecurringDescription(template.getDescription())
                 );
 
         registerTransactionUseCase.register(command);
-
-        template.markAsExecuted(executionDate);
+        // markAsExecuted ya resetea failureCount internamente
+        template.markAsExecuted(timeProvider, executionDate);
         plannedTransactionRepository.save(template);
     }
 
     private UUID resolveCategoryId(PlannedTransaction template) {
         UUID categoryId = template.getCategoryId();
-
         if (categoryId == null) {
             return null;
         }
@@ -82,9 +81,7 @@ public class PlannedTransactionExecutionService {
     }
 
     private String buildRecurringDescription(String description) {
-        int maxBaseLength =
-                MAX_DESCRIPTION_LENGTH - RECURRING_SUFFIX.length();
-
+        int maxBaseLength = MAX_DESCRIPTION_LENGTH - RECURRING_SUFFIX.length();
         String baseDescription =
                 description.length() > maxBaseLength
                         ? description.substring(0, maxBaseLength)

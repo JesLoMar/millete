@@ -1,13 +1,12 @@
 package com.puntomartinez.millete.notifications.domain.model;
 
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
-
-import java.time.LocalDateTime;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
 public class Notification {
-
     private static final int MAX_TITLE_LENGTH = 255;
 
     private final UUID id;
@@ -18,9 +17,9 @@ public class Notification {
     private final Map<String, Object> metadata;
     private boolean read;
     private final boolean actionRequired;
-    private LocalDateTime actionedAt;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime expiresAt;
+    private Instant actionedAt;
+    private final Instant createdAt;
+    private final Instant expiresAt;
     private boolean active;
 
     private Notification(
@@ -32,9 +31,9 @@ public class Notification {
             Map<String, Object> metadata,
             boolean read,
             boolean actionRequired,
-            LocalDateTime actionedAt,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt,
+            Instant actionedAt,
+            Instant createdAt,
+            Instant expiresAt,
             boolean active
     ) {
         validateId(id);
@@ -60,13 +59,14 @@ public class Notification {
     }
 
     public static Notification create(
+            TimeProvider timeProvider,
             UUID userId,
             NotificationType type,
             String title,
             String message,
             Map<String, Object> metadata,
             boolean actionRequired,
-            LocalDateTime expiresAt
+            Instant expiresAt
     ) {
         return new Notification(
                 UUID.randomUUID(),
@@ -78,7 +78,7 @@ public class Notification {
                 false,
                 actionRequired,
                 null,
-                LocalDateTime.now(),
+                timeProvider.now(),
                 expiresAt,
                 true
         );
@@ -93,9 +93,9 @@ public class Notification {
             Map<String, Object> metadata,
             boolean read,
             boolean actionRequired,
-            LocalDateTime actionedAt,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt,
+            Instant actionedAt,
+            Instant createdAt,
+            Instant expiresAt,
             boolean active
     ) {
         return new Notification(
@@ -118,23 +118,20 @@ public class Notification {
         if (this.read) {
             return false;
         }
-
         this.read = true;
         return true;
     }
 
-    public boolean markAsActioned() {
+    public boolean markAsActioned(TimeProvider timeProvider) {
         if (!this.actionRequired) {
             throw new InvalidInputException(
                     "La notificación no requiere ninguna acción."
             );
         }
-
         if (this.actionedAt != null) {
             return false;
         }
-
-        this.actionedAt = LocalDateTime.now();
+        this.actionedAt = timeProvider.now();
         return true;
     }
 
@@ -142,9 +139,9 @@ public class Notification {
         this.active = false;
     }
 
-    public boolean isExpired() {
+    public boolean isExpired(TimeProvider timeProvider) {
         return expiresAt != null
-                && LocalDateTime.now().isAfter(expiresAt);
+                && timeProvider.now().isAfter(expiresAt);
     }
 
     private static void validateId(UUID id) {
@@ -177,7 +174,6 @@ public class Notification {
                     "El título de la notificación es obligatorio."
             );
         }
-
         if (title.length() > MAX_TITLE_LENGTH) {
             throw new InvalidInputException(
                     "El título de la notificación no puede superar los "
@@ -186,7 +182,7 @@ public class Notification {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación de la notificación es obligatoria."
@@ -226,15 +222,15 @@ public class Notification {
         return actionRequired;
     }
 
-    public LocalDateTime getActionedAt() {
+    public Instant getActionedAt() {
         return actionedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 

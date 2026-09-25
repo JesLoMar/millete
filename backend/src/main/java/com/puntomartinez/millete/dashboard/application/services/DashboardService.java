@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +68,9 @@ public class DashboardService implements GetDashboardDataUseCase {
             UUID userId,
             String period
     ) {
-        LocalDateTime[] currentRange =
+        LocalDate[] currentRange =
                 dashboardPeriodService.getDateRange(period);
-        LocalDateTime[] previousRange =
+        LocalDate[] previousRange =
                 dashboardPeriodService.getPreviousPeriod(period);
 
         List<TransactionQueryPort.TransactionData> currentTransactions =

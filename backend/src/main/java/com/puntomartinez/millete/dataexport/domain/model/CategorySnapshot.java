@@ -1,9 +1,10 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record CategorySnapshot(
@@ -23,10 +24,12 @@ public record CategorySnapshot(
         BigDecimal budgetLimit,
 
         @JsonProperty("createdAt")
-        LocalDateTime createdAt,
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant createdAt,
 
         @JsonProperty("modifiedAt")
-        LocalDateTime modifiedAt,
+        @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
+        Instant modifiedAt,
 
         @JsonProperty("active")
         boolean active

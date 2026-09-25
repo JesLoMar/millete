@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,8 +37,8 @@ public interface SpringDataTransactionRepository
             """)
     List<TransactionEntity> findByUserIdAndDateBetween(
             @Param("userId") UUID userId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
     );
 
     List<TransactionEntity> findByUserIdAndActiveTrueOrderByDateDesc(
@@ -57,7 +58,7 @@ public interface SpringDataTransactionRepository
     void clearCategoryFromActiveTransactions(
             @Param("categoryId") UUID categoryId,
             @Param("userId") UUID userId,
-            @Param("modifiedAt") LocalDateTime modifiedAt
+            @Param("modifiedAt") Instant modifiedAt
     );
 
     @Query("""
@@ -89,7 +90,7 @@ public interface SpringDataTransactionRepository
         """)
     List<Object[]> getAggregatesByUserIdAndDateBetween(
             @Param("userId") UUID userId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
     );
 }

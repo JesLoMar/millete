@@ -10,6 +10,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlann
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class PlannedTransactionService implements
 
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final PlannedTransactionExecutionService executionService;
+    private final TimeProvider timeProvider;
 
     @Override
     public PlannedTransaction register(
@@ -41,6 +43,7 @@ public class PlannedTransactionService implements
     ) {
         PlannedTransaction plannedTransaction =
                 PlannedTransaction.create(
+                        timeProvider,
                         command.userId(),
                         command.categoryId(),
                         command.amount(),
@@ -66,10 +69,14 @@ public class PlannedTransactionService implements
      * multi-instancia se necesitaría un lock distribuido (ShedLock,
      * líder único, etc.). En el contexto self-hosted single-instance
      * actual, 'synchronized' es suficiente.
+     *
+     * TODO (Fase 9 - Scheduler multi-zona): sustituir
+     * 'timeProvider.localDateNow()' por el cálculo del día local
+     * de cada usuario según su zona horaria (UserPreferences).
      */
     @Override
     public synchronized void processScheduledTasks() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = timeProvider.localDateNow();
         int page = 0;
 
         while (true) {
@@ -106,6 +113,7 @@ public class PlannedTransactionService implements
                 getActiveTemplate(id, userId);
 
         plannedTransaction.updateDetails(
+                timeProvider,
                 command.amount(),
                 command.type(),
                 command.description(),
@@ -127,7 +135,7 @@ public class PlannedTransactionService implements
         PlannedTransaction plannedTransaction =
                 getActiveTemplate(id, userId);
 
-        plannedTransaction.deactivate();
+        plannedTransaction.deactivate(timeProvider);
         plannedTransactionRepository.save(
                 plannedTransaction
         );
@@ -183,17 +191,17 @@ public class PlannedTransactionService implements
                 executionService.execute(template, pendingDate);
             } catch (Exception e) {
                 boolean shouldDeactivate =
-                        template.incrementFailureCount();
+                        template.incrementFailureCount(timeProvider);
 
                 if (shouldDeactivate) {
-                    template.deactivate();
+                    template.deactivate(timeProvider);
                     log.warn(
                             "La plantilla recurrente {} se ha "
                                     + "desactivado tras {} fallos "
                                     + "consecutivos. Motivo: {}",
                             template.getId(),
                             PlannedTransaction.MAX_CONSECUTIVE_FAILURES,
-                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'
+                            e.getMessage()
                     );
                 } else {
                     log.error(
@@ -204,7 +212,7 @@ public class PlannedTransactionService implements
                             pendingDate,
                             template.getFailureCount(),
                             PlannedTransaction.MAX_CONSECUTIVE_FAILURES,
-                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'
+                            e.getMessage()
                     );
                 }
                 plannedTransactionRepository.save(template);

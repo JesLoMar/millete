@@ -7,6 +7,7 @@ import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationExcep
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.model.UserPreferences;
 import com.puntomartinez.millete.users.domain.model.UserSession;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,19 +41,22 @@ public class ProfileService implements ManageProfileUseCase {
     private final UserPreferencesRepository userPreferencesRepository;
     private final PasswordHasherPort passwordHasher;
     private final ObjectMapper objectMapper;
+    private final TimeProvider timeProvider;
 
     public ProfileService(
             UserRepository userRepository,
             UserSessionRepository userSessionRepository,
             UserPreferencesRepository userPreferencesRepository,
             PasswordHasherPort passwordHasher,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            TimeProvider timeProvider
     ) {
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
         this.userPreferencesRepository = userPreferencesRepository;
         this.passwordHasher = passwordHasher;
         this.objectMapper = objectMapper;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -128,6 +134,7 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         user.updateProfile(
+                timeProvider,
                 newUsername,
                 newEmail
         );
@@ -163,6 +170,7 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         user.updatePassword(
+                timeProvider,
                 passwordHasher.hashPassword(command.newPassword())
         );
 
@@ -192,6 +200,8 @@ public class ProfileService implements ManageProfileUseCase {
                 ? preferences
                 : new HashMap<>();
 
+        validateTimezonePreference(safePreferences);
+
         String serialized;
         try {
             serialized = objectMapper.writeValueAsString(safePreferences);
@@ -217,15 +227,40 @@ public class ProfileService implements ManageProfileUseCase {
 
                             newPreferences.setId(UUID.randomUUID());
                             newPreferences.setUserId(userId);
-                            newPreferences.setCreatedAt(LocalDateTime.now());
+                            newPreferences.setCreatedAt(timeProvider.now());
 
                             return newPreferences;
                         });
 
         userPreferences.setPreferences(safePreferences);
-        userPreferences.setModifiedAt(LocalDateTime.now());
+        userPreferences.setModifiedAt(timeProvider.now());
 
         userPreferencesRepository.save(userPreferences);
+    }
+
+    private void validateTimezonePreference(
+            Map<String, Object> preferences
+    ) {
+        if (!preferences.containsKey("timezone")) {
+            return;
+        }
+
+        Object value = preferences.get("timezone");
+        if (!(value instanceof String timezone)
+                || !ZoneId.getAvailableZoneIds().contains(timezone)) {
+            throw new InvalidInputException(
+                    "La zona horaria debe ser un identificador IANA válido, "
+                            + "por ejemplo Europe/Madrid."
+            );
+        }
+
+        try {
+            ZoneId.of(timezone);
+        } catch (DateTimeException exception) {
+            throw new InvalidInputException(
+                    "La zona horaria indicada no es válida."
+            );
+        }
     }
 
     @Override
@@ -256,7 +291,7 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         session.setActive(false);
-        session.setModifiedAt(LocalDateTime.now());
+        session.setModifiedAt(timeProvider.now());
 
         userSessionRepository.save(session);
     }
@@ -289,7 +324,7 @@ public class ProfileService implements ManageProfileUseCase {
             );
         }
 
-        user.anonymize();
+        user.anonymize(timeProvider);
         userRepository.save(user);
 
         userSessionRepository.deactivateAllSessions(userId);

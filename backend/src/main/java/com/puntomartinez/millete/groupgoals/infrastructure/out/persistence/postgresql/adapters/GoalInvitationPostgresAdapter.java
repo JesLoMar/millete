@@ -6,9 +6,10 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepos
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalInvitationEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalInvitationEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalInvitationRepository;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,13 +20,16 @@ public class GoalInvitationPostgresAdapter
 
     private final JpaGoalInvitationRepository repository;
     private final GoalInvitationEntityMapper mapper;
+    private final TimeProvider timeProvider;
 
     public GoalInvitationPostgresAdapter(
             JpaGoalInvitationRepository repository,
-            GoalInvitationEntityMapper mapper
+            GoalInvitationEntityMapper mapper,
+            TimeProvider timeProvider
     ) {
         this.repository = repository;
         this.mapper = mapper;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -65,7 +69,7 @@ public class GoalInvitationPostgresAdapter
                 .findActiveAndNotExpiredByInvitedUserIdAndStatus(
                         invitedUserId,
                         status.name(),
-                        LocalDateTime.now()
+                        timeProvider.now()
                 )
                 .stream()
                 .map(mapper::toDomain)
@@ -89,6 +93,6 @@ public class GoalInvitationPostgresAdapter
 
     @Override
     public void deactivatePendingByGoalId(UUID goalId) {
-        repository.deactivatePendingByGoalId(goalId, LocalDateTime.now());
+        repository.deactivatePendingByGoalId(goalId, timeProvider.now());
     }
 }
