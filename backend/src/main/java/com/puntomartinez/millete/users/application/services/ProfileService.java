@@ -74,7 +74,10 @@ public class ProfileService implements ManageProfileUseCase {
 
     @Override
     @Transactional
-    public void updateProfile(UUID userId, UpdateProfileCommand command) {
+    public void updateProfile(
+            UUID userId,
+            UpdateProfileCommand command
+    ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -91,8 +94,12 @@ public class ProfileService implements ManageProfileUseCase {
             );
         }
 
-        String newUsername = normalizeOptional(command.newUsername());
-        String newEmail = normalizeOptional(command.newEmail());
+        String newUsername = normalizeOptional(
+                command.newUsername()
+        );
+        String newEmail = normalizeOptional(
+                command.newEmail()
+        );
 
         if (newUsername != null
                 && !newUsername.equals(user.getUsername())) {
@@ -120,15 +127,11 @@ public class ProfileService implements ManageProfileUseCase {
                     });
         }
 
-        String username = newUsername != null
-                ? newUsername
-                : user.getUsername();
+        user.updateProfile(
+                newUsername,
+                newEmail
+        );
 
-        String email = newEmail != null
-                ? newEmail
-                : user.getEmail();
-
-        user.updateProfile(username, email);
         userRepository.save(user);
     }
 

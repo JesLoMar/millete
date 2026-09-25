@@ -15,16 +15,16 @@ export interface CurrencyOption {
 
 export interface ProfileResponse {
   readonly id: string;
-  readonly username: string;
-  readonly email: string;
+  readonly username: string | null;
+  readonly email: string | null;
   readonly active: boolean;
   readonly anonymized: boolean;
   readonly telegramChatId: number | null;
 }
 
 export interface UpdateProfileRequest {
-  newUsername?: string;
-  newEmail?: string;
+  newUsername: string | null;
+  newEmail: string | null;
   currentPassword: string;
 }
 

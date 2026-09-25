@@ -62,6 +62,17 @@ export function PersonalInfoSection() {
   };
 
   const handleSave = () => {
+    const username = form.username.trim();
+    const email = form.email.trim();
+
+    if (!username && !email) {
+      setForm((previous) => ({
+        ...previous,
+        error: t('personalInfo.identifierRequired'),
+      }));
+      return;
+    }
+
     if (!form.currentPassword.trim()) {
       setForm((previous) => ({
         ...previous,
@@ -77,8 +88,8 @@ export function PersonalInfoSection() {
 
     updateProfile(
       {
-        newUsername: form.username.trim() || undefined,
-        newEmail: form.email.trim() || undefined,
+        newUsername: username || null,
+        newEmail: email || null,
         currentPassword: form.currentPassword,
       },
       {
