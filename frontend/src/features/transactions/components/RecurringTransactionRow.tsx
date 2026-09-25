@@ -3,17 +3,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Calendar,
-  MoreHorizontal,
   Repeat,
 } from 'lucide-react';
 
-import { Button } from '@/shared/components/core/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/components/core/dropdown-menu';
 import type { PlannedTransaction } from '@/features/transactions/hooks/usePlannedTransactions';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +14,7 @@ import {
   formatDate,
   formatFrequency,
 } from '../utils';
+import { RecurringTransactionActions } from './RecurringTransactionActions';
 
 interface RecurringTransactionRowProps {
   transaction: PlannedTransaction;
@@ -38,13 +31,12 @@ export function RecurringTransactionRow({
 
   const isIncome = transaction.type === 'INCOME';
 
-  const formattedAmount = Math.abs(transaction.amount).toLocaleString(
-    'es-ES',
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    },
-  );
+  const formattedAmount = Math.abs(
+    transaction.amount,
+  ).toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   const frequency = formatFrequency(transaction, t);
   const nextExecution = calculateNextExecution(transaction);
@@ -128,7 +120,9 @@ export function RecurringTransactionRow({
           <p
             className={cn(
               'text-sm font-bold tabular-nums',
-              isIncome ? 'text-primary' : 'text-foreground',
+              isIncome
+                ? 'text-primary'
+                : 'text-foreground',
             )}
           >
             {isIncome ? '+' : '-'}
@@ -136,38 +130,11 @@ export function RecurringTransactionRow({
           </p>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8"
-              aria-label={t('moreOptions')}
-            >
-              <MoreHorizontal size={16} aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            align="end"
-            className="border-border bg-card"
-          >
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => onEdit(transaction)}
-            >
-              {t('edit')}
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              className="cursor-pointer text-destructive"
-              onClick={() => onDelete(transaction)}
-            >
-              {t('delete')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <RecurringTransactionActions
+          transaction={transaction}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       </div>
 
       <div className="border-b p-4 transition-colors last:border-0 hover:bg-accent/30 sm:hidden">
@@ -192,7 +159,9 @@ export function RecurringTransactionRow({
             <p
               className={cn(
                 'text-base font-bold tabular-nums',
-                isIncome ? 'text-primary' : 'text-foreground',
+                isIncome
+                  ? 'text-primary'
+                  : 'text-foreground',
               )}
             >
               {isIncome ? '+' : '-'}
@@ -200,38 +169,11 @@ export function RecurringTransactionRow({
             </p>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                aria-label={t('moreOptions')}
-              >
-                <MoreHorizontal size={16} aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              className="border-border bg-card"
-            >
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onEdit(transaction)}
-              >
-                {t('edit')}
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                className="cursor-pointer text-destructive"
-                onClick={() => onDelete(transaction)}
-              >
-                {t('delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <RecurringTransactionActions
+            transaction={transaction}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </div>
 
         <p className="mb-1.5 truncate text-sm font-medium">
@@ -247,20 +189,30 @@ export function RecurringTransactionRow({
 
           <span>{frequency}</span>
 
-          <span aria-hidden="true" className="text-muted-foreground/50">
+          <span
+            aria-hidden="true"
+            className="text-muted-foreground/50"
+          >
             ·
           </span>
 
-          <span>{formatDate(transaction.startDate)}</span>
+          <span>
+            {formatDate(transaction.startDate)}
+          </span>
 
           {transaction.endDate && (
             <>
               <span aria-hidden="true">→</span>
-              <span>{formatDate(transaction.endDate)}</span>
+              <span>
+                {formatDate(transaction.endDate)}
+              </span>
             </>
           )}
 
-          <span aria-hidden="true" className="text-muted-foreground/50">
+          <span
+            aria-hidden="true"
+            className="text-muted-foreground/50"
+          >
             ·
           </span>
 

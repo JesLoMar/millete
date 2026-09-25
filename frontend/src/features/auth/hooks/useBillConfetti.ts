@@ -38,7 +38,10 @@ interface PooledBill {
 }
 
 function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || !window.matchMedia) {
+  if (
+    typeof window === 'undefined' ||
+    !window.matchMedia
+  ) {
     return false;
   }
 
@@ -51,7 +54,23 @@ export function useBillConfetti(
   containerRef: RefObject<HTMLDivElement | null>,
   options: UseBillConfettiOptions = {},
 ) {
-  const opts = { ...DEFAULTS, ...options };
+  const opts: Required<UseBillConfettiOptions> = {
+    maxBills: options.maxBills ?? DEFAULTS.maxBills,
+    spawnThrottleMs:
+      options.spawnThrottleMs ??
+      DEFAULTS.spawnThrottleMs,
+    baseLifetimeMs:
+      options.baseLifetimeMs ??
+      DEFAULTS.baseLifetimeMs,
+    driftRange:
+      options.driftRange ??
+      DEFAULTS.driftRange,
+    billsPerScroll:
+      options.billsPerScroll ??
+      DEFAULTS.billsPerScroll,
+    enabled: options.enabled ?? DEFAULTS.enabled,
+  };
+
   const poolRef = useRef<PooledBill[]>([]);
   const lastSpawnRef = useRef(0);
 
@@ -77,7 +96,10 @@ export function useBillConfetti(
       const pool = poolRef.current;
       let bill = pool.find((item) => !item.busy);
 
-      if (!bill && pool.length < opts.maxBills) {
+      if (
+        !bill &&
+        pool.length < opts.maxBills
+      ) {
         const el = document.createElement('div');
 
         el.className = 'bill-confetti__item';
@@ -119,7 +141,8 @@ export function useBillConfetti(
 
       const rotateStart = Math.random() * 360;
       const rotateEnd =
-        rotateStart + (Math.random() - 0.5) * 720;
+        rotateStart +
+        (Math.random() - 0.5) * 720;
 
       const lifetime =
         opts.baseLifetimeMs +
@@ -129,17 +152,24 @@ export function useBillConfetti(
       const startX = Math.random() * 100;
 
       const color =
-        BILL_COLORS[Math.random() < 0.7 ? 0 : 1];
+        BILL_COLORS[
+          Math.random() < 0.7 ? 0 : 1
+        ];
 
       const easing =
         direction === 1
           ? 'cubic-bezier(0.55, 0.055, 0.675, 0.19)'
           : 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
-      el.style.setProperty('--x', `${driftX}px`);
+      el.style.setProperty(
+        '--x',
+        `${driftX}px`,
+      );
       el.style.setProperty(
         '--y',
-        direction === 1 ? '120vh' : '-120vh',
+        direction === 1
+          ? '120vh'
+          : '-120vh',
       );
       el.style.setProperty(
         '--r-start',
@@ -153,8 +183,14 @@ export function useBillConfetti(
         '--opacity',
         String(opacity),
       );
-      el.style.setProperty('--dur', `${lifetime}ms`);
-      el.style.setProperty('--ease', easing);
+      el.style.setProperty(
+        '--dur',
+        `${lifetime}ms`,
+      );
+      el.style.setProperty(
+        '--ease',
+        easing,
+      );
 
       el.style.color = color;
       el.style.width = `${size}px`;
@@ -176,9 +212,13 @@ export function useBillConfetti(
         bill.busy = false;
       };
 
-      el.addEventListener('animationend', onEnd, {
-        once: true,
-      });
+      el.addEventListener(
+        'animationend',
+        onEnd,
+        {
+          once: true,
+        },
+      );
     },
     [
       containerRef,
@@ -190,7 +230,10 @@ export function useBillConfetti(
   );
 
   useEffect(() => {
-    if (!opts.enabled || prefersReducedMotion()) {
+    if (
+      !opts.enabled ||
+      prefersReducedMotion()
+    ) {
       return;
     }
 
@@ -198,7 +241,11 @@ export function useBillConfetti(
       direction: 1 | -1,
       count: number,
     ) => {
-      for (let index = 0; index < count; index += 1) {
+      for (
+        let index = 0;
+        index < count;
+        index += 1
+      ) {
         window.setTimeout(
           () => spawn(direction),
           index * 45,
@@ -214,7 +261,10 @@ export function useBillConfetti(
       const direction: 1 | -1 =
         event.deltaY > 0 ? 1 : -1;
 
-      burst(direction, opts.billsPerScroll);
+      burst(
+        direction,
+        opts.billsPerScroll,
+      );
 
       if (Math.abs(event.deltaY) > 40) {
         burst(direction, 1);
@@ -223,7 +273,9 @@ export function useBillConfetti(
 
     let lastTouchY = 0;
 
-    const onTouchStart = (event: TouchEvent) => {
+    const onTouchStart = (
+      event: TouchEvent,
+    ) => {
       const touch = event.touches[0];
 
       if (!touch) {
@@ -233,14 +285,18 @@ export function useBillConfetti(
       lastTouchY = touch.clientY;
     };
 
-    const onTouchMove = (event: TouchEvent) => {
+    const onTouchMove = (
+      event: TouchEvent,
+    ) => {
       const touch = event.touches[0];
 
       if (!touch) {
         return;
       }
 
-      const delta = lastTouchY - touch.clientY;
+      const delta =
+        lastTouchY - touch.clientY;
+
       lastTouchY = touch.clientY;
 
       if (Math.abs(delta) < 3) {
@@ -271,12 +327,22 @@ export function useBillConfetti(
       { passive: true },
     );
 
-    const introDelays = [200, 350, 500, 650];
+    const introDelays = [
+      200,
+      350,
+      500,
+      650,
+    ];
 
     const introTimers = introDelays.map(
       (delay, index) =>
         window.setTimeout(
-          () => spawn(index % 2 === 0 ? 1 : -1),
+          () =>
+            spawn(
+              index % 2 === 0
+                ? 1
+                : -1,
+            ),
           delay,
         ),
     );

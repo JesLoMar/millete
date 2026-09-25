@@ -234,6 +234,7 @@ export const SavingsGoalsPage = () => {
       </div>
 
       <ContributionModal
+        key={selectedGoal?.id}
         isOpen={ui.isContributionOpen}
         onClose={closeContribution}
         onSubmit={handleAddContribution}
@@ -242,7 +243,7 @@ export const SavingsGoalsPage = () => {
       />
 
       <SavingsGoalEditDialog
-        key={selectedGoal?.id}
+        key={`${selectedGoal?.id}-${ui.isEditOpen}`}
         open={ui.isEditOpen}
         onOpenChange={(open) => {
           setUi((previous) => ({

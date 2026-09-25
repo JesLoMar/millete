@@ -26,8 +26,10 @@ import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog
 import { Sidebar } from '@/shared/components/Sidebar'
 import { Pagination } from '@/shared/components/Pagination'
 import { TopNav } from '@/shared/components/TopNav'
+import { useTranslation } from 'react-i18next'
 
 export const GroupGoalsPage = () => {
+  const { t } = useTranslation('groupGoals')
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -74,7 +76,7 @@ export const GroupGoalsPage = () => {
     deletingMemberName: '',
   })
 
-  const {
+  const { 
     displayItems: goals,
     displayPage,
     displaySize,
@@ -413,7 +415,7 @@ export const GroupGoalsPage = () => {
           ) : (
             <div className="flex items-center justify-center py-12">
               <p className="text-muted-foreground">
-                Cargando detalles del Group Goal...
+                {t('common:status.loading')}
               </p>
             </div>
           )}
@@ -469,8 +471,14 @@ export const GroupGoalsPage = () => {
         isDeleting={
           mutations.deleteGoal.isPending
         }
-        title="Eliminar Group Goal"
-        description={`¿Estás seguro de que deseas eliminar el Group Goal "${actions.deletingGoal?.name}"? Esta acción no se puede deshacer y todos los miembros serán eliminados.`}
+        title={t('deleteGoal')}
+        description={t(
+          'deleteGoalConfirmation',
+          {
+            name:
+              actions.deletingGoal?.name || '',
+          }
+        )}
       />
 
       <UpdateGoalDialog
@@ -549,8 +557,14 @@ export const GroupGoalsPage = () => {
         isDeleting={
           mutations.deleteMember.isPending
         }
-        title="Eliminar miembro"
-        description={`¿Estás seguro de que deseas eliminar a "${actions.deletingMemberName}" del Group Goal? Esta acción no se puede deshacer.`}
+        title={t('delete')}
+        description={t(
+          'deleteGoalConfirmation',
+          {
+            name:
+              actions.deletingMemberName,
+          }
+        )}
       />
 
       <AddContributionDialog

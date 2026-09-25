@@ -49,6 +49,118 @@ const INITIAL_FORM: FormState = {
   endDate: '',
 };
 
+function isValidRecurringForm(
+  form: FormState,
+  amount: number,
+  interval: number,
+): boolean {
+  return (
+    form.description.trim().length > 0 &&
+    form.category.length > 0 &&
+    Number.isFinite(amount) &&
+    amount > 0 &&
+    form.frequencyType.length > 0 &&
+    Number.isInteger(interval) &&
+    interval > 0 &&
+    form.startDate.length > 0 &&
+    (!form.endDate || form.endDate >= form.startDate)
+  );
+}
+
+function getFrequencyUnit(
+  frequencyType: string,
+  days: string,
+  weeks: string,
+  months: string,
+  years: string,
+): string {
+  switch (frequencyType) {
+    case 'DAYS':
+      return days;
+    case 'WEEKS':
+      return weeks;
+    case 'MONTHS':
+      return months;
+    default:
+      return years;
+  }
+}
+
+interface RecurringTransactionSummaryProps {
+  description: string;
+  amount: string;
+  frequency: string;
+  frequencyUnit: string;
+  start: string;
+  end: string;
+}
+
+function RecurringTransactionSummary({
+  description,
+  amount,
+  frequency,
+  frequencyUnit,
+  start,
+  end,
+}: RecurringTransactionSummaryProps) {
+  const { t } = useTranslation('transactions');
+
+  if (!frequency || !start) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-1 rounded-lg bg-accent/20 p-3 text-xs text-muted-foreground sm:p-4 sm:text-sm">
+      <p className="mb-1.5 flex items-center gap-1.5 font-medium text-foreground">
+        <RefreshCcw
+          size={14}
+          className="shrink-0 text-primary"
+          aria-hidden="true"
+        />
+        {t('recurring.summary')}
+      </p>
+
+      <p className="leading-relaxed">
+        {t('recurring.summaryText', {
+          description: description || '...',
+          amount: amount || '0',
+          frequency,
+          type: frequencyUnit,
+          start,
+          end: end || t('recurring.indefinite'),
+        })}
+      </p>
+    </div>
+  );
+}
+
+function RecurringSaveButton({
+  isCreating,
+  disabled,
+  onClick,
+}: {
+  isCreating: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const { t } = useTranslation('transactions');
+
+  return (
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="min-h-11 bg-primary px-6 hover:bg-primary/90"
+    >
+      {isCreating ? (
+        <Spinner size={20} />
+      ) : (
+        t('add')
+      )}
+    </Button>
+  );
+}
+
 export function NewRecurringTransactionDialog() {
   const { t } = useTranslation(['transactions', 'common', 'auth']);
   const { createRecurring, isCreating } =
@@ -89,27 +201,21 @@ export function NewRecurringTransactionDialog() {
   const amount = Number(form.amount);
   const interval = Number(form.frequencyInterval);
 
-  const isValid =
-    form.description.trim().length > 0 &&
-    form.category.length > 0 &&
-    Number.isFinite(amount) &&
-    amount > 0 &&
-    form.frequencyType.length > 0 &&
-    Number.isInteger(interval) &&
-    interval > 0 &&
-    form.startDate.length > 0 &&
-    (!form.endDate || form.endDate >= form.startDate);
+  const isValid = isValidRecurringForm(
+    form,
+    amount,
+    interval,
+  );
 
   const today = new Date().toISOString().split('T')[0];
 
-  const frequencyUnit =
-    form.frequencyType === 'DAYS'
-      ? t('transactions:recurring.days')
-      : form.frequencyType === 'WEEKS'
-        ? t('transactions:recurring.weeks')
-        : form.frequencyType === 'MONTHS'
-          ? t('transactions:recurring.months')
-          : t('transactions:recurring.years');
+  const frequencyUnit = getFrequencyUnit(
+    form.frequencyType,
+    t('transactions:recurring.days'),
+    t('transactions:recurring.weeks'),
+    t('transactions:recurring.months'),
+    t('transactions:recurring.years'),
+  );
 
   const handleSave = async () => {
     if (!isValid) {
@@ -371,31 +477,14 @@ export function NewRecurringTransactionDialog() {
               </div>
             </div>
 
-            {form.frequencyType && form.startDate && (
-              <div className="space-y-1 rounded-lg bg-accent/20 p-3 text-xs text-muted-foreground sm:p-4 sm:text-sm">
-                <p className="mb-1.5 flex items-center gap-1.5 font-medium text-foreground">
-                  <RefreshCcw
-                    size={14}
-                    className="shrink-0 text-primary"
-                    aria-hidden="true"
-                  />
-                  {t('transactions:recurring.summary')}
-                </p>
-
-                <p className="leading-relaxed">
-                  {t('transactions:recurring.summaryText', {
-                    description: form.description || '...',
-                    amount: form.amount || '0',
-                    frequency: form.frequencyInterval,
-                    type: frequencyUnit,
-                    start: form.startDate,
-                    end:
-                      form.endDate ||
-                      t('transactions:recurring.indefinite'),
-                  })}
-                </p>
-              </div>
-            )}
+            <RecurringTransactionSummary
+              description={form.description}
+              amount={form.amount}
+              frequency={form.frequencyInterval}
+              frequencyUnit={frequencyUnit}
+              start={form.startDate}
+              end={form.endDate}
+            />
           </div>
 
           <DialogFooter className="sticky bottom-0 gap-2 bg-card pb-1 pt-2 sm:gap-3">
@@ -409,18 +498,11 @@ export function NewRecurringTransactionDialog() {
               {t('common:actions.cancel')}
             </Button>
 
-            <Button
-              type="button"
-              onClick={handleSave}
+            <RecurringSaveButton
+              isCreating={isCreating}
               disabled={isCreating || !isValid}
-              className="min-h-11 bg-primary px-6 hover:bg-primary/90"
-            >
-              {isCreating ? (
-                <Spinner size={20} />
-              ) : (
-                t('transactions:add')
-              )}
-            </Button>
+              onClick={handleSave}
+            />
           </DialogFooter>
         </div>
       </DialogContent>

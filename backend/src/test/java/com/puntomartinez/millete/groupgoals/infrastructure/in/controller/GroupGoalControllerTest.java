@@ -131,7 +131,7 @@ class GroupGoalControllerTest {
     void shouldListGoals() {
         ListGoalsUseCase.GoalSummary summary = new ListGoalsUseCase.GoalSummary(
                 goalId, "Family trip", new BigDecimal("300.00"),
-                DistributionMode.EQUITATIVE, true, LocalDateTime.now()
+                DistributionMode.EQUITATIVE, 1L, true, LocalDateTime.now()
         );
 
         when(listGoalsUseCase.listGoals(userId))

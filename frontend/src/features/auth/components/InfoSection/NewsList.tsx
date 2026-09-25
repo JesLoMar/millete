@@ -1,21 +1,21 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 interface NewsItem {
-  tag?: string;
-  title: string;
-  description: string;
+  tag?: string
+  title: string
+  description: string
 }
 
 export function NewsList() {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const newsItemsValue = t('info:news.items', {
     returnObjects: true,
-  });
+  })
 
   const newsItems: NewsItem[] = Array.isArray(newsItemsValue)
     ? (newsItemsValue as NewsItem[])
-    : [];
+    : []
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-6 lg:space-y-8">
@@ -33,7 +33,7 @@ export function NewsList() {
         <ul className="list-none space-y-6 lg:space-y-8">
           {newsItems.map((item, index) => (
             <li
-              key={`${item.title}-${index}`}
+              key={item.title}
               className={`relative border-l-2 pl-10 ${
                 index === 0
                   ? 'border-primary/30'
@@ -42,7 +42,9 @@ export function NewsList() {
             >
               <div
                 className={`absolute -left-1.25 top-0 size-2 rounded-full ${
-                  index === 0 ? 'bg-primary' : 'bg-border'
+                  index === 0
+                    ? 'bg-primary'
+                    : 'bg-border'
                 }`}
                 aria-hidden="true"
               />
@@ -69,5 +71,5 @@ export function NewsList() {
         </ul>
       </div>
     </div>
-  );
+  )
 }

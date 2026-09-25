@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/shared/components/core/button';
@@ -33,12 +33,6 @@ export const ContributionModal = ({
 
   const [amount, setAmount] = useState('');
 
-  useEffect(() => {
-    if (isOpen) {
-      setAmount('');
-    }
-  }, [isOpen]);
-
   const handleSubmit = (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -46,7 +40,10 @@ export const ContributionModal = ({
 
     const parsedAmount = Number(amount);
 
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    if (
+      !Number.isFinite(parsedAmount) ||
+      parsedAmount <= 0
+    ) {
       return;
     }
 

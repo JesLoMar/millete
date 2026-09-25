@@ -46,7 +46,7 @@ const getInitialState = (
   color: category?.color ?? '',
   budgetLimit:
     category?.budgetLimit !== null &&
-    category?.budgetLimit !== undefined
+      category?.budgetLimit !== undefined
       ? String(category.budgetLimit)
       : '',
   error: null,
@@ -95,6 +95,10 @@ export function EditCategoryDialog({
   ) => {
     event.preventDefault();
 
+    if (isUpdating) {
+      return;
+    }
+
     if (!category) {
       return;
     }
@@ -133,7 +137,7 @@ export function EditCategoryDialog({
     } catch (error) {
       const message =
         error instanceof Error &&
-        error.message
+          error.message
           ? error.message
           : t('categories:updateError');
 

@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useId,
   useRef,
   useState,
@@ -102,13 +101,6 @@ export function SavingsGoalEditDialog({
   const deadlineId = useId();
   const linkId = useId();
   const linkErrorId = useId();
-
-  useEffect(() => {
-    if (open) {
-      setForm(getInitialForm(goal));
-      setLinkTouched(false);
-    }
-  }, [goal, open]);
 
   const updateForm = (
     updates: Partial<FormState>,
@@ -243,7 +235,8 @@ export function SavingsGoalEditDialog({
                   value={form.priority}
                   onValueChange={(value) =>
                     updateForm({
-                      priority: value as Priority,
+                      priority:
+                        value as Priority,
                     })
                   }
                   disabled={isUpdating}

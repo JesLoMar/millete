@@ -47,12 +47,19 @@ const CURRENCY_FORMATTERS = new Map<
   string,
   Intl.NumberFormat
 >()
+
 const NUMBER_FORMATTERS = new Map<
   string,
   Intl.NumberFormat
 >()
 
+const DYNAMIC_CURRENCY_FORMATTERS = new Map<
+  string,
+  Intl.NumberFormat
+>()
+
 const COMMON_LOCALES = Object.values(LOCALE_MAP)
+
 const COMMON_CURRENCIES = [
   'EUR',
   'USD',
@@ -104,6 +111,7 @@ function normalizeFractionDigits(
   let minimumFractionDigits =
     options.minimumFractionDigits ??
     defaults.minimum
+
   let maximumFractionDigits =
     options.maximumFractionDigits ??
     defaults.maximum
@@ -132,12 +140,45 @@ function normalizeFractionDigits(
   }
 }
 
+function getDynamicCurrencyFormatter(
+  locale: string,
+  currency: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  const key = JSON.stringify([
+    locale,
+    currency,
+    options,
+  ])
+
+  const cachedFormatter =
+    DYNAMIC_CURRENCY_FORMATTERS.get(key)
+
+  if (cachedFormatter) {
+    return cachedFormatter
+  }
+
+  const formatter = Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    ...options,
+  })
+
+  DYNAMIC_CURRENCY_FORMATTERS.set(
+    key,
+    formatter,
+  )
+
+  return formatter
+}
+
 export function formatCurrency(
   value: number,
   currency?: string,
   options: FormatCurrencyOptions = {},
 ): string {
   const locale = getLocale()
+
   const currencyCode =
     currency || getCurrency()
 
@@ -156,14 +197,16 @@ export function formatCurrency(
       },
     )
 
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currencyCode,
-      notation: 'compact',
-      compactDisplay: 'short',
-      minimumFractionDigits,
-      maximumFractionDigits,
-    }).format(value)
+    return getDynamicCurrencyFormatter(
+      locale,
+      currencyCode,
+      {
+        notation: 'compact',
+        compactDisplay: 'short',
+        minimumFractionDigits,
+        maximumFractionDigits,
+      },
+    ).format(value)
   }
 
   const {
@@ -195,12 +238,14 @@ export function formatCurrency(
     }
   }
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currencyCode,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  }).format(value)
+  return getDynamicCurrencyFormatter(
+    locale,
+    currencyCode,
+    {
+      minimumFractionDigits,
+      maximumFractionDigits,
+    },
+  ).format(value)
 }
 
 export function formatNumber(

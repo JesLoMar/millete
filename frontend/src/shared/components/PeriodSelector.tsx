@@ -17,17 +17,27 @@ const OPTIONS = [
   { value: "year" as PeriodFilter, labelKey: "header.period.year" as const },
 ]
 
-export function PeriodSelector({ period, onPeriodChange, className }: PeriodSelectorProps) {
+export function PeriodSelector({
+  period,
+  onPeriodChange,
+  className,
+}: PeriodSelectorProps) {
   const { t } = useTranslation(['dashboard'])
   const containerRef = useRef<HTMLFieldSetElement>(null)
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const [sliderStyle, setSliderStyle] = useState({ left: 0, width: 0 })
+  const [sliderStyle, setSliderStyle] = useState({
+    left: 0,
+    width: 0,
+  })
 
-  const activeIndex = OPTIONS.findIndex((o) => o.value === period)
+  const activeIndex = OPTIONS.findIndex(
+    (o) => o.value === period,
+  )
 
   const measureSlider = useCallback(() => {
     const container = containerRef.current
     const activeBtn = buttonRefs.current[activeIndex]
+
     if (!container || !activeBtn) return
 
     const containerRect = container.getBoundingClientRect()
@@ -44,14 +54,18 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
   }, [measureSlider])
 
   const measureRef = useRef(measureSlider)
+
   useLayoutEffect(() => {
     measureRef.current = measureSlider
   })
 
   useEffect(() => {
     const listener = () => measureRef.current()
+
     window.addEventListener("resize", listener)
-    return () => window.removeEventListener("resize", listener)
+
+    return () =>
+      window.removeEventListener("resize", listener)
   }, [])
 
   return (
@@ -63,13 +77,9 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
       )}
       aria-label={t('header.period.ariaLabel')}
     >
-      {}
       <m.div
+        layout
         className="absolute top-1 bottom-1 rounded-lg bg-primary shadow-sm z-0"
-        animate={{
-          left: sliderStyle.left,
-          width: sliderStyle.width,
-        }}
         transition={{
           type: "spring",
           stiffness: 400,
@@ -83,10 +93,13 @@ export function PeriodSelector({ period, onPeriodChange, className }: PeriodSele
 
       {OPTIONS.map((option, index) => {
         const isActive = period === option.value
+
         return (
           <button
             key={option.value}
-            ref={(el) => { buttonRefs.current[index] = el }}
+            ref={(el) => {
+              buttonRefs.current[index] = el
+            }}
             onClick={() => onPeriodChange(option.value)}
             type="button"
             className={cn(

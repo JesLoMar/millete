@@ -269,7 +269,7 @@ class TransactionPostgresAdapterTest {
 
             when(repository.getAggregatesByUserIdAndDateBetween(
                     eq(USER_ID), any(), any()
-            )).thenReturn(result);
+            )).thenReturn(List.<Object[]>of(result));
 
             TransactionAggregates aggregates = adapter.getAggregatesByUserIdAndDateBetween(
                     USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()
@@ -287,7 +287,7 @@ class TransactionPostgresAdapterTest {
 
             when(repository.getAggregatesByUserIdAndDateBetween(
                     eq(USER_ID), any(), any()
-            )).thenReturn(result);
+            )).thenReturn(List.<Object[]>of(result));
 
             TransactionAggregates aggregates = adapter.getAggregatesByUserIdAndDateBetween(
                     USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()

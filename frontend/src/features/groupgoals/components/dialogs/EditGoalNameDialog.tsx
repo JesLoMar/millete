@@ -1,24 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { Spinner } from '@/shared/components/Spinner'
-import { Button } from '@/shared/components/core/button'
+import { Spinner } from '@/shared/components/Spinner';
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/core/dialog'
-import { Input } from '@/shared/components/core/input'
-import { Label } from '@/shared/components/core/label'
+} from '@/shared/components/core/dialog';
+import { Input } from '@/shared/components/core/input';
+import { Label } from '@/shared/components/core/label';
 
 interface EditGoalNameDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  currentName: string
-  onSave: (newName: string) => Promise<void>
-  isSaving?: boolean
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentName: string;
+  onSave: (newName: string) => Promise<void>;
+  isSaving?: boolean;
 }
 
 export function EditGoalNameDialog({
@@ -28,31 +28,32 @@ export function EditGoalNameDialog({
   onSave,
   isSaving = false,
 }: EditGoalNameDialogProps) {
-  const { t } = useTranslation(['groupGoals', 'common'])
-  const [editedName, setEditedName] = useState<string | null>(null)
-  const name = editedName ?? currentName
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation(['groupGoals', 'common']);
 
-  useEffect(() => {
-    if (open) {
-      setEditedName(null)
-    }
-  }, [open])
+  const [editedName, setEditedName] =
+    useState<string | null>(null);
+
+  const name = editedName ?? currentName;
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    if (!name.trim()) return
+    if (!name.trim()) return;
 
-    await onSave(name.trim())
-    onOpenChange(false)
-  }
+    await onSave(name.trim());
+    onOpenChange(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent
         className="bg-card border-border sm:max-w-sm"
         onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          inputRef.current?.focus()
+          e.preventDefault();
+          inputRef.current?.focus();
         }}
       >
         <DialogHeader>
@@ -68,9 +69,11 @@ export function EditGoalNameDialog({
             <Input
               ref={inputRef}
               value={name}
-              onChange={(e) => setEditedName(e.target.value)}
+              onChange={(e) =>
+                setEditedName(e.target.value)
+              }
               placeholder={t(
-                'groupGoals:familyNamePlaceholder'
+                'groupGoals:familyNamePlaceholder',
               )}
             />
           </div>
@@ -97,5 +100,5 @@ export function EditGoalNameDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

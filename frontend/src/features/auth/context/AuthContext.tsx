@@ -3,6 +3,7 @@ import {
   use,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
 } from 'react';
@@ -37,16 +38,16 @@ interface AuthContextType {
 
 type FetchUserResult =
   | {
-      status: 'ok';
-      user: User;
-      sessionId: string;
-    }
+    status: 'ok';
+    user: User;
+    sessionId: string;
+  }
   | {
-      status: 'unauthenticated';
-    }
+    status: 'unauthenticated';
+  }
   | {
-      status: 'unavailable';
-    };
+    status: 'unavailable';
+  };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -79,6 +80,9 @@ export const AuthProvider = ({
         const response =
           await apiClient.get<CurrentUserResponse>(
             '/auth/me/topnav',
+            {
+              skipGlobalErrorNotify: true,
+            },
           );
 
         const userData = response.data;
@@ -144,8 +148,6 @@ export const AuthProvider = ({
         },
       );
     } catch {
-      // El estado local debe limpiarse aunque
-      // el logout remoto falle.
     } finally {
       clearAuthenticatedState();
       queryClient.clear();
@@ -155,31 +157,33 @@ export const AuthProvider = ({
   const initAuth = useCallback(async () => {
     setIsLoading(true);
 
-    const result = await fetchCurrentUser();
+    try {
+      const result = await fetchCurrentUser();
 
-    if (result.status === 'ok') {
-      applyAuthenticatedState(result);
-    } else if (result.status === 'unauthenticated') {
-      clearAuthenticatedState();
-    } else {
-      setUser(null);
-      setSessionId(null);
-      setIsOffline(true);
+      if (result.status === 'ok') {
+        applyAuthenticatedState(result);
+      } else if (result.status === 'unauthenticated') {
+        clearAuthenticatedState();
+      } else {
+        setUser(null);
+        setSessionId(null);
+        setIsOffline(true);
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, [
     applyAuthenticatedState,
     clearAuthenticatedState,
     fetchCurrentUser,
   ]);
 
+  const handleForcedLogout = useEffectEvent(() => {
+    void logout();
+  });
+
   useEffect(() => {
     void initAuth();
-
-    const handleForcedLogout = () => {
-      void logout();
-    };
 
     window.addEventListener(
       'auth:logout',
@@ -192,7 +196,7 @@ export const AuthProvider = ({
         handleForcedLogout,
       );
     };
-  }, [initAuth, logout]);
+  }, [initAuth]);
 
   const retryAuth = useCallback(() => {
     void initAuth();
