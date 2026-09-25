@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserLoginSecurityEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">UserLoginSecurityEntityMapperImpl.java</span></div><h1>UserLoginSecurityEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.users.domain.model.UserLoginSecurity;
+import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity.UserLoginSecurityEntity;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:40+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L14">public class UserLoginSecurityEntityMapperImpl implements UserLoginSecurityEntityMapper {</span>
+
+    @Override
+    public UserLoginSecurityEntity toEntity(UserLoginSecurity domain) {
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        if ( domain == null ) {</span>
+<span class="nc" id="L19">            return null;</span>
+        }
+
+<span class="fc" id="L22">        UserLoginSecurityEntity.UserLoginSecurityEntityBuilder userLoginSecurityEntity = UserLoginSecurityEntity.builder();</span>
+
+<span class="fc" id="L24">        userLoginSecurityEntity.userId( domain.getUserId() );</span>
+<span class="fc" id="L25">        userLoginSecurityEntity.failedAttempts( domain.getFailedAttempts() );</span>
+<span class="fc" id="L26">        userLoginSecurityEntity.blockedUntil( domain.getBlockedUntil() );</span>
+<span class="fc" id="L27">        userLoginSecurityEntity.lastAttemptAt( domain.getLastAttemptAt() );</span>
+<span class="fc" id="L28">        userLoginSecurityEntity.createdAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L29">        userLoginSecurityEntity.modifiedAt( domain.getModifiedAt() );</span>
+
+<span class="fc" id="L31">        return userLoginSecurityEntity.build();</span>
+    }
+
+    @Override
+    public UserLoginSecurity toDomain(UserLoginSecurityEntity entity) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if ( entity == null ) {</span>
+<span class="nc" id="L37">            return null;</span>
+        }
+
+<span class="fc" id="L40">        UserLoginSecurity userLoginSecurity = new UserLoginSecurity();</span>
+
+<span class="fc" id="L42">        userLoginSecurity.setUserId( entity.getUserId() );</span>
+<span class="fc" id="L43">        userLoginSecurity.setFailedAttempts( entity.getFailedAttempts() );</span>
+<span class="fc" id="L44">        userLoginSecurity.setBlockedUntil( entity.getBlockedUntil() );</span>
+<span class="fc" id="L45">        userLoginSecurity.setLastAttemptAt( entity.getLastAttemptAt() );</span>
+<span class="fc" id="L46">        userLoginSecurity.setCreatedAt( entity.getCreatedAt() );</span>
+<span class="fc" id="L47">        userLoginSecurity.setModifiedAt( entity.getModifiedAt() );</span>
+
+<span class="fc" id="L49">        return userLoginSecurity;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

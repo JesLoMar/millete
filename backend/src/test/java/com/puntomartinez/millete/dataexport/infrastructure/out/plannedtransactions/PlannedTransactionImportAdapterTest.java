@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,7 @@ class PlannedTransactionImportAdapterTest {
                 sourcePlannedTxId, UUID.randomUUID(), sourceCategoryId,
                 new BigDecimal("100.00"), "EXPENSE", "Rent",
                 "MONTHS", 1, LocalDate.now(), null,
-                LocalDateTime.now(), LocalDateTime.now(), true, null
+                Instant.now(), Instant.now(), true, null
         );
 
         Map<UUID, UUID> categoryIdMap = new HashMap<>();
@@ -79,7 +78,7 @@ class PlannedTransactionImportAdapterTest {
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("100.00"), "EXPENSE", "Rent",
                 "MONTHS", 1, LocalDate.now(), null,
-                LocalDateTime.now(), LocalDateTime.now(), false, null
+                Instant.now(), Instant.now(), false, null
         );
 
         int count = adapter.importPlannedTransactions(

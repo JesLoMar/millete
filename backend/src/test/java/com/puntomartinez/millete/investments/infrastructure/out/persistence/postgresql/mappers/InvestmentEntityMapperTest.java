@@ -97,7 +97,7 @@ class InvestmentEntityMapperTest {
         Investment original = Investment.create(
                 UUID.randomUUID(), "Tesla Inc.", "TSLA",
                 new BigDecimal("5"), new BigDecimal("200.00"),
-                InvestmentType.STOCK, LocalDateTime.now().minusDays(10)
+                InvestmentType.STOCK, Instant.now().minusDays(10)
         );
 
         InvestmentEntity entity = mapper.toEntity(original);

@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.savingsgoals.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
 import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
 import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
@@ -21,15 +22,20 @@ public class SavingsGoalService implements
         DeleteSavingsGoalUseCase {
 
     private final SavingsGoalRepository savingsGoalRepository;
+    private final TimeProvider timeProvider;
 
-    public SavingsGoalService(SavingsGoalRepository savingsGoalRepository) {
+    public SavingsGoalService(SavingsGoalRepository savingsGoalRepository,
+            TimeProvider timeProvider
+    ) {
         this.savingsGoalRepository = savingsGoalRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     @Transactional
     public SavingsGoal create(CreateSavingsGoalCommand command) {
         SavingsGoal goal = SavingsGoal.create(
+                timeProvider,
                 command.userId(),
                 command.name(),
                 command.targetAmount(),
@@ -53,7 +59,7 @@ public class SavingsGoalService implements
                         )
                 );
 
-        goal.updateDetails(
+        goal.updateDetails(timeProvider, 
                 command.name(),
                 command.targetAmount(),
                 command.deadline(),
@@ -78,7 +84,7 @@ public class SavingsGoalService implements
                         )
                 );
 
-        goal.addContribution(command.amount());
+        goal.addContribution(timeProvider, command.amount());
         return savingsGoalRepository.save(goal);
     }
 
@@ -97,7 +103,7 @@ public class SavingsGoalService implements
                         )
                 );
 
-        goal.withdraw(command.amount());
+        goal.withdraw(timeProvider, command.amount());
         return savingsGoalRepository.save(goal);
     }
 
@@ -154,7 +160,7 @@ public class SavingsGoalService implements
                         )
                 );
 
-        goal.deactivate();
+        goal.deactivate(timeProvider);
         savingsGoalRepository.save(goal);
     }
 }

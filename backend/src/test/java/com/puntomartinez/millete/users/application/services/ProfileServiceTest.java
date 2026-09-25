@@ -21,11 +21,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +69,7 @@ class ProfileServiceTest {
     private User createUser() {
         return new User(
                 userId, "ana", "ana@mail.com", hashedPassword,
-                LocalDateTime.now(), LocalDateTime.now(), true, false
+                Instant.now(), Instant.now(), true, false
         );
     }
 
@@ -162,7 +162,7 @@ class ProfileServiceTest {
             User otherUser = new User(
                     otherUserId, "otro", "otro@mail.com",
                     hashedPassword,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, false
             );
 
@@ -193,7 +193,7 @@ class ProfileServiceTest {
             User otherUser = new User(
                     otherUserId, "existente", "otro@mail.com",
                     hashedPassword,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, false
             );
 
@@ -398,7 +398,7 @@ class ProfileServiceTest {
     class Preferences {
 
         @Test
-        @DisplayName("Should return empty map when no preferences exist")
+        @DisplayName("Should return only default timezone when no preferences exist")
         void shouldReturnEmptyMapWhenNoPreferences() {
             when(userPreferencesRepository.findByUserId(userId))
                     .thenReturn(Optional.empty());
@@ -406,11 +406,13 @@ class ProfileServiceTest {
             Map<String, Object> result =
                     profileService.getPreferences(userId);
 
-            assertThat(result).isEmpty();
+            assertThat(result)
+                    .hasSize(1)
+                    .containsEntry(UserPreferences.TIMEZONE_KEY, "UTC");
         }
 
         @Test
-        @DisplayName("Should return existing preferences")
+        @DisplayName("Should return existing preferences with timezone defaulted")
         void shouldReturnExistingPreferences() {
             UserPreferences prefs = new UserPreferences();
             prefs.setPreferences(new HashMap<>(Map.of("theme", "dark")));
@@ -421,7 +423,9 @@ class ProfileServiceTest {
             Map<String, Object> result =
                     profileService.getPreferences(userId);
 
-            assertThat(result).containsEntry("theme", "dark");
+            assertThat(result)
+                    .containsEntry("theme", "dark")
+                    .containsEntry(UserPreferences.TIMEZONE_KEY, "UTC");
         }
 
         @Test
@@ -488,6 +492,78 @@ class ProfileServiceTest {
             verify(userPreferencesRepository)
                     .save(any(UserPreferences.class));
         }
+
+        @Test
+        @DisplayName("Should store valid IANA timezone on update")
+        void shouldStoreValidTimezone() throws Exception {
+            Map<String, Object> newPrefs =
+                    Map.of(UserPreferences.TIMEZONE_KEY, "Europe/Madrid");
+
+            when(userPreferencesRepository.findByUserId(userId))
+                    .thenReturn(Optional.empty());
+            when(objectMapper.writeValueAsString(any()))
+                    .thenReturn("{\"timezone\":\"Europe/Madrid\"}");
+
+            profileService.updatePreferences(userId, newPrefs);
+
+            ArgumentCaptor<UserPreferences> captor =
+                    ArgumentCaptor.forClass(UserPreferences.class);
+            verify(userPreferencesRepository).save(captor.capture());
+
+            assertThat(captor.getValue().getPreferences())
+                    .containsEntry(UserPreferences.TIMEZONE_KEY, "Europe/Madrid");
+        }
+
+        @Test
+        @DisplayName("Should reject non-IANA fixed-offset timezone (UTC+2)")
+        void shouldRejectFixedOffsetTimezone() {
+            Map<String, Object> newPrefs =
+                    Map.of(UserPreferences.TIMEZONE_KEY, "UTC+2");
+
+            assertThatThrownBy(() ->
+                    profileService.updatePreferences(userId, newPrefs)
+            ).isInstanceOf(InvalidInputException.class);
+
+            verify(userPreferencesRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should reject unknown timezone identifier")
+        void shouldRejectUnknownTimezone() {
+            Map<String, Object> newPrefs =
+                    Map.of(UserPreferences.TIMEZONE_KEY, "Mars/Olympus_Mons");
+
+            assertThatThrownBy(() ->
+                    profileService.updatePreferences(userId, newPrefs)
+            ).isInstanceOf(InvalidInputException.class);
+
+            verify(userPreferencesRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should preserve existing timezone when not sent in update")
+        void shouldPreserveExistingTimezoneWhenNotSent() throws Exception {
+            UserPreferences existingPrefs = new UserPreferences();
+            existingPrefs.setUserId(userId);
+            existingPrefs.setPreferences(
+                    new HashMap<>(Map.of(
+                            "theme", "dark",
+                            UserPreferences.TIMEZONE_KEY, "America/Bogota"
+                    ))
+            );
+
+            when(userPreferencesRepository.findByUserId(userId))
+                    .thenReturn(Optional.of(existingPrefs));
+            when(objectMapper.writeValueAsString(any()))
+                    .thenReturn("{}");
+
+            profileService.updatePreferences(
+                    userId, new HashMap<>(Map.of("theme", "light")));
+
+            assertThat(existingPrefs.getPreferences())
+                    .containsEntry("theme", "light")
+                    .containsEntry(UserPreferences.TIMEZONE_KEY, "America/Bogota");
+        }
     }
 
     @Nested
@@ -501,7 +577,7 @@ class ProfileServiceTest {
             session.setId(UUID.randomUUID());
             session.setChannel("WEB");
             session.setActive(true);
-            session.setCreatedAt(LocalDateTime.now());
+            session.setCreatedAt(Instant.now());
 
             when(userSessionRepository.findByUserIdAndActiveTrue(userId))
                     .thenReturn(List.of(session));

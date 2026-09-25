@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +35,7 @@ public interface JpaGoalInvitationRepository
     List<GoalInvitationEntity> findActiveAndNotExpiredByInvitedUserIdAndStatus(
             @Param("invitedUserId") UUID invitedUserId,
             @Param("status") String status,
-            @Param("now") LocalDateTime now
+            @Param("now") Instant now
     );
 
     List<GoalInvitationEntity> findByGoalIdAndStatusAndActiveTrue(
@@ -54,6 +54,6 @@ public interface JpaGoalInvitationRepository
             """)
     int deactivatePendingByGoalId(
             @Param("goalId") UUID goalId,
-            @Param("modifiedAt") LocalDateTime modifiedAt
+            @Param("modifiedAt") Instant modifiedAt
     );
 }

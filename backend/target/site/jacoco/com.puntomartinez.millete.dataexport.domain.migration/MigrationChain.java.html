@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MigrationChain.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.domain.migration</a> &gt; <span class="el_source">MigrationChain.java</span></div><h1>MigrationChain.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.domain.migration;
+
+import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
+import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Cadena de migraciones de snapshots de datos.
+ *
+ * &lt;p&gt;Las migraciones son clases stateless instanciadas manualmente
+ * (no son Spring beans). Esto es aceptable porque no necesitan
+ * dependencias inyectadas. Si se añaden migraciones que necesiten
+ * dependencias (por ejemplo, un repositorio), convertirlas en beans
+ * e inyectarlas en esta clase.&lt;/p&gt;
+ *
+ * &lt;p&gt;CONTRATO DE ExportVersion: Al añadir una nueva migración,
+ * ACTUALIZAR {@code ExportVersion.CURRENT} al {@code toVersion()}
+ * de la nueva migración. {@link #validateChain()} detecta al
+ * arrancar si hay inconsistencia.&lt;/p&gt;
+ */
+<span class="fc" id="L27">@Slf4j</span>
+@Component
+public class MigrationChain {
+
+    private final List&lt;DataMigration&gt; migrations;
+
+<span class="fc" id="L33">    public MigrationChain() {</span>
+<span class="fc" id="L34">        this.migrations = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L35">        registerMigrations();</span>
+<span class="fc" id="L36">        migrations.sort(</span>
+<span class="fc" id="L37">                Comparator.comparing(DataMigration::fromVersion)</span>
+        );
+<span class="fc" id="L39">        validateChain();</span>
+<span class="fc" id="L40">    }</span>
+
+    private void registerMigrations() {
+<span class="fc" id="L43">        migrations.add(new Migration001to010());</span>
+<span class="fc" id="L44">        migrations.add(new Migration010to020());</span>
+<span class="fc" id="L45">    }</span>
+
+    public UserDataSnapshot migrateToLatest(
+            UserDataSnapshot snapshot
+    ) {
+<span class="fc" id="L50">        ExportVersion currentVersion =</span>
+<span class="fc" id="L51">                ExportVersion.fromString(</span>
+<span class="fc" id="L52">                        snapshot.metadata().version()</span>
+                );
+
+<span class="fc" id="L55">        UserDataSnapshot result = snapshot;</span>
+
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (migrations.isEmpty()) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (!currentVersion.equals(ExportVersion.CURRENT)) {</span>
+<span class="nc" id="L59">                log.warn(</span>
+                        &quot;Aviso: archivo v{} pero sistema en v{}&quot;,
+                        currentVersion,
+                        ExportVersion.CURRENT
+                );
+            }
+<span class="nc" id="L65">            return result;</span>
+        }
+
+<span class="fc" id="L68">        log.info(&quot;Migrando desde v{}&quot;, currentVersion);</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (DataMigration migration : migrations) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            if (currentVersion.compareTo(</span>
+<span class="fc" id="L72">                    migration.fromVersion()</span>
+            ) &gt;= 0
+<span class="fc bfc" id="L74" title="All 2 branches covered.">                    &amp;&amp; currentVersion.compareTo(</span>
+<span class="fc" id="L75">                    migration.toVersion()</span>
+            ) &lt; 0) {
+
+<span class="fc" id="L78">                log.info(&quot;  → {}&quot;, migration.description());</span>
+
+                try {
+<span class="fc" id="L81">                    result = migration.migrate(result);</span>
+<span class="fc" id="L82">                    currentVersion = migration.toVersion();</span>
+<span class="fc" id="L83">                    log.info(&quot;  ✓ v{}&quot;, currentVersion);</span>
+<span class="nc" id="L84">                } catch (Exception e) {</span>
+<span class="nc" id="L85">                    throw new InvalidInputException(</span>
+                            &quot;Error en migración &quot;
+<span class="nc" id="L87">                                    + migration.fromVersion()</span>
+                                    + &quot; → &quot;
+<span class="nc" id="L89">                                    + migration.toVersion(),</span>
+                            e
+                    );
+<span class="fc" id="L92">                }</span>
+            }
+<span class="fc" id="L94">        }</span>
+
+<span class="fc" id="L96">        log.info(&quot;Migración completada. v{}&quot;, currentVersion);</span>
+<span class="fc" id="L97">        return result;</span>
+    }
+
+    private void validateChain() {
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (migrations.isEmpty()) {</span>
+<span class="nc" id="L102">            log.info(</span>
+                    &quot;Sin migraciones. Versión actual: v{}&quot;,
+                    ExportVersion.CURRENT
+            );
+<span class="nc" id="L106">            return;</span>
+        }
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (int i = 0; i &lt; migrations.size() - 1; i++) {</span>
+<span class="fc" id="L110">            ExportVersion currentTo =</span>
+<span class="fc" id="L111">                    migrations.get(i).toVersion();</span>
+<span class="fc" id="L112">            ExportVersion nextFrom =</span>
+<span class="fc" id="L113">                    migrations.get(i + 1).fromVersion();</span>
+
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if (!currentTo.equals(nextFrom)) {</span>
+<span class="nc" id="L116">                throw new IllegalStateException(</span>
+                        &quot;Cadena de migraciones rota: migración &quot;
+                                + i
+                                + &quot; termina en v&quot;
+                                + currentTo
+                                + &quot; pero la siguiente empieza en v&quot;
+                                + nextFrom
+                );
+            }
+        }
+
+<span class="fc" id="L127">        ExportVersion lastTo =</span>
+<span class="fc" id="L128">                migrations.get(migrations.size() - 1).toVersion();</span>
+
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        if (!lastTo.equals(ExportVersion.CURRENT)) {</span>
+<span class="nc" id="L131">            throw new IllegalStateException(</span>
+                    &quot;Inconsistencia de versión: la última migración &quot;
+                            + &quot;llega a v&quot; + lastTo
+                            + &quot; pero ExportVersion.CURRENT es v&quot;
+                            + ExportVersion.CURRENT
+                            + &quot;. Actualiza ExportVersion.CURRENT.&quot;
+            );
+        }
+
+<span class="fc" id="L140">        log.info(</span>
+                &quot;Cadena de migraciones validada. {} migraciones. v{}&quot;,
+<span class="fc" id="L142">                migrations.size(),</span>
+                ExportVersion.CURRENT
+        );
+<span class="fc" id="L145">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

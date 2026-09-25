@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.categories.infrastructure.in.controller</a> &gt; <span class="el_source">CategoryController.java</span></div><h1>CategoryController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.categories.infrastructure.in.controller;
+
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryCommand;
+import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryCommand;
+import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
+import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.CategoryResponseDTO;
+import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.RegisterCategoryRequestDTO;
+import com.puntomartinez.millete.categories.infrastructure.in.controller.dto.UpdateCategoryRequestDTO;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping(&quot;/api/v1/categories&quot;)
+@Validated
+public class CategoryController {
+
+    private static final int MAX_PAGE_SIZE = 200;
+
+    private final RegisterCategoryUseCase registerCategoryUseCase;
+    private final UpdateCategoryUseCase updateCategoryUseCase;
+    private final GetCategoryUseCase getCategoryUseCase;
+    private final DeleteCategoryUseCase deleteCategoryUseCase;
+
+    public CategoryController(
+            RegisterCategoryUseCase registerCategoryUseCase,
+            UpdateCategoryUseCase updateCategoryUseCase,
+            GetCategoryUseCase getCategoryUseCase,
+            DeleteCategoryUseCase deleteCategoryUseCase
+<span class="fc" id="L43">    ) {</span>
+<span class="fc" id="L44">        this.registerCategoryUseCase = registerCategoryUseCase;</span>
+<span class="fc" id="L45">        this.updateCategoryUseCase = updateCategoryUseCase;</span>
+<span class="fc" id="L46">        this.getCategoryUseCase = getCategoryUseCase;</span>
+<span class="fc" id="L47">        this.deleteCategoryUseCase = deleteCategoryUseCase;</span>
+<span class="fc" id="L48">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;CategoryResponseDTO&gt; createCategory(
+            @Valid @RequestBody RegisterCategoryRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L55">        UUID userId = getAuthenticatedUserId(authentication);</span>
+
+<span class="fc" id="L57">        RegisterCategoryCommand command = new RegisterCategoryCommand(</span>
+                userId,
+<span class="fc" id="L59">                request.name(),</span>
+<span class="fc" id="L60">                request.color(),</span>
+<span class="fc" id="L61">                request.budgetLimit()</span>
+        );
+
+<span class="fc" id="L64">        Category category = registerCategoryUseCase.register(command);</span>
+
+<span class="fc" id="L66">        return ResponseEntity</span>
+<span class="fc" id="L67">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L68">                .body(mapToResponse(category));</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;CategoryResponseDTO&gt;&gt; getAll(
+            Authentication authentication,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;50&quot;) int size,
+            @RequestParam(required = false) String search
+    ) {
+<span class="fc" id="L78">        validatePaginationParams(page, size);</span>
+
+<span class="fc" id="L80">        UUID userId = getAuthenticatedUserId(authentication);</span>
+
+<span class="fc" id="L82">        long totalElements =</span>
+<span class="fc" id="L83">                getCategoryUseCase.countByUserIdAndFilters(</span>
+                        userId,
+                        search
+                );
+
+<span class="fc" id="L88">        int totalPages = (int) Math.ceil(</span>
+                (double) totalElements / size
+        );
+
+<span class="fc" id="L92">        int maxValidPage = Math.max(0, totalPages - 1);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (page &gt; maxValidPage) {</span>
+<span class="fc" id="L94">            throw new InvalidInputException(</span>
+                    &quot;La página solicitada (&quot; + page
+                            + &quot;) está fuera de rango. Página máxima disponible: &quot;
+                            + maxValidPage + &quot;.&quot;
+            );
+        }
+
+<span class="fc" id="L101">        List&lt;CategoryResponseDTO&gt; content =</span>
+                getCategoryUseCase
+<span class="fc" id="L103">                        .findAllByUserId(</span>
+                                userId,
+                                page,
+                                size,
+                                search
+                        )
+<span class="fc" id="L109">                        .stream()</span>
+<span class="fc" id="L110">                        .map(this::mapToResponse)</span>
+<span class="fc" id="L111">                        .toList();</span>
+
+<span class="pc bpc" id="L113" title="1 of 6 branches missed.">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+                        content,
+                        page,
+                        totalPages,
+                        totalElements,
+                        size,
+                        page == 0,
+                        page &gt;= totalPages - 1 || totalPages == 0
+                )
+        );
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;CategoryResponseDTO&gt; update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateCategoryRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L132">        UUID userId = getAuthenticatedUserId(authentication);</span>
+
+<span class="fc" id="L134">        UpdateCategoryCommand command = new UpdateCategoryCommand(</span>
+<span class="fc" id="L135">                request.name(),</span>
+<span class="fc" id="L136">                request.color(),</span>
+<span class="fc" id="L137">                request.budgetLimit()</span>
+        );
+
+<span class="fc" id="L140">        Category category = updateCategoryUseCase.update(</span>
+                id,
+                userId,
+                command
+        );
+
+<span class="fc" id="L146">        return ResponseEntity.ok(mapToResponse(category));</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L154">        UUID userId = getAuthenticatedUserId(authentication);</span>
+
+<span class="fc" id="L156">        deleteCategoryUseCase.deleteByIdAndUserId(</span>
+                id,
+                userId
+        );
+
+<span class="fc" id="L161">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private UUID getAuthenticatedUserId(Authentication authentication) {
+<span class="fc" id="L165">        return ((JwtUser) authentication.getPrincipal()).getId();</span>
+    }
+
+    private CategoryResponseDTO mapToResponse(Category category) {
+<span class="fc" id="L169">        return new CategoryResponseDTO(</span>
+<span class="fc" id="L170">                category.getId(),</span>
+<span class="fc" id="L171">                category.getUserId(),</span>
+<span class="fc" id="L172">                category.getName(),</span>
+<span class="fc" id="L173">                category.getColor(),</span>
+<span class="fc" id="L174">                category.getBudgetLimit(),</span>
+<span class="fc" id="L175">                category.getCreatedAt(),</span>
+<span class="fc" id="L176">                category.isActive()</span>
+        );
+    }
+
+    private void validatePaginationParams(int page, int size) {
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (page &lt; 0) {</span>
+<span class="fc" id="L182">            throw new InvalidInputException(</span>
+                    &quot;La página debe ser mayor o igual que 0.&quot;
+            );
+        }
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L187">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página debe ser mayor que 0.&quot;
+            );
+        }
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (size &gt; MAX_PAGE_SIZE) {</span>
+<span class="fc" id="L192">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página no puede superar &quot;
+                            + MAX_PAGE_SIZE + &quot;.&quot;
+            );
+        }
+<span class="fc" id="L197">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

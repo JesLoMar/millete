@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 @Entity
 @Table(name = "user_login_security")
@@ -17,11 +17,11 @@ public class UserLoginSecurityEntity {
     @Column(name = "failed_attempts", nullable = false)
     private int failedAttempts;
     @Column(name = "blocked_until")
-    private LocalDateTime blockedUntil;
+    private Instant blockedUntil;
     @Column(name = "last_attempt_at")
-    private LocalDateTime lastAttemptAt;
+    private Instant lastAttemptAt;
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+    private Instant modifiedAt;
 }

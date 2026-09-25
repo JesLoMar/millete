@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserSessionEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">UserSessionEntityMapperImpl.java</span></div><h1>UserSessionEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity.UserSessionEntity;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:41+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L14">public class UserSessionEntityMapperImpl implements UserSessionEntityMapper {</span>
+
+    @Override
+    public UserSessionEntity toEntity(UserSession domain) {
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        if ( domain == null ) {</span>
+<span class="nc" id="L19">            return null;</span>
+        }
+
+<span class="fc" id="L22">        UserSessionEntity.UserSessionEntityBuilder userSessionEntity = UserSessionEntity.builder();</span>
+
+<span class="fc" id="L24">        userSessionEntity.id( domain.getId() );</span>
+<span class="fc" id="L25">        userSessionEntity.userId( domain.getUserId() );</span>
+<span class="fc" id="L26">        userSessionEntity.channel( domain.getChannel() );</span>
+<span class="fc" id="L27">        userSessionEntity.createdAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L28">        userSessionEntity.active( domain.isActive() );</span>
+<span class="fc" id="L29">        userSessionEntity.modifiedAt( domain.getModifiedAt() );</span>
+
+<span class="fc" id="L31">        return userSessionEntity.build();</span>
+    }
+
+    @Override
+    public UserSession toDomain(UserSessionEntity entity) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if ( entity == null ) {</span>
+<span class="nc" id="L37">            return null;</span>
+        }
+
+<span class="fc" id="L40">        UserSession userSession = new UserSession();</span>
+
+<span class="fc" id="L42">        userSession.setId( entity.getId() );</span>
+<span class="fc" id="L43">        userSession.setUserId( entity.getUserId() );</span>
+<span class="fc" id="L44">        userSession.setChannel( entity.getChannel() );</span>
+<span class="fc" id="L45">        userSession.setCreatedAt( entity.getCreatedAt() );</span>
+<span class="fc" id="L46">        userSession.setModifiedAt( entity.getModifiedAt() );</span>
+<span class="fc" id="L47">        userSession.setActive( entity.isActive() );</span>
+
+<span class="fc" id="L49">        return userSession;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Category.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.categories.domain.model</a> &gt; <span class="el_source">Category.java</span></div><h1>Category.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.categories.domain.model;
+
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Getter
+public class Category {
+
+    private final UUID id;
+    private final UUID userId;
+    private String name;
+    private String color;
+    private BigDecimal budgetLimit;
+    private final LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+
+    private Category(
+            UUID id,
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+<span class="fc" id="L30">    ) {</span>
+<span class="fc" id="L31">        validateId(id);</span>
+<span class="fc" id="L32">        validateUserId(userId);</span>
+<span class="fc" id="L33">        validateName(name);</span>
+<span class="fc" id="L34">        validateColor(color);</span>
+<span class="fc" id="L35">        validateBudgetLimit(budgetLimit);</span>
+<span class="fc" id="L36">        validateCreatedAt(createdAt);</span>
+<span class="fc" id="L37">        validateModifiedAt(modifiedAt);</span>
+
+<span class="fc" id="L39">        this.id = id;</span>
+<span class="fc" id="L40">        this.userId = userId;</span>
+<span class="fc" id="L41">        this.name = name;</span>
+<span class="fc" id="L42">        this.color = color;</span>
+<span class="fc" id="L43">        this.budgetLimit = budgetLimit;</span>
+<span class="fc" id="L44">        this.createdAt = createdAt;</span>
+<span class="fc" id="L45">        this.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L46">        this.active = active;</span>
+<span class="fc" id="L47">    }</span>
+
+    public static Category create(
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit
+    ) {
+<span class="fc" id="L55">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc" id="L57">        return new Category(</span>
+<span class="fc" id="L58">                UUID.randomUUID(),</span>
+                userId,
+                name,
+                color,
+                budgetLimit,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static Category reconstitute(
+            UUID id,
+            UUID userId,
+            String name,
+            String color,
+            BigDecimal budgetLimit,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+<span class="fc" id="L79">        return new Category(</span>
+                id,
+                userId,
+                name,
+                color,
+                budgetLimit,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+            String name,
+            String color,
+            BigDecimal budgetLimit
+    ) {
+<span class="fc" id="L96">        validateName(name);</span>
+<span class="fc" id="L97">        validateColor(color);</span>
+<span class="fc" id="L98">        validateBudgetLimit(budgetLimit);</span>
+
+<span class="fc" id="L100">        this.name = name;</span>
+<span class="fc" id="L101">        this.color = color;</span>
+<span class="fc" id="L102">        this.budgetLimit = budgetLimit;</span>
+<span class="fc" id="L103">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L104">    }</span>
+
+    public void deactivate() {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (!this.active) {</span>
+<span class="fc" id="L108">            return;</span>
+        }
+
+<span class="fc" id="L111">        this.active = false;</span>
+<span class="fc" id="L112">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L113">    }</span>
+
+    private static void validateId(UUID id) {
+<span class="fc bfc" id="L116" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L117">            throw new IllegalArgumentException(</span>
+                    &quot;El identificador de la categoría es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L121">    }</span>
+
+    private static void validateUserId(UUID userId) {
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L125">            throw new IllegalArgumentException(</span>
+                    &quot;El identificador del usuario es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L129">    }</span>
+
+    private static void validateName(String name) {
+<span class="fc bfc" id="L132" title="All 4 branches covered.">        if (name == null || name.isBlank()) {</span>
+<span class="fc" id="L133">            throw new IllegalArgumentException(</span>
+                    &quot;El nombre de la categoría es obligatorio&quot;
+            );
+        }
+
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (name.length() &gt; 20) {</span>
+<span class="fc" id="L139">            throw new IllegalArgumentException(</span>
+                    &quot;El nombre de la categoría no puede superar los 20 caracteres&quot;
+            );
+        }
+<span class="fc" id="L143">    }</span>
+
+    private static void validateColor(String color) {
+<span class="fc bfc" id="L146" title="All 4 branches covered.">        if (color == null || !color.matches(&quot;^#[0-9A-Fa-f]{6}$&quot;)) {</span>
+<span class="fc" id="L147">            throw new IllegalArgumentException(</span>
+                    &quot;El color debe ser un hexadecimal válido (ej: #FF5733)&quot;
+            );
+        }
+<span class="fc" id="L151">    }</span>
+
+    private static void validateBudgetLimit(BigDecimal budgetLimit) {
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (budgetLimit != null</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">                &amp;&amp; budgetLimit.compareTo(BigDecimal.ZERO) &lt; 0) {</span>
+<span class="fc" id="L156">            throw new IllegalArgumentException(</span>
+                    &quot;El límite de presupuesto no puede ser negativo&quot;
+            );
+        }
+<span class="fc" id="L160">    }</span>
+
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (createdAt == null) {</span>
+<span class="fc" id="L164">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha de creación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L168">    }</span>
+
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (modifiedAt == null) {</span>
+<span class="fc" id="L172">            throw new IllegalArgumentException(</span>
+                    &quot;La fecha de modificación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L176">    }</span>
+}
+
+/*
+5. Las invariantes viven dentro del agregado
+
+Por ejemplo:
+
+validateName(name);
+validateColor(color);
+validateBudgetLimit(budgetLimit);
+
+Ya no dependemos únicamente de que el controller haya puesto @Valid.
+
+Eso es importante porque mañana podríamos crear una categoría desde:
+
+REST
+importación
+otro caso de uso
+un test
+un proceso batch
+
+y el dominio seguirá protegiéndose.
+
+Una decisión importante: userId
+
+He mantenido:
+
+private final UUID userId;
+
+porque en el modelo de negocio una categoría pertenece a un usuario y no debería poder cambiar de propietario mediante una actualización normal.
+
+Pero esto no impide la importación.
+
+Para importar datos de otro usuario, posteriormente tendremos un mecanismo explícito que cree/reconstituya la categoría con el userId del usuario destino.
+
+Es mucho mejor que hacer:
+
+category.setUserId(loggedInUserId);
+
+porque eso era una mutación arbitraria del agregado.
+*/
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

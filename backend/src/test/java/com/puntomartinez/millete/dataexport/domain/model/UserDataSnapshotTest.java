@@ -17,7 +17,7 @@ class UserDataSnapshotTest {
     void shouldCreateSnapshotWithAllFields() {
         UserDataSnapshot.SnapshotMetadata metadata =
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.2.0", LocalDateTime.now(), "0.2.0"
+                        "0.2.0", Instant.now(), "0.2.0"
                 );
 
         UserDataSnapshot snapshot = new UserDataSnapshot(
@@ -43,7 +43,7 @@ class UserDataSnapshotTest {
     @Test
     @DisplayName("SnapshotMetadata should be immutable record")
     void snapshotMetadataShouldBeImmutable() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = Instant.now();
         UserDataSnapshot.SnapshotMetadata metadata =
                 new UserDataSnapshot.SnapshotMetadata("0.2.0", now, "0.2.0");
 
@@ -57,7 +57,7 @@ class UserDataSnapshotTest {
     void shouldAllowNullOptionalFields() {
         UserDataSnapshot.SnapshotMetadata metadata =
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.2.0", LocalDateTime.now(), "0.2.0"
+                        "0.2.0", Instant.now(), "0.2.0"
                 );
 
         UserDataSnapshot snapshot = new UserDataSnapshot(

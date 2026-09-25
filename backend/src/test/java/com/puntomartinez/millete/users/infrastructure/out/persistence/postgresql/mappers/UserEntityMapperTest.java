@@ -74,7 +74,7 @@ class UserEntityMapperTest {
     void shouldPreserveDataInRoundTrip() {
         User original = new User(
                 UUID.randomUUID(), "ana", "ana@mail.com", "hashed",
-                LocalDateTime.now(), LocalDateTime.now(), true, false
+                Instant.now(), Instant.now(), true, false
         );
 
         UserEntity entity = mapper.toEntity(original);

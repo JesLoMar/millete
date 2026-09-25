@@ -13,7 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +26,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GoalPostgresAdapter")
+
 class GoalPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     @Mock
     private JpaGoalUnitRepository jpaRepository;
@@ -38,7 +48,7 @@ class GoalPostgresAdapterTest {
     @Test
     @DisplayName("Should save goal unit")
     void shouldSaveGoalUnit() {
-        GoalUnit domain = GoalUnit.create(
+        GoalUnit domain = GoalUnit.create(TIME, 
                 "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE
         );
@@ -63,7 +73,7 @@ class GoalPostgresAdapterTest {
     void shouldFindById() {
         UUID goalId = UUID.randomUUID();
         GoalUnitEntity entity = new GoalUnitEntity();
-        GoalUnit domain = GoalUnit.create(
+        GoalUnit domain = GoalUnit.create(TIME, 
                 "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE
         );
@@ -93,7 +103,7 @@ class GoalPostgresAdapterTest {
     void shouldFindByIds() {
         UUID goalId = UUID.randomUUID();
         GoalUnitEntity entity = new GoalUnitEntity();
-        GoalUnit domain = GoalUnit.create(
+        GoalUnit domain = GoalUnit.create(TIME, 
                 "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE
         );

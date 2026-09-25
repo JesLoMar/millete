@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupGoalController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.infrastructure.in.controller</a> &gt; <span class="el_source">GroupGoalController.java</span></div><h1>GroupGoalController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.infrastructure.in.controller;
+
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.AcceptInvitationUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.AddContributionUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.CalculateContributionsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.CreateGoalUnitUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.DeleteGoalUnitUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.DeleteMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHistoryUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.GetGoalDetailUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.InviteMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.LeaveGoalUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.ListGoalsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.ListPendingInvitationsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.RejectInvitationUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateGoalUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.WithdrawContributionUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.ContributionsCalculationResponseDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.CreateGoalRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalContributionDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalDetailResponseDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalListItemResponseDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalMemberDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.GoalResponseDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.InvitationResponseDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.InviteMemberRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateGoalRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.UpdateMemberRequestDTO;
+import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.WithdrawContributionRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/api/v1/goals&quot;)
+@PreAuthorize(&quot;isAuthenticated()&quot;)
+public class GroupGoalController {
+
+    private final CreateGoalUnitUseCase createGoalUnitUseCase;
+    private final UpdateGoalUseCase updateGoalUseCase;
+    private final DeleteGoalUnitUseCase deleteGoalUnitUseCase;
+    private final UpdateMemberUseCase updateMemberUseCase;
+    private final DeleteMemberUseCase deleteMemberUseCase;
+    private final AddContributionUseCase addContributionUseCase;
+    private final WithdrawContributionUseCase withdrawContributionUseCase;
+    private final LeaveGoalUseCase leaveGoalUseCase;
+    private final ListGoalsUseCase listGoalsUseCase;
+    private final GetGoalDetailUseCase getGoalDetailUseCase;
+    private final GetContributionHistoryUseCase getContributionHistoryUseCase;
+    private final CalculateContributionsUseCase calculateContributionsUseCase;
+    private final InviteMemberUseCase inviteMemberUseCase;
+    private final ListPendingInvitationsUseCase listPendingInvitationsUseCase;
+    private final AcceptInvitationUseCase acceptInvitationUseCase;
+    private final RejectInvitationUseCase rejectInvitationUseCase;
+    private final UserLookupPort userLookupPort;
+
+    public GroupGoalController(
+            CreateGoalUnitUseCase createGoalUnitUseCase,
+            UpdateGoalUseCase updateGoalUseCase,
+            DeleteGoalUnitUseCase deleteGoalUnitUseCase,
+            UpdateMemberUseCase updateMemberUseCase,
+            DeleteMemberUseCase deleteMemberUseCase,
+            AddContributionUseCase addContributionUseCase,
+            WithdrawContributionUseCase withdrawContributionUseCase,
+            LeaveGoalUseCase leaveGoalUseCase,
+            ListGoalsUseCase listGoalsUseCase,
+            GetGoalDetailUseCase getGoalDetailUseCase,
+            GetContributionHistoryUseCase getContributionHistoryUseCase,
+            CalculateContributionsUseCase calculateContributionsUseCase,
+            InviteMemberUseCase inviteMemberUseCase,
+            ListPendingInvitationsUseCase listPendingInvitationsUseCase,
+            AcceptInvitationUseCase acceptInvitationUseCase,
+            RejectInvitationUseCase rejectInvitationUseCase,
+            UserLookupPort userLookupPort
+<span class="fc" id="L93">    ) {</span>
+<span class="fc" id="L94">        this.createGoalUnitUseCase = createGoalUnitUseCase;</span>
+<span class="fc" id="L95">        this.updateGoalUseCase = updateGoalUseCase;</span>
+<span class="fc" id="L96">        this.deleteGoalUnitUseCase = deleteGoalUnitUseCase;</span>
+<span class="fc" id="L97">        this.updateMemberUseCase = updateMemberUseCase;</span>
+<span class="fc" id="L98">        this.deleteMemberUseCase = deleteMemberUseCase;</span>
+<span class="fc" id="L99">        this.addContributionUseCase = addContributionUseCase;</span>
+<span class="fc" id="L100">        this.withdrawContributionUseCase = withdrawContributionUseCase;</span>
+<span class="fc" id="L101">        this.leaveGoalUseCase = leaveGoalUseCase;</span>
+<span class="fc" id="L102">        this.listGoalsUseCase = listGoalsUseCase;</span>
+<span class="fc" id="L103">        this.getGoalDetailUseCase = getGoalDetailUseCase;</span>
+<span class="fc" id="L104">        this.getContributionHistoryUseCase = getContributionHistoryUseCase;</span>
+<span class="fc" id="L105">        this.calculateContributionsUseCase = calculateContributionsUseCase;</span>
+<span class="fc" id="L106">        this.inviteMemberUseCase = inviteMemberUseCase;</span>
+<span class="fc" id="L107">        this.listPendingInvitationsUseCase = listPendingInvitationsUseCase;</span>
+<span class="fc" id="L108">        this.acceptInvitationUseCase = acceptInvitationUseCase;</span>
+<span class="fc" id="L109">        this.rejectInvitationUseCase = rejectInvitationUseCase;</span>
+<span class="fc" id="L110">        this.userLookupPort = userLookupPort;</span>
+<span class="fc" id="L111">    }</span>
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;GoalListItemResponseDTO&gt;&gt; getMyGoals(
+            Authentication authentication
+    ) {
+<span class="fc" id="L117">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L119">        List&lt;ListGoalsUseCase.GoalSummary&gt; goals =</span>
+<span class="fc" id="L120">                listGoalsUseCase.listGoals(userId);</span>
+
+<span class="fc" id="L122">        List&lt;GoalListItemResponseDTO&gt; response =</span>
+<span class="fc" id="L123">                goals.stream()</span>
+<span class="fc" id="L124">                        .map(this::mapGoalSummary)</span>
+<span class="fc" id="L125">                        .toList();</span>
+
+<span class="fc" id="L127">        return ResponseEntity.ok(response);</span>
+    }
+
+    @GetMapping(&quot;/{goalId}&quot;)
+    public ResponseEntity&lt;GoalDetailResponseDTO&gt; getGoalDetail(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+<span class="nc" id="L135">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L137">        GetGoalDetailUseCase.GoalDetail detail =</span>
+<span class="nc" id="L138">                getGoalDetailUseCase.getGoalDetail(goalId, userId);</span>
+
+<span class="nc" id="L140">        return ResponseEntity.ok(</span>
+<span class="nc" id="L141">                mapGoalDetail(detail, userId)</span>
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;GoalResponseDTO&gt; createGoal(
+            @Valid @RequestBody CreateGoalRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L150">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L152">        CreateGoalUnitUseCase.CreateGoalUnitCommand command =</span>
+                new CreateGoalUnitUseCase.CreateGoalUnitCommand(
+                        userId,
+<span class="fc" id="L155">                        request.name(),</span>
+<span class="fc" id="L156">                        request.monthlyTarget(),</span>
+<span class="fc" id="L157">                        request.distributionMode()</span>
+                );
+
+<span class="fc" id="L160">        var goal = createGoalUnitUseCase.create(command);</span>
+
+<span class="fc" id="L162">        GoalResponseDTO response = new GoalResponseDTO(</span>
+<span class="fc" id="L163">                goal.getId(),</span>
+<span class="fc" id="L164">                goal.getName(),</span>
+<span class="fc" id="L165">                goal.getMonthlyTarget(),</span>
+<span class="fc" id="L166">                goal.getDistributionMode().name()</span>
+        );
+
+<span class="fc" id="L169">        return ResponseEntity</span>
+<span class="fc" id="L170">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L171">                .body(response);</span>
+    }
+
+    @PutMapping(&quot;/{goalId}&quot;)
+    public ResponseEntity&lt;Void&gt; updateGoal(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody UpdateGoalRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L180">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L182">        UpdateGoalUseCase.UpdateGoalCommand command =</span>
+                new UpdateGoalUseCase.UpdateGoalCommand(
+<span class="fc" id="L184">                        request.name(),</span>
+<span class="fc" id="L185">                        request.monthlyTarget(),</span>
+<span class="fc" id="L186">                        request.distributionMode()</span>
+                );
+
+<span class="fc" id="L189">        updateGoalUseCase.update(</span>
+                goalId,
+                userId,
+                command
+        );
+
+<span class="fc" id="L195">        return ResponseEntity.ok().build();</span>
+    }
+
+    @DeleteMapping(&quot;/{goalId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteGoal(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+<span class="fc" id="L203">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L205">        deleteGoalUnitUseCase.deleteGoalUnit(</span>
+                goalId,
+                userId
+        );
+
+<span class="fc" id="L210">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @PutMapping(&quot;/{goalId}/members/{memberId}&quot;)
+    public ResponseEntity&lt;Void&gt; updateMember(
+            @PathVariable UUID goalId,
+            @PathVariable UUID memberId,
+            @Valid @RequestBody UpdateMemberRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="nc" id="L220">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L222">        UpdateMemberUseCase.UpdateMemberCommand command =</span>
+                new UpdateMemberUseCase.UpdateMemberCommand(
+<span class="nc" id="L224">                        request.role(),</span>
+<span class="nc" id="L225">                        request.salary(),</span>
+<span class="nc" id="L226">                        request.customPercentage()</span>
+                );
+
+<span class="nc" id="L229">        updateMemberUseCase.updateMember(</span>
+                goalId,
+                memberId,
+                userId,
+                command
+        );
+
+<span class="nc" id="L236">        return ResponseEntity.ok().build();</span>
+    }
+
+    @DeleteMapping(&quot;/{goalId}/members/{memberId}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteMember(
+            @PathVariable UUID goalId,
+            @PathVariable UUID memberId,
+            Authentication authentication
+    ) {
+<span class="nc" id="L245">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L247">        deleteMemberUseCase.deleteMember(</span>
+                goalId,
+                memberId,
+                userId
+        );
+
+<span class="nc" id="L253">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @GetMapping(&quot;/{goalId}/contributions&quot;)
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;GoalContributionDTO&gt;&gt; getContributions(
+            @PathVariable UUID goalId,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;60&quot;) int size,
+            Authentication authentication
+    ) {
+<span class="nc" id="L263">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L265">        GetContributionHistoryUseCase.PaginatedContributions pageResult =</span>
+<span class="nc" id="L266">                getContributionHistoryUseCase.getContributionHistory(</span>
+                        goalId,
+                        userId,
+                        page,
+                        size
+                );
+
+<span class="nc" id="L273">        Set&lt;UUID&gt; contributorIds =</span>
+<span class="nc" id="L274">                pageResult.contributions().stream()</span>
+<span class="nc" id="L275">                        .map(GoalContribution::getUserId)</span>
+<span class="nc" id="L276">                        .collect(Collectors.toSet());</span>
+
+<span class="nc" id="L278">        Map&lt;UUID, UserLookupPort.UserInfo&gt; usersById =</span>
+<span class="nc" id="L279">                userLookupPort.findByIds(contributorIds);</span>
+
+<span class="nc" id="L281">        List&lt;GoalContributionDTO&gt; response =</span>
+<span class="nc" id="L282">                pageResult.contributions().stream()</span>
+<span class="nc" id="L283">                        .map(c -&gt; mapContribution(c, usersById))</span>
+<span class="nc" id="L284">                        .toList();</span>
+
+<span class="nc" id="L286">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+                        response,
+<span class="nc" id="L289">                        pageResult.currentPage(),</span>
+<span class="nc" id="L290">                        pageResult.totalPages(),</span>
+<span class="nc" id="L291">                        pageResult.totalElements(),</span>
+<span class="nc" id="L292">                        pageResult.size(),</span>
+<span class="nc" id="L293">                        pageResult.first(),</span>
+<span class="nc" id="L294">                        pageResult.last()</span>
+                )
+        );
+    }
+
+    @PostMapping(&quot;/{goalId}/contributions&quot;)
+    public ResponseEntity&lt;Void&gt; addContribution(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody AddContributionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L305">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L307">        addContributionUseCase.addContribution(</span>
+                goalId,
+                userId,
+                new AddContributionUseCase.AddContributionCommand(
+<span class="fc" id="L311">                        request.amount()</span>
+                )
+        );
+
+<span class="fc" id="L315">        return ResponseEntity</span>
+<span class="fc" id="L316">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L317">                .build();</span>
+    }
+
+    @PostMapping(&quot;/{goalId}/contributions/withdraw&quot;)
+    public ResponseEntity&lt;Void&gt; withdrawContribution(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody WithdrawContributionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L326">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L328">        withdrawContributionUseCase.withdrawContribution(</span>
+                goalId,
+                userId,
+                new WithdrawContributionUseCase.WithdrawContributionCommand(
+<span class="fc" id="L332">                        request.amount()</span>
+                )
+        );
+
+<span class="fc" id="L336">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PostMapping(&quot;/{goalId}/leave&quot;)
+    public ResponseEntity&lt;Void&gt; leaveGoal(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+<span class="fc" id="L344">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L346">        leaveGoalUseCase.leaveGoal(</span>
+                goalId,
+                userId
+        );
+
+<span class="fc" id="L351">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @GetMapping(&quot;/{goalId}/contributions/calculation&quot;)
+    public ResponseEntity&lt;ContributionsCalculationResponseDTO&gt; calculateContributions(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+<span class="nc" id="L359">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L361">        CalculateContributionsUseCase.ContributionsCalculation calculation =</span>
+<span class="nc" id="L362">                calculateContributionsUseCase.calculateContributions(</span>
+                        goalId,
+                        userId
+                );
+
+<span class="nc" id="L367">        return ResponseEntity.ok(</span>
+<span class="nc" id="L368">                mapCalculation(calculation)</span>
+        );
+    }
+
+    @PostMapping(&quot;/{goalId}/invitations&quot;)
+    public ResponseEntity&lt;InvitationResponseDTO&gt; inviteMember(
+            @PathVariable UUID goalId,
+            @Valid @RequestBody InviteMemberRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L378">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L380">        InviteMemberUseCase.InviteMemberCommand command =</span>
+                new InviteMemberUseCase.InviteMemberCommand(
+<span class="fc" id="L382">                        request.identifier()</span>
+                );
+
+<span class="fc" id="L385">        InviteMemberUseCase.InvitationResult invitation =</span>
+<span class="fc" id="L386">                inviteMemberUseCase.inviteMember(</span>
+                        goalId,
+                        userId,
+                        command
+                );
+
+<span class="fc" id="L392">        return ResponseEntity</span>
+<span class="fc" id="L393">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L394">                .body(mapInvitationResponse(invitation));</span>
+    }
+
+    @GetMapping(&quot;/invitations/pending&quot;)
+    public ResponseEntity&lt;List&lt;InvitationResponseDTO&gt;&gt; getPendingInvitations(
+            Authentication authentication
+    ) {
+<span class="nc" id="L401">        UUID userId = getUserId(authentication);</span>
+
+<span class="nc" id="L403">        List&lt;ListPendingInvitationsUseCase.InvitationResult&gt; invitations =</span>
+<span class="nc" id="L404">                listPendingInvitationsUseCase.listPendingInvitations(userId);</span>
+
+<span class="nc" id="L406">        List&lt;InvitationResponseDTO&gt; response =</span>
+<span class="nc" id="L407">                invitations.stream()</span>
+<span class="nc" id="L408">                        .map(this::mapInvitationResponse)</span>
+<span class="nc" id="L409">                        .toList();</span>
+
+<span class="nc" id="L411">        return ResponseEntity.ok(response);</span>
+    }
+
+    @PostMapping(&quot;/invitations/{invitationId}/accept&quot;)
+    public ResponseEntity&lt;Void&gt; acceptInvitation(
+            @PathVariable UUID invitationId,
+            Authentication authentication
+    ) {
+<span class="fc" id="L419">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L421">        acceptInvitationUseCase.acceptInvitation(</span>
+                userId,
+                invitationId
+        );
+
+<span class="fc" id="L426">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PostMapping(&quot;/invitations/{invitationId}/reject&quot;)
+    public ResponseEntity&lt;Void&gt; rejectInvitation(
+            @PathVariable UUID invitationId,
+            Authentication authentication
+    ) {
+<span class="fc" id="L434">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L436">        rejectInvitationUseCase.rejectInvitation(</span>
+                userId,
+                invitationId
+        );
+
+<span class="fc" id="L441">        return ResponseEntity.ok().build();</span>
+    }
+
+    // ── Mappers ──────────────────────────────────────────────
+
+    private GoalListItemResponseDTO mapGoalSummary(
+            ListGoalsUseCase.GoalSummary summary
+    ) {
+<span class="fc" id="L449">        return new GoalListItemResponseDTO(</span>
+<span class="fc" id="L450">                summary.id(),</span>
+<span class="fc" id="L451">                summary.name(),</span>
+<span class="fc" id="L452">                summary.monthlyTarget(),</span>
+<span class="fc" id="L453">                summary.memberCount(),</span>
+<span class="fc" id="L454">                summary.admin()</span>
+        );
+    }
+
+    private GoalDetailResponseDTO mapGoalDetail(
+            GetGoalDetailUseCase.GoalDetail detail,
+            UUID userId
+    ) {
+<span class="nc" id="L462">        boolean isAdmin = detail.members().stream()</span>
+<span class="nc" id="L463">                .anyMatch(m -&gt;</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">                        m.userId().equals(userId)</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">                                &amp;&amp; m.role() == GoalRole.ADMIN</span>
+                );
+
+<span class="nc" id="L468">        List&lt;GoalMemberDTO&gt; members =</span>
+<span class="nc" id="L469">                detail.members().stream()</span>
+<span class="nc" id="L470">                        .map(m -&gt; new GoalMemberDTO(</span>
+<span class="nc" id="L471">                                m.id(),</span>
+<span class="nc" id="L472">                                m.userId(),</span>
+<span class="nc" id="L473">                                resolveDisplayName(</span>
+<span class="nc" id="L474">                                        m.username(),</span>
+<span class="nc" id="L475">                                        m.email()</span>
+                                ),
+<span class="nc" id="L477">                                m.role().name(),</span>
+<span class="nc" id="L478">                                m.salary(),</span>
+<span class="nc" id="L479">                                m.customPercentage()</span>
+                        ))
+<span class="nc" id="L481">                        .toList();</span>
+
+<span class="nc" id="L483">        Map&lt;UUID, BigDecimal&gt; contributionTotals =</span>
+<span class="nc" id="L484">                detail.totals().stream()</span>
+<span class="nc" id="L485">                        .collect(Collectors.toMap(</span>
+                                MemberContributionTotals::userId,
+                                MemberContributionTotals::net
+                        ));
+
+<span class="nc" id="L490">        return new GoalDetailResponseDTO(</span>
+<span class="nc" id="L491">                detail.id(),</span>
+<span class="nc" id="L492">                detail.name(),</span>
+<span class="nc" id="L493">                detail.monthlyTarget(),</span>
+<span class="nc" id="L494">                detail.distributionMode().name(),</span>
+                isAdmin,
+                members,
+<span class="nc" id="L497">                List.of(),</span>
+                contributionTotals
+        );
+    }
+
+    private GoalContributionDTO mapContribution(
+            GoalContribution contribution,
+            Map&lt;UUID, UserLookupPort.UserInfo&gt; usersById
+    ) {
+<span class="nc" id="L506">        UserLookupPort.UserInfo userInfo =</span>
+<span class="nc" id="L507">                usersById.get(contribution.getUserId());</span>
+
+<span class="nc" id="L509">        String userName = resolveDisplayName(</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">                userInfo != null</span>
+<span class="nc" id="L511">                        ? userInfo.username()</span>
+<span class="nc" id="L512">                        : null,</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">                userInfo != null</span>
+<span class="nc" id="L514">                        ? userInfo.email()</span>
+<span class="nc" id="L515">                        : null</span>
+        );
+
+<span class="nc" id="L518">        return new GoalContributionDTO(</span>
+<span class="nc" id="L519">                contribution.getId(),</span>
+<span class="nc" id="L520">                contribution.getUserId(),</span>
+                userName,
+<span class="nc" id="L522">                contribution.getAmount(),</span>
+<span class="nc" id="L523">                contribution.getDate()</span>
+        );
+    }
+
+    private InvitationResponseDTO mapInvitationResponse(
+            InviteMemberUseCase.InvitationResult invitation
+    ) {
+<span class="fc" id="L530">        return new InvitationResponseDTO(</span>
+<span class="fc" id="L531">                invitation.id(),</span>
+<span class="fc" id="L532">                invitation.goalId(),</span>
+<span class="fc" id="L533">                invitation.goalName(),</span>
+<span class="fc" id="L534">                invitation.inviterUserId(),</span>
+<span class="fc" id="L535">                invitation.inviterName(),</span>
+<span class="fc" id="L536">                invitation.invitedUserId(),</span>
+<span class="fc" id="L537">                invitation.status().name(),</span>
+<span class="fc" id="L538">                invitation.createdAt()</span>
+        );
+    }
+
+    private InvitationResponseDTO mapInvitationResponse(
+            ListPendingInvitationsUseCase.InvitationResult invitation
+    ) {
+<span class="nc" id="L545">        return new InvitationResponseDTO(</span>
+<span class="nc" id="L546">                invitation.id(),</span>
+<span class="nc" id="L547">                invitation.goalId(),</span>
+<span class="nc" id="L548">                invitation.goalName(),</span>
+<span class="nc" id="L549">                invitation.inviterUserId(),</span>
+<span class="nc" id="L550">                invitation.inviterName(),</span>
+<span class="nc" id="L551">                invitation.invitedUserId(),</span>
+<span class="nc" id="L552">                invitation.status().name(),</span>
+<span class="nc" id="L553">                invitation.createdAt()</span>
+        );
+    }
+
+    private ContributionsCalculationResponseDTO mapCalculation(
+            CalculateContributionsUseCase.ContributionsCalculation calculation
+    ) {
+<span class="nc" id="L560">        List&lt;ContributionsCalculationResponseDTO.MemberContributionDTO&gt; contributions =</span>
+<span class="nc" id="L561">                calculation.contributions().stream()</span>
+<span class="nc" id="L562">                        .map(mc -&gt;</span>
+<span class="nc" id="L563">                                new ContributionsCalculationResponseDTO.MemberContributionDTO(</span>
+<span class="nc" id="L564">                                        mc.userId(),</span>
+<span class="nc" id="L565">                                        mc.suggestedAmount()</span>
+                                )
+                        )
+<span class="nc" id="L568">                        .toList();</span>
+
+<span class="nc" id="L570">        return new ContributionsCalculationResponseDTO(</span>
+<span class="nc" id="L571">                calculation.monthlyTarget(),</span>
+<span class="nc" id="L572">                calculation.distributionMode(),</span>
+                contributions
+        );
+    }
+
+    private String resolveDisplayName(
+            String username,
+            String email
+    ) {
+<span class="nc bnc" id="L581" title="All 4 branches missed.">        if (username != null &amp;&amp; !username.isBlank()) {</span>
+<span class="nc" id="L582">            return username;</span>
+        }
+
+<span class="nc bnc" id="L585" title="All 4 branches missed.">        if (email != null &amp;&amp; !email.isBlank()) {</span>
+<span class="nc" id="L586">            return email;</span>
+        }
+
+<span class="nc" id="L589">        return &quot;Usuario&quot;;</span>
+    }
+
+    private UUID getUserId(
+            Authentication authentication
+    ) {
+<span class="fc" id="L595">        return ((JwtUser) authentication.getPrincipal()).getId();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

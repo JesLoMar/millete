@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.puntomartinez.millete.dashboard.infrastructure.out.transactions.TransactionQueryPostgresAdapterTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.322 s -- in com.puntomartinez.millete.dashboard.infrastructure.out.transactions.TransactionQueryPostgresAdapterTest

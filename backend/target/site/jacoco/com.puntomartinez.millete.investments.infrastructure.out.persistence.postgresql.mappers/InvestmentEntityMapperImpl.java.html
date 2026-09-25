@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvestmentEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">InvestmentEntityMapperImpl.java</span></div><h1>InvestmentEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.investments.domain.model.Investment;
+import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.InvestmentEntity;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:41+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L14">public class InvestmentEntityMapperImpl implements InvestmentEntityMapper {</span>
+
+    @Override
+    public InvestmentEntity toEntity(Investment domain) {
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        if ( domain == null ) {</span>
+<span class="nc" id="L19">            return null;</span>
+        }
+
+<span class="fc" id="L22">        InvestmentEntity.InvestmentEntityBuilder investmentEntity = InvestmentEntity.builder();</span>
+
+<span class="fc" id="L24">        investmentEntity.id( domain.getId() );</span>
+<span class="fc" id="L25">        investmentEntity.userId( domain.getUserId() );</span>
+<span class="fc" id="L26">        investmentEntity.assetName( domain.getAssetName() );</span>
+<span class="fc" id="L27">        investmentEntity.ticker( domain.getTicker() );</span>
+<span class="fc" id="L28">        investmentEntity.quantity( domain.getQuantity() );</span>
+<span class="fc" id="L29">        investmentEntity.purchasePrice( domain.getPurchasePrice() );</span>
+<span class="fc" id="L30">        investmentEntity.currentPrice( domain.getCurrentPrice() );</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if ( domain.getType() != null ) {</span>
+<span class="fc" id="L32">            investmentEntity.type( domain.getType().name() );</span>
+        }
+<span class="fc" id="L34">        investmentEntity.purchaseDate( domain.getPurchaseDate() );</span>
+<span class="fc" id="L35">        investmentEntity.createdAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L36">        investmentEntity.modifiedAt( domain.getModifiedAt() );</span>
+<span class="fc" id="L37">        investmentEntity.active( domain.isActive() );</span>
+
+<span class="fc" id="L39">        return investmentEntity.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

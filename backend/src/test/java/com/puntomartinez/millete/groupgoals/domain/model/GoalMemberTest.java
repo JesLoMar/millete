@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,12 +15,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("GoalMember aggregate")
 class GoalMemberTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
 
     private static final UUID GOAL_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.randomUUID();
 
     private GoalMember createValid() {
         return GoalMember.create(
+                TIME,
                 GOAL_ID,
                 USER_ID,
                 GoalRole.MEMBER,
@@ -51,7 +60,8 @@ class GoalMemberTest {
         @DisplayName("Should create member with custom percentage")
         void shouldCreateMemberWithCustomPercentage() {
             GoalMember member = GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.MEMBER,
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.MEMBER,
                     new BigDecimal("2000.00"), new BigDecimal("30.00")
             );
 
@@ -62,7 +72,8 @@ class GoalMemberTest {
         @DisplayName("Should create admin member")
         void shouldCreateAdminMember() {
             GoalMember member = GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.ADMIN, null
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.ADMIN, null
             );
 
             assertThat(member.getRole()).isEqualTo(GoalRole.ADMIN);
@@ -73,7 +84,8 @@ class GoalMemberTest {
         @DisplayName("Should reject null goal id")
         void shouldRejectNullGoalId() {
             assertThatThrownBy(() -> GoalMember.create(
-                    null, USER_ID, GoalRole.MEMBER, null
+                    TIME,
+                null, USER_ID, GoalRole.MEMBER, null
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -81,7 +93,8 @@ class GoalMemberTest {
         @DisplayName("Should reject null user id")
         void shouldRejectNullUserId() {
             assertThatThrownBy(() -> GoalMember.create(
-                    GOAL_ID, null, GoalRole.MEMBER, null
+                    TIME,
+                GOAL_ID, null, GoalRole.MEMBER, null
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -89,7 +102,8 @@ class GoalMemberTest {
         @DisplayName("Should reject null role")
         void shouldRejectNullRole() {
             assertThatThrownBy(() -> GoalMember.create(
-                    GOAL_ID, USER_ID, null, null
+                    TIME,
+                GOAL_ID, USER_ID, null, null
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -97,7 +111,8 @@ class GoalMemberTest {
         @DisplayName("Should reject negative salary")
         void shouldRejectNegativeSalary() {
             assertThatThrownBy(() -> GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.MEMBER, new BigDecimal("-10.00")
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.MEMBER, new BigDecimal("-10.00")
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -105,7 +120,8 @@ class GoalMemberTest {
         @DisplayName("Should reject custom percentage below zero")
         void shouldRejectCustomPercentageBelowZero() {
             assertThatThrownBy(() -> GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.MEMBER,
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.MEMBER,
                     null, new BigDecimal("-5.00")
             )).isInstanceOf(IllegalArgumentException.class);
         }
@@ -114,7 +130,8 @@ class GoalMemberTest {
         @DisplayName("Should reject custom percentage above 100")
         void shouldRejectCustomPercentageAbove100() {
             assertThatThrownBy(() -> GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.MEMBER,
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.MEMBER,
                     null, new BigDecimal("105.00")
             )).isInstanceOf(IllegalArgumentException.class);
         }
@@ -123,7 +140,8 @@ class GoalMemberTest {
         @DisplayName("Should allow custom percentage at 100")
         void shouldAllowCustomPercentageAt100() {
             GoalMember member = GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.MEMBER,
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.MEMBER,
                     null, new BigDecimal("100.00")
             );
 
@@ -139,9 +157,10 @@ class GoalMemberTest {
         @DisplayName("Should update all details")
         void shouldUpdateAllDetails() {
             GoalMember member = createValid();
-            LocalDateTime previousModifiedAt = member.getModifiedAt();
+            Instant previousModifiedAt = member.getModifiedAt();
 
             member.updateDetails(
+                    TIME,
                     GoalRole.ADMIN,
                     new BigDecimal("3000.00"),
                     new BigDecimal("40.00")
@@ -158,7 +177,7 @@ class GoalMemberTest {
         void shouldNotUpdateNullFields() {
             GoalMember member = createValid();
 
-            member.updateDetails(null, null, null);
+            member.updateDetails(TIME, null, null, null);
 
             assertThat(member.getRole()).isEqualTo(GoalRole.MEMBER);
             assertThat(member.getSalary()).isEqualByComparingTo("2000.00");
@@ -173,9 +192,9 @@ class GoalMemberTest {
         @DisplayName("Should activate inactive member")
         void shouldActivateInactiveMember() {
             GoalMember member = createValid();
-            member.deactivate();
+            member.deactivate(TIME);
 
-            member.activate();
+            member.activate(TIME);
 
             assertThat(member.isActive()).isTrue();
             assertThat(member.getJoinedAt()).isNotNull();
@@ -186,7 +205,7 @@ class GoalMemberTest {
         void shouldDeactivateActiveMember() {
             GoalMember member = createValid();
 
-            member.deactivate();
+            member.deactivate(TIME);
 
             assertThat(member.isActive()).isFalse();
             assertThat(member.getModifiedAt()).isNotNull();
@@ -201,7 +220,8 @@ class GoalMemberTest {
         @DisplayName("Should return true for admin role")
         void shouldReturnTrueForAdminRole() {
             GoalMember member = GoalMember.create(
-                    GOAL_ID, USER_ID, GoalRole.ADMIN, null
+                    TIME,
+                GOAL_ID, USER_ID, GoalRole.ADMIN, null
             );
 
             assertThat(member.isAdmin()).isTrue();

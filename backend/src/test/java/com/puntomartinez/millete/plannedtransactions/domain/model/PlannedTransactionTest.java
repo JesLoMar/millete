@@ -50,8 +50,8 @@ class PlannedTransactionTest {
                 1,
                 LocalDate.now(),
                 null,
-                LocalDateTime.now(),
-                LocalDateTime.now(),
+                Instant.now(),
+                Instant.now(),
                 active,
                 null,
                 0
@@ -286,7 +286,7 @@ class PlannedTransactionTest {
                     TransactionType.EXPENSE, VALID_DESCRIPTION,
                     PlannedTransaction.FrequencyType.MONTHS, 1,
                     LocalDate.now(), null,
-                    LocalDateTime.now(), LocalDateTime.now(), true, null, 0
+                    Instant.now(), Instant.now(), true, null, 0
             )).isInstanceOf(InvalidInputException.class);
         }
 
@@ -298,7 +298,7 @@ class PlannedTransactionTest {
                     TransactionType.EXPENSE, VALID_DESCRIPTION,
                     PlannedTransaction.FrequencyType.MONTHS, 1,
                     LocalDate.now(), null,
-                    null, LocalDateTime.now(), true, null, 0
+                    null, Instant.now(), true, null, 0
             )).isInstanceOf(InvalidInputException.class);
         }
 
@@ -310,7 +310,7 @@ class PlannedTransactionTest {
                     TransactionType.EXPENSE, VALID_DESCRIPTION,
                     PlannedTransaction.FrequencyType.MONTHS, 1,
                     LocalDate.now(), null,
-                    LocalDateTime.now(), null, true, null, 0
+                    Instant.now(), null, true, null, 0
             )).isInstanceOf(InvalidInputException.class);
         }
     }

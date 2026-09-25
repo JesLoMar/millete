@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -73,13 +72,13 @@ class DashboardServiceTest {
         @Test
         @DisplayName("Should calculate income, expenses and balance")
         void shouldCalculateMetrics() {
-            LocalDateTime[] currentRange = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+            LocalDate[] currentRange = {
+                    LocalDate.now().minusDays(30),
+                    LocalDate.now()
             };
-            LocalDateTime[] previousRange = {
-                    LocalDateTime.now().minusDays(60),
-                    LocalDateTime.now().minusDays(30)
+            LocalDate[] previousRange = {
+                    LocalDate.now().minusDays(60),
+                    LocalDate.now().minusDays(30)
             };
 
             when(dashboardPeriodService.getDateRange("month"))
@@ -91,13 +90,13 @@ class DashboardServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Salary", null,
                             new BigDecimal("2000.00"),
-                            LocalDateTime.now(), "INCOME"
+                            Instant.now(), "INCOME"
                     );
             TransactionQueryPort.TransactionData expense =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Food", null,
                             new BigDecimal("500.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -120,13 +119,13 @@ class DashboardServiceTest {
         @Test
         @DisplayName("Should return 100 trend when previous is zero and current is positive")
         void shouldReturn100TrendWhenPreviousIsZero() {
-            LocalDateTime[] currentRange = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+            LocalDate[] currentRange = {
+                    LocalDate.now().minusDays(30),
+                    LocalDate.now()
             };
-            LocalDateTime[] previousRange = {
-                    LocalDateTime.now().minusDays(60),
-                    LocalDateTime.now().minusDays(30)
+            LocalDate[] previousRange = {
+                    LocalDate.now().minusDays(60),
+                    LocalDate.now().minusDays(30)
             };
 
             when(dashboardPeriodService.getDateRange("month"))
@@ -138,7 +137,7 @@ class DashboardServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Salary", null,
                             new BigDecimal("1000.00"),
-                            LocalDateTime.now(), "INCOME"
+                            Instant.now(), "INCOME"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -232,7 +231,7 @@ class DashboardServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Groceries", categoryId,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
@@ -260,7 +259,7 @@ class DashboardServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Unknown", null,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
@@ -280,7 +279,7 @@ class DashboardServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Unknown", null,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findRecentByUserId(USER_ID, 5))
@@ -304,14 +303,14 @@ class DashboardServiceTest {
                             UUID.randomUUID(), "High Goal",
                             new BigDecimal("1000"), new BigDecimal("500"),
                             LocalDate.now().plusDays(30), "HIGH",
-                            LocalDateTime.now().minusDays(1)
+                            LocalDate.now().minusDays(1)
                     );
             SavingsGoalQueryPort.SavingsGoalData lowGoal =
                     new SavingsGoalQueryPort.SavingsGoalData(
                             UUID.randomUUID(), "Low Goal",
                             new BigDecimal("500"), new BigDecimal("100"),
                             LocalDate.now().plusDays(60), "LOW",
-                            LocalDateTime.now().minusDays(2)
+                            LocalDate.now().minusDays(2)
                     );
 
             when(savingsGoalQueryPort.findAllByUserId(USER_ID))
@@ -333,7 +332,7 @@ class DashboardServiceTest {
                                     UUID.randomUUID(), "Goal " + i,
                                     new BigDecimal("1000"), new BigDecimal("500"),
                                     LocalDate.now().plusDays(30), "MEDIUM",
-                                    LocalDateTime.now().minusDays(i)
+                                    LocalDate.now().minusDays(i)
                             ))
                             .toList();
 
@@ -366,7 +365,7 @@ class DashboardServiceTest {
                             UUID.randomUUID(), "Unknown Priority",
                             new BigDecimal("1000"), new BigDecimal("500"),
                             LocalDate.now().plusDays(30), "INVALID",  // ← valor no reconocido
-                            LocalDateTime.now()
+                            Instant.now()
                     );
 
             when(savingsGoalQueryPort.findAllByUserId(USER_ID))

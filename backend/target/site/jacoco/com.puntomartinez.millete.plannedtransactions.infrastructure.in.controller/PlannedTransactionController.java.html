@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlannedTransactionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller</a> &gt; <span class="el_source">PlannedTransactionController.java</span></div><h1>PlannedTransactionController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller;
+
+import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase.RegisterPlannedTransactionCommand;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.out.CategoryDisplayPort;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.PlannedTransactionResponseDTO;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.RegisterPlannedTransactionRequestDTO;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.in.controller.dto.UpdatePlannedTransactionRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/api/v1/planned-transactions&quot;)
+public class PlannedTransactionController {
+
+    private static final String UNCATEGORIZED_LABEL = &quot;Sin categoría&quot;;
+
+    private final RegisterPlannedTransactionUseCase registerUseCase;
+    private final ListPlannedTransactionsUseCase listPlannedTransactionsUseCase;
+    private final UpdatePlannedTransactionUseCase updateUseCase;
+    private final DeletePlannedTransactionUseCase deleteUseCase;
+    private final CategoryDisplayPort categoryDisplayPort;
+
+    public PlannedTransactionController(
+            RegisterPlannedTransactionUseCase registerUseCase,
+            ListPlannedTransactionsUseCase listPlannedTransactionsUseCase,
+            UpdatePlannedTransactionUseCase updateUseCase,
+            DeletePlannedTransactionUseCase deleteUseCase,
+            CategoryDisplayPort categoryDisplayPort
+<span class="fc" id="L45">    ) {</span>
+<span class="fc" id="L46">        this.registerUseCase = registerUseCase;</span>
+<span class="fc" id="L47">        this.listPlannedTransactionsUseCase = listPlannedTransactionsUseCase;</span>
+<span class="fc" id="L48">        this.updateUseCase = updateUseCase;</span>
+<span class="fc" id="L49">        this.deleteUseCase = deleteUseCase;</span>
+<span class="fc" id="L50">        this.categoryDisplayPort = categoryDisplayPort;</span>
+<span class="fc" id="L51">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;PlannedTransactionResponseDTO&gt; registerPlannedTransaction(
+            @Valid @RequestBody RegisterPlannedTransactionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L58">        UUID userId =</span>
+<span class="fc" id="L59">                ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L61">        RegisterPlannedTransactionCommand command =</span>
+                new RegisterPlannedTransactionCommand(
+                        userId,
+<span class="fc" id="L64">                        request.categoryId(),</span>
+<span class="fc" id="L65">                        request.amount(),</span>
+<span class="fc" id="L66">                        request.type(),</span>
+<span class="fc" id="L67">                        request.description(),</span>
+<span class="fc" id="L68">                        request.frequencyType(),</span>
+<span class="fc" id="L69">                        request.frequencyInterval(),</span>
+<span class="fc" id="L70">                        request.startDate(),</span>
+<span class="fc" id="L71">                        request.endDate()</span>
+                );
+
+<span class="fc" id="L74">        PlannedTransaction savedTransaction =</span>
+<span class="fc" id="L75">                registerUseCase.register(command);</span>
+
+<span class="fc" id="L77">        return ResponseEntity</span>
+<span class="fc" id="L78">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L79">                .body(mapToResponse(savedTransaction, userId));</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;PlannedTransactionResponseDTO&gt;&gt; getAll(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;50&quot;) int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) TransactionType type,
+            Authentication authentication
+    ) {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (page &lt; 0) {</span>
+<span class="fc" id="L91">            throw new IllegalArgumentException(</span>
+                    &quot;La página debe ser mayor o igual que 0.&quot;
+            );
+        }
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L96">            throw new IllegalArgumentException(</span>
+                    &quot;El tamaño de página debe ser mayor que 0.&quot;
+            );
+        }
+
+<span class="fc" id="L101">        UUID userId =</span>
+<span class="fc" id="L102">                ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L104">        long totalElements =</span>
+<span class="fc" id="L105">                listPlannedTransactionsUseCase.countByUserIdAndFilters(</span>
+                        userId,
+                        search,
+                        type
+                );
+
+<span class="fc" id="L111">        int totalPages =</span>
+<span class="fc" id="L112">                (int) Math.ceil((double) totalElements / size);</span>
+
+<span class="fc" id="L114">        int safePage =</span>
+<span class="fc" id="L115">                Math.min(page, Math.max(0, totalPages - 1));</span>
+
+<span class="fc" id="L117">        List&lt;PlannedTransaction&gt; list =</span>
+<span class="fc" id="L118">                listPlannedTransactionsUseCase.findAllByUserId(</span>
+                        userId,
+                        safePage,
+                        size,
+                        search,
+                        type
+                );
+
+<span class="fc" id="L126">        Map&lt;UUID, CategoryDisplayPort.CategoryDisplay&gt; categoryMap =</span>
+<span class="fc" id="L127">                categoryDisplayPort.findByUserId(userId)</span>
+<span class="fc" id="L128">                        .stream()</span>
+<span class="fc" id="L129">                        .collect(Collectors.toMap(</span>
+                                CategoryDisplayPort.CategoryDisplay::id,
+<span class="fc" id="L131">                                display -&gt; display,</span>
+<span class="nc" id="L132">                                (first, second) -&gt; first</span>
+                        ));
+
+<span class="fc" id="L135">        List&lt;PlannedTransactionResponseDTO&gt; content =</span>
+<span class="fc" id="L136">                list.stream()</span>
+<span class="fc" id="L137">                        .map(tx -&gt; mapToResponse(tx, categoryMap))</span>
+<span class="fc" id="L138">                        .toList();</span>
+
+<span class="pc bpc" id="L140" title="4 of 6 branches missed.">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+                        content,
+                        safePage,
+                        totalPages,
+                        totalElements,
+                        size,
+                        safePage == 0,
+                        safePage &gt;= totalPages - 1 || totalPages == 0
+                )
+        );
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+public ResponseEntity&lt;PlannedTransactionResponseDTO&gt; updatePlannedTransaction(
+        @PathVariable UUID id,
+        @Valid @RequestBody UpdatePlannedTransactionRequestDTO request,
+        Authentication authentication
+) {
+<span class="fc" id="L159">    UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L161">    UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand command =</span>
+            new UpdatePlannedTransactionUseCase.UpdatePlannedTransactionCommand(
+<span class="fc" id="L163">                    request.amount(),</span>
+<span class="fc" id="L164">                    request.type(),</span>
+<span class="fc" id="L165">                    request.description(),</span>
+<span class="fc" id="L166">                    request.frequencyType(),</span>
+<span class="fc" id="L167">                    request.frequencyInterval(),</span>
+<span class="fc" id="L168">                    request.categoryId()</span>
+            );
+
+<span class="fc" id="L171">    PlannedTransaction updated =</span>
+<span class="fc" id="L172">            updateUseCase.update(id, userId, command);</span>
+
+<span class="fc" id="L174">    return ResponseEntity.ok(</span>
+<span class="fc" id="L175">            mapToResponse(updated, userId)</span>
+    );
+}
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deletePlannedTransaction(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L184">        UUID userId =</span>
+<span class="fc" id="L185">                ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L187">        deleteUseCase.deleteByIdAndUserId(id, userId);</span>
+
+<span class="fc" id="L189">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private CategoryDisplayPort.CategoryDisplay resolveCategoryDisplay(
+            UUID categoryId,
+            UUID userId
+    ) {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        if (categoryId == null) {</span>
+<span class="fc" id="L197">            return null;</span>
+        }
+
+<span class="fc" id="L200">        return categoryDisplayPort</span>
+<span class="fc" id="L201">                .findByIdAndUserId(categoryId, userId)</span>
+<span class="fc" id="L202">                .orElse(null);</span>
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            UUID userId
+    ) {
+<span class="fc" id="L209">        CategoryDisplayPort.CategoryDisplay display =</span>
+<span class="fc" id="L210">                resolveCategoryDisplay(</span>
+<span class="fc" id="L211">                        tx.getCategoryId(),</span>
+                        userId
+                );
+
+<span class="fc" id="L215">        return mapToResponse(tx, display);</span>
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            Map&lt;UUID, CategoryDisplayPort.CategoryDisplay&gt; categoryMap
+    ) {
+        CategoryDisplayPort.CategoryDisplay display =
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">                tx.getCategoryId() != null</span>
+<span class="fc" id="L224">                        ? categoryMap.get(tx.getCategoryId())</span>
+<span class="pc" id="L225">                        : null;</span>
+
+<span class="fc" id="L227">        return mapToResponse(tx, display);</span>
+    }
+
+    private PlannedTransactionResponseDTO mapToResponse(
+            PlannedTransaction tx,
+            CategoryDisplayPort.CategoryDisplay display
+    ) {
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        String categoryName = display != null</span>
+<span class="fc" id="L235">                ? display.name()</span>
+<span class="fc" id="L236">                : UNCATEGORIZED_LABEL;</span>
+
+<span class="fc" id="L238">        return new PlannedTransactionResponseDTO(</span>
+<span class="fc" id="L239">                tx.getId(),</span>
+<span class="fc" id="L240">                tx.getCategoryId(),</span>
+                categoryName,
+<span class="fc" id="L242">                tx.getAmount(),</span>
+<span class="fc" id="L243">                tx.getType(),</span>
+<span class="fc" id="L244">                tx.getDescription(),</span>
+<span class="fc" id="L245">                tx.getFrequencyType(),</span>
+<span class="fc" id="L246">                tx.getFrequencyInterval(),</span>
+<span class="fc" id="L247">                tx.getStartDate(),</span>
+<span class="fc" id="L248">                tx.getEndDate(),</span>
+<span class="fc" id="L249">                tx.getLastExecutedDate(),</span>
+<span class="fc" id="L250">                tx.isActive()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

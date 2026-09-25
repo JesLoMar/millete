@@ -11,7 +11,8 @@ import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -50,13 +51,13 @@ public class InvestmentEntity {
     private String type;
 
     @Column(name = "purchase_date", nullable = false)
-    private LocalDateTime purchaseDate;
+    private LocalDate purchaseDate;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
+    private Instant modifiedAt;
 
     @Column(name = "active", nullable = false)
     private boolean active;

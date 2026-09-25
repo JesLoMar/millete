@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfileService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.application.services</a> &gt; <span class="el_source">ProfileService.java</span></div><h1>ProfileService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.application.services;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.users.domain.model.User;
+import com.puntomartinez.millete.users.domain.model.UserPreferences;
+import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.domain.ports.in.ChangePasswordCommand;
+import com.puntomartinez.millete.users.domain.ports.in.ManageProfileUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.UpdateProfileCommand;
+import com.puntomartinez.millete.users.domain.ports.in.UserProfileResult;
+import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
+import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
+import com.puntomartinez.millete.users.domain.validation.EmailValidator;
+import com.puntomartinez.millete.users.domain.validation.ZoneIdValidator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Service
+public class ProfileService implements ManageProfileUseCase {
+
+    private static final int MAX_PREFERENCES_JSON_LENGTH = 10_000;
+
+    private final UserRepository userRepository;
+    private final UserSessionRepository userSessionRepository;
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final PasswordHasherPort passwordHasher;
+    private final ObjectMapper objectMapper;
+
+    public ProfileService(
+            UserRepository userRepository,
+            UserSessionRepository userSessionRepository,
+            UserPreferencesRepository userPreferencesRepository,
+            PasswordHasherPort passwordHasher,
+            ObjectMapper objectMapper
+<span class="fc" id="L49">    ) {</span>
+<span class="fc" id="L50">        this.userRepository = userRepository;</span>
+<span class="fc" id="L51">        this.userSessionRepository = userSessionRepository;</span>
+<span class="fc" id="L52">        this.userPreferencesRepository = userPreferencesRepository;</span>
+<span class="fc" id="L53">        this.passwordHasher = passwordHasher;</span>
+<span class="fc" id="L54">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L55">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileResult getProfile(UUID userId) {
+<span class="fc" id="L60">        User user = userRepository.findById(userId)</span>
+<span class="fc" id="L61">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L62">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario no encontrado&quot;
+                        )
+                );
+
+<span class="fc" id="L67">        return new UserProfileResult(</span>
+<span class="fc" id="L68">                user.getId(),</span>
+<span class="fc" id="L69">                user.getUsername(),</span>
+<span class="fc" id="L70">                user.getEmail(),</span>
+<span class="fc" id="L71">                user.isActive(),</span>
+<span class="fc" id="L72">                user.isAnonymized()</span>
+        );
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(UUID userId, UpdateProfileCommand command) {
+<span class="fc" id="L79">        User user = userRepository.findById(userId)</span>
+<span class="fc" id="L80">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L81">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario no encontrado&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (!passwordHasher.matches(</span>
+<span class="fc" id="L87">                command.currentPassword(),</span>
+<span class="fc" id="L88">                user.getPassword()</span>
+        )) {
+<span class="fc" id="L90">            throw new AuthenticationFailedException(</span>
+                    &quot;Contraseña incorrecta&quot;
+            );
+        }
+
+<span class="fc" id="L95">        String newUsername = normalizeOptional(command.newUsername());</span>
+<span class="fc" id="L96">        String newEmail = normalizeOptional(command.newEmail());</span>
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (newUsername != null</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">                &amp;&amp; !newUsername.equals(user.getUsername())) {</span>
+<span class="fc" id="L100">            userRepository.findByUsername(newUsername)</span>
+<span class="fc" id="L101">                    .ifPresent(existingUser -&gt; {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                        if (!existingUser.getId().equals(userId)) {</span>
+<span class="fc" id="L103">                            throw new ResourceAlreadyExistsException(</span>
+                                    &quot;El nombre de usuario ya está en uso&quot;
+                            );
+                        }
+<span class="nc" id="L107">                    });</span>
+        }
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (newEmail != null</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                &amp;&amp; !newEmail.equals(user.getEmail())) {</span>
+<span class="fc" id="L112">            EmailValidator.requireValid(newEmail);</span>
+
+<span class="fc" id="L114">            userRepository.findByEmail(newEmail)</span>
+<span class="fc" id="L115">                    .ifPresent(existingUser -&gt; {</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">                        if (!existingUser.getId().equals(userId)) {</span>
+<span class="fc" id="L117">                            throw new ResourceAlreadyExistsException(</span>
+                                    &quot;El email ya está registrado&quot;
+                            );
+                        }
+<span class="nc" id="L121">                    });</span>
+        }
+
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        String username = newUsername != null</span>
+<span class="fc" id="L125">                ? newUsername</span>
+<span class="fc" id="L126">                : user.getUsername();</span>
+
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        String email = newEmail != null</span>
+<span class="fc" id="L129">                ? newEmail</span>
+<span class="fc" id="L130">                : user.getEmail();</span>
+
+<span class="fc" id="L132">        user.updateProfile(username, email);</span>
+<span class="fc" id="L133">        userRepository.save(user);</span>
+<span class="fc" id="L134">    }</span>
+
+    @Override
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordCommand command) {
+<span class="fc" id="L139">        User user = userRepository.findById(userId)</span>
+<span class="fc" id="L140">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L141">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario no encontrado&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (!passwordHasher.matches(</span>
+<span class="fc" id="L147">                command.currentPassword(),</span>
+<span class="fc" id="L148">                user.getPassword()</span>
+        )) {
+<span class="fc" id="L150">            throw new AuthenticationFailedException(</span>
+                    &quot;Contraseña actual incorrecta&quot;
+            );
+        }
+
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (command.newPassword() == null</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">                || command.newPassword().length() &lt; 8</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">                || command.newPassword().length() &gt; 100) {</span>
+<span class="fc" id="L158">            throw new InvalidInputException(</span>
+                    &quot;La nueva contraseña debe tener entre 8 y 100 caracteres&quot;
+            );
+        }
+
+<span class="fc" id="L163">        user.updatePassword(</span>
+<span class="fc" id="L164">                passwordHasher.hashPassword(command.newPassword())</span>
+        );
+
+<span class="fc" id="L167">        userRepository.save(user);</span>
+
+<span class="fc" id="L169">        userSessionRepository.deactivateAllOtherSessions(</span>
+                userId,
+<span class="fc" id="L171">                command.currentSessionId()</span>
+        );
+<span class="fc" id="L173">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map&lt;String, Object&gt; getPreferences(UUID userId) {
+<span class="fc" id="L178">        return userPreferencesRepository.findByUserId(userId)</span>
+<span class="fc" id="L179">                .map(prefs -&gt; withDefaultTimezone(prefs.getPreferences()))</span>
+<span class="fc" id="L180">                .orElseGet(() -&gt; withDefaultTimezone(new HashMap&lt;&gt;()));</span>
+    }
+
+    @Override
+    @Transactional
+    public void updatePreferences(
+            UUID userId,
+            Map&lt;String, Object&gt; preferences
+    ) {
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        Map&lt;String, Object&gt; safePreferences = preferences != null</span>
+<span class="fc" id="L190">                ? new HashMap&lt;&gt;(preferences)</span>
+<span class="fc" id="L191">                : new HashMap&lt;&gt;();</span>
+
+        // Fase 1 (normalización temporal): la clave &quot;timezone&quot; es una
+        // preferencia de dominio con validación estricta. Se normaliza y
+        // valida antes de persistir; si no se envía, se preserva el valor
+        // existente o se aplica el default técnico UTC.
+<span class="fc" id="L197">        Object timezoneValue = safePreferences.get(UserPreferences.TIMEZONE_KEY);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (timezoneValue == null) {</span>
+<span class="fc" id="L199">            String existingTimezone = userPreferencesRepository.findByUserId(userId)</span>
+<span class="fc" id="L200">                    .map(UserPreferences::getTimezoneOrDefault)</span>
+<span class="fc" id="L201">                    .orElse(ZoneIdValidator.DEFAULT_TIMEZONE);</span>
+<span class="fc" id="L202">            safePreferences.put(UserPreferences.TIMEZONE_KEY, existingTimezone);</span>
+<span class="fc" id="L203">        } else {</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">            if (!(timezoneValue instanceof String)) {</span>
+<span class="nc" id="L205">                throw new InvalidInputException(</span>
+                        &quot;La zona horaria debe ser un texto con un identificador IANA válido&quot;
+                );
+            }
+<span class="fc" id="L209">            safePreferences.put(</span>
+                    UserPreferences.TIMEZONE_KEY,
+<span class="fc" id="L211">                    ZoneIdValidator.normalizeOrDefault((String) timezoneValue)</span>
+            );
+        }
+
+        String serialized;
+        try {
+<span class="fc" id="L217">            serialized = objectMapper.writeValueAsString(safePreferences);</span>
+<span class="fc" id="L218">        } catch (JsonProcessingException e) {</span>
+<span class="fc" id="L219">            throw new InvalidInputException(</span>
+                    &quot;Formato de preferencias inválido&quot;
+            );
+<span class="fc" id="L222">        }</span>
+
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (serialized.length() &gt; MAX_PREFERENCES_JSON_LENGTH) {</span>
+<span class="nc" id="L225">            throw new InvalidInputException(</span>
+                    &quot;Las preferencias no pueden exceder &quot;
+                            + MAX_PREFERENCES_JSON_LENGTH
+                            + &quot; caracteres.&quot;
+            );
+        }
+
+<span class="fc" id="L232">        UserPreferences userPreferences =</span>
+<span class="fc" id="L233">                userPreferencesRepository.findByUserId(userId)</span>
+<span class="fc" id="L234">                        .orElseGet(() -&gt; {</span>
+<span class="fc" id="L235">                            UserPreferences newPreferences =</span>
+                                    new UserPreferences();
+
+<span class="fc" id="L238">                            newPreferences.setId(UUID.randomUUID());</span>
+<span class="fc" id="L239">                            newPreferences.setUserId(userId);</span>
+<span class="fc" id="L240">                            newPreferences.setCreatedAt(LocalDateTime.now());</span>
+
+<span class="fc" id="L242">                            return newPreferences;</span>
+                        });
+
+<span class="fc" id="L245">        userPreferences.setPreferences(safePreferences);</span>
+<span class="fc" id="L246">        userPreferences.setModifiedAt(LocalDateTime.now());</span>
+
+<span class="fc" id="L248">        userPreferencesRepository.save(userPreferences);</span>
+<span class="fc" id="L249">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;UserSession&gt; getActiveSessions(UUID userId) {
+<span class="fc" id="L254">        return userSessionRepository.findByUserIdAndActiveTrue(userId);</span>
+    }
+
+    @Override
+    @Transactional
+    public void closeSession(UUID userId, UUID sessionIdToClose) {
+<span class="fc" id="L260">        UserSession session = userSessionRepository</span>
+<span class="fc" id="L261">                .findById(sessionIdToClose)</span>
+<span class="fc" id="L262">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L263">                        new ResourceNotFoundException(</span>
+                                &quot;Sesión no encontrada&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L268" title="All 2 branches covered.">        if (!session.getUserId().equals(userId)) {</span>
+<span class="fc" id="L269">            throw new ForbiddenOperationException(</span>
+                    &quot;No puedes cerrar una sesión que no te pertenece&quot;
+            );
+        }
+
+<span class="fc bfc" id="L274" title="All 2 branches covered.">        if (!session.isActive()) {</span>
+<span class="fc" id="L275">            return;</span>
+        }
+
+<span class="fc" id="L278">        session.setActive(false);</span>
+<span class="fc" id="L279">        session.setModifiedAt(LocalDateTime.now());</span>
+
+<span class="fc" id="L281">        userSessionRepository.save(session);</span>
+<span class="fc" id="L282">    }</span>
+
+    @Override
+    @Transactional
+    public void closeAllOtherSessions(
+            UUID userId,
+            UUID currentSessionId
+    ) {
+<span class="fc" id="L290">        userSessionRepository.deactivateAllOtherSessions(</span>
+                userId,
+                currentSessionId
+        );
+<span class="fc" id="L294">    }</span>
+
+    @Override
+    @Transactional
+    public void deactivateAccount(UUID userId, String password) {
+<span class="fc" id="L299">        User user = userRepository.findById(userId)</span>
+<span class="fc" id="L300">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L301">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario no encontrado&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (!passwordHasher.matches(password, user.getPassword())) {</span>
+<span class="fc" id="L307">            throw new AuthenticationFailedException(</span>
+                    &quot;Contraseña incorrecta&quot;
+            );
+        }
+
+<span class="fc" id="L312">        user.anonymize();</span>
+<span class="fc" id="L313">        userRepository.save(user);</span>
+
+<span class="fc" id="L315">        userSessionRepository.deactivateAllSessions(userId);</span>
+<span class="fc" id="L316">        userPreferencesRepository.deleteByUserId(userId);</span>
+<span class="fc" id="L317">    }</span>
+
+    private String normalizeOptional(String value) {
+<span class="pc bpc" id="L320" title="1 of 4 branches missed.">        if (value == null || value.isBlank()) {</span>
+<span class="fc" id="L321">            return null;</span>
+        }
+
+<span class="fc" id="L324">        return value.trim();</span>
+    }
+
+    /**
+     * Copia defensiva de las preferencias asegurando que la clave &quot;timezone&quot;
+     * esté siempre presente en la respuesta API (default técnico: UTC).
+     */
+    private Map&lt;String, Object&gt; withDefaultTimezone(Map&lt;String, Object&gt; preferences) {
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">        Map&lt;String, Object&gt; copy = preferences != null</span>
+<span class="fc" id="L333">                ? new HashMap&lt;&gt;(preferences)</span>
+<span class="pc" id="L334">                : new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L336">        Object timezone = copy.get(UserPreferences.TIMEZONE_KEY);</span>
+<span class="pc bpc" id="L337" title="3 of 4 branches missed.">        if (!(timezone instanceof String s) || s.isBlank()) {</span>
+<span class="fc" id="L338">            copy.put(UserPreferences.TIMEZONE_KEY, ZoneIdValidator.DEFAULT_TIMEZONE);</span>
+        }
+<span class="fc" id="L340">        return copy;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

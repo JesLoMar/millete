@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
         log.warn("Errores de validación: {}", validationErrors);
 
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                LocalDateTime.now(),
+                Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Error de validación en los datos enviados",
                 validationErrors.toString(),
@@ -121,7 +121,7 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, String message, String path) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                LocalDateTime.now(),
+                Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message,

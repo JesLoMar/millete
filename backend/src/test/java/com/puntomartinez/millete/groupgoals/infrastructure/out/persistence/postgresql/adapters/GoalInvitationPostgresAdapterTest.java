@@ -12,7 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,7 +27,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GoalInvitationPostgresAdapter")
+
 class GoalInvitationPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     @Mock
     private JpaGoalInvitationRepository repository;
@@ -39,7 +49,7 @@ class GoalInvitationPostgresAdapterTest {
     @Test
     @DisplayName("Should save invitation")
     void shouldSaveInvitation() {
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
         );
         GoalInvitationEntity entity = new GoalInvitationEntity();
@@ -60,7 +70,7 @@ class GoalInvitationPostgresAdapterTest {
     void shouldFindByIdAndActive() {
         UUID invitationId = UUID.randomUUID();
         GoalInvitationEntity entity = new GoalInvitationEntity();
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
         );
 
@@ -79,7 +89,7 @@ class GoalInvitationPostgresAdapterTest {
         UUID goalId = UUID.randomUUID();
         UUID invitedId = UUID.randomUUID();
         GoalInvitationEntity entity = new GoalInvitationEntity();
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 goalId, UUID.randomUUID(), invitedId
         );
 
@@ -101,12 +111,12 @@ class GoalInvitationPostgresAdapterTest {
     void shouldFindActiveAndNotExpiredByInvitedUserIdAndStatus() {
         UUID invitedId = UUID.randomUUID();
         GoalInvitationEntity entity = new GoalInvitationEntity();
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(), invitedId
         );
 
         when(repository.findActiveAndNotExpiredByInvitedUserIdAndStatus(
-                invitedId, InvitationStatus.PENDING.name(), LocalDateTime.now()
+                eq(invitedId), eq(InvitationStatus.PENDING.name()), any(Instant.class)
         )).thenReturn(List.of(entity));
         when(mapper.toDomain(entity)).thenReturn(domain);
 
@@ -123,7 +133,7 @@ class GoalInvitationPostgresAdapterTest {
     void shouldFindActiveByGoalIdAndStatus() {
         UUID goalId = UUID.randomUUID();
         GoalInvitationEntity entity = new GoalInvitationEntity();
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 goalId, UUID.randomUUID(), UUID.randomUUID()
         );
 
@@ -149,7 +159,7 @@ class GoalInvitationPostgresAdapterTest {
 
         verify(repository).deactivatePendingByGoalId(
                 eq(goalId),
-                any(LocalDateTime.class)
+                any(Instant.class)
         );
     }
 }

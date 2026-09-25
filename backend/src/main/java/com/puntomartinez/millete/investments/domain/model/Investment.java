@@ -1,8 +1,10 @@
 package com.puntomartinez.millete.investments.domain.model;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class Investment {
@@ -19,9 +21,9 @@ public class Investment {
     private BigDecimal purchasePrice;
     private BigDecimal currentPrice;
     private InvestmentType type;
-    private LocalDateTime purchaseDate;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private LocalDate purchaseDate;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private Investment(
@@ -33,9 +35,9 @@ public class Investment {
             BigDecimal purchasePrice,
             BigDecimal currentPrice,
             InvestmentType type,
-            LocalDateTime purchaseDate,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            LocalDate purchaseDate,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active) {
 
         this.id = requireId(id);
@@ -59,15 +61,16 @@ public class Investment {
     }
 
     public static Investment create(
+            TimeProvider timeProvider,
             UUID userId,
             String assetName,
             String ticker,
             BigDecimal quantity,
             BigDecimal purchasePrice,
             InvestmentType type,
-            LocalDateTime purchaseDate) {
+            LocalDate purchaseDate) {
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
 
         return new Investment(
                 UUID.randomUUID(),
@@ -94,9 +97,9 @@ public class Investment {
             BigDecimal purchasePrice,
             BigDecimal currentPrice,
             InvestmentType type,
-            LocalDateTime purchaseDate,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            LocalDate purchaseDate,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active) {
 
         return new Investment(
@@ -115,13 +118,13 @@ public class Investment {
         );
     }
 
-    public void updateDetails(
+    public void updateDetails(TimeProvider timeProvider, 
         String assetName,
         String ticker,
         BigDecimal quantity,
         BigDecimal purchasePrice,
         InvestmentType type,
-        LocalDateTime purchaseDate) {
+        LocalDate purchaseDate) {
 
     this.assetName = requireAssetName(assetName);
     this.ticker = normalizeTicker(ticker, type);
@@ -135,7 +138,7 @@ public class Investment {
     );
     this.type = requireType(type);
     this.purchaseDate = requirePurchaseDate(purchaseDate);
-    this.modifiedAt = LocalDateTime.now();
+    this.modifiedAt = timeProvider.instantNow();
 }
 
     public BigDecimal getInvestedCapital() {
@@ -164,7 +167,7 @@ public class Investment {
                 .multiply(new BigDecimal("100"));
     }
 
-    public void updateCurrentPrice(BigDecimal newPrice) {
+    public void updateCurrentPrice(TimeProvider timeProvider, BigDecimal newPrice) {
         if (newPrice == null) {
             throw new IllegalArgumentException("El precio actual es obligatorio.");
         }
@@ -176,12 +179,12 @@ public class Investment {
         }
 
         this.currentPrice = newPrice;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     private static UUID requireId(UUID id) {
@@ -220,7 +223,7 @@ public class Investment {
         return type;
     }
 
-    private static LocalDateTime requirePurchaseDate(LocalDateTime purchaseDate) {
+    private static LocalDate requirePurchaseDate(LocalDate purchaseDate) {
         if (purchaseDate == null) {
             throw new IllegalArgumentException(
                     "La fecha de compra es obligatoria."
@@ -230,8 +233,8 @@ public class Investment {
         return purchaseDate;
     }
 
-    private static LocalDateTime requireDate(
-            LocalDateTime value,
+    private static Instant requireDate(
+            Instant value,
             String message) {
 
         if (value == null) {
@@ -322,15 +325,15 @@ public class Investment {
         return type;
     }
 
-    public LocalDateTime getPurchaseDate() {
+    public LocalDate getPurchaseDate() {
         return purchaseDate;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getModifiedAt() {
+    public Instant getModifiedAt() {
         return modifiedAt;
     }
 

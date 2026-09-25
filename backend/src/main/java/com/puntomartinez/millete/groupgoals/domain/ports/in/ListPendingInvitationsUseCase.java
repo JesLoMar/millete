@@ -2,7 +2,7 @@ package com.puntomartinez.millete.groupgoals.domain.ports.in;
 
 import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public interface ListPendingInvitationsUseCase {
             String inviterName,
             UUID invitedUserId,
             InvitationStatus status,
-            LocalDateTime createdAt
+            Instant createdAt
     ) {
     }
 }

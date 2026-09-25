@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataExportController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.in.controller</a> &gt; <span class="el_source">DataExportController.java</span></div><h1>DataExportController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
+
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.dataexport.application.services.DataExportService;
+import com.puntomartinez.millete.dataexport.domain.model.PeriodType;
+import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+<span class="fc" id="L17">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/api/v1/data&quot;)
+public class DataExportController {
+
+    private final DataExportService dataExportService;
+
+<span class="fc" id="L24">    public DataExportController(DataExportService dataExportService) {</span>
+<span class="fc" id="L25">        this.dataExportService = dataExportService;</span>
+<span class="fc" id="L26">    }</span>
+
+    @GetMapping(value = &quot;/export&quot;, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity&lt;UserDataSnapshot&gt; exportData(Authentication authentication) {
+
+<span class="fc" id="L31">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L33">        log.info(&quot;Solicitud de exportación para usuario: {}&quot;, userId);</span>
+
+<span class="fc" id="L35">        UserDataSnapshot snapshot = dataExportService.exportAllUserData(userId);</span>
+
+
+<span class="fc" id="L38">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L39">        headers.add(HttpHeaders.CONTENT_DISPOSITION,</span>
+                &quot;attachment; filename=millete_export.json&quot;);
+<span class="fc" id="L41">        headers.add(&quot;X-Export-Version&quot;, snapshot.metadata().version());</span>
+<span class="fc" id="L42">        headers.add(&quot;X-Export-Date&quot;, snapshot.metadata().exportDate().toString());</span>
+
+<span class="fc" id="L44">        return ResponseEntity.ok()</span>
+<span class="fc" id="L45">                .headers(headers)</span>
+<span class="fc" id="L46">                .body(snapshot);</span>
+    }
+
+    @GetMapping(&quot;/export/zip&quot;)
+    public ResponseEntity&lt;byte[]&gt; exportDataAsZip(Authentication authentication) {
+<span class="fc" id="L51">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+<span class="fc" id="L52">        log.info(&quot;Solicitud de exportación ZIP para usuario: {}&quot;, userId);</span>
+
+<span class="fc" id="L54">        byte[] zip = dataExportService.exportUserDataAsZip(userId);</span>
+
+<span class="fc" id="L56">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L57">        headers.setContentType(MediaType.parseMediaType(&quot;application/zip&quot;));</span>
+<span class="fc" id="L58">        headers.set(HttpHeaders.CONTENT_DISPOSITION,</span>
+                &quot;attachment; filename=millete_export.zip&quot;);
+
+<span class="fc" id="L61">        return new ResponseEntity&lt;&gt;(zip, headers, HttpStatus.OK);</span>
+    }
+
+    @GetMapping(&quot;/export/csv/{entityType}&quot;)
+    public ResponseEntity&lt;byte[]&gt; exportDataAsCsv(
+            @PathVariable String entityType,
+            Authentication authentication) {
+
+<span class="fc" id="L69">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+<span class="fc" id="L70">        log.info(&quot;Solicitud de exportación CSV ({}) para usuario: {}&quot;, entityType, userId);</span>
+
+<span class="fc" id="L72">        byte[] csv = dataExportService.exportUserDataAsCsv(userId, entityType);</span>
+
+<span class="fc" id="L74">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L75">        headers.setContentType(MediaType.parseMediaType(&quot;text/csv&quot;));</span>
+<span class="fc" id="L76">        headers.set(HttpHeaders.CONTENT_DISPOSITION,</span>
+                &quot;attachment; filename=millete_&quot; + entityType + &quot;.csv&quot;);
+
+<span class="fc" id="L79">        return new ResponseEntity&lt;&gt;(csv, headers, HttpStatus.OK);</span>
+    }
+
+    @GetMapping(&quot;/export/pdf&quot;)
+    public ResponseEntity&lt;byte[]&gt; exportDataAsPdf(
+            @RequestParam(defaultValue = &quot;1m&quot;) String period,
+            Authentication authentication) {
+
+<span class="fc" id="L87">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+<span class="fc" id="L88">        PeriodType periodType = PeriodType.fromCode(period);</span>
+<span class="fc" id="L89">        log.info(&quot;Solicitud de exportación PDF para usuario: {} (periodo: {})&quot;, userId, periodType.getCode());</span>
+
+<span class="fc" id="L91">        byte[] pdf = dataExportService.exportUserDataAsPdf(userId, periodType);</span>
+
+<span class="fc" id="L93">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="fc" id="L94">        headers.setContentType(MediaType.APPLICATION_PDF);</span>
+<span class="fc" id="L95">        headers.set(HttpHeaders.CONTENT_DISPOSITION,</span>
+<span class="fc" id="L96">                &quot;attachment; filename=millete_financial_data_&quot; + periodType.getCode() + &quot;.pdf&quot;);</span>
+
+<span class="fc" id="L98">        return new ResponseEntity&lt;&gt;(pdf, headers, HttpStatus.OK);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

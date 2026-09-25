@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -65,17 +64,16 @@ class DashboardHistoryServiceTest {
         @DisplayName("Should sum only EXPENSE transactions")
         void shouldSumOnlyExpenseTransactions() {
             LocalDate today = LocalDate.now();
-            LocalDateTime todayStart = today.atStartOfDay();
-
+            
             TransactionQueryPort.TransactionData expense =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Expense", null,
-                            new BigDecimal("50.00"), todayStart, "EXPENSE"
+                            new BigDecimal("50.00"), today, "EXPENSE"
                     );
             TransactionQueryPort.TransactionData income =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Income", null,
-                            new BigDecimal("100.00"), todayStart, "INCOME"
+                            new BigDecimal("100.00"), today, "INCOME"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(

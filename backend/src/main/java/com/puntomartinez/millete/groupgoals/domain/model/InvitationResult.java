@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record InvitationResult(
@@ -11,6 +11,6 @@ public record InvitationResult(
         String inviterName,
         UUID invitedUserId,
         InvitationStatus status,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
 }

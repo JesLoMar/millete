@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlannedTransactionPostgresAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.adapters</a> &gt; <span class="el_source">PlannedTransactionPostgresAdapter.java</span></div><h1>PlannedTransactionPostgresAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.adapters;
+
+import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.entity.PlannedTransactionEntity;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.mappers.PlannedTransactionEntityMapper;
+import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.repository.JpaPlannedTransactionRepository;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class PlannedTransactionPostgresAdapter
+        implements PlannedTransactionRepository {
+
+    private final JpaPlannedTransactionRepository repository;
+    private final PlannedTransactionEntityMapper mapper;
+
+    public PlannedTransactionPostgresAdapter(
+            JpaPlannedTransactionRepository repository,
+            PlannedTransactionEntityMapper mapper
+<span class="fc" id="L30">    ) {</span>
+<span class="fc" id="L31">        this.repository = repository;</span>
+<span class="fc" id="L32">        this.mapper = mapper;</span>
+<span class="fc" id="L33">    }</span>
+
+    private Specification&lt;PlannedTransactionEntity&gt; buildSpecification(
+            UUID userId,
+            String search,
+            TransactionType type
+    ) {
+<span class="fc" id="L40">        Specification&lt;PlannedTransactionEntity&gt; specification =</span>
+                (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L42">                        criteriaBuilder.equal(</span>
+<span class="nc" id="L43">                                root.get(&quot;userId&quot;),</span>
+                                userId
+                        );
+
+<span class="fc" id="L47">        specification = specification.and(</span>
+                (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L49">                        criteriaBuilder.isTrue(root.get(&quot;active&quot;))</span>
+        );
+
+<span class="pc bpc" id="L52" title="1 of 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
+<span class="fc" id="L53">            String pattern = &quot;%&quot; + search.toLowerCase() + &quot;%&quot;;</span>
+<span class="fc" id="L54">            specification = specification.and(</span>
+                    (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L56">                            criteriaBuilder.like(</span>
+<span class="nc" id="L57">                                    criteriaBuilder.lower(</span>
+<span class="nc" id="L58">                                            root.get(&quot;description&quot;)</span>
+                                    ),
+                                    pattern
+                            )
+            );
+        }
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (type != null) {</span>
+<span class="fc" id="L66">            specification = specification.and(</span>
+                    (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L68">                            criteriaBuilder.equal(</span>
+<span class="nc" id="L69">                                    root.get(&quot;type&quot;),</span>
+<span class="nc" id="L70">                                    type.name()</span>
+                            )
+            );
+        }
+
+<span class="fc" id="L75">        return specification;</span>
+    }
+
+    @Override
+    public PlannedTransaction save(
+            PlannedTransaction plannedTransaction
+    ) {
+<span class="fc" id="L82">        PlannedTransactionEntity entity =</span>
+<span class="fc" id="L83">                mapper.toEntity(plannedTransaction);</span>
+<span class="fc" id="L84">        PlannedTransactionEntity savedEntity =</span>
+<span class="fc" id="L85">                repository.save(entity);</span>
+<span class="fc" id="L86">        return mapper.toDomain(savedEntity);</span>
+    }
+
+    @Override
+    public Optional&lt;PlannedTransaction&gt; findById(UUID id) {
+<span class="fc" id="L91">        return repository.findById(id)</span>
+<span class="fc" id="L92">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public List&lt;PlannedTransaction&gt; findAllByUserId(
+            UUID userId
+    ) {
+<span class="fc" id="L99">        return repository</span>
+<span class="fc" id="L100">                .findByUserIdAndActiveTrueOrderByStartDateDesc(userId)</span>
+<span class="fc" id="L101">                .stream()</span>
+<span class="fc" id="L102">                .map(mapper::toDomain)</span>
+<span class="fc" id="L103">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;PlannedTransaction&gt; findAllActive(
+            int page,
+            int size,
+            LocalDate today
+    ) {
+<span class="fc" id="L112">        return repository</span>
+<span class="fc" id="L113">                .findByActiveTrueAndNotExpired(</span>
+                        today,
+<span class="fc" id="L115">                        PageRequest.of(</span>
+                                page,
+                                size,
+<span class="fc" id="L118">                                Sort.by(&quot;id&quot;).ascending()</span>
+                        )
+                )
+<span class="fc" id="L121">                .getContent()</span>
+<span class="fc" id="L122">                .stream()</span>
+<span class="fc" id="L123">                .map(mapper::toDomain)</span>
+<span class="fc" id="L124">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;PlannedTransaction&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type
+    ) {
+<span class="fc" id="L135">        Specification&lt;PlannedTransactionEntity&gt; specification =</span>
+<span class="fc" id="L136">                buildSpecification(userId, search, type);</span>
+
+<span class="fc" id="L138">        Page&lt;PlannedTransactionEntity&gt; result =</span>
+<span class="fc" id="L139">                repository.findAll(</span>
+                        specification,
+<span class="fc" id="L141">                        PageRequest.of(</span>
+                                page,
+                                size,
+<span class="fc" id="L144">                                Sort.by(&quot;startDate&quot;).descending()</span>
+                        )
+                );
+
+<span class="fc" id="L148">        return result.getContent()</span>
+<span class="fc" id="L149">                .stream()</span>
+<span class="fc" id="L150">                .map(mapper::toDomain)</span>
+<span class="fc" id="L151">                .toList();</span>
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type
+    ) {
+<span class="fc" id="L160">        return repository.count(</span>
+<span class="fc" id="L161">                buildSpecification(</span>
+                        userId,
+                        search,
+                        type
+                )
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

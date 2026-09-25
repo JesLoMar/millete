@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dashboard.application.services</a> &gt; <span class="el_source">DashboardService.java</span></div><h1>DashboardService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dashboard.application.services;
+
+import com.puntomartinez.millete.dashboard.domain.ports.in.GetDashboardDataUseCase;
+import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
+import com.puntomartinez.millete.dashboard.domain.ports.out.SavingsGoalQueryPort;
+import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * Servicio principal del dashboard.
+ *
+ * &lt;p&gt;CÁLCULOS EN MEMORIA (deuda técnica documentada):
+ * Varios métodos cargan transacciones del periodo y calculan métricas
+ * en memoria Java. Esto es aceptable para el volumen de datos de un
+ * usuario individual en self-hosting, pero si el volumen crece se
+ * debería valorar:&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;Agregaciones en base de datos (GROUP BY, SUM)&lt;/li&gt;
+ *   &lt;li&gt;Vistas materializadas de PostgreSQL&lt;/li&gt;
+ *   &lt;li&gt;Caché por usuario/periodo&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;CACHÉ: No hay caché implementada. El dashboard es una de las
+ * zonas más leídas de la aplicación. Si el rendimiento lo requiere,
+ * valorar caché con Spring Cache o Redis por (userId, period).&lt;/p&gt;
+ *
+ * &lt;p&gt;REDUNDANCIAS EN DashboardMetricsResponseDTO (documentadas):&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@code savings} es idéntico a {@code balance} — el frontend
+ *       consume ambos campos por compatibilidad histórica.&lt;/li&gt;
+ *   &lt;li&gt;{@code savingsTrend} se calcula con los mismos valores que
+ *       {@code balanceTrend} — alias semántico para el frontend.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;Estos campos se mantienen hasta que se revise el frontend y
+ * se pueda eliminar la redundancia de forma coordinada.&lt;/p&gt;
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class DashboardService implements GetDashboardDataUseCase {
+
+    private static final int MAX_SAVINGS_GOALS = 20;
+
+    private final TransactionQueryPort transactionQueryPort;
+    private final CategoryQueryPort categoryQueryPort;
+    private final SavingsGoalQueryPort savingsGoalQueryPort;
+    private final DashboardPeriodService dashboardPeriodService;
+    private final DashboardHistoryService dashboardHistoryService;
+    private final DashboardCategoryService dashboardCategoryService;
+    private final DashboardBudgetService dashboardBudgetService;
+
+    @Override
+    public DashboardMetricsResponseDTO getMetrics(
+            UUID userId,
+            String period
+    ) {
+<span class="fc" id="L71">        LocalDateTime[] currentRange =</span>
+<span class="fc" id="L72">                dashboardPeriodService.getDateRange(period);</span>
+<span class="fc" id="L73">        LocalDateTime[] previousRange =</span>
+<span class="fc" id="L74">                dashboardPeriodService.getPreviousPeriod(period);</span>
+
+<span class="fc" id="L76">        List&lt;TransactionQueryPort.TransactionData&gt; currentTransactions =</span>
+<span class="fc" id="L77">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+                        currentRange[0],
+                        currentRange[1]
+                );
+
+<span class="fc" id="L83">        List&lt;TransactionQueryPort.TransactionData&gt; previousTransactions =</span>
+<span class="fc" id="L84">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+                        previousRange[0],
+                        previousRange[1]
+                );
+
+<span class="fc" id="L90">        BigDecimal currentIncome =</span>
+<span class="fc" id="L91">                sumByType(currentTransactions, &quot;INCOME&quot;);</span>
+<span class="fc" id="L92">        BigDecimal currentExpenses =</span>
+<span class="fc" id="L93">                sumByType(currentTransactions, &quot;EXPENSE&quot;);</span>
+<span class="fc" id="L94">        BigDecimal currentBalance =</span>
+<span class="fc" id="L95">                currentIncome.subtract(currentExpenses);</span>
+
+<span class="fc" id="L97">        BigDecimal previousIncome =</span>
+<span class="fc" id="L98">                sumByType(previousTransactions, &quot;INCOME&quot;);</span>
+<span class="fc" id="L99">        BigDecimal previousExpenses =</span>
+<span class="fc" id="L100">                sumByType(previousTransactions, &quot;EXPENSE&quot;);</span>
+<span class="fc" id="L101">        BigDecimal previousBalance =</span>
+<span class="fc" id="L102">                previousIncome.subtract(previousExpenses);</span>
+
+<span class="fc" id="L104">        double balanceTrend = calculateTrend(</span>
+                currentBalance,
+                previousBalance
+        );
+
+<span class="fc" id="L109">        return new DashboardMetricsResponseDTO(</span>
+                currentBalance,
+                currentIncome,
+                currentExpenses,
+                currentBalance,
+                balanceTrend,
+<span class="fc" id="L115">                calculateTrend(currentIncome, previousIncome),</span>
+<span class="fc" id="L116">                calculateTrend(currentExpenses, previousExpenses),</span>
+                balanceTrend
+        );
+    }
+
+    @Override
+    public DashboardHistoryResponseDTO getHistory(
+            UUID userId,
+            String period
+    ) {
+<span class="fc" id="L126">        return dashboardHistoryService.getHistory(userId, period);</span>
+    }
+
+    @Override
+    public DashboardCategoriesResponseDTO getCategories(
+            UUID userId,
+            String period
+    ) {
+<span class="fc" id="L134">        return dashboardCategoryService.getCategories(userId, period);</span>
+    }
+
+    @Override
+    public DashboardBudgetsResponseDTO getBudgets(
+            UUID userId,
+            String period
+    ) {
+<span class="fc" id="L142">        return dashboardBudgetService.getBudgets(userId, period);</span>
+    }
+
+    @Override
+    public DashboardTransactionsResponseDTO getRecentTransactions(
+            UUID userId,
+            int limit
+    ) {
+<span class="fc" id="L150">        List&lt;TransactionQueryPort.TransactionData&gt; recentTransactions =</span>
+<span class="fc" id="L151">                transactionQueryPort.findRecentByUserId(userId, limit);</span>
+
+<span class="fc" id="L153">        List&lt;UUID&gt; categoryIds = recentTransactions.stream()</span>
+<span class="fc" id="L154">                .map(TransactionQueryPort.TransactionData::categoryId)</span>
+<span class="fc" id="L155">                .filter(Objects::nonNull)</span>
+<span class="fc" id="L156">                .distinct()</span>
+<span class="fc" id="L157">                .toList();</span>
+
+        Map&lt;UUID, CategoryQueryPort.CategoryData&gt; categoriesById =
+<span class="fc bfc" id="L160" title="All 2 branches covered.">                categoryIds.isEmpty()</span>
+<span class="fc" id="L161">                        ? Collections.emptyMap()</span>
+                        : categoryQueryPort
+<span class="fc" id="L163">                        .findByIdsAndUserId(userId, categoryIds)</span>
+<span class="fc" id="L164">                        .stream()</span>
+<span class="fc" id="L165">                        .collect(Collectors.toMap(</span>
+                                CategoryQueryPort.CategoryData::id,
+<span class="fc" id="L167">                                category -&gt; category</span>
+                        ));
+
+<span class="fc" id="L170">        List&lt;RecentTransactionResponseDTO&gt; transactionDTOs =</span>
+<span class="fc" id="L171">                recentTransactions.stream()</span>
+<span class="fc" id="L172">                        .map(t -&gt; {</span>
+<span class="fc" id="L173">                            String catName = &quot;Sin categoría&quot;;</span>
+<span class="fc" id="L174">                            String catColor = null;</span>
+
+<span class="fc bfc" id="L176" title="All 2 branches covered.">                            if (t.categoryId() != null) {</span>
+<span class="fc" id="L177">                                CategoryQueryPort.CategoryData category =</span>
+<span class="fc" id="L178">                                        categoriesById.get(t.categoryId());</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">                                if (category != null) {</span>
+<span class="fc" id="L180">                                    catName = category.name();</span>
+<span class="fc" id="L181">                                    catColor = category.color();</span>
+                                }
+                            }
+
+<span class="fc" id="L185">                            return new RecentTransactionResponseDTO(</span>
+<span class="fc" id="L186">                                    t.id(),</span>
+<span class="fc" id="L187">                                    t.description(),</span>
+                                    catName,
+                                    catColor,
+<span class="fc" id="L190">                                    t.categoryId(),</span>
+<span class="fc" id="L191">                                    t.amount(),</span>
+<span class="fc" id="L192">                                    t.date(),</span>
+<span class="fc" id="L193">                                    t.type()</span>
+                            );
+                        })
+<span class="fc" id="L196">                        .collect(Collectors.toList());</span>
+
+<span class="fc" id="L198">        return new DashboardTransactionsResponseDTO(transactionDTOs);</span>
+    }
+
+    @Override
+    public DashboardGoalsResponseDTO getSavingsGoals(UUID userId) {
+<span class="fc" id="L203">        List&lt;SavingsGoalResponseDTO&gt; goalDTOs =</span>
+<span class="fc" id="L204">                savingsGoalQueryPort.findAllByUserId(userId)</span>
+<span class="fc" id="L205">                        .stream()</span>
+<span class="fc" id="L206">                        .sorted((a, b) -&gt; {</span>
+<span class="fc" id="L207">                            int priorityCompare = comparePriority(</span>
+<span class="fc" id="L208">                                    b.priority(),</span>
+<span class="fc" id="L209">                                    a.priority()</span>
+                            );
+<span class="fc bfc" id="L211" title="All 2 branches covered.">                            if (priorityCompare != 0) {</span>
+<span class="fc" id="L212">                                return priorityCompare;</span>
+                            }
+<span class="fc" id="L214">                            return b.createdAt().compareTo(a.createdAt());</span>
+                        })
+<span class="fc" id="L216">                        .limit(MAX_SAVINGS_GOALS)</span>
+<span class="fc" id="L217">                        .map(goal -&gt; new SavingsGoalResponseDTO(</span>
+<span class="fc" id="L218">                                goal.id(),</span>
+<span class="fc" id="L219">                                goal.name(),</span>
+<span class="fc" id="L220">                                goal.currentAmount(),</span>
+<span class="fc" id="L221">                                goal.targetAmount(),</span>
+<span class="fc" id="L222">                                calculatePercentage(</span>
+<span class="fc" id="L223">                                        goal.currentAmount(),</span>
+<span class="fc" id="L224">                                        goal.targetAmount()</span>
+                                ),
+<span class="fc" id="L226">                                mapPriorityToIcon(goal.priority()),</span>
+<span class="fc" id="L227">                                goal.deadline()</span>
+                        ))
+<span class="fc" id="L229">                        .toList();</span>
+
+<span class="fc" id="L231">        return new DashboardGoalsResponseDTO(goalDTOs);</span>
+    }
+
+    private BigDecimal sumByType(
+            List&lt;TransactionQueryPort.TransactionData&gt; transactions,
+            String type
+    ) {
+<span class="fc" id="L238">        BigDecimal sum = BigDecimal.ZERO;</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        for (TransactionQueryPort.TransactionData t : transactions) {</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">            if (type.equals(t.type())) {</span>
+<span class="fc" id="L241">                sum = sum.add(t.amount().abs());</span>
+            }
+<span class="fc" id="L243">        }</span>
+<span class="fc" id="L244">        return sum;</span>
+    }
+
+    private double calculateTrend(BigDecimal current, BigDecimal previous) {
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (previous.compareTo(BigDecimal.ZERO) == 0) {</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">            return current.compareTo(BigDecimal.ZERO) &gt; 0 ? 100.0 : 0.0;</span>
+        }
+<span class="nc" id="L251">        return current.subtract(previous)</span>
+<span class="nc" id="L252">                .multiply(new BigDecimal(&quot;100&quot;))</span>
+<span class="nc" id="L253">                .divide(previous.abs(), 1, RoundingMode.HALF_UP)</span>
+<span class="nc" id="L254">                .doubleValue();</span>
+    }
+
+    private double calculatePercentage(BigDecimal part, BigDecimal total) {
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">        if (total.compareTo(BigDecimal.ZERO) == 0) {</span>
+<span class="nc" id="L259">            return 0.0;</span>
+        }
+<span class="fc" id="L261">        return part.multiply(new BigDecimal(&quot;100&quot;))</span>
+<span class="fc" id="L262">                .divide(total, 1, RoundingMode.HALF_UP)</span>
+<span class="fc" id="L263">                .doubleValue();</span>
+    }
+
+    private int comparePriority(String a, String b) {
+<span class="fc" id="L267">        Map&lt;String, Integer&gt; priorityOrder = Map.of(</span>
+<span class="fc" id="L268">                &quot;HIGH&quot;, 3,</span>
+<span class="fc" id="L269">                &quot;MEDIUM&quot;, 2,</span>
+<span class="fc" id="L270">                &quot;LOW&quot;, 1</span>
+        );
+<span class="fc" id="L272">        return Integer.compare(</span>
+<span class="fc" id="L273">                priorityOrder.getOrDefault(a, 0),</span>
+<span class="fc" id="L274">                priorityOrder.getOrDefault(b, 0)</span>
+        );
+    }
+
+    private String mapPriorityToIcon(String priority) {
+<span class="fc bfc" id="L279" title="All 4 branches covered.">        return switch (priority) {</span>
+<span class="fc" id="L280">            case &quot;HIGH&quot; -&gt; &quot;high&quot;;</span>
+<span class="fc" id="L281">            case &quot;MEDIUM&quot; -&gt; &quot;medium&quot;;</span>
+<span class="fc" id="L282">            case &quot;LOW&quot; -&gt; &quot;low&quot;;</span>
+<span class="fc" id="L283">            default -&gt; &quot;default&quot;;</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

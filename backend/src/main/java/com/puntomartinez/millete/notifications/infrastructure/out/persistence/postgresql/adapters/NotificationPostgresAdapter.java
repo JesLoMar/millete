@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +41,7 @@ public class NotificationPostgresAdapter
     public Optional<Notification> findActiveAndNotExpiredByIdAndUserId(
             UUID id,
             UUID userId,
-            LocalDateTime now
+            Instant now
     ) {
         return jpaRepository
                 .findActiveAndNotExpiredByIdAndUserId(
@@ -56,7 +56,7 @@ public class NotificationPostgresAdapter
     public List<Notification> findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
             UUID userId,
             int limit,
-            LocalDateTime now
+            Instant now
     ) {
         return jpaRepository
                 .findActiveAndNotExpiredByUserId(
@@ -78,7 +78,7 @@ public class NotificationPostgresAdapter
             UUID userId,
             int page,
             int size,
-            LocalDateTime now
+            Instant now
     ) {
         Page<Notification> pageResult =
                 jpaRepository
@@ -107,7 +107,7 @@ public class NotificationPostgresAdapter
     @Override
     public long countUnreadActiveAndNotExpiredByUserId(
             UUID userId,
-            LocalDateTime now
+            Instant now
     ) {
         return jpaRepository
                 .countUnreadActiveAndNotExpiredByUserId(

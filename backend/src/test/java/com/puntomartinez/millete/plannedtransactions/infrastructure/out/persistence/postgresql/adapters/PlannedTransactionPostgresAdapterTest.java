@@ -23,7 +23,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -70,8 +69,8 @@ class PlannedTransactionPostgresAdapterTest {
         entity.setFrequencyType("MONTHS");
         entity.setFrequencyInterval(1);
         entity.setStartDate(LocalDate.now());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         entity.setFailureCount(0);
         return entity;

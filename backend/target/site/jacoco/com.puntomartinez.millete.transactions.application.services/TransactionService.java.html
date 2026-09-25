@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.application.services</a> &gt; <span class="el_source">TransactionService.java</span></div><h1>TransactionService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.application.services;
+
+import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import com.puntomartinez.millete.transactions.domain.ports.in.DeleteTransactionUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.GetTransactionUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.ListTransactionsUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.in.UpdateTransactionUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository.TransactionAggregates;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class TransactionService implements
+        RegisterTransactionUseCase,
+        ListTransactionsUseCase,
+        DeleteTransactionUseCase,
+        GetTransactionUseCase,
+        UpdateTransactionUseCase,
+        UnassignCategoryFromTransactionsUseCase {
+
+    private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
+
+    public TransactionService(
+            TransactionRepository transactionRepository,
+            CategoryRepository categoryRepository
+<span class="fc" id="L40">    ) {</span>
+<span class="fc" id="L41">        this.transactionRepository = transactionRepository;</span>
+<span class="fc" id="L42">        this.categoryRepository = categoryRepository;</span>
+<span class="fc" id="L43">    }</span>
+
+    @Override
+    @Transactional
+    public RegisterTransactionUseCase.RegisterTransactionResult register(
+            RegisterTransactionUseCase.RegisterTransactionCommand command
+    ) {
+<span class="fc" id="L50">        validateCategoryOwnership(</span>
+<span class="fc" id="L51">                command.categoryId(),</span>
+<span class="fc" id="L52">                command.userId()</span>
+        );
+
+<span class="fc" id="L55">        Transaction transaction = Transaction.create(</span>
+<span class="fc" id="L56">                command.userId(),</span>
+<span class="fc" id="L57">                command.categoryId(),</span>
+<span class="fc" id="L58">                command.amount(),</span>
+<span class="fc" id="L59">                command.date(),</span>
+<span class="fc" id="L60">                command.type(),</span>
+<span class="fc" id="L61">                command.description()</span>
+        );
+
+<span class="fc" id="L64">        Transaction savedTransaction =</span>
+<span class="fc" id="L65">                transactionRepository.save(transaction);</span>
+
+<span class="fc" id="L67">        boolean limitExceeded = false;</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (command.type() == TransactionType.EXPENSE) {</span>
+<span class="fc" id="L70">            limitExceeded = isMonthlyExpenseLimitExceeded(</span>
+<span class="fc" id="L71">                    command.userId(),</span>
+<span class="fc" id="L72">                    command.date()</span>
+            );
+        }
+
+<span class="fc" id="L76">        return new RegisterTransactionUseCase.RegisterTransactionResult(</span>
+                savedTransaction,
+                limitExceeded
+        );
+    }
+
+    @Override
+    @Transactional
+    public void unassignCategory(
+            UUID categoryId,
+            UUID userId
+    ) {
+<span class="fc" id="L88">        transactionRepository.clearCategoryFromActiveTransactions(</span>
+                categoryId,
+                userId,
+<span class="fc" id="L91">                LocalDateTime.now()</span>
+        );
+<span class="fc" id="L93">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;Transaction&gt; findAllByUserId(UUID userId) {
+<span class="fc" id="L98">        return transactionRepository.findAllByUserId(userId);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;Transaction&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+<span class="nc" id="L112">        return transactionRepository.findAllByUserId(</span>
+                userId,
+                page,
+                size,
+                search,
+                type,
+                startDate,
+                endDate
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+<span class="fc" id="L132">        return transactionRepository.countByUserIdAndFilters(</span>
+                userId,
+                search,
+                type,
+                startDate,
+                endDate
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Transaction getByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L147">        return transactionRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L148">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L149">                        new ResourceNotFoundException(</span>
+                                &quot;Transaction not found.&quot;
+                        )
+                );
+    }
+
+    @Override
+    @Transactional
+    public Transaction update(
+            UUID id,
+            UpdateTransactionUseCase.UpdateTransactionCommand command
+    ) {
+<span class="fc" id="L161">        Transaction transaction = getByIdAndUserId(</span>
+                id,
+<span class="fc" id="L163">                command.userId()</span>
+        );
+
+<span class="fc" id="L166">        validateCategoryOwnership(</span>
+<span class="fc" id="L167">                command.categoryId(),</span>
+<span class="fc" id="L168">                command.userId()</span>
+        );
+
+<span class="fc" id="L171">        transaction.updateDetails(</span>
+<span class="fc" id="L172">                command.amount(),</span>
+<span class="fc" id="L173">                command.date(),</span>
+<span class="fc" id="L174">                command.type(),</span>
+<span class="fc" id="L175">                command.description(),</span>
+<span class="fc" id="L176">                command.categoryId()</span>
+        );
+
+<span class="fc" id="L179">        return transactionRepository.save(transaction);</span>
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L188">        Transaction transaction = getByIdAndUserId(id, userId);</span>
+
+<span class="fc" id="L190">        transaction.deactivate();</span>
+<span class="fc" id="L191">        transactionRepository.save(transaction);</span>
+<span class="fc" id="L192">    }</span>
+
+    private void validateCategoryOwnership(
+            UUID categoryId,
+            UUID userId
+    ) {
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (categoryId == null) {</span>
+<span class="fc" id="L199">            return;</span>
+        }
+
+<span class="fc" id="L202">        categoryRepository.findByIdAndUserId(categoryId, userId)</span>
+<span class="fc" id="L203">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L204">                        new ResourceNotFoundException(</span>
+                                &quot;Category does not exist or does not belong to you.&quot;
+                        )
+                );
+<span class="fc" id="L208">    }</span>
+
+    private boolean isMonthlyExpenseLimitExceeded(
+            UUID userId,
+            LocalDateTime date
+    ) {
+<span class="fc" id="L214">        LocalDateTime startOfMonth = date</span>
+<span class="fc" id="L215">                .withDayOfMonth(1)</span>
+<span class="fc" id="L216">                .withHour(0)</span>
+<span class="fc" id="L217">                .withMinute(0)</span>
+<span class="fc" id="L218">                .withSecond(0)</span>
+<span class="fc" id="L219">                .withNano(0);</span>
+
+<span class="fc" id="L221">        LocalDateTime endOfMonth = startOfMonth</span>
+<span class="fc" id="L222">                .plusMonths(1)</span>
+<span class="fc" id="L223">                .minusNanos(1);</span>
+
+<span class="fc" id="L225">        TransactionAggregates aggregates =</span>
+<span class="fc" id="L226">                transactionRepository.getAggregatesByUserIdAndDateBetween(</span>
+                        userId,
+                        startOfMonth,
+                        endOfMonth
+                );
+
+<span class="fc" id="L232">        BigDecimal totalIncome = aggregates.totalIncome();</span>
+<span class="fc" id="L233">        BigDecimal totalExpense = aggregates.totalExpense();</span>
+
+<span class="fc" id="L235">        BigDecimal limit = totalIncome.multiply(</span>
+                new BigDecimal(&quot;0.70&quot;)
+        );
+
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        return totalIncome.compareTo(BigDecimal.ZERO) &gt; 0</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">                &amp;&amp; totalExpense.compareTo(limit) &gt; 0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

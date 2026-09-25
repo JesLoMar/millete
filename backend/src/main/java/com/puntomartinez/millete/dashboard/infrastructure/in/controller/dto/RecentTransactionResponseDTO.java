@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record RecentTransactionResponseDTO(
@@ -11,6 +11,6 @@ public record RecentTransactionResponseDTO(
         String categoryColor,
         UUID categoryId,
         BigDecimal amount,
-        LocalDateTime date,
+        LocalDate date,
         String type
 ) {}

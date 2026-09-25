@@ -1,8 +1,8 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record ExportData(
@@ -21,7 +21,7 @@ public record ExportData(
     public record TransactionExportRow(
             String categoryName,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             String type,
             String description
     ) {}
@@ -45,7 +45,7 @@ public record ExportData(
             BigDecimal purchasePrice,
             BigDecimal currentPrice,
             String type,
-            LocalDateTime purchaseDate
+            LocalDate purchaseDate
     ) {}
 
     public record SavingsGoalExportRow(

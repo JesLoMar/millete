@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardBudgetService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dashboard.application.services</a> &gt; <span class="el_source">DashboardBudgetService.java</span></div><h1>DashboardBudgetService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dashboard.application.services;
+
+import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
+import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.BudgetItemResponseDTO;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardBudgetsResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class DashboardBudgetService {
+
+    private final TransactionQueryPort transactionQueryPort;
+    private final CategoryQueryPort categoryQueryPort;
+    private final DashboardPeriodService dashboardPeriodService;
+
+    public DashboardBudgetsResponseDTO getBudgets(
+            UUID userId,
+            String period
+    ) {
+<span class="fc" id="L32">        LocalDateTime[] range =</span>
+<span class="fc" id="L33">                dashboardPeriodService.getDateRange(period);</span>
+
+<span class="fc" id="L35">        List&lt;CategoryQueryPort.CategoryData&gt; categoriesWithBudget =</span>
+<span class="fc" id="L36">                categoryQueryPort.findCategoriesWithBudgetByUserId(userId);</span>
+
+<span class="fc" id="L38">        List&lt;TransactionQueryPort.TransactionData&gt; periodTransactions =</span>
+<span class="fc" id="L39">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+                        range[0],
+                        range[1]
+                );
+
+        Map&lt;UUID, List&lt;TransactionQueryPort.TransactionData&gt;&gt;
+<span class="fc" id="L46">                transactionsByCategory = periodTransactions.stream()</span>
+<span class="fc" id="L47">                .filter(t -&gt;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">                        t.categoryId() != null</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                                &amp;&amp; &quot;EXPENSE&quot;.equals(t.type()))</span>
+<span class="fc" id="L50">                .collect(Collectors.groupingBy(</span>
+                        TransactionQueryPort.TransactionData::categoryId
+                ));
+
+<span class="fc" id="L54">        List&lt;BudgetItemResponseDTO&gt; budgetItems =</span>
+<span class="fc" id="L55">                categoriesWithBudget.stream()</span>
+<span class="fc" id="L56">                        .map(category -&gt; {</span>
+                            List&lt;TransactionQueryPort.TransactionData&gt;
+<span class="fc" id="L58">                                    categoryTransactions =</span>
+<span class="fc" id="L59">                                    transactionsByCategory.getOrDefault(</span>
+<span class="fc" id="L60">                                            category.id(),</span>
+<span class="fc" id="L61">                                            Collections.emptyList()</span>
+                                    );
+
+<span class="fc" id="L64">                            BigDecimal spent = categoryTransactions.stream()</span>
+<span class="fc" id="L65">                                    .map(t -&gt; t.amount().abs())</span>
+<span class="fc" id="L66">                                    .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L68">                            return new BudgetItemResponseDTO(</span>
+<span class="fc" id="L69">                                    category.id(),</span>
+<span class="fc" id="L70">                                    category.name(),</span>
+                                    spent,
+<span class="fc" id="L72">                                    category.budgetLimit(),</span>
+<span class="fc" id="L73">                                    calculatePercentage(</span>
+                                            spent,
+<span class="fc" id="L75">                                            category.budgetLimit()</span>
+                                    )
+                            );
+                        })
+<span class="fc" id="L79">                        .sorted((a, b) -&gt; {</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">                            boolean aOver = a.percentage() &gt;= 100;</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                            boolean bOver = b.percentage() &gt;= 100;</span>
+<span class="pc bpc" id="L82" title="3 of 4 branches missed.">                            if (aOver &amp;&amp; !bOver) return -1;</span>
+<span class="pc bpc" id="L83" title="1 of 4 branches missed.">                            if (!aOver &amp;&amp; bOver) return 1;</span>
+<span class="fc" id="L84">                            return Double.compare(</span>
+<span class="fc" id="L85">                                    b.percentage(), a.percentage()</span>
+                            );
+                        })
+<span class="fc" id="L88">                        .limit(5)</span>
+<span class="fc" id="L89">                        .collect(Collectors.toList());</span>
+
+<span class="fc" id="L91">        return new DashboardBudgetsResponseDTO(period, budgetItems);</span>
+    }
+
+    private double calculatePercentage(BigDecimal part, BigDecimal total) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (total.compareTo(BigDecimal.ZERO) == 0) {</span>
+<span class="fc" id="L96">            return 0.0;</span>
+        }
+<span class="fc" id="L98">        return part.multiply(new BigDecimal(&quot;100&quot;))</span>
+<span class="fc" id="L99">                .divide(total, 1, java.math.RoundingMode.HALF_UP)</span>
+<span class="fc" id="L100">                .doubleValue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

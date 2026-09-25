@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvestmentPostgresAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.adapters</a> &gt; <span class="el_source">InvestmentPostgresAdapter.java</span></div><h1>InvestmentPostgresAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.adapters;
+
+import com.puntomartinez.millete.investments.domain.model.Investment;
+import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
+import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.InvestmentEntity;
+import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.InvestmentEntityMapper;
+import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.SpringDataInvestmentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class InvestmentPostgresAdapter implements InvestmentRepository {
+
+    private final SpringDataInvestmentRepository repository;
+    private final InvestmentEntityMapper mapper;
+
+    public InvestmentPostgresAdapter(
+            SpringDataInvestmentRepository repository,
+<span class="fc" id="L27">            InvestmentEntityMapper mapper) {</span>
+
+<span class="fc" id="L29">        this.repository = repository;</span>
+<span class="fc" id="L30">        this.mapper = mapper;</span>
+<span class="fc" id="L31">    }</span>
+
+    private Specification&lt;InvestmentEntity&gt; buildSpecification(
+            UUID userId,
+            String search,
+            InvestmentType type) {
+
+<span class="fc" id="L38">        Specification&lt;InvestmentEntity&gt; spec =</span>
+                (root, query, cb) -&gt;
+<span class="nc" id="L40">                        cb.equal(root.get(&quot;userId&quot;), userId);</span>
+
+<span class="pc bpc" id="L42" title="1 of 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
+<span class="fc" id="L43">            String pattern = &quot;%&quot; + search.toLowerCase() + &quot;%&quot;;</span>
+
+<span class="fc" id="L45">            spec = spec.and((root, query, cb) -&gt;</span>
+<span class="nc" id="L46">                    cb.or(</span>
+<span class="nc" id="L47">                            cb.like(</span>
+<span class="nc" id="L48">                                    cb.lower(root.get(&quot;assetName&quot;)),</span>
+                                    pattern
+                            ),
+<span class="nc" id="L51">                            cb.like(</span>
+<span class="nc" id="L52">                                    cb.lower(root.get(&quot;ticker&quot;)),</span>
+                                    pattern
+                            )
+                    )
+            );
+        }
+
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (type != null) {</span>
+<span class="fc" id="L60">            spec = spec.and((root, query, cb) -&gt;</span>
+<span class="nc" id="L61">                    cb.equal(root.get(&quot;type&quot;), type.name())</span>
+            );
+        }
+
+<span class="fc" id="L65">        return spec;</span>
+    }
+
+    @Override
+    public Investment save(Investment investment) {
+<span class="fc" id="L70">        InvestmentEntity entity = mapper.toEntity(investment);</span>
+
+<span class="fc" id="L72">        return mapper.toDomain(</span>
+<span class="fc" id="L73">                repository.save(entity)</span>
+        );
+    }
+
+    @Override
+    public Optional&lt;Investment&gt; findById(UUID id) {
+<span class="fc" id="L79">        return repository.findById(id)</span>
+<span class="fc" id="L80">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public Optional&lt;Investment&gt; findByIdAndUserId(
+            UUID id,
+            UUID userId) {
+
+<span class="fc" id="L88">        Specification&lt;InvestmentEntity&gt; spec =</span>
+<span class="nc" id="L89">                (root, query, cb) -&gt; cb.and(</span>
+<span class="nc" id="L90">                        cb.equal(root.get(&quot;id&quot;), id),</span>
+<span class="nc" id="L91">                        cb.equal(root.get(&quot;userId&quot;), userId)</span>
+                );
+
+<span class="fc" id="L94">        return repository.findOne(spec)</span>
+<span class="fc" id="L95">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public List&lt;Investment&gt; findAllByUserId(UUID userId) {
+<span class="fc" id="L100">        Specification&lt;InvestmentEntity&gt; spec =</span>
+<span class="fc" id="L101">                buildSpecification(userId, null, null);</span>
+
+<span class="fc" id="L103">        return repository</span>
+<span class="fc" id="L104">                .findAll(</span>
+                        spec,
+<span class="fc" id="L106">                        Sort.by(&quot;purchaseDate&quot;).descending()</span>
+                )
+<span class="fc" id="L108">                .stream()</span>
+<span class="fc" id="L109">                .map(mapper::toDomain)</span>
+<span class="fc" id="L110">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;Investment&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            InvestmentType type) {
+
+<span class="fc" id="L121">        Specification&lt;InvestmentEntity&gt; spec =</span>
+<span class="fc" id="L122">                buildSpecification(userId, search, type);</span>
+
+<span class="fc" id="L124">        Page&lt;InvestmentEntity&gt; result =</span>
+<span class="fc" id="L125">                repository.findAll(</span>
+                        spec,
+<span class="fc" id="L127">                        PageRequest.of(</span>
+                                page,
+                                size,
+<span class="fc" id="L130">                                Sort.by(&quot;purchaseDate&quot;).descending()</span>
+                        )
+                );
+
+<span class="fc" id="L134">        return result.getContent()</span>
+<span class="fc" id="L135">                .stream()</span>
+<span class="fc" id="L136">                .map(mapper::toDomain)</span>
+<span class="fc" id="L137">                .toList();</span>
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            InvestmentType type) {
+
+<span class="fc" id="L146">        return repository.count(</span>
+<span class="fc" id="L147">                buildSpecification(userId, search, type)</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

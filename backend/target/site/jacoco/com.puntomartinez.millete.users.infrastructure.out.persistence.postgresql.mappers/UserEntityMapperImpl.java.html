@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">UserEntityMapperImpl.java</span></div><h1>UserEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.users.domain.model.User;
+import com.puntomartinez.millete.users.infrastructure.out.persistence.postgresql.entity.UserEntity;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:40+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L16">public class UserEntityMapperImpl implements UserEntityMapper {</span>
+
+    @Override
+    public UserEntity toEntity(User domain) {
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        if ( domain == null ) {</span>
+<span class="nc" id="L21">            return null;</span>
+        }
+
+<span class="fc" id="L24">        UserEntity userEntity = new UserEntity();</span>
+
+<span class="fc" id="L26">        userEntity.setId( domain.getId() );</span>
+<span class="fc" id="L27">        userEntity.setUsername( domain.getUsername() );</span>
+<span class="fc" id="L28">        userEntity.setEmail( domain.getEmail() );</span>
+<span class="fc" id="L29">        userEntity.setPassword( domain.getPassword() );</span>
+<span class="fc" id="L30">        userEntity.setCreatedAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L31">        userEntity.setModifiedAt( domain.getModifiedAt() );</span>
+<span class="fc" id="L32">        userEntity.setActive( domain.isActive() );</span>
+<span class="fc" id="L33">        userEntity.setAnonymized( domain.isAnonymized() );</span>
+
+<span class="fc" id="L35">        return userEntity;</span>
+    }
+
+    @Override
+    public User toDomain(UserEntity entity) {
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if ( entity == null ) {</span>
+<span class="nc" id="L41">            return null;</span>
+        }
+
+<span class="fc" id="L44">        UUID id = null;</span>
+<span class="fc" id="L45">        String username = null;</span>
+<span class="fc" id="L46">        String email = null;</span>
+<span class="fc" id="L47">        String password = null;</span>
+<span class="fc" id="L48">        LocalDateTime createdAt = null;</span>
+<span class="fc" id="L49">        LocalDateTime modifiedAt = null;</span>
+<span class="fc" id="L50">        boolean active = false;</span>
+<span class="fc" id="L51">        boolean anonymized = false;</span>
+
+<span class="fc" id="L53">        id = entity.getId();</span>
+<span class="fc" id="L54">        username = entity.getUsername();</span>
+<span class="fc" id="L55">        email = entity.getEmail();</span>
+<span class="fc" id="L56">        password = entity.getPassword();</span>
+<span class="fc" id="L57">        createdAt = entity.getCreatedAt();</span>
+<span class="fc" id="L58">        modifiedAt = entity.getModifiedAt();</span>
+<span class="fc" id="L59">        active = entity.isActive();</span>
+<span class="fc" id="L60">        anonymized = entity.isAnonymized();</span>
+
+<span class="fc" id="L62">        User user = new User( id, username, email, password, createdAt, modifiedAt, active, anonymized );</span>
+
+<span class="fc" id="L64">        return user;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

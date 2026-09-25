@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvestmentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.investments.application.services</a> &gt; <span class="el_source">InvestmentService.java</span></div><h1>InvestmentService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.investments.application.services;
+
+import com.puntomartinez.millete.investments.domain.model.Investment;
+import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
+import com.puntomartinez.millete.investments.domain.ports.in.DeleteInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.ListInvestmentsUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentPriceUseCase;
+import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentUseCase;
+import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class InvestmentService implements
+        RegisterInvestmentUseCase,
+        ListInvestmentsUseCase,
+        GetInvestmentUseCase,
+        UpdateInvestmentPriceUseCase,
+        DeleteInvestmentUseCase,
+        UpdateInvestmentUseCase {
+
+    private final InvestmentRepository investmentRepository;
+
+<span class="fc" id="L30">    public InvestmentService(InvestmentRepository investmentRepository) {</span>
+<span class="fc" id="L31">        this.investmentRepository = investmentRepository;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    public Investment register(RegisterInvestmentCommand command) {
+<span class="fc" id="L36">        Investment investment = Investment.create(</span>
+<span class="fc" id="L37">                command.userId(),</span>
+<span class="fc" id="L38">                command.assetName(),</span>
+<span class="fc" id="L39">                command.ticker(),</span>
+<span class="fc" id="L40">                command.quantity(),</span>
+<span class="fc" id="L41">                command.purchasePrice(),</span>
+<span class="fc" id="L42">                command.type(),</span>
+<span class="fc" id="L43">                command.purchaseDate()</span>
+        );
+
+<span class="fc" id="L46">        return investmentRepository.save(investment);</span>
+    }
+
+    @Override
+    public Investment getById(UUID id, UUID userId) {
+<span class="fc" id="L51">        return investmentRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L52">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L53">                        new ResourceNotFoundException(&quot;Inversión no encontrada.&quot;));</span>
+    }
+
+    @Override
+    public List&lt;Investment&gt; findAllByUserId(UUID userId) {
+<span class="fc" id="L58">        return investmentRepository.findAllByUserId(userId);</span>
+    }
+
+    @Override
+    public List&lt;Investment&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            InvestmentType type) {
+
+<span class="fc" id="L69">        return investmentRepository.findAllByUserId(</span>
+                userId,
+                page,
+                size,
+                search,
+                type
+        );
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            InvestmentType type) {
+
+<span class="fc" id="L84">        return investmentRepository.countByUserIdAndFilters(</span>
+                userId,
+                search,
+                type
+        );
+    }
+
+    @Override
+    public Investment updatePrice(
+            UUID id,
+            UUID userId,
+            BigDecimal newPrice) {
+
+<span class="fc" id="L97">        Investment investment = investmentRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L98">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L99">                        new ResourceNotFoundException(&quot;Inversión no encontrada.&quot;));</span>
+
+<span class="fc" id="L101">        investment.updateCurrentPrice(newPrice);</span>
+
+<span class="fc" id="L103">        return investmentRepository.save(investment);</span>
+    }
+
+    @Override
+    public void delete(UUID id, UUID userId) {
+<span class="fc" id="L108">        Investment investment = investmentRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L109">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L110">                        new ResourceNotFoundException(&quot;Inversión no encontrada.&quot;));</span>
+
+<span class="fc" id="L112">        investment.deactivate();</span>
+
+<span class="fc" id="L114">        investmentRepository.save(investment);</span>
+<span class="fc" id="L115">    }</span>
+
+    @Override
+    public Investment update(UpdateInvestmentCommand command) {
+<span class="fc" id="L119">        Investment investment = investmentRepository</span>
+<span class="fc" id="L120">                .findByIdAndUserId(command.id(), command.userId())</span>
+<span class="fc" id="L121">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L122">                        new ResourceNotFoundException(&quot;Inversión no encontrada.&quot;));</span>
+
+<span class="fc" id="L124">        investment.updateDetails(</span>
+<span class="fc" id="L125">                command.assetName(),</span>
+<span class="fc" id="L126">                command.ticker(),</span>
+<span class="fc" id="L127">                command.quantity(),</span>
+<span class="fc" id="L128">                command.purchasePrice(),</span>
+<span class="fc" id="L129">                command.type(),</span>
+<span class="fc" id="L130">                command.purchaseDate()</span>
+        );
+
+<span class="fc" id="L133">        return investmentRepository.save(investment);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

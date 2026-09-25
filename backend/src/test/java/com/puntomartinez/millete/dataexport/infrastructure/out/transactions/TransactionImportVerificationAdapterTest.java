@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,15 +42,15 @@ class TransactionImportVerificationAdapterTest {
 
         Transaction tx = Transaction.reconstitute(
                 UUID.randomUUID(), userId, categoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 Transaction.TransactionType.EXPENSE, "Lunch",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         Category cat = Category.reconstitute(
                 categoryId, userId, "Food", "#FF5733",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.shared.infrastructure.in.controller.advice</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.shared.infrastructure.in.controller.advice;
+
+import com.puntomartinez.millete.shared.domain.exception.*;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.ErrorResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="fc" id="L22">@Slf4j</span>
+@RestControllerAdvice
+<span class="fc" id="L24">public class GlobalExceptionHandler {</span>
+
+    private static final String GENERIC_ERROR_MESSAGE = &quot;Ha ocurrido un error interno. Por favor, inténtalo de nuevo más tarde.&quot;;
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+<span class="fc" id="L30">        log.warn(&quot;Recurso no encontrado: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L31">        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex, HttpServletRequest request) {
+<span class="fc" id="L36">        log.warn(&quot;Recurso duplicado: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L37">        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleForbiddenOperationException(ForbiddenOperationException ex, HttpServletRequest request) {
+<span class="fc" id="L42">        log.warn(&quot;Operación prohibida: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L43">        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleInvalidInputException(InvalidInputException ex, HttpServletRequest request) {
+<span class="fc" id="L48">        log.warn(&quot;Entrada inválida: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L49">        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleAuthenticationFailedException(AuthenticationFailedException ex, HttpServletRequest request) {
+<span class="fc" id="L54">        log.warn(&quot;Autenticación fallida: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L55">        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleSpringAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
+<span class="fc" id="L60">        log.warn(&quot;Autenticación fallida (Spring Security): {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L61">        return buildResponse(HttpStatus.UNAUTHORIZED, &quot;Credenciales inválidas o sesión expirada.&quot;, request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleSpringAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+<span class="fc" id="L66">        log.warn(&quot;Acceso denegado (Spring Security): {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L67">        return buildResponse(HttpStatus.FORBIDDEN, &quot;No tienes permiso para realizar esta acción.&quot;, request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleDomainException(DomainException ex, HttpServletRequest request) {
+<span class="fc" id="L72">        log.warn(&quot;Excepción de dominio no específica: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L73">        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
+<span class="fc" id="L78">        log.warn(&quot;Argumento ilegal: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L79">        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request) {
+<span class="nc" id="L84">        Map&lt;String, String&gt; validationErrors = new HashMap&lt;&gt;();</span>
+
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (FieldError error : ex.getBindingResult().getFieldErrors()) {</span>
+<span class="nc" id="L87">            validationErrors.put(error.getField(), error.getDefaultMessage());</span>
+<span class="nc" id="L88">        }</span>
+
+<span class="nc" id="L90">        log.warn(&quot;Errores de validación: {}&quot;, validationErrors);</span>
+
+<span class="nc" id="L92">        ErrorResponseDTO errorResponse = new ErrorResponseDTO(</span>
+<span class="nc" id="L93">                LocalDateTime.now(),</span>
+<span class="nc" id="L94">                HttpStatus.BAD_REQUEST.value(),</span>
+                &quot;Error de validación en los datos enviados&quot;,
+<span class="nc" id="L96">                validationErrors.toString(),</span>
+<span class="nc" id="L97">                request.getRequestURI()</span>
+        );
+
+<span class="nc" id="L100">        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.BAD_REQUEST);</span>
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+<span class="nc" id="L105">        log.warn(&quot;Tipo de argumento incorrecto: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L106">        String message = &quot;El parámetro '&quot; + ex.getName() + &quot;' tiene un formato inválido.&quot;;</span>
+<span class="nc" id="L107">        return buildResponse(HttpStatus.BAD_REQUEST, message, request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpServletRequest request) {
+<span class="nc" id="L112">        log.warn(&quot;Mensaje no legible: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L113">        return buildResponse(HttpStatus.BAD_REQUEST, &quot;El cuerpo de la petición no es válido.&quot;, request.getRequestURI());</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ErrorResponseDTO&gt; handleUnexpectedException(Exception ex, HttpServletRequest request) {
+<span class="fc" id="L118">        log.error(&quot;Error interno no esperado en {}: {}&quot;, request.getRequestURI(), ex.getMessage(), ex);</span>
+<span class="fc" id="L119">        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, GENERIC_ERROR_MESSAGE, request.getRequestURI());</span>
+    }
+
+    private ResponseEntity&lt;ErrorResponseDTO&gt; buildResponse(HttpStatus status, String message, String path) {
+<span class="fc" id="L123">        ErrorResponseDTO errorResponse = new ErrorResponseDTO(</span>
+<span class="fc" id="L124">                LocalDateTime.now(),</span>
+<span class="fc" id="L125">                status.value(),</span>
+<span class="fc" id="L126">                status.getReasonPhrase(),</span>
+                message,
+                path
+        );
+<span class="fc" id="L130">        return new ResponseEntity&lt;&gt;(errorResponse, status);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

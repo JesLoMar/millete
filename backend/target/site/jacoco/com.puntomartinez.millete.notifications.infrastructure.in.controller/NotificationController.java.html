@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.notifications.infrastructure.in.controller</a> &gt; <span class="el_source">NotificationController.java</span></div><h1>NotificationController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.notifications.infrastructure.in.controller;
+
+import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
+import com.puntomartinez.millete.notifications.domain.ports.in.DeleteNotificationUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsReadUseCase;
+import com.puntomartinez.millete.notifications.infrastructure.in.controller.dto.NotificationResponseDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
+@RequestMapping(&quot;/api/v1/notifications&quot;)
+@RequiredArgsConstructor
+@PreAuthorize(&quot;isAuthenticated()&quot;)
+public class NotificationController {
+
+    private final GetNotificationsUseCase getNotificationsUseCase;
+    private final MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
+    private final MarkNotificationAsActionedUseCase markNotificationAsActionedUseCase;
+    private final DeleteNotificationUseCase deleteNotificationUseCase;
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;NotificationResponseDTO&gt;&gt; getNotifications(
+            Authentication authentication,
+            @RequestParam(required = false) Integer limit
+    ) {
+<span class="fc" id="L38">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        int safeLimit = limit != null</span>
+<span class="fc" id="L41">                ? limit</span>
+<span class="fc" id="L42">                : Integer.MAX_VALUE;</span>
+
+<span class="fc" id="L44">        List&lt;Notification&gt; notifications =</span>
+<span class="fc" id="L45">                getNotificationsUseCase.getUserNotifications(</span>
+<span class="fc" id="L46">                        jwtUser.getId(),</span>
+                        safeLimit
+                );
+
+<span class="fc" id="L50">        return ResponseEntity.ok(</span>
+<span class="fc" id="L51">                notifications.stream()</span>
+<span class="fc" id="L52">                        .map(this::toDto)</span>
+<span class="fc" id="L53">                        .toList()</span>
+        );
+    }
+
+    @GetMapping(&quot;/paginated&quot;)
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;NotificationResponseDTO&gt;&gt; getNotificationsPaginated(
+            Authentication authentication,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;25&quot;) int size
+    ) {
+<span class="fc" id="L63">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc" id="L65">        PaginatedNotifications result =</span>
+<span class="fc" id="L66">                getNotificationsUseCase.getUserNotificationsPage(</span>
+<span class="fc" id="L67">                        jwtUser.getId(),</span>
+                        page,
+                        size
+                );
+
+<span class="fc" id="L72">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+<span class="fc" id="L74">                        result.content().stream()</span>
+<span class="fc" id="L75">                                .map(this::toDto)</span>
+<span class="fc" id="L76">                                .toList(),</span>
+<span class="fc" id="L77">                        result.currentPage(),</span>
+<span class="fc" id="L78">                        result.totalPages(),</span>
+<span class="fc" id="L79">                        result.totalElements(),</span>
+<span class="fc" id="L80">                        result.size(),</span>
+<span class="fc" id="L81">                        result.first(),</span>
+<span class="fc" id="L82">                        result.last()</span>
+                )
+        );
+    }
+
+    @GetMapping(&quot;/unread-count&quot;)
+    public ResponseEntity&lt;Map&lt;String, Long&gt;&gt; getUnreadCount(
+            Authentication authentication
+    ) {
+<span class="fc" id="L91">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc" id="L93">        long count =</span>
+<span class="fc" id="L94">                getNotificationsUseCase.getUnreadCount(</span>
+<span class="fc" id="L95">                        jwtUser.getId()</span>
+                );
+
+<span class="fc" id="L98">        return ResponseEntity.ok(</span>
+<span class="fc" id="L99">                Map.of(&quot;count&quot;, count)</span>
+        );
+    }
+
+    @PostMapping(&quot;/{notificationId}/read&quot;)
+    public ResponseEntity&lt;Void&gt; markAsRead(
+            Authentication authentication,
+            @PathVariable UUID notificationId
+    ) {
+<span class="fc" id="L108">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc" id="L110">        markNotificationAsReadUseCase.markAsRead(</span>
+<span class="fc" id="L111">                jwtUser.getId(),</span>
+                notificationId
+        );
+
+<span class="fc" id="L115">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PostMapping(&quot;/{notificationId}/actioned&quot;)
+    public ResponseEntity&lt;Void&gt; markAsActioned(
+            Authentication authentication,
+            @PathVariable UUID notificationId
+    ) {
+<span class="fc" id="L123">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc" id="L125">        boolean actioned =</span>
+<span class="fc" id="L126">                markNotificationAsActionedUseCase.markAsActioned(</span>
+<span class="fc" id="L127">                        jwtUser.getId(),</span>
+                        notificationId
+                );
+
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (!actioned) {</span>
+<span class="fc" id="L132">            return ResponseEntity.notFound().build();</span>
+        }
+
+<span class="fc" id="L135">        return ResponseEntity.ok().build();</span>
+    }
+
+    @DeleteMapping(&quot;/{notificationId}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            Authentication authentication,
+            @PathVariable UUID notificationId
+    ) {
+<span class="fc" id="L143">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="fc" id="L145">        deleteNotificationUseCase.delete(</span>
+<span class="fc" id="L146">                jwtUser.getId(),</span>
+                notificationId
+        );
+
+<span class="fc" id="L150">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private NotificationResponseDTO toDto(Notification notification) {
+<span class="fc" id="L154">        return new NotificationResponseDTO(</span>
+<span class="fc" id="L155">                notification.getId(),</span>
+<span class="fc" id="L156">                notification.getType(),</span>
+<span class="fc" id="L157">                notification.getTitle(),</span>
+<span class="fc" id="L158">                notification.getMessage(),</span>
+<span class="fc" id="L159">                notification.getMetadata(),</span>
+<span class="fc" id="L160">                notification.isRead(),</span>
+<span class="fc" id="L161">                notification.isActionRequired(),</span>
+<span class="fc" id="L162">                notification.getActionedAt(),</span>
+<span class="fc" id="L163">                notification.getCreatedAt(),</span>
+<span class="fc" id="L164">                notification.getExpiresAt()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

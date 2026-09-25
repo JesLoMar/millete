@@ -24,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -84,7 +83,7 @@ class InvestmentControllerTest {
         return Investment.create(
                 USER_ID, "Apple Inc.", "AAPL",
                 new BigDecimal("10"), new BigDecimal("150.00"),
-                InvestmentType.STOCK, LocalDateTime.now().minusDays(30)
+                InvestmentType.STOCK, Instant.now().minusDays(30)
         );
     }
 
@@ -100,7 +99,7 @@ class InvestmentControllerTest {
             RegisterInvestmentRequestDTO request = new RegisterInvestmentRequestDTO(
                     "Apple Inc.", "AAPL",
                     new BigDecimal("10"), new BigDecimal("150.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
             Investment investment = validInvestment();
 
@@ -182,7 +181,7 @@ class InvestmentControllerTest {
             UpdateInvestmentRequestDTO request = new UpdateInvestmentRequestDTO(
                     "Tesla Inc.", "TSLA",
                     new BigDecimal("5"), new BigDecimal("200.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
 
             when(updateUseCase.update(any())).thenReturn(investment);

@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,8 +38,8 @@ class UserSessionPostgresAdapterTest {
         entity.setUserId(UUID.randomUUID());
         entity.setChannel("WEB");
         entity.setActive(true);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         return entity;
     }
 

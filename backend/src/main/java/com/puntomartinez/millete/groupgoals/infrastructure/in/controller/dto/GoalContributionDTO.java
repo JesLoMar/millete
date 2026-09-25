@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record GoalContributionDTO(
@@ -9,5 +9,5 @@ public record GoalContributionDTO(
         UUID userId,
         String userName,
         BigDecimal amount,
-        LocalDateTime date
+        Instant date
 ) {}

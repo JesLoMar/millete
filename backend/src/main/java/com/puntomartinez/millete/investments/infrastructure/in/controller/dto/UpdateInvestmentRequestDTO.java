@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record UpdateInvestmentRequestDTO(
 
@@ -36,7 +36,7 @@ public record UpdateInvestmentRequestDTO(
         InvestmentType type,
 
         @NotNull(message = "La fecha de compra es obligatoria")
-        LocalDateTime purchaseDate
+        LocalDate purchaseDate
 
 ) {
 }

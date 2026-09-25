@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionEntityMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">TransactionEntityMapper.java</span></div><h1>TransactionEntityMapper.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.transactions.infrastructure.out.persistence.postgresql.entity.TransactionEntity;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface TransactionEntityMapper {
+
+    default TransactionEntity toEntity(Transaction domain) {
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        if (domain == null) {</span>
+<span class="fc" id="L13">            return null;</span>
+        }
+
+<span class="fc" id="L16">        TransactionEntity entity = new TransactionEntity();</span>
+
+<span class="fc" id="L18">        entity.setId(domain.getId());</span>
+<span class="fc" id="L19">        entity.setUserId(domain.getUserId());</span>
+<span class="fc" id="L20">        entity.setCategoryId(domain.getCategoryId());</span>
+<span class="fc" id="L21">        entity.setAmount(domain.getAmount());</span>
+<span class="fc" id="L22">        entity.setDate(domain.getDate());</span>
+<span class="fc" id="L23">        entity.setType(domain.getType().name());</span>
+<span class="fc" id="L24">        entity.setDescription(domain.getDescription());</span>
+<span class="fc" id="L25">        entity.setCreatedAt(domain.getCreatedAt());</span>
+<span class="fc" id="L26">        entity.setModifiedAt(domain.getModifiedAt());</span>
+<span class="fc" id="L27">        entity.setActive(domain.isActive());</span>
+
+<span class="fc" id="L29">        return entity;</span>
+    }
+
+    default Transaction toDomain(TransactionEntity entity) {
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (entity == null) {</span>
+<span class="fc" id="L34">            return null;</span>
+        }
+
+<span class="fc" id="L37">        return Transaction.reconstitute(</span>
+<span class="fc" id="L38">                entity.getId(),</span>
+<span class="fc" id="L39">                entity.getUserId(),</span>
+<span class="fc" id="L40">                entity.getCategoryId(),</span>
+<span class="fc" id="L41">                entity.getAmount(),</span>
+<span class="fc" id="L42">                entity.getDate(),</span>
+<span class="fc" id="L43">                Transaction.TransactionType.valueOf(entity.getType()),</span>
+<span class="fc" id="L44">                entity.getDescription(),</span>
+<span class="fc" id="L45">                entity.getCreatedAt(),</span>
+<span class="fc" id="L46">                entity.getModifiedAt(),</span>
+<span class="fc" id="L47">                entity.isActive()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

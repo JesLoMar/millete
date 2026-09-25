@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record RegisterTransactionRequestDTO(
@@ -20,7 +20,7 @@ public record RegisterTransactionRequestDTO(
 
         @NotNull(message = "La fecha es obligatoria")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        LocalDateTime date,
+        LocalDate date,
 
         @NotNull(message = "El tipo de transacción es obligatorio")
         TransactionType type,

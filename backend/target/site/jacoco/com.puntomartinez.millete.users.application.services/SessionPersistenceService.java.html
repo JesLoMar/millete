@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SessionPersistenceService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.application.services</a> &gt; <span class="el_source">SessionPersistenceService.java</span></div><h1>SessionPersistenceService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.application.services;
+
+import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.domain.ports.in.ManageUserSessionUseCase;
+import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+public class SessionPersistenceService implements ManageUserSessionUseCase {
+
+    private final UserSessionRepository userSessionRepository;
+
+<span class="fc" id="L18">    public SessionPersistenceService(UserSessionRepository userSessionRepository) {</span>
+<span class="fc" id="L19">        this.userSessionRepository = userSessionRepository;</span>
+<span class="fc" id="L20">    }</span>
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public UserSession createSession(UUID userId, String channel) {
+<span class="fc" id="L25">        UserSession session = new UserSession();</span>
+<span class="fc" id="L26">        session.setId(UUID.randomUUID());</span>
+<span class="fc" id="L27">        session.setUserId(userId);</span>
+<span class="fc" id="L28">        session.setChannel(channel);</span>
+<span class="fc" id="L29">        session.setActive(true);</span>
+<span class="fc" id="L30">        session.setCreatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L31">        session.setModifiedAt(LocalDateTime.now());</span>
+<span class="fc" id="L32">        return userSessionRepository.save(session);</span>
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markSessionAsInactive(UUID sessionId) {
+<span class="fc" id="L38">        userSessionRepository.findById(sessionId).ifPresent(session -&gt; {</span>
+<span class="fc" id="L39">            session.setActive(false);</span>
+<span class="fc" id="L40">            session.setModifiedAt(LocalDateTime.now());</span>
+<span class="fc" id="L41">            userSessionRepository.save(session);</span>
+<span class="fc" id="L42">        });</span>
+<span class="fc" id="L43">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

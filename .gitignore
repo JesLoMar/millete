@@ -1,43 +1,13 @@
-# ==========================================
-# UNIFIED .GITIGNORE - ROOT LEVEL
-# ==========================================
-
-# 1. SENSITIVE FILES (DO NOT TOUCH!)
-.env
-**/.env
-**/.env.*
-!.env.example
-
-# 2. FRONTEND (Node/NPM)
-node_modules/
-dist/
-dist-ssr/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# 3. BACKEND (Spring Boot / Maven / Gradle)
+# Maven
 target/
-build/
-.gradle/
-.mvn/
-*.jar
-*.war
-*.ear
-*.class
-*.log
 
-# 4. SYSTEM AND EDITORS
-.DS_Store
-.vscode/
-!.vscode/extensions.json
+# IDEs and editors
 .idea/
+.vscode/
 *.iml
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-**/out/
-!**/src/**/out/
+*.iws
+*.ipr
+
+# OS generated files
+.DS_Store
+Thumbs.db

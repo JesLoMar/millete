@@ -2,7 +2,7 @@ package com.puntomartinez.millete.notifications.infrastructure.in.controller.dto
 
 import com.puntomartinez.millete.notifications.domain.model.NotificationType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ public record NotificationResponseDTO(
         Map<String, Object> metadata,
         boolean read,
         boolean actionRequired,
-        LocalDateTime actionedAt,
-        LocalDateTime createdAt,
-        LocalDateTime expiresAt
+        Instant actionedAt,
+        Instant createdAt,
+        Instant expiresAt
 ) {}

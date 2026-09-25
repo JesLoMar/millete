@@ -14,17 +14,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GoalContributionPostgresAdapter")
+
 class GoalContributionPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     @Mock
     private JpaGoalContributionRepository repository;
@@ -38,10 +49,10 @@ class GoalContributionPostgresAdapterTest {
     @Test
     @DisplayName("Should save contribution")
     void shouldSaveContribution() {
-        GoalContribution domain = GoalContribution.create(
+        GoalContribution domain = GoalContribution.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("100.00"),
-                ContributionType.DEPOSIT, LocalDateTime.now()
+                ContributionType.DEPOSIT, Instant.now()
         );
         GoalContributionEntity entity = new GoalContributionEntity();
         GoalContributionEntity savedEntity = new GoalContributionEntity();
@@ -75,7 +86,7 @@ class GoalContributionPostgresAdapterTest {
 
         adapter.deactivateByGoalId(goalId);
 
-        verify(repository).deactivateByGoalId(goalId, LocalDateTime.now());
+        verify(repository).deactivateByGoalId(eq(goalId), any(Instant.class));
     }
 
     @Test
@@ -83,10 +94,10 @@ class GoalContributionPostgresAdapterTest {
     void shouldFindByGoalIdWithPagination() {
         UUID goalId = UUID.randomUUID();
         GoalContributionEntity entity = new GoalContributionEntity();
-        GoalContribution domain = GoalContribution.create(
+        GoalContribution domain = GoalContribution.create(TIME, 
                 goalId, UUID.randomUUID(),
                 new BigDecimal("100.00"),
-                ContributionType.DEPOSIT, LocalDateTime.now()
+                ContributionType.DEPOSIT, Instant.now()
         );
 
         org.springframework.data.domain.Page<GoalContribution> page =

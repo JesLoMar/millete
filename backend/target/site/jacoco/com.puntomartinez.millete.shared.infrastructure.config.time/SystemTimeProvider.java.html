@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemTimeProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.shared.infrastructure.config.time</a> &gt; <span class="el_source">SystemTimeProvider.java</span></div><h1>SystemTimeProvider.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.shared.infrastructure.config.time;
+
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import org.springframework.stereotype.Component;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
+/**
+ * Adaptador de infraestructura por defecto de {@link TimeProvider}.
+ *
+ * &lt;p&gt;Usa un {@link Clock} interno (por defecto, el reloj del sistema en UTC).
+ * La elección de UTC como zona de referencia del servidor mantiene la
+ * consistencia con las columnas TIMESTAMPTZ de la base de datos y evita
+ * ambigüedades causadas por la zona del host.&lt;/p&gt;
+ */
+@Component
+public class SystemTimeProvider implements TimeProvider {
+
+    private final Clock clock;
+
+    public SystemTimeProvider() {
+<span class="fc" id="L26">        this(Clock.systemUTC());</span>
+<span class="fc" id="L27">    }</span>
+
+<span class="fc" id="L29">    SystemTimeProvider(Clock clock) {</span>
+<span class="fc" id="L30">        this.clock = clock;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public Instant instantNow() {
+<span class="fc" id="L35">        return clock.instant();</span>
+    }
+
+    @Override
+    public LocalDate localDateNow() {
+<span class="fc" id="L40">        return LocalDate.ofInstant(clock.instant(), clock.getZone());</span>
+    }
+
+    @Override
+    @Deprecated(forRemoval = true)
+    public LocalDateTime localDateTimeNow() {
+<span class="fc" id="L46">        return LocalDateTime.ofInstant(clock.instant(), clock.getZone());</span>
+    }
+
+    @Override
+    public ZoneId zone() {
+<span class="fc" id="L51">        return clock.getZone();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

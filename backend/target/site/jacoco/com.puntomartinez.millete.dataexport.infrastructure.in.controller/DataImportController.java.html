@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataImportController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.in.controller</a> &gt; <span class="el_source">DataImportController.java</span></div><h1>DataImportController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.in.controller;
+
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.dataexport.application.services.DataImportService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Controller de importación de datos.
+ *
+ * &lt;p&gt;LÍMITE DE TAMAÑO: El tamaño máximo se controla en dos niveles:
+ * &lt;ul&gt;
+ *   &lt;li&gt;Spring: {@code spring.servlet.multipart.max-file-size=50MB}
+ *       y {@code spring.servlet.multipart.max-request-size=50MB}
+ *       en application.properties.&lt;/li&gt;
+ *   &lt;li&gt;Service: validación adicional en DataImportService.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/p&gt;
+ */
+<span class="fc" id="L28">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/api/v1/data&quot;)
+public class DataImportController {
+
+    private final DataImportService dataImportService;
+
+<span class="fc" id="L35">    public DataImportController(DataImportService dataImportService) {</span>
+<span class="fc" id="L36">        this.dataImportService = dataImportService;</span>
+<span class="fc" id="L37">    }</span>
+
+    @PostMapping(
+            value = &quot;/import&quot;,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; importData(
+            @RequestParam(&quot;file&quot;) MultipartFile file,
+            Authentication authentication
+    ) {
+<span class="fc" id="L47">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+<span class="fc" id="L48">        log.info(&quot;Solicitud de importación para usuario: {}&quot;, userId);</span>
+
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (file.isEmpty()) {</span>
+<span class="fc" id="L51">            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L52">                    .body(Map.of(</span>
+<span class="fc" id="L53">                            &quot;success&quot;, false,</span>
+                            &quot;error&quot;, &quot;ARCHIVO_VACIO&quot;,
+                            &quot;message&quot;, &quot;El archivo no puede estar vacío&quot;
+                    ));
+        }
+
+<span class="fc" id="L59">        String originalFilename = file.getOriginalFilename();</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (originalFilename != null</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">                &amp;&amp; !originalFilename.toLowerCase().endsWith(&quot;.json&quot;)) {</span>
+<span class="fc" id="L62">            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L63">                    .body(Map.of(</span>
+<span class="fc" id="L64">                            &quot;success&quot;, false,</span>
+                            &quot;error&quot;, &quot;FORMATO_NO_SOPORTADO&quot;,
+                            &quot;message&quot;, &quot;Solo se aceptan archivos JSON&quot;
+                    ));
+        }
+
+        try {
+<span class="fc" id="L71">            String summary = dataImportService.importUserData(file, userId);</span>
+<span class="fc" id="L72">            return ResponseEntity.ok(Map.of(</span>
+<span class="fc" id="L73">                    &quot;success&quot;, true,</span>
+                    &quot;message&quot;, summary
+            ));
+<span class="fc" id="L76">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L77">            log.error(&quot;Error en importación: {}&quot;, e.getMessage(), e);</span>
+<span class="fc" id="L78">            return ResponseEntity.status(HttpStatus.BAD_REQUEST)</span>
+<span class="fc" id="L79">                    .body(Map.of(</span>
+<span class="fc" id="L80">                            &quot;success&quot;, false,</span>
+                            &quot;error&quot;, &quot;ERROR_IMPORTACION&quot;,
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                            &quot;message&quot;, e.getMessage() != null</span>
+<span class="fc" id="L83">                                    ? e.getMessage()</span>
+<span class="nc" id="L84">                                    : &quot;Error al importar el archivo.&quot;</span>
+                    ));
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

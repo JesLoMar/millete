@@ -69,16 +69,16 @@ class DataExportServiceTest {
         return new CategorySnapshot(
                 UUID.randomUUID(), userId, "Food", "#FF5733",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 
     private TransactionSnapshot createTransactionSnapshot(UUID categoryId) {
         return new TransactionSnapshot(
                 UUID.randomUUID(), userId, categoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 "EXPENSE", "Lunch",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 
@@ -156,7 +156,7 @@ class DataExportServiceTest {
         CategorySnapshot inactiveCat = new CategorySnapshot(
                 UUID.randomUUID(), userId, "Inactive", "#00FF00",
                 new BigDecimal("300.00"),
-                LocalDateTime.now(), LocalDateTime.now(), false
+                Instant.now(), Instant.now(), false
         );
 
         when(categoryExportPort.findByUserId(userId))
@@ -236,15 +236,15 @@ class DataExportServiceTest {
         CategorySnapshot cat = createCategorySnapshot();
         TransactionSnapshot income = new TransactionSnapshot(
                 UUID.randomUUID(), userId, UUID.randomUUID(),
-                new BigDecimal("1000.00"), LocalDateTime.now(),
+                new BigDecimal("1000.00"), Instant.now(),
                 "INCOME", "Salary",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
         TransactionSnapshot expense = new TransactionSnapshot(
                 UUID.randomUUID(), userId, cat.id(),
-                new BigDecimal("300.00"), LocalDateTime.now(),
+                new BigDecimal("300.00"), Instant.now(),
                 "EXPENSE", "Groceries",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryExportPort.findByUserId(userId)).thenReturn(List.of(cat));

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,9 +23,9 @@ class UserLoginSecurityEntityMapperTest {
         UserLoginSecurity domain = new UserLoginSecurity();
         domain.setUserId(UUID.randomUUID());
         domain.setFailedAttempts(3);
-        domain.setBlockedUntil(LocalDateTime.now().plusMinutes(15));
-        domain.setCreatedAt(LocalDateTime.now());
-        domain.setModifiedAt(LocalDateTime.now());
+        domain.setBlockedUntil(Instant.now().plusSeconds(900));
+        domain.setCreatedAt(Instant.now());
+        domain.setModifiedAt(Instant.now());
 
         UserLoginSecurityEntity entity = mapper.toEntity(domain);
 
@@ -41,8 +41,8 @@ class UserLoginSecurityEntityMapperTest {
         UserLoginSecurityEntity entity = new UserLoginSecurityEntity();
         entity.setUserId(UUID.randomUUID());
         entity.setFailedAttempts(2);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
 
         UserLoginSecurity domain = mapper.toDomain(entity);
 

@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +42,7 @@ class InvestmentQueryServiceTest {
                 new BigDecimal("150.00"),
                 new BigDecimal("180.00"),
                 "STOCK",
-                LocalDateTime.now().minusDays(30),
+                Instant.now().minusDays(30),
                 true
         );
     }
@@ -55,7 +54,7 @@ class InvestmentQueryServiceTest {
                 new BigDecimal("40000.00"),
                 new BigDecimal("45000.00"),
                 "CRYPTO",
-                LocalDateTime.now().minusDays(60),
+                Instant.now().minusDays(60),
                 true
         );
     }

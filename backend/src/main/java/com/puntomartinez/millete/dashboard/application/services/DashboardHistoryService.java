@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,8 +72,8 @@ public class DashboardHistoryService {
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        weekStart.atStartOfDay(),
-                        weekStart.plusDays(6).atTime(LocalTime.MAX)
+                        weekStart,
+                        weekStart.plusDays(6)
                 );
 
         for (int i = 0; i < 7; i++) {
@@ -87,8 +85,8 @@ public class DashboardHistoryService {
                 continue;
             }
 
-            LocalDateTime dayStart = day.atStartOfDay();
-            LocalDateTime dayEnd = day.atTime(LocalTime.MAX);
+            LocalDate dayStart = day;
+            LocalDate dayEnd = day;
 
             BigDecimal dayExpenses = transactions.stream()
                     .filter(t ->
@@ -119,8 +117,8 @@ public class DashboardHistoryService {
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        monthStart.atStartOfDay(),
-                        lastDayOfMonth.atTime(LocalTime.MAX)
+                        monthStart,
+                        lastDayOfMonth
                 );
 
         int weekNumber = 1;
@@ -134,8 +132,8 @@ public class DashboardHistoryService {
                 weekEnd = lastDayOfMonth;
             }
 
-            LocalDateTime startDateTime = weekStart.atStartOfDay();
-            LocalDateTime endDateTime = weekEnd.atTime(LocalTime.MAX);
+            LocalDate startDateTime = weekStart;
+            LocalDate endDateTime = weekEnd;
 
             BigDecimal weekExpenses = transactions.stream()
                     .filter(t ->
@@ -172,8 +170,8 @@ public class DashboardHistoryService {
         List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                         userId,
-                        LocalDate.of(currentYear, 1, 1).atStartOfDay(),
-                        today.atTime(LocalTime.MAX)
+                        LocalDate.of(currentYear, 1, 1),
+                        today
                 );
 
         for (int month = 1; month <= 12; month++) {
@@ -190,8 +188,8 @@ public class DashboardHistoryService {
                 monthEnd = today;
             }
 
-            LocalDateTime startDateTime = monthStart.atStartOfDay();
-            LocalDateTime endDateTime = monthEnd.atTime(LocalTime.MAX);
+            LocalDate startDateTime = monthStart;
+            LocalDate endDateTime = monthEnd;
 
             BigDecimal monthExpenses = transactions.stream()
                     .filter(t ->

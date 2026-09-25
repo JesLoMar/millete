@@ -16,15 +16,21 @@ import java.time.temporal.TemporalAdjusters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @DisplayName("DashboardPeriodService")
 class DashboardPeriodServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private DashboardPeriodService service;
 
     @BeforeEach
     void setUp() {
-        service = new DashboardPeriodService();
+        service = new DashboardPeriodService(TIME);
     }
 
     @Nested
@@ -38,7 +44,7 @@ class DashboardPeriodServiceTest {
             LocalDate expectedStart = today.with(DayOfWeek.MONDAY);
             LocalDate expectedEnd = expectedStart.plusDays(6);
 
-            LocalDateTime[] result = service.getDateRange("week");
+            LocalDate[] result = service.getDateRange("week");
 
             assertThat(result[0]).isEqualTo(expectedStart.atStartOfDay());
             assertThat(result[1]).isEqualTo(expectedEnd.atTime(LocalTime.MAX));
@@ -53,7 +59,7 @@ class DashboardPeriodServiceTest {
                     TemporalAdjusters.lastDayOfMonth()
             );
 
-            LocalDateTime[] result = service.getDateRange("month");
+            LocalDate[] result = service.getDateRange("month");
 
             assertThat(result[0]).isEqualTo(expectedStart.atStartOfDay());
             assertThat(result[1]).isEqualTo(expectedEnd.atTime(LocalTime.MAX));
@@ -68,7 +74,7 @@ class DashboardPeriodServiceTest {
                     TemporalAdjusters.lastDayOfYear()
             );
 
-            LocalDateTime[] result = service.getDateRange("year");
+            LocalDate[] result = service.getDateRange("year");
 
             assertThat(result[0]).isEqualTo(expectedStart.atStartOfDay());
             assertThat(result[1]).isEqualTo(expectedEnd.atTime(LocalTime.MAX));
@@ -78,7 +84,7 @@ class DashboardPeriodServiceTest {
         @ValueSource(strings = {"WEEK", "Week", "MONTH", "Month", "YEAR", "Year"})
         @DisplayName("Should be case-insensitive")
         void shouldBeCaseInsensitive(String period) {
-            LocalDateTime[] result = service.getDateRange(period);
+            LocalDate[] result = service.getDateRange(period);
 
             assertThat(result).hasSize(2);
             assertThat(result[0]).isNotNull();
@@ -102,7 +108,7 @@ class DashboardPeriodServiceTest {
         @DisplayName("Should return previous week range")
         void shouldReturnPreviousWeekRange() {
             LocalDateTime[] currentRange = service.getDateRange("week");
-            LocalDateTime[] result = service.getPreviousPeriod("week");
+            LocalDate[] result = service.getPreviousPeriod("week");
 
             assertThat(result[0]).isEqualTo(currentRange[0].minusWeeks(1));
             assertThat(result[1]).isEqualTo(currentRange[0].minusNanos(1));
@@ -112,7 +118,7 @@ class DashboardPeriodServiceTest {
         @DisplayName("Should return previous month range")
         void shouldReturnPreviousMonthRange() {
             LocalDateTime[] currentRange = service.getDateRange("month");
-            LocalDateTime[] result = service.getPreviousPeriod("month");
+            LocalDate[] result = service.getPreviousPeriod("month");
 
             assertThat(result[0]).isEqualTo(currentRange[0].minusMonths(1));
             assertThat(result[1]).isEqualTo(currentRange[0].minusNanos(1));
@@ -122,7 +128,7 @@ class DashboardPeriodServiceTest {
         @DisplayName("Should return previous year range")
         void shouldReturnPreviousYearRange() {
             LocalDateTime[] currentRange = service.getDateRange("year");
-            LocalDateTime[] result = service.getPreviousPeriod("year");
+            LocalDate[] result = service.getPreviousPeriod("year");
 
             assertThat(result[0]).isEqualTo(currentRange[0].minusYears(1));
             assertThat(result[1]).isEqualTo(currentRange[0].minusNanos(1));

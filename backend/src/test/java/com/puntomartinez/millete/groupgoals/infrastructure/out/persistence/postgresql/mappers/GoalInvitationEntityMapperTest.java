@@ -7,13 +7,23 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GoalInvitationEntityMapper")
+
 class GoalInvitationEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private final GoalInvitationEntityMapper mapper =
             Mappers.getMapper(GoalInvitationEntityMapper.class);
@@ -21,7 +31,7 @@ class GoalInvitationEntityMapperTest {
     @Test
     @DisplayName("Should map domain to entity")
     void shouldMapDomainToEntity() {
-        GoalInvitation domain = GoalInvitation.create(
+        GoalInvitation domain = GoalInvitation.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
         );
 
@@ -42,9 +52,9 @@ class GoalInvitationEntityMapperTest {
         entity.setInviterUserId(UUID.randomUUID());
         entity.setInvitedUserId(UUID.randomUUID());
         entity.setStatus("PENDING");
-        entity.setExpiresAt(LocalDateTime.now().plusDays(7));
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setExpiresAt(Instant.now().plusDays(7));
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
 
         GoalInvitation domain = mapper.toDomain(entity);
@@ -63,7 +73,7 @@ class GoalInvitationEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        GoalInvitation original = GoalInvitation.create(
+        GoalInvitation original = GoalInvitation.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()
         );
 

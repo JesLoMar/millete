@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountLockService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.application.services</a> &gt; <span class="el_source">AccountLockService.java</span></div><h1>AccountLockService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.application.services;
+
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
+import com.puntomartinez.millete.users.domain.model.UserLoginSecurity;
+import com.puntomartinez.millete.users.domain.ports.out.LoginSecurityRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+/**
+ * Servicio de bloqueo de cuenta por intentos fallidos de login.
+ *
+ * &lt;p&gt;Fase 1 de la normalización temporal: todo el tiempo se obtiene a través
+ * del puerto {@link TimeProvider} (nunca {@code LocalDateTime.now()}) y los
+ * momentos se modelan con {@link Instant}, alineado con las columnas
+ * TIMESTAMPTZ de {@code user_login_security}.&lt;/p&gt;
+ */
+@Service
+public class AccountLockService {
+    private static final int MAX_ATTEMPTS = 5;
+    private static final long LOCK_DURATION_MINUTES = 15;
+    private final LoginSecurityRepository loginSecurityRepository;
+    private final TimeProvider timeProvider;
+
+    public AccountLockService(
+            LoginSecurityRepository loginSecurityRepository,
+            TimeProvider timeProvider
+<span class="fc" id="L33">    ) {</span>
+<span class="fc" id="L34">        this.loginSecurityRepository = loginSecurityRepository;</span>
+<span class="fc" id="L35">        this.timeProvider = timeProvider;</span>
+<span class="fc" id="L36">    }</span>
+
+    @Transactional
+    public void checkLockStatus(UUID userId) {
+<span class="fc" id="L40">        loginSecurityRepository.findByUserId(userId).ifPresent(security -&gt; {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            boolean hadBlock = security.getBlockedUntil() != null;</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (security.isBlocked(timeProvider)) {</span>
+<span class="fc" id="L43">                throw new AccountLockedException(</span>
+<span class="fc" id="L44">                        security.getBlockedUntil(),</span>
+<span class="fc" id="L45">                        calculateRemainingMinutes(security.getBlockedUntil()));</span>
+            }
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (hadBlock) {</span>
+<span class="fc" id="L48">                loginSecurityRepository.save(security);</span>
+            }
+<span class="fc" id="L50">        });</span>
+<span class="fc" id="L51">    }</span>
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = AccountLockedException.class)
+    public void handleFailedLogin(UUID userId) {
+<span class="fc" id="L55">        UserLoginSecurity security = getOrCreate(userId);</span>
+<span class="fc" id="L56">        security.registerFailedAttempt(timeProvider, MAX_ATTEMPTS, LOCK_DURATION_MINUTES);</span>
+<span class="fc" id="L57">        security = loginSecurityRepository.save(security);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (security.isBlocked(timeProvider)) {</span>
+<span class="fc" id="L59">            throw new AccountLockedException(</span>
+<span class="fc" id="L60">                    security.getBlockedUntil(),</span>
+<span class="fc" id="L61">                    calculateRemainingMinutes(security.getBlockedUntil()));</span>
+        }
+<span class="fc" id="L63">    }</span>
+
+    @Transactional
+    public void handleSuccessfulLogin(UUID userId) {
+<span class="fc" id="L67">        loginSecurityRepository.findByUserId(userId).ifPresent(security -&gt; {</span>
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">            boolean dirty = security.getFailedAttempts() &gt; 0 || security.getBlockedUntil() != null;</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (dirty) {</span>
+<span class="fc" id="L70">                security.resetAttempts(timeProvider);</span>
+<span class="fc" id="L71">                loginSecurityRepository.save(security);</span>
+            }
+<span class="fc" id="L73">        });</span>
+<span class="fc" id="L74">    }</span>
+
+    private UserLoginSecurity getOrCreate(UUID userId) {
+<span class="fc" id="L77">        return loginSecurityRepository.findByUserId(userId).orElseGet(() -&gt; {</span>
+<span class="fc" id="L78">            UserLoginSecurity security = new UserLoginSecurity();</span>
+<span class="fc" id="L79">            security.setUserId(userId);</span>
+<span class="fc" id="L80">            security.setFailedAttempts(0);</span>
+<span class="fc" id="L81">            security.setCreatedAt(timeProvider.instantNow());</span>
+<span class="fc" id="L82">            security.setModifiedAt(timeProvider.instantNow());</span>
+<span class="fc" id="L83">            return security;</span>
+        });
+    }
+
+    private long calculateRemainingMinutes(Instant blockedUntil) {
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        if (blockedUntil == null) {</span>
+<span class="nc" id="L89">            return LOCK_DURATION_MINUTES;</span>
+        }
+<span class="fc" id="L91">        long seconds = Duration.between(timeProvider.instantNow(), blockedUntil).getSeconds();</span>
+<span class="fc" id="L92">        return Math.max(0, (seconds + 59) / 60);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

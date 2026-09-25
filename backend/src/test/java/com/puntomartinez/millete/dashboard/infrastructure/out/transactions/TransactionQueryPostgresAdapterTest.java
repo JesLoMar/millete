@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.LocalDate;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TransactionQueryPostgresAdapter")
@@ -43,14 +43,14 @@ class TransactionQueryPostgresAdapterTest {
     void shouldMapTransactionsOnFindByDateBetween() {
         UUID txId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
-        LocalDateTime date = LocalDateTime.now();
+        LocalDate date = LocalDate.now();
 
         Transaction tx = Transaction.reconstitute(
                 txId, USER_ID, categoryId,
                 new BigDecimal("50.00"), date,
                 Transaction.TransactionType.EXPENSE,
                 "Groceries",
-                date, date, true
+                date, Instant.now(), Instant.now(), true
         );
 
         when(transactionRepository.findByUserIdAndDateBetween(
@@ -79,14 +79,14 @@ class TransactionQueryPostgresAdapterTest {
     @DisplayName("Should map transactions to TransactionData on findRecentByUserId")
     void shouldMapTransactionsOnFindRecent() {
         UUID txId = UUID.randomUUID();
-        LocalDateTime date = LocalDateTime.now();
+        LocalDate date = LocalDate.now();
 
         Transaction tx = Transaction.reconstitute(
                 txId, USER_ID, null,
                 new BigDecimal("25.00"), date,
                 Transaction.TransactionType.INCOME,
                 "Salary",
-                date, date, true
+                date, Instant.now(), Instant.now(), true
         );
 
         when(transactionRepository.findRecentByUserId(USER_ID, 5))

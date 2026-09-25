@@ -17,7 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +33,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("NotificationPostgresAdapter")
+
 class NotificationPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID NOTIFICATION_ID = UUID.randomUUID();
@@ -55,21 +65,21 @@ class NotificationPostgresAdapterTest {
         entity.setMetadata(Map.of("goalId", "some-id"));
         entity.setRead(false);
         entity.setActionRequired(true);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setExpiresAt(LocalDateTime.now().plusDays(7));
+        entity.setCreatedAt(Instant.now());
+        entity.setExpiresAt(Instant.now().plusDays(7));
         entity.setActive(true);
         return entity;
     }
 
     private Notification domainNotification() {
-        return Notification.create(
+        return Notification.create(TIME, 
                 USER_ID,
                 NotificationType.GOAL_INVITATION,
                 "New invitation",
                 "You have been invited",
                 Map.of("goalId", "some-id"),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
     }
 
@@ -109,13 +119,13 @@ class NotificationPostgresAdapterTest {
             Notification domain = domainNotification();
 
             when(jpaRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(entity));
             when(mapper.toDomain(entity)).thenReturn(domain);
 
             Optional<Notification> result =
                     adapter.findActiveAndNotExpiredByIdAndUserId(
-                            NOTIFICATION_ID, USER_ID, LocalDateTime.now()
+                            NOTIFICATION_ID, USER_ID, Instant.now()
                     );
 
             assertThat(result).contains(domain);
@@ -125,12 +135,12 @@ class NotificationPostgresAdapterTest {
         @DisplayName("Should return empty when not found")
         void shouldReturnEmptyWhenNotFound() {
             when(jpaRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.empty());
 
             Optional<Notification> result =
                     adapter.findActiveAndNotExpiredByIdAndUserId(
-                            NOTIFICATION_ID, USER_ID, LocalDateTime.now()
+                            NOTIFICATION_ID, USER_ID, Instant.now()
                     );
 
             assertThat(result).isEmpty();
@@ -148,13 +158,13 @@ class NotificationPostgresAdapterTest {
             Notification domain = domainNotification();
 
             when(jpaRepository.findActiveAndNotExpiredByUserId(
-                    eq(USER_ID), any(LocalDateTime.class), any(Pageable.class)
+                    eq(USER_ID), any(Instant.class), any(Pageable.class)
             )).thenReturn(List.of(entity));
             when(mapper.toDomain(entity)).thenReturn(domain);
 
             List<Notification> result =
                     adapter.findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                            USER_ID, 25, LocalDateTime.now()
+                            USER_ID, 25, Instant.now()
                     );
 
             assertThat(result).hasSize(1);
@@ -169,11 +179,11 @@ class NotificationPostgresAdapterTest {
         @DisplayName("Should delegate count to repository")
         void shouldDelegateCount() {
             when(jpaRepository.countUnreadActiveAndNotExpiredByUserId(
-                    eq(USER_ID), any(LocalDateTime.class)
+                    eq(USER_ID), any(Instant.class)
             )).thenReturn(7L);
 
             long result = adapter.countUnreadActiveAndNotExpiredByUserId(
-                    USER_ID, LocalDateTime.now()
+                    USER_ID, Instant.now()
             );
 
             assertThat(result).isEqualTo(7L);

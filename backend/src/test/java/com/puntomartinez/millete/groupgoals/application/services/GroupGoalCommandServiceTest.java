@@ -19,7 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import org.mockito.Spy;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +36,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupGoalCommandService")
 class GroupGoalCommandServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     @Mock
     private GoalUnitRepository goalUnitRepository;
@@ -45,7 +52,9 @@ class GroupGoalCommandServiceTest {
     @Mock
     private GoalInvitationRepository goalInvitationRepository;
 
-    @InjectMocks
+    private final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
     private GroupGoalCommandService service;
 
     private final UUID userId = UUID.randomUUID();
@@ -56,7 +65,7 @@ class GroupGoalCommandServiceTest {
         return GoalUnit.reconstitute(
                 goalId, "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 
@@ -64,8 +73,8 @@ class GroupGoalCommandServiceTest {
         return GoalMember.reconstitute(
                 UUID.randomUUID(), goalId, userId,
                 GoalRole.ADMIN, new BigDecimal("2000.00"), null,
-                LocalDateTime.now(), LocalDateTime.now(),
-                LocalDateTime.now(), true
+                Instant.now(), Instant.now(),
+                Instant.now(), true
         );
     }
 
@@ -73,8 +82,16 @@ class GroupGoalCommandServiceTest {
         return GoalMember.reconstitute(
                 UUID.randomUUID(), goalId, memberUserId,
                 GoalRole.MEMBER, new BigDecimal("2000.00"), null,
-                LocalDateTime.now(), LocalDateTime.now(),
-                LocalDateTime.now(), true
+                Instant.now(), Instant.now(),
+                Instant.now(), true
+        );
+    }
+
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        service = new GroupGoalCommandService(
+                goalUnitRepository, goalMemberRepository, goalContributionRepository, goalInvitationRepository, TIME
         );
     }
 
@@ -350,7 +367,7 @@ class GroupGoalCommandServiceTest {
         void shouldThrowWhenMemberIsNotActive() {
             GoalUnit goal = createActiveGoal();
             GoalMember inactiveMember = createRegularMember(userId);
-            inactiveMember.deactivate();
+            inactiveMember.deactivate(TIME);
 
             when(goalUnitRepository.findById(goalId))
                     .thenReturn(Optional.of(goal));

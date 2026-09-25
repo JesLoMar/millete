@@ -3,7 +3,8 @@ package com.puntomartinez.millete.groupgoals.domain.model;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import java.util.UUID;
 
 public class GoalContribution {
@@ -13,9 +14,9 @@ public class GoalContribution {
     private final UUID userId;
     private final BigDecimal amount;
     private final ContributionType type;
-    private final LocalDateTime date;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant date;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private GoalContribution(
@@ -24,9 +25,9 @@ public class GoalContribution {
             UUID userId,
             BigDecimal amount,
             ContributionType type,
-            LocalDateTime date,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant date,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateId(id);
@@ -50,13 +51,14 @@ public class GoalContribution {
     }
 
     public static GoalContribution create(
+            TimeProvider timeProvider,
             UUID goalId,
             UUID userId,
             BigDecimal amount,
             ContributionType type,
-            LocalDateTime date
+            Instant date
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
         return new GoalContribution(
                 UUID.randomUUID(),
                 goalId,
@@ -76,9 +78,9 @@ public class GoalContribution {
             UUID userId,
             BigDecimal amount,
             ContributionType type,
-            LocalDateTime date,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant date,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         return new GoalContribution(
@@ -87,12 +89,12 @@ public class GoalContribution {
         );
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         if (!this.active) {
             return;
         }
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     private static void validateId(UUID id) {
@@ -135,7 +137,7 @@ public class GoalContribution {
         }
     }
 
-    private static void validateDate(LocalDateTime date) {
+    private static void validateDate(Instant date) {
         if (date == null) {
             throw new InvalidInputException(
                     "La fecha de la contribución es obligatoria"
@@ -143,7 +145,7 @@ public class GoalContribution {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación es obligatoria"
@@ -151,7 +153,7 @@ public class GoalContribution {
         }
     }
 
-    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+    private static void validateModifiedAt(Instant modifiedAt) {
         if (modifiedAt == null) {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"
@@ -164,8 +166,8 @@ public class GoalContribution {
     public UUID getUserId() { return userId; }
     public BigDecimal getAmount() { return amount; }
     public ContributionType getType() { return type; }
-    public LocalDateTime getDate() { return date; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public Instant getDate() { return date; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getModifiedAt() { return modifiedAt; }
     public boolean isActive() { return active; }
 }

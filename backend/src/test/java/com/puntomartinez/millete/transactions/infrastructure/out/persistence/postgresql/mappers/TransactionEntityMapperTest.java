@@ -111,7 +111,7 @@ class TransactionEntityMapperTest {
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 new BigDecimal("99.99"),
-                LocalDateTime.now(),
+                Instant.now(),
                 TransactionType.INCOME,
                 "Salary"
         );

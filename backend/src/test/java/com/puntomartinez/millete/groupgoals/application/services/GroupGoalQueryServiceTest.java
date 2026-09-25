@@ -18,7 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import org.mockito.Spy;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +35,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupGoalQueryService")
 class GroupGoalQueryServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     @Mock
     private GoalUnitRepository goalUnitRepository;
@@ -44,7 +51,9 @@ class GroupGoalQueryServiceTest {
     @Mock
     private UserLookupPort userLookupPort;
 
-    @InjectMocks
+    private final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
     private GroupGoalQueryService service;
 
     private final UUID userId = UUID.randomUUID();
@@ -60,13 +69,13 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.EQUITATIVE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
             GoalMember membership = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.MEMBER, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalMemberRepository.findActiveByUserId(userId))
@@ -105,19 +114,19 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.EQUITATIVE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
             GoalMember requester = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.ADMIN, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
             GoalMember member2 = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, UUID.randomUUID(),
                     GoalRole.MEMBER, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -143,19 +152,19 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.PROPORTIONAL,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
             GoalMember requester = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.ADMIN, new BigDecimal("2000.00"), null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
             GoalMember member2 = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, member2Id,
                     GoalRole.MEMBER, new BigDecimal("1000.00"), null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -182,13 +191,13 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.PROPORTIONAL,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
             GoalMember requester = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.ADMIN, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -209,13 +218,13 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.CUSTOM,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
             GoalMember requester = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.ADMIN, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -236,7 +245,7 @@ class GroupGoalQueryServiceTest {
             GoalUnit goal = GoalUnit.reconstitute(
                     goalId, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.EQUITATIVE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -260,13 +269,14 @@ class GroupGoalQueryServiceTest {
             GoalMember member = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, userId,
                     GoalRole.MEMBER, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
-            GoalContribution contribution = GoalContribution.create(
+            GoalContribution contribution = GoalContribution.create(TIME, 
+                    TIME,
                     goalId, userId, new BigDecimal("100.00"),
-                    ContributionType.DEPOSIT, LocalDateTime.now()
+                    ContributionType.DEPOSIT, Instant.now()
             );
 
             GetContributionHistoryUseCase.PaginatedContributions paginated =

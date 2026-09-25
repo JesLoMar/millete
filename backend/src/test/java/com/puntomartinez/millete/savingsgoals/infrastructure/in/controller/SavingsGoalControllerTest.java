@@ -49,10 +49,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SavingsGoalController")
 class SavingsGoalControllerTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
 
@@ -89,7 +95,7 @@ class SavingsGoalControllerTest {
     }
 
     private SavingsGoal validGoal() {
-        return SavingsGoal.create(
+        return SavingsGoal.create(TIME, 
                 USER_ID,
                 "Vacation",
                 new BigDecimal("1000.00"),

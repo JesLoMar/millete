@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GoalMember.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.domain.model</a> &gt; <span class="el_source">GoalMember.java</span></div><h1>GoalMember.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.domain.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class GoalMember {
+
+    private final UUID id;
+    private final UUID goalId;
+    private final UUID userId;
+    private GoalRole role;
+    private BigDecimal salary;
+    private BigDecimal customPercentage;
+    private LocalDateTime joinedAt;
+    private final LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+
+    private GoalMember(
+            UUID id,
+            UUID goalId,
+            UUID userId,
+            GoalRole role,
+            BigDecimal salary,
+            BigDecimal customPercentage,
+            LocalDateTime joinedAt,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+<span class="fc" id="L30">            boolean active) {</span>
+
+<span class="fc" id="L32">        this.id = requireId(id);</span>
+<span class="fc" id="L33">        this.goalId = requireGoalId(goalId);</span>
+<span class="fc" id="L34">        this.userId = requireUserId(userId);</span>
+<span class="fc" id="L35">        this.role = requireRole(role);</span>
+<span class="fc" id="L36">        this.salary = requireSalary(salary);</span>
+<span class="fc" id="L37">        this.customPercentage = requireCustomPercentage(customPercentage);</span>
+<span class="fc" id="L38">        this.joinedAt = requireDate(</span>
+                joinedAt,
+                &quot;La fecha de incorporación es obligatoria.&quot;
+        );
+<span class="fc" id="L42">        this.createdAt = requireDate(</span>
+                createdAt,
+                &quot;La fecha de creación es obligatoria.&quot;
+        );
+<span class="fc" id="L46">        this.modifiedAt = requireDate(</span>
+                modifiedAt,
+                &quot;La fecha de modificación es obligatoria.&quot;
+        );
+<span class="fc" id="L50">        this.active = active;</span>
+<span class="fc" id="L51">    }</span>
+
+    public static GoalMember create(
+            UUID goalId,
+            UUID userId,
+            GoalRole role,
+            BigDecimal salary) {
+
+<span class="fc" id="L59">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc" id="L61">        return new GoalMember(</span>
+<span class="fc" id="L62">                UUID.randomUUID(),</span>
+                goalId,
+                userId,
+                role,
+                salary,
+                null,
+                now,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static GoalMember create(
+            UUID goalId,
+            UUID userId,
+            GoalRole role,
+            BigDecimal salary,
+            BigDecimal customPercentage) {
+
+<span class="fc" id="L82">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc" id="L84">        return new GoalMember(</span>
+<span class="fc" id="L85">                UUID.randomUUID(),</span>
+                goalId,
+                userId,
+                role,
+                salary,
+                customPercentage,
+                now,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static GoalMember reconstitute(
+            UUID id,
+            UUID goalId,
+            UUID userId,
+            GoalRole role,
+            BigDecimal salary,
+            BigDecimal customPercentage,
+            LocalDateTime joinedAt,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active) {
+
+<span class="fc" id="L110">        return new GoalMember(</span>
+                id,
+                goalId,
+                userId,
+                role,
+                salary,
+                customPercentage,
+                joinedAt,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+            GoalRole role,
+            BigDecimal salary,
+            BigDecimal customPercentage) {
+
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (role != null) {</span>
+<span class="fc" id="L130">            this.role = requireRole(role);</span>
+        }
+
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (salary != null) {</span>
+<span class="fc" id="L134">            this.salary = requireSalary(salary);</span>
+        }
+
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (customPercentage != null) {</span>
+<span class="fc" id="L138">            this.customPercentage = requireCustomPercentage(customPercentage);</span>
+        }
+
+<span class="fc" id="L141">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L142">    }</span>
+
+    public void activate() {
+<span class="fc" id="L145">        this.active = true;</span>
+<span class="fc" id="L146">        this.joinedAt = LocalDateTime.now();</span>
+<span class="fc" id="L147">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L148">    }</span>
+
+    public void deactivate() {
+<span class="fc" id="L151">        this.active = false;</span>
+<span class="fc" id="L152">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L153">    }</span>
+
+    public boolean isAdmin() {
+<span class="fc" id="L156">        return GoalRole.ADMIN.equals(this.role);</span>
+    }
+
+    private static UUID requireId(UUID id) {
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L161">            throw new IllegalArgumentException(</span>
+                    &quot;El id del miembro es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L165">        return id;</span>
+    }
+
+    private static UUID requireGoalId(UUID goalId) {
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        if (goalId == null) {</span>
+<span class="fc" id="L170">            throw new IllegalArgumentException(</span>
+                    &quot;La meta es obligatoria.&quot;
+            );
+        }
+<span class="fc" id="L174">        return goalId;</span>
+    }
+
+    private static UUID requireUserId(UUID userId) {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L179">            throw new IllegalArgumentException(</span>
+                    &quot;El usuario es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L183">        return userId;</span>
+    }
+
+    private static GoalRole requireRole(GoalRole role) {
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (role == null) {</span>
+<span class="fc" id="L188">            throw new IllegalArgumentException(</span>
+                    &quot;El rol del miembro es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L192">        return role;</span>
+    }
+
+    private static BigDecimal requireSalary(BigDecimal salary) {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        if (salary == null) {</span>
+<span class="fc" id="L197">            return null;</span>
+        }
+
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (salary.compareTo(BigDecimal.ZERO) &lt; 0) {</span>
+<span class="fc" id="L201">            throw new IllegalArgumentException(</span>
+                    &quot;El salario no puede ser negativo.&quot;
+            );
+        }
+
+<span class="fc" id="L206">        return salary;</span>
+    }
+
+    private static BigDecimal requireCustomPercentage(
+            BigDecimal customPercentage) {
+
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (customPercentage == null) {</span>
+<span class="fc" id="L213">            return null;</span>
+        }
+
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        if (customPercentage.compareTo(BigDecimal.ZERO) &lt; 0</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">                || customPercentage.compareTo(new BigDecimal(&quot;100&quot;)) &gt; 0) {</span>
+<span class="fc" id="L218">            throw new IllegalArgumentException(</span>
+                    &quot;El porcentaje personalizado debe estar entre 0 y 100.&quot;
+            );
+        }
+
+<span class="fc" id="L223">        return customPercentage;</span>
+    }
+
+    private static LocalDateTime requireDate(
+            LocalDateTime value,
+            String message) {
+
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L231">            throw new IllegalArgumentException(message);</span>
+        }
+<span class="fc" id="L233">        return value;</span>
+    }
+
+    public UUID getId() {
+<span class="fc" id="L237">        return id;</span>
+    }
+
+    public UUID getGoalId() {
+<span class="fc" id="L241">        return goalId;</span>
+    }
+
+    public UUID getUserId() {
+<span class="fc" id="L245">        return userId;</span>
+    }
+
+    public GoalRole getRole() {
+<span class="fc" id="L249">        return role;</span>
+    }
+
+    public BigDecimal getSalary() {
+<span class="fc" id="L253">        return salary;</span>
+    }
+
+    public BigDecimal getCustomPercentage() {
+<span class="fc" id="L257">        return customPercentage;</span>
+    }
+
+    public LocalDateTime getJoinedAt() {
+<span class="fc" id="L261">        return joinedAt;</span>
+    }
+
+    public LocalDateTime getCreatedAt() {
+<span class="fc" id="L265">        return createdAt;</span>
+    }
+
+    public LocalDateTime getModifiedAt() {
+<span class="fc" id="L269">        return modifiedAt;</span>
+    }
+
+    public boolean isActive() {
+<span class="fc" id="L273">        return active;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

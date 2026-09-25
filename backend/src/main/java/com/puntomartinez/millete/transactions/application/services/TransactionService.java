@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.transactions.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
@@ -17,8 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,12 +32,15 @@ public class TransactionService implements
         UnassignCategoryFromTransactionsUseCase {
 
     private final TransactionRepository transactionRepository;
+    private final TimeProvider timeProvider;
     private final CategoryRepository categoryRepository;
 
     public TransactionService(
             TransactionRepository transactionRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            TimeProvider timeProvider
     ) {
+        this.timeProvider = timeProvider;
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
     }
@@ -53,6 +56,7 @@ public class TransactionService implements
         );
 
         Transaction transaction = Transaction.create(
+                timeProvider,
                 command.userId(),
                 command.categoryId(),
                 command.amount(),
@@ -88,7 +92,7 @@ public class TransactionService implements
         transactionRepository.clearCategoryFromActiveTransactions(
                 categoryId,
                 userId,
-                LocalDateTime.now()
+                timeProvider.instantNow()
         );
     }
 
@@ -106,8 +110,8 @@ public class TransactionService implements
             int size,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         return transactionRepository.findAllByUserId(
                 userId,
@@ -126,8 +130,8 @@ public class TransactionService implements
             UUID userId,
             String search,
             TransactionType type,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            LocalDate startDate,
+            LocalDate endDate
     ) {
         return transactionRepository.countByUserIdAndFilters(
                 userId,
@@ -169,6 +173,7 @@ public class TransactionService implements
         );
 
         transaction.updateDetails(
+                timeProvider,
                 command.amount(),
                 command.date(),
                 command.type(),
@@ -187,7 +192,7 @@ public class TransactionService implements
     ) {
         Transaction transaction = getByIdAndUserId(id, userId);
 
-        transaction.deactivate();
+        transaction.deactivate(timeProvider);
         transactionRepository.save(transaction);
     }
 
@@ -209,18 +214,11 @@ public class TransactionService implements
 
     private boolean isMonthlyExpenseLimitExceeded(
             UUID userId,
-            LocalDateTime date
+            LocalDate date
     ) {
-        LocalDateTime startOfMonth = date
-                .withDayOfMonth(1)
-                .withHour(0)
-                .withMinute(0)
-                .withSecond(0)
-                .withNano(0);
+        LocalDate startOfMonth = date.withDayOfMonth(1);
 
-        LocalDateTime endOfMonth = startOfMonth
-                .plusMonths(1)
-                .minusNanos(1);
+        LocalDate endOfMonth = startOfMonth.plusMonths(1).minusDays(1);
 
         TransactionAggregates aggregates =
                 transactionRepository.getAggregatesByUserIdAndDateBetween(

@@ -13,9 +13,15 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @DisplayName("SavingsGoalEntityMapper")
 class SavingsGoalEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private final SavingsGoalEntityMapper mapper =
             Mappers.getMapper(SavingsGoalEntityMapper.class);
@@ -112,7 +118,7 @@ class SavingsGoalEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        SavingsGoal original = SavingsGoal.create(
+        SavingsGoal original = SavingsGoal.create(TIME, 
                 UUID.randomUUID(),
                 "Vacation",
                 new BigDecimal("1000.00"),

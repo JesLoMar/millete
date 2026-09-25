@@ -6,9 +6,9 @@ import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postg
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalMemberEntityMapper;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalMemberRepository;
 import lombok.RequiredArgsConstructor;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +19,7 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
 
     private final JpaGoalMemberRepository jpaRepository;
     private final GoalMemberEntityMapper mapper;
+    private final TimeProvider timeProvider;
 
     @Override
     public GoalMember save(GoalMember goalMember) {
@@ -81,7 +82,7 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
     public void deactivateByGoalId(UUID goalId) {
         jpaRepository.deactivateByGoalId(
                 goalId,
-                LocalDateTime.now()
+                timeProvider.instantNow()
         );
     }
 

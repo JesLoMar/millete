@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +37,8 @@ class UserPostgresAdapterTest {
         entity.setUsername("ana");
         entity.setEmail("ana@mail.com");
         entity.setPassword("hashed");
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         entity.setAnonymized(false);
         return entity;
@@ -50,7 +49,7 @@ class UserPostgresAdapterTest {
     void shouldSaveUser() {
         User domain = new User(
                 UUID.randomUUID(), "ana", "ana@mail.com", "hashed",
-                LocalDateTime.now(), LocalDateTime.now(), true, false
+                Instant.now(), Instant.now(), true, false
         );
         UserEntity entity = userEntity();
         UserEntity savedEntity = userEntity();

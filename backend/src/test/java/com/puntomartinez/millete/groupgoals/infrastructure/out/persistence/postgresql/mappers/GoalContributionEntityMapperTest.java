@@ -8,13 +8,23 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GoalContributionEntityMapper")
+
 class GoalContributionEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private final GoalContributionEntityMapper mapper =
             Mappers.getMapper(GoalContributionEntityMapper.class);
@@ -22,10 +32,10 @@ class GoalContributionEntityMapperTest {
     @Test
     @DisplayName("Should map domain to entity")
     void shouldMapDomainToEntity() {
-        GoalContribution domain = GoalContribution.create(
+        GoalContribution domain = GoalContribution.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("100.00"),
-                ContributionType.DEPOSIT, LocalDateTime.now()
+                ContributionType.DEPOSIT, Instant.now()
         );
 
         GoalContributionEntity entity = mapper.toEntity(domain);
@@ -46,9 +56,9 @@ class GoalContributionEntityMapperTest {
         entity.setUserId(UUID.randomUUID());
         entity.setAmount(new BigDecimal("100.00"));
         entity.setType("DEPOSIT");
-        entity.setDate(LocalDateTime.now());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setDate(Instant.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
 
         GoalContribution domain = mapper.toDomain(entity);
@@ -68,10 +78,10 @@ class GoalContributionEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        GoalContribution original = GoalContribution.create(
+        GoalContribution original = GoalContribution.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("250.00"),
-                ContributionType.WITHDRAWAL, LocalDateTime.now()
+                ContributionType.WITHDRAWAL, Instant.now()
         );
 
         GoalContributionEntity entity = mapper.toEntity(original);

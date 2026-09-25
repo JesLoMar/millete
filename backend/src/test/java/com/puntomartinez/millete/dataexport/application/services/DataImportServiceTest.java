@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,7 +67,7 @@ class DataImportServiceTest {
         return new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
                         ExportVersion.CURRENT.toString(),
-                        LocalDateTime.now(),
+                        Instant.now(),
                         "0.2.0"
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
@@ -104,7 +103,7 @@ class DataImportServiceTest {
     void importUserDataShouldRejectIncompatibleVersion() throws Exception {
         UserDataSnapshot snapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "99.0.0", LocalDateTime.now(), "99.0.0"
+                        "99.0.0", Instant.now(), "99.0.0"
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
         );
@@ -155,7 +154,7 @@ class DataImportServiceTest {
     void importUserDataShouldTriggerMigrationWhenNeeded() throws Exception {
         UserDataSnapshot oldSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.0.1", LocalDateTime.now(), "0.0.1"
+                        "0.0.1", Instant.now(), "0.0.1"
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
         );

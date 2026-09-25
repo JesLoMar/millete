@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.dashboard.domain.ports.out;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -9,8 +9,8 @@ public interface TransactionQueryPort {
 
     List<TransactionData> findByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     );
 
     List<TransactionData> findRecentByUserId(
@@ -23,7 +23,7 @@ public interface TransactionQueryPort {
             String description,
             UUID categoryId,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             String type
     ) {
     }

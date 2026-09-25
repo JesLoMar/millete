@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryImportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.categories</a> &gt; <span class="el_source">CategoryImportAdapter.java</span></div><h1>CategoryImportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.categories;
+
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult;
+import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Component
+public class CategoryImportAdapter implements CategoryImportPort {
+
+    private final CategoryRepository categoryRepository;
+
+    public CategoryImportAdapter(
+            CategoryRepository categoryRepository
+<span class="fc" id="L22">    ) {</span>
+<span class="fc" id="L23">        this.categoryRepository = categoryRepository;</span>
+<span class="fc" id="L24">    }</span>
+
+    @Override
+    public CategoryImportResult importCategories(
+            List&lt;CategorySnapshot&gt; categories,
+            UUID userId
+    ) {
+
+<span class="fc" id="L32">        Map&lt;UUID, UUID&gt; categoryIdMap =</span>
+                new HashMap&lt;&gt;();
+
+<span class="pc bpc" id="L35" title="2 of 4 branches missed.">        if (categories == null || categories.isEmpty()) {</span>
+<span class="nc" id="L36">            return new CategoryImportResult(</span>
+                    categoryIdMap,
+                    0
+            );
+        }
+
+<span class="fc" id="L42">        Map&lt;String, Category&gt; existingByName =</span>
+                new HashMap&lt;&gt;();
+
+        for (Category existing :
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                categoryRepository.findByUserId(userId)) {</span>
+
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (existing.isActive()) {</span>
+<span class="fc" id="L49">                existingByName.put(</span>
+<span class="fc" id="L50">                        existing.getName().toLowerCase(),</span>
+                        existing
+                );
+            }
+<span class="fc" id="L54">        }</span>
+
+<span class="fc" id="L56">        int importedCount = 0;</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (CategorySnapshot category : categories) {</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            if (!category.active()) {</span>
+<span class="fc" id="L61">                continue;</span>
+            }
+
+<span class="fc" id="L64">            String nameLower =</span>
+<span class="fc" id="L65">                    category.name().toLowerCase();</span>
+
+<span class="fc" id="L67">            Category existing =</span>
+<span class="fc" id="L68">                    existingByName.get(nameLower);</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (existing != null) {</span>
+
+<span class="fc" id="L72">                existing.updateDetails(</span>
+<span class="fc" id="L73">                        category.name(),</span>
+<span class="fc" id="L74">                        category.color(),</span>
+<span class="fc" id="L75">                        category.budgetLimit()</span>
+                );
+
+<span class="fc" id="L78">                categoryRepository.save(existing);</span>
+
+<span class="fc" id="L80">                categoryIdMap.put(</span>
+<span class="fc" id="L81">                        category.id(),</span>
+<span class="fc" id="L82">                        existing.getId()</span>
+                );
+
+            } else {
+
+<span class="fc" id="L87">                UUID newId = UUID.randomUUID();</span>
+
+<span class="fc" id="L89">                Category importedCategory =</span>
+<span class="fc" id="L90">                        Category.reconstitute(</span>
+                                newId,
+                                userId,
+<span class="fc" id="L93">                                category.name(),</span>
+<span class="fc" id="L94">                                category.color(),</span>
+<span class="fc" id="L95">                                category.budgetLimit(),</span>
+<span class="fc" id="L96">                                category.createdAt(),</span>
+<span class="fc" id="L97">                                category.modifiedAt(),</span>
+<span class="fc" id="L98">                                category.active()</span>
+                        );
+
+<span class="fc" id="L101">                categoryRepository.save(</span>
+                        importedCategory
+                );
+
+<span class="fc" id="L105">                categoryIdMap.put(</span>
+<span class="fc" id="L106">                        category.id(),</span>
+                        newId
+                );
+
+<span class="fc" id="L110">                existingByName.put(</span>
+                        nameLower,
+                        importedCategory
+                );
+
+<span class="fc" id="L115">                importedCount++;</span>
+            }
+<span class="fc" id="L117">        }</span>
+
+<span class="fc" id="L119">        return new CategoryImportResult(</span>
+                categoryIdMap,
+                importedCount
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

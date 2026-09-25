@@ -10,6 +10,7 @@ import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFr
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -34,10 +35,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+
 @DisplayName("CategoryService")
 class CategoryServiceTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
+    private static final FixedTimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
     private static final String UNIQUE_INDEX_NAME = "idx_categories_user_name_active";
 
     @Mock
@@ -59,7 +63,8 @@ class CategoryServiceTest {
     }
 
     private Category existingCategory() {
-        return Category.create(
+        return Category.create(TIME, 
+                TIME,
                 USER_ID,
                 "Old",
                 "#FF5733",

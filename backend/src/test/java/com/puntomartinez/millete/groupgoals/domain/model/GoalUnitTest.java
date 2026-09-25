@@ -9,7 +9,9 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,9 +19,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("GoalUnit aggregate")
 class GoalUnitTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
 
     private GoalUnit createValid() {
         return GoalUnit.create(
+                TIME,
                 "Family trip",
                 new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE
@@ -32,8 +41,8 @@ class GoalUnitTest {
                 "Family trip",
                 new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE,
-                LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.of(2024, 1, 2, 10, 0),
+                Instant.parse("2024-01-01T10:00:00Z"),
+                Instant.parse("2024-01-02T10:00:00Z"),
                 active
         );
     }
@@ -72,6 +81,7 @@ class GoalUnitTest {
         @DisplayName("Should reject blank name")
         void shouldRejectBlankName(String name) {
             assertThatThrownBy(() -> GoalUnit.create(
+                    TIME,
                     name, new BigDecimal("100.00"), DistributionMode.EQUITATIVE
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -82,6 +92,7 @@ class GoalUnitTest {
             String longName = "A".repeat(101);
 
             assertThatThrownBy(() -> GoalUnit.create(
+                    TIME,
                     longName, new BigDecimal("100.00"), DistributionMode.EQUITATIVE
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -92,6 +103,7 @@ class GoalUnitTest {
             String maxName = "A".repeat(100);
 
             GoalUnit goal = GoalUnit.create(
+                    TIME,
                     maxName, new BigDecimal("100.00"), DistributionMode.EQUITATIVE
             );
 
@@ -102,6 +114,7 @@ class GoalUnitTest {
         @DisplayName("Should reject null monthly target")
         void shouldRejectNullMonthlyTarget() {
             assertThatThrownBy(() -> GoalUnit.create(
+                    TIME,
                     "Family trip", null, DistributionMode.EQUITATIVE
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -110,6 +123,7 @@ class GoalUnitTest {
         @DisplayName("Should reject negative monthly target")
         void shouldRejectNegativeMonthlyTarget() {
             assertThatThrownBy(() -> GoalUnit.create(
+                    TIME,
                     "Family trip", new BigDecimal("-10.00"), DistributionMode.EQUITATIVE
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -118,6 +132,7 @@ class GoalUnitTest {
         @DisplayName("Should allow zero monthly target")
         void shouldAllowZeroMonthlyTarget() {
             GoalUnit goal = GoalUnit.create(
+                    TIME,
                     "Family trip", BigDecimal.ZERO, DistributionMode.EQUITATIVE
             );
 
@@ -128,6 +143,7 @@ class GoalUnitTest {
         @DisplayName("Should reject null distribution mode")
         void shouldRejectNullDistributionMode() {
             assertThatThrownBy(() -> GoalUnit.create(
+                    TIME,
                     "Family trip", new BigDecimal("100.00"), null
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -141,8 +157,8 @@ class GoalUnitTest {
         @DisplayName("Should reconstitute existing goal unit")
         void shouldReconstituteGoalUnit() {
             UUID id = UUID.randomUUID();
-            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+            Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+            Instant modifiedAt = Instant.parse("2024-01-02T10:00:00Z");
 
             GoalUnit goal = GoalUnit.reconstitute(
                     id, "Family trip", new BigDecimal("300.00"),
@@ -163,7 +179,7 @@ class GoalUnitTest {
             assertThatThrownBy(() -> GoalUnit.reconstitute(
                     null, "Family trip", new BigDecimal("300.00"),
                     DistributionMode.EQUITATIVE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             )).isInstanceOf(InvalidInputException.class);
         }
     }
@@ -176,9 +192,10 @@ class GoalUnitTest {
         @DisplayName("Should update all details")
         void shouldUpdateAllDetails() {
             GoalUnit goal = reconstituteValid(true);
-            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+            Instant previousModifiedAt = goal.getModifiedAt();
 
             goal.updateDetails(
+                    TIME,
                     "Updated trip",
                     new BigDecimal("500.00"),
                     DistributionMode.CUSTOM
@@ -195,7 +212,7 @@ class GoalUnitTest {
         void shouldNotUpdateNullFields() {
             GoalUnit goal = reconstituteValid(true);
 
-            goal.updateDetails(null, null, null);
+            goal.updateDetails(TIME, null, null, null);
 
             assertThat(goal.getName()).isEqualTo("Family trip");
             assertThat(goal.getMonthlyTarget()).isEqualByComparingTo("300.00");
@@ -208,6 +225,7 @@ class GoalUnitTest {
             GoalUnit goal = reconstituteValid(true);
 
             assertThatThrownBy(() -> goal.updateDetails(
+                    TIME,
                     "", null, null
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -218,6 +236,7 @@ class GoalUnitTest {
             GoalUnit goal = reconstituteValid(true);
 
             assertThatThrownBy(() -> goal.updateDetails(
+                    TIME,
                     null, new BigDecimal("-10.00"), null
             )).isInstanceOf(InvalidInputException.class);
         }
@@ -232,7 +251,7 @@ class GoalUnitTest {
         void shouldDeactivateGoalUnit() {
             GoalUnit goal = reconstituteValid(true);
 
-            goal.deactivate();
+            goal.deactivate(TIME);
 
             assertThat(goal.isActive()).isFalse();
         }
@@ -241,9 +260,9 @@ class GoalUnitTest {
         @DisplayName("Should not change modified at when already inactive")
         void shouldNotChangeModifiedAtWhenAlreadyInactive() {
             GoalUnit goal = reconstituteValid(false);
-            LocalDateTime previousModifiedAt = goal.getModifiedAt();
+            Instant previousModifiedAt = goal.getModifiedAt();
 
-            goal.deactivate();
+            goal.deactivate(TIME);
 
             assertThat(goal.isActive()).isFalse();
             assertThat(goal.getModifiedAt()).isEqualTo(previousModifiedAt);

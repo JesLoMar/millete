@@ -1,8 +1,8 @@
 package com.puntomartinez.millete.dataexport.domain.model;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record PdfExportData(
@@ -30,7 +30,7 @@ public record PdfExportData(
     ) {}
 
     public record TransactionRow(
-            LocalDateTime date,
+            LocalDate date,
             String categoryName,
             String description,
             String type,

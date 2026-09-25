@@ -1,7 +1,8 @@
 package com.puntomartinez.millete.groupgoals.domain.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import java.util.UUID;
 
 public class GoalMember {
@@ -12,9 +13,9 @@ public class GoalMember {
     private GoalRole role;
     private BigDecimal salary;
     private BigDecimal customPercentage;
-    private LocalDateTime joinedAt;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant joinedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private GoalMember(
@@ -24,9 +25,9 @@ public class GoalMember {
             GoalRole role,
             BigDecimal salary,
             BigDecimal customPercentage,
-            LocalDateTime joinedAt,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant joinedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active) {
 
         this.id = requireId(id);
@@ -51,12 +52,13 @@ public class GoalMember {
     }
 
     public static GoalMember create(
+            TimeProvider timeProvider,
             UUID goalId,
             UUID userId,
             GoalRole role,
             BigDecimal salary) {
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
 
         return new GoalMember(
                 UUID.randomUUID(),
@@ -73,13 +75,14 @@ public class GoalMember {
     }
 
     public static GoalMember create(
+            TimeProvider timeProvider,
             UUID goalId,
             UUID userId,
             GoalRole role,
             BigDecimal salary,
             BigDecimal customPercentage) {
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
 
         return new GoalMember(
                 UUID.randomUUID(),
@@ -102,9 +105,9 @@ public class GoalMember {
             GoalRole role,
             BigDecimal salary,
             BigDecimal customPercentage,
-            LocalDateTime joinedAt,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant joinedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active) {
 
         return new GoalMember(
@@ -122,6 +125,7 @@ public class GoalMember {
     }
 
     public void updateDetails(
+            TimeProvider timeProvider,
             GoalRole role,
             BigDecimal salary,
             BigDecimal customPercentage) {
@@ -138,18 +142,18 @@ public class GoalMember {
             this.customPercentage = requireCustomPercentage(customPercentage);
         }
 
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void activate() {
+    public void activate(TimeProvider timeProvider) {
         this.active = true;
-        this.joinedAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
+        this.joinedAt = timeProvider.instantNow();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     public boolean isAdmin() {
@@ -223,8 +227,8 @@ public class GoalMember {
         return customPercentage;
     }
 
-    private static LocalDateTime requireDate(
-            LocalDateTime value,
+    private static Instant requireDate(
+            Instant value,
             String message) {
 
         if (value == null) {
@@ -257,15 +261,15 @@ public class GoalMember {
         return customPercentage;
     }
 
-    public LocalDateTime getJoinedAt() {
+    public Instant getJoinedAt() {
         return joinedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getModifiedAt() {
+    public Instant getModifiedAt() {
         return modifiedAt;
     }
 

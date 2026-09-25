@@ -1,11 +1,22 @@
 package com.puntomartinez.millete.users.domain.model;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+/**
+ * Estado de seguridad de login por cuenta.
+ *
+ * <p>Tras la Fase 1 de la normalización temporal, todos sus momentos se
+ * modelan con {@link Instant} (la tabla {@code user_login_security} ya usaba
+ * TIMESTAMPTZ desde V3). El tiempo actual se obtiene exclusivamente a través
+ * del puerto {@link TimeProvider}, lo que hace deterministas las comparaciones
+ * de bloqueo en tests multi-zona.</p>
+ */
 @Getter
 @Setter
 public class UserLoginSecurity {
@@ -14,18 +25,18 @@ public class UserLoginSecurity {
 
     private UUID userId;
     private int failedAttempts;
-    private LocalDateTime blockedUntil;
-    private LocalDateTime lastAttemptAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private Instant blockedUntil;
+    private Instant lastAttemptAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
 
     public UserLoginSecurity() {}
 
-    public boolean isBlocked() {
+    public boolean isBlocked(TimeProvider timeProvider) {
         if (this.blockedUntil != null) {
-            if (LocalDateTime.now().isAfter(this.blockedUntil)) {
+            if (timeProvider.instantNow().isAfter(this.blockedUntil)) {
                 this.blockedUntil = null;
-                this.modifiedAt = LocalDateTime.now();
+                this.modifiedAt = timeProvider.instantNow();
                 return false;
             }
             return true;
@@ -33,13 +44,17 @@ public class UserLoginSecurity {
         return false;
     }
 
-    public void registerFailedAttempt(int maxAttempts, long baseLockDurationMinutes) {
+    public void registerFailedAttempt(
+            TimeProvider timeProvider,
+            int maxAttempts,
+            long baseLockDurationMinutes
+    ) {
         this.failedAttempts++;
-        this.lastAttemptAt = LocalDateTime.now();
-        this.modifiedAt = LocalDateTime.now();
+        this.lastAttemptAt = timeProvider.instantNow();
+        this.modifiedAt = timeProvider.instantNow();
         if (this.failedAttempts >= maxAttempts) {
-            this.blockedUntil = LocalDateTime.now()
-                    .plusMinutes(calculateLockDurationMinutes(maxAttempts, baseLockDurationMinutes));
+            this.blockedUntil = timeProvider.instantNow()
+                    .plus(calculateLockDurationMinutes(maxAttempts, baseLockDurationMinutes), ChronoUnit.MINUTES);
         }
     }
 
@@ -49,12 +64,12 @@ public class UserLoginSecurity {
         return Math.min(duration, MAX_LOCK_DURATION_MINUTES);
     }
 
-    public void resetAttempts() {
+    public void resetAttempts(TimeProvider timeProvider) {
         if (this.failedAttempts > 0 || this.blockedUntil != null) {
             this.failedAttempts = 0;
             this.blockedUntil = null;
-            this.lastAttemptAt = LocalDateTime.now();
-            this.modifiedAt = LocalDateTime.now();
+            this.lastAttemptAt = timeProvider.instantNow();
+            this.modifiedAt = timeProvider.instantNow();
         }
     }
 }

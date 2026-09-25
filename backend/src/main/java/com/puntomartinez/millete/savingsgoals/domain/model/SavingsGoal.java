@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.savingsgoals.domain.model;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 
@@ -7,7 +8,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public class SavingsGoal {
@@ -23,8 +24,8 @@ public class SavingsGoal {
     private LocalDate deadline;
     private GoalPriority priority;
     private String link;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     private SavingsGoal(
@@ -36,8 +37,8 @@ public class SavingsGoal {
             LocalDate deadline,
             GoalPriority priority,
             String link,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateUserId(userId);
@@ -60,6 +61,7 @@ public class SavingsGoal {
     }
 
     public static SavingsGoal create(
+            TimeProvider timeProvider,
             UUID userId,
             String name,
             BigDecimal targetAmount,
@@ -67,7 +69,7 @@ public class SavingsGoal {
             GoalPriority priority,
             String link
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
         return new SavingsGoal(
                 UUID.randomUUID(),
                 userId,
@@ -92,8 +94,8 @@ public class SavingsGoal {
             LocalDate deadline,
             GoalPriority priority,
             String link,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateId(id);
@@ -105,7 +107,7 @@ public class SavingsGoal {
         );
     }
 
-    public void updateDetails(
+    public void updateDetails(TimeProvider timeProvider, 
             String name,
             BigDecimal targetAmount,
             LocalDate deadline,
@@ -135,19 +137,19 @@ public class SavingsGoal {
                 this.link = normalizeAndValidateLink(link);
             }
         }
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void addContribution(BigDecimal amount) {
+    public void addContribution(TimeProvider timeProvider, BigDecimal amount) {
         validatePositiveAmount(
                 amount,
                 "La contribución debe ser mayor que cero."
         );
         this.currentAmount = this.currentAmount.add(amount);
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void withdraw(BigDecimal amount) {
+    public void withdraw(TimeProvider timeProvider, BigDecimal amount) {
         validatePositiveAmount(
                 amount,
                 "La cantidad a retirar debe ser mayor que cero."
@@ -158,15 +160,15 @@ public class SavingsGoal {
             );
         }
         this.currentAmount = this.currentAmount.subtract(amount);
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         if (!this.active) {
             return;
         }
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     private static void validatePositiveAmount(
@@ -241,7 +243,7 @@ public class SavingsGoal {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación es obligatoria."
@@ -249,7 +251,7 @@ public class SavingsGoal {
         }
     }
 
-    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+    private static void validateModifiedAt(Instant modifiedAt) {
         if (modifiedAt == null) {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria."
@@ -298,7 +300,7 @@ public class SavingsGoal {
     public LocalDate getDeadline() { return deadline; }
     public GoalPriority getPriority() { return priority; }
     public String getLink() { return link; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getModifiedAt() { return modifiedAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getModifiedAt() { return modifiedAt; }
     public boolean isActive() { return active; }
 }

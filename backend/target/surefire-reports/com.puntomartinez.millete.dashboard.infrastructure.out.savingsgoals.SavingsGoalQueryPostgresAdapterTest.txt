@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.puntomartinez.millete.dashboard.infrastructure.out.savingsgoals.SavingsGoalQueryPostgresAdapterTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.178 s -- in com.puntomartinez.millete.dashboard.infrastructure.out.savingsgoals.SavingsGoalQueryPostgresAdapterTest

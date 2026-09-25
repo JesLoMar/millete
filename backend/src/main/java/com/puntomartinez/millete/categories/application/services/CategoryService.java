@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.categories.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
 import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
@@ -29,12 +30,15 @@ public class CategoryService implements
             "idx_categories_user_name_active";
 
     private final CategoryRepository categoryRepository;
+    private final TimeProvider timeProvider;
     private final UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase;
 
     public CategoryService(
             CategoryRepository categoryRepository,
-            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase
+            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase,
+            TimeProvider timeProvider
     ) {
+        this.timeProvider = timeProvider;
         this.categoryRepository = categoryRepository;
         this.unassignCategoryFromTransactionsUseCase =
                 unassignCategoryFromTransactionsUseCase;
@@ -53,6 +57,7 @@ public class CategoryService implements
         }
 
         Category category = Category.create(
+                timeProvider,
                 command.userId(),
                 command.name(),
                 command.color(),
@@ -132,7 +137,7 @@ public class CategoryService implements
             );
         }
 
-        category.updateDetails(
+        category.updateDetails(timeProvider, 
                 command.name(),
                 command.color(),
                 command.budgetLimit()
@@ -161,7 +166,7 @@ public class CategoryService implements
     ) {
         Category category = getCategory(id, userId);
 
-        category.deactivate();
+        category.deactivate(timeProvider);
         categoryRepository.save(category);
 
         unassignCategoryFromTransactionsUseCase.unassignCategory(

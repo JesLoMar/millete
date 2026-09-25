@@ -70,7 +70,7 @@ class PlannedTransactionControllerTest {
                 new BigDecimal("100.00"), TransactionType.EXPENSE,
                 "Rent", FrequencyType.MONTHS, 1,
                 LocalDate.now(), null,
-                java.time.LocalDateTime.now(), java.time.LocalDateTime.now(),
+                java.time.Instant.now(), java.time.Instant.now(),
                 true, null, 0
         );
     }
@@ -115,7 +115,7 @@ class PlannedTransactionControllerTest {
                     new BigDecimal("100.00"), TransactionType.EXPENSE,
                     "Rent", FrequencyType.MONTHS, 1,
                     LocalDate.now(), null,
-                    java.time.LocalDateTime.now(), java.time.LocalDateTime.now(),
+                    java.time.Instant.now(), java.time.Instant.now(),
                     true, null, 0
             );
             RegisterPlannedTransactionRequestDTO request = new RegisterPlannedTransactionRequestDTO(

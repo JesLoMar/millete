@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SavingsGoalEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">SavingsGoalEntityMapperImpl.java</span></div><h1>SavingsGoalEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.entity.SavingsGoalEntity;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:39+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L14">public class SavingsGoalEntityMapperImpl implements SavingsGoalEntityMapper {</span>
+
+    @Override
+    public SavingsGoalEntity toEntity(SavingsGoal domain) {
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if ( domain == null ) {</span>
+<span class="fc" id="L19">            return null;</span>
+        }
+
+<span class="fc" id="L22">        SavingsGoalEntity savingsGoalEntity = new SavingsGoalEntity();</span>
+
+<span class="fc" id="L24">        savingsGoalEntity.setPriority( priorityToString( domain.getPriority() ) );</span>
+<span class="fc" id="L25">        savingsGoalEntity.setId( domain.getId() );</span>
+<span class="fc" id="L26">        savingsGoalEntity.setUserId( domain.getUserId() );</span>
+<span class="fc" id="L27">        savingsGoalEntity.setName( domain.getName() );</span>
+<span class="fc" id="L28">        savingsGoalEntity.setTargetAmount( domain.getTargetAmount() );</span>
+<span class="fc" id="L29">        savingsGoalEntity.setCurrentAmount( domain.getCurrentAmount() );</span>
+<span class="fc" id="L30">        savingsGoalEntity.setDeadline( domain.getDeadline() );</span>
+<span class="fc" id="L31">        savingsGoalEntity.setLink( domain.getLink() );</span>
+<span class="fc" id="L32">        savingsGoalEntity.setCreatedAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L33">        savingsGoalEntity.setModifiedAt( domain.getModifiedAt() );</span>
+<span class="fc" id="L34">        savingsGoalEntity.setActive( domain.isActive() );</span>
+
+<span class="fc" id="L36">        return savingsGoalEntity;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

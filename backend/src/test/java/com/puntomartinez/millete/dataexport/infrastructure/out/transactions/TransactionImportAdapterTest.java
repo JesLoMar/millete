@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +42,9 @@ class TransactionImportAdapterTest {
 
         TransactionSnapshot snapshot = new TransactionSnapshot(
                 sourceTxId, UUID.randomUUID(), sourceCategoryId,
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 "EXPENSE", "Lunch",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         Map<UUID, UUID> categoryIdMap = new HashMap<>();
@@ -75,9 +74,9 @@ class TransactionImportAdapterTest {
     void importTransactionsShouldSkipInactiveTransactions() {
         TransactionSnapshot inactiveSnapshot = new TransactionSnapshot(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 "EXPENSE", "Inactive",
-                LocalDateTime.now(), LocalDateTime.now(), false
+                Instant.now(), Instant.now(), false
         );
 
         int count = adapter.importTransactions(

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvestmentExportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.investments</a> &gt; <span class="el_source">InvestmentExportAdapter.java</span></div><h1>InvestmentExportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.investments;
+
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.InvestmentExportPort;
+import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+public class InvestmentExportAdapter implements InvestmentExportPort {
+
+    private final InvestmentRepository investmentRepository;
+
+    public InvestmentExportAdapter(
+            InvestmentRepository investmentRepository
+<span class="fc" id="L18">    ) {</span>
+<span class="fc" id="L19">        this.investmentRepository = investmentRepository;</span>
+<span class="fc" id="L20">    }</span>
+
+    @Override
+    public List&lt;InvestmentSnapshot&gt; findAllByUserId(UUID userId) {
+<span class="fc" id="L24">        return investmentRepository.findAllByUserId(userId)</span>
+<span class="fc" id="L25">                .stream()</span>
+<span class="fc" id="L26">                .map(investment -&gt;</span>
+<span class="fc" id="L27">                        new InvestmentSnapshot(</span>
+<span class="fc" id="L28">                                investment.getId(),</span>
+<span class="fc" id="L29">                                investment.getUserId(),</span>
+<span class="fc" id="L30">                                investment.getAssetName(),</span>
+<span class="fc" id="L31">                                investment.getTicker(),</span>
+<span class="fc" id="L32">                                investment.getQuantity(),</span>
+<span class="fc" id="L33">                                investment.getPurchasePrice(),</span>
+<span class="fc" id="L34">                                investment.getCurrentPrice(),</span>
+<span class="fc" id="L35">                                investment.getType().name(),</span>
+<span class="fc" id="L36">                                investment.getPurchaseDate().toLocalDate(),</span>
+<span class="fc" id="L37">                                investment.getCreatedAt(),</span>
+<span class="fc" id="L38">                                investment.getModifiedAt(),</span>
+<span class="fc" id="L39">                                investment.isActive(),</span>
+<span class="fc" id="L40">                                investment.getCurrentValue(),</span>
+<span class="fc" id="L41">                                investment.getProfitOrLoss(),</span>
+<span class="fc" id="L42">                                investment.getReturnOnInvestmentPercentage()</span>
+                        )
+                )
+<span class="fc" id="L45">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

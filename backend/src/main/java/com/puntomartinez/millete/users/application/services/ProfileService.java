@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.users.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
@@ -19,10 +20,10 @@ import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepositor
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
 import com.puntomartinez.millete.users.domain.validation.EmailValidator;
+import com.puntomartinez.millete.users.domain.validation.ZoneIdValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class ProfileService implements ManageProfileUseCase {
     private static final int MAX_PREFERENCES_JSON_LENGTH = 10_000;
 
     private final UserRepository userRepository;
+    private final TimeProvider timeProvider;
     private final UserSessionRepository userSessionRepository;
     private final UserPreferencesRepository userPreferencesRepository;
     private final PasswordHasherPort passwordHasher;
@@ -44,8 +46,10 @@ public class ProfileService implements ManageProfileUseCase {
             UserSessionRepository userSessionRepository,
             UserPreferencesRepository userPreferencesRepository,
             PasswordHasherPort passwordHasher,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            TimeProvider timeProvider
     ) {
+        this.timeProvider = timeProvider;
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
         this.userPreferencesRepository = userPreferencesRepository;
@@ -128,7 +132,7 @@ public class ProfileService implements ManageProfileUseCase {
                 ? newEmail
                 : user.getEmail();
 
-        user.updateProfile(username, email);
+        user.updateProfile(timeProvider, username, email);
         userRepository.save(user);
     }
 
@@ -160,6 +164,7 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         user.updatePassword(
+                timeProvider,
                 passwordHasher.hashPassword(command.newPassword())
         );
 
@@ -175,8 +180,8 @@ public class ProfileService implements ManageProfileUseCase {
     @Transactional(readOnly = true)
     public Map<String, Object> getPreferences(UUID userId) {
         return userPreferencesRepository.findByUserId(userId)
-                .map(UserPreferences::getPreferences)
-                .orElseGet(HashMap::new);
+                .map(prefs -> withDefaultTimezone(prefs.getPreferences()))
+                .orElseGet(() -> withDefaultTimezone(new HashMap<>()));
     }
 
     @Override
@@ -186,8 +191,30 @@ public class ProfileService implements ManageProfileUseCase {
             Map<String, Object> preferences
     ) {
         Map<String, Object> safePreferences = preferences != null
-                ? preferences
+                ? new HashMap<>(preferences)
                 : new HashMap<>();
+
+        // Fase 1 (normalización temporal): la clave "timezone" es una
+        // preferencia de dominio con validación estricta. Se normaliza y
+        // valida antes de persistir; si no se envía, se preserva el valor
+        // existente o se aplica el default técnico UTC.
+        Object timezoneValue = safePreferences.get(UserPreferences.TIMEZONE_KEY);
+        if (timezoneValue == null) {
+            String existingTimezone = userPreferencesRepository.findByUserId(userId)
+                    .map(UserPreferences::getTimezoneOrDefault)
+                    .orElse(ZoneIdValidator.DEFAULT_TIMEZONE);
+            safePreferences.put(UserPreferences.TIMEZONE_KEY, existingTimezone);
+        } else {
+            if (!(timezoneValue instanceof String)) {
+                throw new InvalidInputException(
+                        "La zona horaria debe ser un texto con un identificador IANA válido"
+                );
+            }
+            safePreferences.put(
+                    UserPreferences.TIMEZONE_KEY,
+                    ZoneIdValidator.normalizeOrDefault((String) timezoneValue)
+            );
+        }
 
         String serialized;
         try {
@@ -214,13 +241,13 @@ public class ProfileService implements ManageProfileUseCase {
 
                             newPreferences.setId(UUID.randomUUID());
                             newPreferences.setUserId(userId);
-                            newPreferences.setCreatedAt(LocalDateTime.now());
+                            newPreferences.setCreatedAt(timeProvider.instantNow());
 
                             return newPreferences;
                         });
 
         userPreferences.setPreferences(safePreferences);
-        userPreferences.setModifiedAt(LocalDateTime.now());
+        userPreferences.setModifiedAt(timeProvider.instantNow());
 
         userPreferencesRepository.save(userPreferences);
     }
@@ -253,7 +280,7 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         session.setActive(false);
-        session.setModifiedAt(LocalDateTime.now());
+        session.setModifiedAt(timeProvider.instantNow());
 
         userSessionRepository.save(session);
     }
@@ -286,7 +313,7 @@ public class ProfileService implements ManageProfileUseCase {
             );
         }
 
-        user.anonymize();
+        user.anonymize(timeProvider);
         userRepository.save(user);
 
         userSessionRepository.deactivateAllSessions(userId);
@@ -299,5 +326,21 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         return value.trim();
+    }
+
+    /**
+     * Copia defensiva de las preferencias asegurando que la clave "timezone"
+     * esté siempre presente en la respuesta API (default técnico: UTC).
+     */
+    private Map<String, Object> withDefaultTimezone(Map<String, Object> preferences) {
+        Map<String, Object> copy = preferences != null
+                ? new HashMap<>(preferences)
+                : new HashMap<>();
+
+        Object timezone = copy.get(UserPreferences.TIMEZONE_KEY);
+        if (!(timezone instanceof String s) || s.isBlank()) {
+            copy.put(UserPreferences.TIMEZONE_KEY, ZoneIdValidator.DEFAULT_TIMEZONE);
+        }
+        return copy;
     }
 }

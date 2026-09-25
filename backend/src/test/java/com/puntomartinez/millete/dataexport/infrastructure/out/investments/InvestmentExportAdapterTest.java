@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,8 +37,8 @@ class InvestmentExportAdapterTest {
                 new BigDecimal("10"), new BigDecimal("150.00"),
                 new BigDecimal("180.00"),
                 Investment.InvestmentType.STOCK,
-                LocalDateTime.now().minusMonths(3),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                LocalDate.now().minusMonths(3),
+                Instant.now(), Instant.now(), true
         );
 
         when(investmentRepository.findAllByUserId(userId)).thenReturn(List.of(inv));

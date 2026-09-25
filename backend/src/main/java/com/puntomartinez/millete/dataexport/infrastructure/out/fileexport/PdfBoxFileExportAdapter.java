@@ -82,9 +82,9 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
     private static final int ALTERNATE_ROW_G = 222;
     private static final int ALTERNATE_ROW_B = 179;
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+    private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern(
-                    "dd/MM/yyyy HH:mm",
+                    "dd/MM/yyyy",
                     Locale.ENGLISH
             );
 
@@ -604,8 +604,7 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
             String date =
                     transaction.date() == null
                             ? ""
-                            : transaction.date()
-                            .format(DATE_TIME_FORMATTER);
+                            : DATE_FORMATTER.format(transaction.date());
 
             String[] values = {
                     date,

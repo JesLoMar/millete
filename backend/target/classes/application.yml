@@ -1,0 +1,56 @@
+# =========================================================================
+# CONFIGURACIÓN PARA DESARROLLO LOCAL (IntelliJ)
+# =========================================================================
+server:
+  port: 8080
+  forward-headers-strategy: native
+
+spring:
+  application:
+    name: Millete
+  profiles:
+    active: dev
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/millete_db
+    username: postgres
+    password: 654321
+    driver-class-name: org.postgresql.Driver
+
+app:
+  version: 0.2.0
+  frontend:
+    url: http://localhost:5173
+
+jwt:
+  secret: U3VwZXJTZWNy5XRfSldUX0tleV9Gb3JfVGVzdGluZ187MDI2X01pbGxldGUK
+  expiration: 43200000
+  cookie-name: __Host-ms_token
+  cookie-secure: ${COOKIE_SECURE:true}
+  cookie-http-only: true
+  cookie-same-site: Strict
+  cookie-path: /
+  cookie-max-age: 43200
+
+logging:
+  level:
+    root: INFO
+    com.puntomartinez: DEBUG

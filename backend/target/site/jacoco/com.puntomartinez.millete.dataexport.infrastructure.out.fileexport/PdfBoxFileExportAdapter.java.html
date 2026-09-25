@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PdfBoxFileExportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.fileexport</a> &gt; <span class="el_source">PdfBoxFileExportAdapter.java</span></div><h1>PdfBoxFileExportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.fileexport;
+
+import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
+import com.puntomartinez.millete.dataexport.domain.ports.out.FilePdfExportPort;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Generador de PDF financiero usando Apache PDFBox directamente.
+ *
+ * &lt;p&gt;PAGINACIÓN: Las tablas de inversiones y transacciones soportan
+ * múltiples páginas. Cuando el cursor vertical baja del umbral (55px
+ * desde el borde inferior), {@code PdfPageContext.startNewPage()}
+ * cierra el stream actual, crea una nueva página con fondo y vuelve
+ * a dibujar la cabecera de la tabla antes de continuar con las filas.&lt;/p&gt;
+ *
+ * &lt;p&gt;Los textos del PDF están en inglés de forma intencional para
+ * mantener consistencia con formatos financieros internacionales.
+ * Si se internacionaliza la app, externalizar strings a
+ * messages.properties.&lt;/p&gt;
+ */
+@Component(&quot;pdfFileExportAdapter&quot;)
+<span class="nc" id="L35">public class PdfBoxFileExportAdapter implements FilePdfExportPort {</span>
+
+<span class="nc" id="L37">    private static final PDRectangle PAGE_SIZE = PDRectangle.A4;</span>
+    private static final float PAGE_MARGIN = 28f;
+<span class="nc" id="L39">    private static final float CONTENT_WIDTH =</span>
+<span class="nc" id="L40">            PAGE_SIZE.getWidth() - (PAGE_MARGIN * 2);</span>
+    private static final float HEADER_HEIGHT = 72f;
+    private static final float SPACE_AFTER_HEADER = 20f;
+    private static final float SPACE_AFTER_SUMMARY = 26f;
+    private static final float SPACE_TITLE_TO_DIVIDER = 8f;
+    private static final float SPACE_DIVIDER_TO_CONTENT = 16f;
+    private static final float SPACE_BETWEEN_SECTIONS = 30f;
+    private static final float TABLE_HEADER_HEIGHT = 22f;
+    private static final float TABLE_ROW_HEIGHT = 22f;
+
+<span class="nc" id="L50">    private static final PDType1Font FONT_REGULAR =</span>
+            new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+<span class="nc" id="L52">    private static final PDType1Font FONT_BOLD =</span>
+            new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+<span class="nc" id="L54">    private static final PDType1Font FONT_ITALIC =</span>
+            new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE);
+
+    private static final int TEXT_COLOR_R = 61;
+    private static final int TEXT_COLOR_G = 43;
+    private static final int TEXT_COLOR_B = 31;
+    private static final int MUTED_COLOR_R = 140;
+    private static final int MUTED_COLOR_G = 123;
+    private static final int MUTED_COLOR_B = 107;
+    private static final int BACKGROUND_R = 247;
+    private static final int BACKGROUND_G = 228;
+    private static final int BACKGROUND_B = 197;
+    private static final int CARD_R = 255;
+    private static final int CARD_G = 242;
+    private static final int CARD_B = 217;
+    private static final int GREEN_R = 27;
+    private static final int GREEN_G = 77;
+    private static final int GREEN_B = 62;
+    private static final int RED_R = 194;
+    private static final int RED_G = 59;
+    private static final int RED_B = 34;
+    private static final int ORANGE_R = 192;
+    private static final int ORANGE_G = 96;
+    private static final int ORANGE_B = 24;
+    private static final int LINE_R = 217;
+    private static final int LINE_G = 200;
+    private static final int LINE_B = 160;
+    private static final int ALTERNATE_ROW_R = 245;
+    private static final int ALTERNATE_ROW_G = 222;
+    private static final int ALTERNATE_ROW_B = 179;
+
+<span class="nc" id="L85">    private static final DateTimeFormatter DATE_TIME_FORMATTER =</span>
+<span class="nc" id="L86">            DateTimeFormatter.ofPattern(</span>
+                    &quot;dd/MM/yyyy HH:mm&quot;,
+                    Locale.ENGLISH
+            );
+
+    @Override
+    public byte[] generatePdf(PdfExportData data) {
+        try (
+<span class="nc" id="L94">                PDDocument document = new PDDocument();</span>
+<span class="nc" id="L95">                ByteArrayOutputStream output = new ByteArrayOutputStream()</span>
+        ) {
+<span class="nc" id="L97">            PDPage page = new PDPage(PAGE_SIZE);</span>
+<span class="nc" id="L98">            document.addPage(page);</span>
+
+            try (
+<span class="nc" id="L101">                    PDPageContentStream content =</span>
+                            new PDPageContentStream(document, page)
+            ) {
+<span class="nc" id="L104">                drawBackground(content);</span>
+<span class="nc" id="L105">                drawHeader(content, data);</span>
+
+<span class="nc" id="L107">                float summaryBottomY =</span>
+<span class="nc" id="L108">                        drawSummary(content, data.summary());</span>
+
+<span class="nc" id="L110">                PdfPageContext context =</span>
+                        new PdfPageContext(document, content);
+
+<span class="nc" id="L113">                float y =</span>
+                        summaryBottomY - SPACE_AFTER_SUMMARY;
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">                if (!data.investments().isEmpty()) {</span>
+<span class="nc" id="L117">                    y = drawInvestments(</span>
+                            context,
+<span class="nc" id="L119">                            data.investments(),</span>
+                            y
+                    );
+                } else {
+<span class="nc" id="L123">                    y = drawSectionTitle(</span>
+<span class="nc" id="L124">                            context.content(),</span>
+                            &quot;Active Investments&quot;,
+                            y
+                    );
+<span class="nc" id="L128">                    drawEmptyMessage(</span>
+<span class="nc" id="L129">                            context.content(),</span>
+                            &quot;No active investments at this time.&quot;,
+                            y - SPACE_DIVIDER_TO_CONTENT
+                    );
+<span class="nc" id="L133">                    y -= SPACE_DIVIDER_TO_CONTENT + 30;</span>
+                }
+
+<span class="nc" id="L136">                y = drawSectionTitle(</span>
+<span class="nc" id="L137">                        context.content(),</span>
+                        &quot;Transactions in Period&quot;,
+                        y - SPACE_BETWEEN_SECTIONS
+                );
+
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                if (!data.transactions().isEmpty()) {</span>
+<span class="nc" id="L143">                    drawTransactions(</span>
+                            context,
+<span class="nc" id="L145">                            data.transactions(),</span>
+                            y - SPACE_DIVIDER_TO_CONTENT
+                    );
+                } else {
+<span class="nc" id="L149">                    drawEmptyMessage(</span>
+<span class="nc" id="L150">                            context.content(),</span>
+                            &quot;No transactions in this period.&quot;,
+                            y - SPACE_DIVIDER_TO_CONTENT
+                    );
+                }
+            }
+
+<span class="nc" id="L157">            document.save(output);</span>
+<span class="nc" id="L158">            return output.toByteArray();</span>
+
+<span class="nc" id="L160">        } catch (IOException e) {</span>
+<span class="nc" id="L161">            throw new RuntimeException(</span>
+                    &quot;Error generando PDF con Apache PDFBox&quot;,
+                    e
+            );
+        }
+    }
+
+    private static void drawBackground(
+            PDPageContentStream content
+    ) throws IOException {
+<span class="nc" id="L171">        setNonStrokingColor(</span>
+                content,
+                BACKGROUND_R,
+                BACKGROUND_G,
+                BACKGROUND_B
+        );
+<span class="nc" id="L177">        content.addRect(</span>
+                0,
+                0,
+<span class="nc" id="L180">                PAGE_SIZE.getWidth(),</span>
+<span class="nc" id="L181">                PAGE_SIZE.getHeight()</span>
+        );
+<span class="nc" id="L183">        content.fill();</span>
+<span class="nc" id="L184">    }</span>
+
+    private void drawHeader(
+            PDPageContentStream content,
+            PdfExportData data
+    ) throws IOException {
+<span class="nc" id="L190">        float x = PAGE_MARGIN;</span>
+<span class="nc" id="L191">        float y = PAGE_SIZE.getHeight() - PAGE_MARGIN;</span>
+
+<span class="nc" id="L193">        setNonStrokingColor(</span>
+                content,
+                CARD_R,
+                CARD_G,
+                CARD_B
+        );
+<span class="nc" id="L199">        content.addRect(</span>
+                x,
+                y - HEADER_HEIGHT,
+                CONTENT_WIDTH,
+                HEADER_HEIGHT
+        );
+<span class="nc" id="L205">        content.fill();</span>
+
+<span class="nc" id="L207">        setNonStrokingColor(</span>
+                content,
+                ORANGE_R,
+                ORANGE_G,
+                ORANGE_B
+        );
+<span class="nc" id="L213">        content.addRect(</span>
+                x,
+                y - HEADER_HEIGHT,
+                4,
+                HEADER_HEIGHT
+        );
+<span class="nc" id="L219">        content.fill();</span>
+
+<span class="nc" id="L221">        drawText(</span>
+                content,
+                &quot;Millete - Financial Data&quot;,
+                FONT_BOLD,
+                20,
+                x + 20,
+                y - 30,
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L233">        String period = String.format(</span>
+                Locale.ENGLISH,
+                &quot;Period: %s — %s (%s)&quot;,
+<span class="nc" id="L236">                data.startDate(),</span>
+<span class="nc" id="L237">                data.endDate(),</span>
+<span class="nc" id="L238">                data.periodDisplayName()</span>
+        );
+
+<span class="nc" id="L241">        drawText(</span>
+                content,
+                period,
+                FONT_REGULAR,
+                12,
+                x + 20,
+                y - 50,
+                MUTED_COLOR_R,
+                MUTED_COLOR_G,
+                MUTED_COLOR_B
+        );
+<span class="nc" id="L252">    }</span>
+
+    private float drawSummary(
+            PDPageContentStream content,
+            PdfExportData.Summary summary
+    ) throws IOException {
+<span class="nc" id="L258">        float y =</span>
+<span class="nc" id="L259">                PAGE_SIZE.getHeight()</span>
+                        - PAGE_MARGIN
+                        - HEADER_HEIGHT
+                        - SPACE_AFTER_HEADER;
+
+<span class="nc" id="L264">        float gap = 8;</span>
+<span class="nc" id="L265">        float cardWidth =</span>
+                (CONTENT_WIDTH - (gap * 3)) / 4;
+<span class="nc" id="L267">        float cardHeight = 68;</span>
+<span class="nc" id="L268">        float rowGap = 8;</span>
+
+<span class="nc" id="L270">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN,
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;BALANCE&quot;,
+<span class="nc" id="L277">                formatSignedEuro(summary.balance()),</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">                summary.balance().compareTo(BigDecimal.ZERO) &gt;= 0</span>
+<span class="nc" id="L279">                        ? GREEN_R</span>
+<span class="nc" id="L280">                        : RED_R,</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                summary.balance().compareTo(BigDecimal.ZERO) &gt;= 0</span>
+<span class="nc" id="L282">                        ? GREEN_G</span>
+<span class="nc" id="L283">                        : RED_G,</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                summary.balance().compareTo(BigDecimal.ZERO) &gt;= 0</span>
+<span class="nc" id="L285">                        ? GREEN_B</span>
+<span class="nc" id="L286">                        : RED_B</span>
+        );
+
+<span class="nc" id="L289">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + cardWidth + gap,
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;INCOME&quot;,
+<span class="nc" id="L296">                &quot;+&quot; + formatEuro(summary.totalIncome()),</span>
+                GREEN_R,
+                GREEN_G,
+                GREEN_B
+        );
+
+<span class="nc" id="L302">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + ((cardWidth + gap) * 2),
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;EXPENSES&quot;,
+<span class="nc" id="L309">                &quot;-&quot; + formatEuro(summary.totalExpenses()),</span>
+                RED_R,
+                RED_G,
+                RED_B
+        );
+
+<span class="nc" id="L315">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + ((cardWidth + gap) * 3),
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;TRANSACTIONS&quot;,
+<span class="nc" id="L322">                String.valueOf(summary.transactionCount()),</span>
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L328">        y -= cardHeight + rowGap;</span>
+
+<span class="nc" id="L330">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN,
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;INVESTMENTS VALUE&quot;,
+<span class="nc" id="L337">                formatEuro(summary.investmentsTotalValue()),</span>
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L343">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + cardWidth + gap,
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;ACTIVE INVESTMENTS&quot;,
+<span class="nc" id="L350">                String.valueOf(summary.activeInvestmentsCount()),</span>
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L356">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + ((cardWidth + gap) * 2),
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;SAVINGS GOALS&quot;,
+<span class="nc" id="L363">                String.valueOf(summary.activeSavingsGoalsCount()),</span>
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L369">        drawMetricCard(</span>
+                content,
+                PAGE_MARGIN + ((cardWidth + gap) * 3),
+                y,
+                cardWidth,
+                cardHeight,
+                &quot;TOTAL SAVED&quot;,
+<span class="nc" id="L376">                formatEuro(summary.totalSavedAmount()),</span>
+                GREEN_R,
+                GREEN_G,
+                GREEN_B
+        );
+
+<span class="nc" id="L382">        return y - cardHeight;</span>
+    }
+
+    private void drawMetricCard(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float width,
+            float height,
+            String label,
+            String value,
+            int valueR,
+            int valueG,
+            int valueB
+    ) throws IOException {
+<span class="nc" id="L397">        setNonStrokingColor(</span>
+                content,
+                CARD_R,
+                CARD_G,
+                CARD_B
+        );
+<span class="nc" id="L403">        content.addRect(</span>
+                x,
+                y - height,
+                width,
+                height
+        );
+<span class="nc" id="L409">        content.fill();</span>
+
+<span class="nc" id="L411">        drawText(</span>
+                content,
+                label,
+                FONT_BOLD,
+                7,
+                x + 12,
+                y - 19,
+                MUTED_COLOR_R,
+                MUTED_COLOR_G,
+                MUTED_COLOR_B
+        );
+
+<span class="nc" id="L423">        drawText(</span>
+                content,
+                value,
+                FONT_BOLD,
+                15,
+                x + 12,
+                y - 45,
+                valueR,
+                valueG,
+                valueB
+        );
+<span class="nc" id="L434">    }</span>
+
+    private float drawInvestments(
+            PdfPageContext context,
+            List&lt;PdfExportData.InvestmentRow&gt; investments,
+            float y
+    ) throws IOException {
+<span class="nc" id="L441">        y = drawSectionTitle(</span>
+<span class="nc" id="L442">                context.content(),</span>
+                &quot;Active Investments&quot;,
+                y
+        );
+
+<span class="nc" id="L447">        String[] headers = {</span>
+                &quot;Asset&quot;,
+                &quot;Ticker&quot;,
+                &quot;Type&quot;,
+                &quot;Quantity&quot;,
+                &quot;Purchase Price&quot;,
+                &quot;Current Price&quot;,
+                &quot;Current Value&quot;,
+                &quot;Return&quot;
+        };
+
+<span class="nc" id="L458">        float[] widths = {</span>
+                74,
+                42,
+                50,
+                48,
+                70,
+                70,
+                70,
+                50
+        };
+
+<span class="nc" id="L469">        float tableY =</span>
+                y - SPACE_DIVIDER_TO_CONTENT;
+
+<span class="nc" id="L472">        drawTableHeader(</span>
+<span class="nc" id="L473">                context.content(),</span>
+                tableY,
+                headers,
+                widths
+        );
+
+<span class="nc" id="L479">        float rowY =</span>
+                tableY - TABLE_HEADER_HEIGHT;
+<span class="nc" id="L481">        boolean alternate = false;</span>
+
+<span class="nc bnc" id="L483" title="All 2 branches missed.">        for (PdfExportData.InvestmentRow investment : investments) {</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">            if (rowY &lt; 55) {</span>
+<span class="nc" id="L485">                context.startNewPage();</span>
+<span class="nc" id="L486">                rowY =</span>
+<span class="nc" id="L487">                        PAGE_SIZE.getHeight()</span>
+                                - PAGE_MARGIN
+                                - TABLE_HEADER_HEIGHT;
+<span class="nc" id="L490">                drawTableHeader(</span>
+<span class="nc" id="L491">                        context.content(),</span>
+                        rowY,
+                        headers,
+                        widths
+                );
+<span class="nc" id="L496">                rowY -= TABLE_HEADER_HEIGHT;</span>
+            }
+
+<span class="nc" id="L499">            drawTableRowBackground(</span>
+<span class="nc" id="L500">                    context.content(),</span>
+                    rowY,
+                    widths,
+                    alternate
+            );
+
+            String returnValue =
+<span class="nc bnc" id="L507" title="All 2 branches missed.">                    (investment.returnPercentage() &gt;= 0</span>
+<span class="nc" id="L508">                            ? &quot;+&quot;</span>
+<span class="nc" id="L509">                            : &quot;&quot;)</span>
+<span class="nc" id="L510">                            + formatDecimal(</span>
+<span class="nc" id="L511">                            investment.returnPercentage()</span>
+                    )
+                            + &quot;%&quot;;
+
+<span class="nc" id="L515">            String[] values = {</span>
+<span class="nc" id="L516">                    safe(investment.assetName()),</span>
+<span class="nc" id="L517">                    safe(investment.ticker()),</span>
+<span class="nc" id="L518">                    safe(investment.type()),</span>
+<span class="nc" id="L519">                    formatDecimal(investment.quantity(), 4),</span>
+<span class="nc" id="L520">                    formatEuro(investment.purchasePrice()),</span>
+<span class="nc" id="L521">                    formatEuro(investment.currentPrice()),</span>
+<span class="nc" id="L522">                    formatEuro(investment.currentValue()),</span>
+                    returnValue
+            };
+
+<span class="nc" id="L526">            drawTableRow(</span>
+<span class="nc" id="L527">                    context.content(),</span>
+                    rowY,
+                    values,
+                    widths
+            );
+
+<span class="nc" id="L533">            rowY -= TABLE_ROW_HEIGHT;</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">            alternate = !alternate;</span>
+<span class="nc" id="L535">        }</span>
+
+<span class="nc" id="L537">        return rowY;</span>
+    }
+
+    private void drawTransactions(
+            PdfPageContext context,
+            List&lt;PdfExportData.TransactionRow&gt; transactions,
+            float y
+    ) throws IOException {
+<span class="nc" id="L545">        String[] headers = {</span>
+                &quot;Date&quot;,
+                &quot;Category&quot;,
+                &quot;Description&quot;,
+                &quot;Type&quot;,
+                &quot;Amount&quot;
+        };
+
+<span class="nc" id="L553">        float[] widths = {</span>
+                70,
+                85,
+                190,
+                60,
+                65
+        };
+
+<span class="nc" id="L561">        drawTableHeader(</span>
+<span class="nc" id="L562">                context.content(),</span>
+                y,
+                headers,
+                widths
+        );
+
+<span class="nc" id="L568">        float rowY =</span>
+                y - TABLE_HEADER_HEIGHT;
+<span class="nc" id="L570">        boolean alternate = false;</span>
+
+<span class="nc bnc" id="L572" title="All 2 branches missed.">        for (PdfExportData.TransactionRow transaction : transactions) {</span>
+<span class="nc bnc" id="L573" title="All 2 branches missed.">            if (rowY &lt; 55) {</span>
+<span class="nc" id="L574">                context.startNewPage();</span>
+<span class="nc" id="L575">                rowY =</span>
+<span class="nc" id="L576">                        PAGE_SIZE.getHeight()</span>
+                                - PAGE_MARGIN
+                                - TABLE_HEADER_HEIGHT;
+<span class="nc" id="L579">                drawTableHeader(</span>
+<span class="nc" id="L580">                        context.content(),</span>
+                        rowY,
+                        headers,
+                        widths
+                );
+<span class="nc" id="L585">                rowY -= TABLE_HEADER_HEIGHT;</span>
+            }
+
+<span class="nc" id="L588">            drawTableRowBackground(</span>
+<span class="nc" id="L589">                    context.content(),</span>
+                    rowY,
+                    widths,
+                    alternate
+            );
+
+<span class="nc" id="L595">            String amount =</span>
+<span class="nc" id="L596">                    formatEuro(transaction.amount());</span>
+
+<span class="nc bnc" id="L598" title="All 2 branches missed.">            if (&quot;Ingreso&quot;.equals(transaction.type())) {</span>
+<span class="nc" id="L599">                amount = &quot;+&quot; + amount;</span>
+            } else {
+<span class="nc" id="L601">                amount = &quot;-&quot; + amount;</span>
+            }
+
+            String date =
+<span class="nc bnc" id="L605" title="All 2 branches missed.">                    transaction.date() == null</span>
+<span class="nc" id="L606">                            ? &quot;&quot;</span>
+<span class="nc" id="L607">                            : transaction.date()</span>
+<span class="nc" id="L608">                            .format(DATE_TIME_FORMATTER);</span>
+
+<span class="nc" id="L610">            String[] values = {</span>
+                    date,
+<span class="nc" id="L612">                    safe(transaction.categoryName()),</span>
+<span class="nc" id="L613">                    safe(transaction.description()),</span>
+<span class="nc" id="L614">                    safe(transaction.type()),</span>
+                    amount
+            };
+
+<span class="nc" id="L618">            drawTableRow(</span>
+<span class="nc" id="L619">                    context.content(),</span>
+                    rowY,
+                    values,
+                    widths
+            );
+
+<span class="nc" id="L625">            rowY -= TABLE_ROW_HEIGHT;</span>
+<span class="nc bnc" id="L626" title="All 2 branches missed.">            alternate = !alternate;</span>
+<span class="nc" id="L627">        }</span>
+<span class="nc" id="L628">    }</span>
+
+    private float drawSectionTitle(
+            PDPageContentStream content,
+            String title,
+            float y
+    ) throws IOException {
+<span class="nc" id="L635">        drawText(</span>
+                content,
+                title,
+                FONT_BOLD,
+                14,
+                PAGE_MARGIN,
+                y,
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+<span class="nc" id="L647">        setStrokingColor(content);</span>
+<span class="nc" id="L648">        content.setLineWidth(1.2f);</span>
+<span class="nc" id="L649">        content.moveTo(</span>
+                PAGE_MARGIN,
+                y - SPACE_TITLE_TO_DIVIDER
+        );
+<span class="nc" id="L653">        content.lineTo(</span>
+<span class="nc" id="L654">                PAGE_SIZE.getWidth() - PAGE_MARGIN,</span>
+                y - SPACE_TITLE_TO_DIVIDER
+        );
+<span class="nc" id="L657">        content.stroke();</span>
+
+<span class="nc" id="L659">        return y - SPACE_TITLE_TO_DIVIDER;</span>
+    }
+
+    private void drawEmptyMessage(
+            PDPageContentStream content,
+            String message,
+            float y
+    ) throws IOException {
+<span class="nc" id="L667">        drawText(</span>
+                content,
+                message,
+                FONT_ITALIC,
+                10,
+                PAGE_MARGIN,
+                y,
+                MUTED_COLOR_R,
+                MUTED_COLOR_G,
+                MUTED_COLOR_B
+        );
+<span class="nc" id="L678">    }</span>
+
+    private void drawTableHeader(
+            PDPageContentStream content,
+            float y,
+            String[] headers,
+            float[] widths
+    ) throws IOException {
+<span class="nc" id="L686">        float x = PAGE_MARGIN;</span>
+
+<span class="nc" id="L688">        setNonStrokingColor(</span>
+                content,
+                GREEN_R,
+                GREEN_G,
+                GREEN_B
+        );
+<span class="nc" id="L694">        content.addRect(</span>
+                x,
+                y - TABLE_HEADER_HEIGHT,
+<span class="nc" id="L697">                sum(widths),</span>
+                TABLE_HEADER_HEIGHT
+        );
+<span class="nc" id="L700">        content.fill();</span>
+
+<span class="nc bnc" id="L702" title="All 2 branches missed.">        for (int i = 0; i &lt; headers.length; i++) {</span>
+<span class="nc" id="L703">            drawText(</span>
+                    content,
+<span class="nc" id="L705">                    headers[i].toUpperCase(Locale.ENGLISH),</span>
+                    FONT_BOLD,
+                    7.5f,
+                    x + 6,
+                    y - (TABLE_HEADER_HEIGHT / 2f) - 2.5f,
+                    CARD_R,
+                    CARD_G,
+                    CARD_B
+            );
+<span class="nc" id="L714">            x += widths[i];</span>
+        }
+<span class="nc" id="L716">    }</span>
+
+    private void drawTableRowBackground(
+            PDPageContentStream content,
+            float y,
+            float[] widths,
+            boolean alternate
+    ) throws IOException {
+<span class="nc bnc" id="L724" title="All 2 branches missed.">        if (!alternate) {</span>
+<span class="nc" id="L725">            return;</span>
+        }
+
+<span class="nc" id="L728">        setNonStrokingColor(</span>
+                content,
+                ALTERNATE_ROW_R,
+                ALTERNATE_ROW_G,
+                ALTERNATE_ROW_B
+        );
+<span class="nc" id="L734">        content.addRect(</span>
+                PAGE_MARGIN,
+                y - TABLE_ROW_HEIGHT,
+<span class="nc" id="L737">                sum(widths),</span>
+                TABLE_ROW_HEIGHT
+        );
+<span class="nc" id="L740">        content.fill();</span>
+<span class="nc" id="L741">    }</span>
+
+    private void drawTableRow(
+            PDPageContentStream content,
+            float y,
+            String[] values,
+            float[] widths
+    ) throws IOException {
+<span class="nc" id="L749">        float x = PAGE_MARGIN;</span>
+
+<span class="nc bnc" id="L751" title="All 2 branches missed.">        for (int i = 0; i &lt; values.length; i++) {</span>
+<span class="nc" id="L752">            String value =</span>
+<span class="nc" id="L753">                    truncate(values[i], widths[i]);</span>
+
+<span class="nc" id="L755">            int textR = TEXT_COLOR_R;</span>
+<span class="nc" id="L756">            int textG = TEXT_COLOR_G;</span>
+<span class="nc" id="L757">            int textB = TEXT_COLOR_B;</span>
+
+<span class="nc bnc" id="L759" title="All 2 branches missed.">            if (i == values.length - 1) {</span>
+<span class="nc" id="L760">                String originalValue =</span>
+<span class="nc" id="L761">                        safe(values[i]);</span>
+
+<span class="nc bnc" id="L763" title="All 2 branches missed.">                if (originalValue.startsWith(&quot;+&quot;)) {</span>
+<span class="nc" id="L764">                    textR = GREEN_R;</span>
+<span class="nc" id="L765">                    textG = GREEN_G;</span>
+<span class="nc" id="L766">                    textB = GREEN_B;</span>
+<span class="nc bnc" id="L767" title="All 2 branches missed.">                } else if (originalValue.startsWith(&quot;-&quot;)) {</span>
+<span class="nc" id="L768">                    textR = RED_R;</span>
+<span class="nc" id="L769">                    textG = RED_G;</span>
+<span class="nc" id="L770">                    textB = RED_B;</span>
+                }
+            }
+
+<span class="nc" id="L774">            drawText(</span>
+                    content,
+                    value,
+                    FONT_REGULAR,
+                    8,
+                    x + 6,
+                    y - (TABLE_ROW_HEIGHT / 2f) - 3f,
+                    textR,
+                    textG,
+                    textB
+            );
+<span class="nc" id="L785">            x += widths[i];</span>
+        }
+
+<span class="nc" id="L788">        setStrokingColor(content);</span>
+<span class="nc" id="L789">        content.setLineWidth(0.4f);</span>
+<span class="nc" id="L790">        content.moveTo(</span>
+                PAGE_MARGIN,
+                y - TABLE_ROW_HEIGHT
+        );
+<span class="nc" id="L794">        content.lineTo(</span>
+<span class="nc" id="L795">                PAGE_MARGIN + sum(widths),</span>
+                y - TABLE_ROW_HEIGHT
+        );
+<span class="nc" id="L798">        content.stroke();</span>
+<span class="nc" id="L799">    }</span>
+
+    private void drawText(
+            PDPageContentStream content,
+            String text,
+            PDType1Font font,
+            float size,
+            float x,
+            float y,
+            int r,
+            int g,
+            int b
+    ) throws IOException {
+<span class="nc" id="L812">        content.beginText();</span>
+<span class="nc" id="L813">        content.setFont(font, size);</span>
+<span class="nc" id="L814">        setNonStrokingColor(</span>
+                content,
+                r,
+                g,
+                b
+        );
+<span class="nc" id="L820">        content.newLineAtOffset(x, y);</span>
+<span class="nc" id="L821">        content.showText(safe(text));</span>
+<span class="nc" id="L822">        content.endText();</span>
+<span class="nc" id="L823">    }</span>
+
+    private static void setNonStrokingColor(
+            PDPageContentStream content,
+            int r,
+            int g,
+            int b
+    ) throws IOException {
+<span class="nc" id="L831">        content.setNonStrokingColor(</span>
+<span class="nc" id="L832">                colorComponent(r),</span>
+<span class="nc" id="L833">                colorComponent(g),</span>
+<span class="nc" id="L834">                colorComponent(b)</span>
+        );
+<span class="nc" id="L836">    }</span>
+
+    private static void setStrokingColor(
+            PDPageContentStream content
+    ) throws IOException {
+<span class="nc" id="L841">        content.setStrokingColor(</span>
+<span class="nc" id="L842">                colorComponent(LINE_R),</span>
+<span class="nc" id="L843">                colorComponent(LINE_G),</span>
+<span class="nc" id="L844">                colorComponent(LINE_B)</span>
+        );
+<span class="nc" id="L846">    }</span>
+
+    private static float colorComponent(int value) {
+<span class="nc" id="L849">        return Math.clamp(value, 0, 255) / 255f;</span>
+    }
+
+    private static String formatEuro(BigDecimal value) {
+<span class="nc bnc" id="L853" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L854">            return &quot;0€&quot;;</span>
+        }
+<span class="nc" id="L856">        return String.format(</span>
+                Locale.ENGLISH,
+                &quot;%,.2f€&quot;,
+                value
+        );
+    }
+
+    private static String formatSignedEuro(BigDecimal value) {
+<span class="nc bnc" id="L864" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L865">            return &quot;0€&quot;;</span>
+        }
+<span class="nc" id="L867">        String formatted = formatEuro(value);</span>
+<span class="nc bnc" id="L868" title="All 2 branches missed.">        return value.compareTo(BigDecimal.ZERO) &gt;= 0</span>
+<span class="nc" id="L869">                ? &quot;+&quot; + formatted</span>
+<span class="nc" id="L870">                : formatted;</span>
+    }
+
+    private static String formatDecimal(
+            BigDecimal value,
+            int decimals
+    ) {
+<span class="nc bnc" id="L877" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L878">            return &quot;0&quot;;</span>
+        }
+<span class="nc" id="L880">        return value.setScale(</span>
+                decimals,
+                java.math.RoundingMode.HALF_UP
+<span class="nc" id="L883">        ).toPlainString();</span>
+    }
+
+    private static String formatDecimal(double value) {
+<span class="nc" id="L887">        return String.format(</span>
+                Locale.ENGLISH,
+                &quot;%.1f&quot;,
+<span class="nc" id="L890">                value</span>
+        );
+    }
+
+    private static String safe(String value) {
+<span class="nc bnc" id="L895" title="All 2 branches missed.">        return value == null ? &quot;&quot; : value;</span>
+    }
+
+    private static float sum(float[] values) {
+<span class="nc" id="L899">        float result = 0;</span>
+<span class="nc bnc" id="L900" title="All 2 branches missed.">        for (float value : values) {</span>
+<span class="nc" id="L901">            result += value;</span>
+        }
+<span class="nc" id="L903">        return result;</span>
+    }
+
+    private static String truncate(
+            String value,
+            float width
+    ) {
+<span class="nc" id="L910">        String safeValue = safe(value);</span>
+<span class="nc" id="L911">        float maxChars =</span>
+<span class="nc" id="L912">                Math.max(</span>
+                        4,
+                        width / (7 * 0.55f)
+                );
+<span class="nc" id="L916">        int maxLength = (int) maxChars;</span>
+
+<span class="nc bnc" id="L918" title="All 2 branches missed.">        if (safeValue.length() &lt;= maxLength) {</span>
+<span class="nc" id="L919">            return safeValue;</span>
+        }
+
+<span class="nc" id="L922">        return safeValue.substring(</span>
+                0,
+<span class="nc" id="L924">                Math.max(1, maxLength - 3)</span>
+        ) + &quot;...&quot;;
+    }
+
+    private static final class PdfPageContext {
+        private final PDDocument document;
+        private PDPageContentStream content;
+
+        private PdfPageContext(
+                PDDocument document,
+                PDPageContentStream content
+<span class="nc" id="L935">        ) {</span>
+<span class="nc" id="L936">            this.document = document;</span>
+<span class="nc" id="L937">            this.content = content;</span>
+<span class="nc" id="L938">        }</span>
+
+        private PDPageContentStream content() {
+<span class="nc" id="L941">            return content;</span>
+        }
+
+        private void startNewPage() throws IOException {
+<span class="nc" id="L945">            content.close();</span>
+<span class="nc" id="L946">            PDPage page = new PDPage(PAGE_SIZE);</span>
+<span class="nc" id="L947">            document.addPage(page);</span>
+<span class="nc" id="L948">            content = new PDPageContentStream(</span>
+                    document,
+                    page
+            );
+<span class="nc" id="L952">            drawBackground(content);</span>
+<span class="nc" id="L953">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

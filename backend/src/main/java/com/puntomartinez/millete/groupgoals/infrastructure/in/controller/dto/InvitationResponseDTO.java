@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record InvitationResponseDTO(
@@ -11,6 +11,6 @@ public record InvitationResponseDTO(
         String inviterName,
         UUID invitedUserId,
         String status,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
 }

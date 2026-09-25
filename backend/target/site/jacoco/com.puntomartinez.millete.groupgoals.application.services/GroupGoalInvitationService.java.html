@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupGoalInvitationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.application.services</a> &gt; <span class="el_source">GroupGoalInvitationService.java</span></div><h1>GroupGoalInvitationService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.application.services;
+
+import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.AcceptInvitationUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.InviteMemberUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.ListPendingInvitationsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.RejectInvitationUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationNotificationPort;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+public class GroupGoalInvitationService implements
+        InviteMemberUseCase,
+        AcceptInvitationUseCase,
+        RejectInvitationUseCase,
+        ListPendingInvitationsUseCase {
+
+    private final GoalInvitationRepository goalInvitationRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalUnitRepository goalUnitRepository;
+    private final UserLookupPort userLookupPort;
+    private final GoalInvitationNotificationPort notificationPort;
+
+    public GroupGoalInvitationService(
+            GoalInvitationRepository goalInvitationRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalUnitRepository goalUnitRepository,
+            UserLookupPort userLookupPort,
+            GoalInvitationNotificationPort notificationPort
+<span class="fc" id="L48">    ) {</span>
+<span class="fc" id="L49">        this.goalInvitationRepository = goalInvitationRepository;</span>
+<span class="fc" id="L50">        this.goalMemberRepository = goalMemberRepository;</span>
+<span class="fc" id="L51">        this.goalUnitRepository = goalUnitRepository;</span>
+<span class="fc" id="L52">        this.userLookupPort = userLookupPort;</span>
+<span class="fc" id="L53">        this.notificationPort = notificationPort;</span>
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    @Transactional
+    public InviteMemberUseCase.InvitationResult inviteMember(
+            UUID goalId,
+            UUID inviterUserId,
+            InviteMemberUseCase.InviteMemberCommand command
+    ) {
+<span class="fc" id="L63">        GoalUnit goal = goalUnitRepository.findById(goalId)</span>
+<span class="fc" id="L64">                .filter(GoalUnit::isActive)</span>
+<span class="fc" id="L65">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L66">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo no encontrado&quot;
+                        )
+                );
+
+<span class="fc" id="L71">        requireAdmin(goalId, inviterUserId);</span>
+
+<span class="fc" id="L73">        UserLookupPort.UserInfo invitedUser = userLookupPort</span>
+<span class="fc" id="L74">                .findByIdentifier(command.identifier())</span>
+<span class="fc" id="L75">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L76">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario no encontrado con ese identificador&quot;
+                        )
+                );
+
+<span class="fc" id="L81">        UUID invitedUserId = invitedUser.id();</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (invitedUserId.equals(inviterUserId)) {</span>
+<span class="fc" id="L84">            throw new InvalidInputException(</span>
+                    &quot;No puedes invitarte a ti mismo&quot;
+            );
+        }
+
+<span class="fc" id="L89">        goalMemberRepository.findByGoalIdAndUserId(goalId, invitedUserId)</span>
+<span class="fc" id="L90">                .ifPresent(m -&gt; {</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                    if (m.isActive()) {</span>
+<span class="fc" id="L92">                        throw new ResourceAlreadyExistsException(</span>
+                                &quot;El usuario ya pertenece a este objetivo&quot;
+                        );
+                    }
+<span class="nc" id="L96">                });</span>
+
+<span class="fc" id="L98">        goalInvitationRepository</span>
+<span class="fc" id="L99">                .findByGoalIdAndInvitedUserIdAndStatus(</span>
+                        goalId,
+                        invitedUserId,
+                        InvitationStatus.PENDING
+                )
+<span class="fc" id="L104">                .ifPresent(i -&gt; {</span>
+<span class="fc" id="L105">                    throw new ResourceAlreadyExistsException(</span>
+                            &quot;Ya existe una invitación pendiente para este usuario&quot;
+                    );
+                });
+
+<span class="fc" id="L110">        GoalInvitation invitation = GoalInvitation.create(</span>
+                goalId,
+                inviterUserId,
+                invitedUserId
+        );
+
+<span class="fc" id="L116">        GoalInvitation saved = goalInvitationRepository.save(invitation);</span>
+
+<span class="fc" id="L118">        UserLookupPort.UserInfo inviterUser = userLookupPort</span>
+<span class="fc" id="L119">                .findById(inviterUserId)</span>
+<span class="fc" id="L120">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L121">                        new ResourceNotFoundException(</span>
+                                &quot;Usuario invitador no encontrado&quot;
+                        )
+                );
+
+<span class="fc" id="L126">        notificationPort.createInvitationNotification(</span>
+        saved,
+<span class="fc" id="L128">        goal.getName(),</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        inviterUser.username() != null</span>
+<span class="fc" id="L130">                ? inviterUser.username()</span>
+<span class="nc" id="L131">                : inviterUser.email()</span>
+        );
+
+<span class="fc" id="L134">        return new InviteMemberUseCase.InvitationResult(</span>
+<span class="fc" id="L135">                saved.getId(),</span>
+<span class="fc" id="L136">                saved.getGoalId(),</span>
+<span class="fc" id="L137">                goal.getName(),</span>
+                inviterUserId,
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">                inviterUser.username() != null</span>
+<span class="fc" id="L140">                        ? inviterUser.username()</span>
+<span class="pc" id="L141">                        : inviterUser.email(),</span>
+                invitedUserId,
+<span class="fc" id="L143">                saved.getStatus(),</span>
+<span class="fc" id="L144">                saved.getCreatedAt()</span>
+        );
+    }
+
+    @Override
+    @Transactional
+    public GoalInvitation acceptInvitation(
+            UUID userId,
+            UUID invitationId
+    ) {
+<span class="fc" id="L154">        GoalInvitation invitation = getInvitation(invitationId);</span>
+<span class="fc" id="L155">        validateInvitedUser(invitation, userId);</span>
+
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (!invitation.isAcceptable()) {</span>
+<span class="fc" id="L158">            throw new ForbiddenOperationException(</span>
+                    &quot;La invitación ya no es válida&quot;
+            );
+        }
+
+<span class="fc" id="L163">        goalUnitRepository.findById(invitation.getGoalId())</span>
+<span class="fc" id="L164">                .filter(GoalUnit::isActive)</span>
+<span class="fc" id="L165">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L166">                        new ResourceNotFoundException(</span>
+                                &quot;El objetivo ya no existe&quot;
+                        )
+                );
+
+<span class="fc" id="L171">        GoalMember existingMember = goalMemberRepository</span>
+<span class="fc" id="L172">                .findByGoalIdAndUserId(</span>
+<span class="fc" id="L173">                        invitation.getGoalId(),</span>
+                        userId
+                )
+<span class="fc" id="L176">                .orElse(null);</span>
+
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (existingMember == null) {</span>
+<span class="fc" id="L179">            GoalMember member = GoalMember.create(</span>
+<span class="fc" id="L180">                    invitation.getGoalId(),</span>
+                    userId,
+                    GoalRole.MEMBER,
+                    null
+            );
+<span class="fc" id="L185">            goalMemberRepository.save(member);</span>
+<span class="fc" id="L186">        } else {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (existingMember.isActive()) {</span>
+<span class="nc" id="L188">                throw new ForbiddenOperationException(</span>
+                        &quot;El usuario ya pertenece a este objetivo&quot;
+                );
+            }
+<span class="nc" id="L192">            existingMember.activate();</span>
+<span class="nc" id="L193">            goalMemberRepository.save(existingMember);</span>
+        }
+
+<span class="fc" id="L196">        invitation.markAsAccepted();</span>
+<span class="fc" id="L197">        GoalInvitation savedInvitation =</span>
+<span class="fc" id="L198">                goalInvitationRepository.save(invitation);</span>
+
+<span class="fc" id="L200">        notificationPort.markInvitationNotificationAsActioned(</span>
+                userId,
+                invitationId
+        );
+
+<span class="fc" id="L205">        return savedInvitation;</span>
+    }
+
+    @Override
+    @Transactional
+    public void rejectInvitation(UUID userId, UUID invitationId) {
+<span class="fc" id="L211">        GoalInvitation invitation = getInvitation(invitationId);</span>
+<span class="fc" id="L212">        validateInvitedUser(invitation, userId);</span>
+
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (invitation.getStatus() != InvitationStatus.PENDING) {</span>
+<span class="fc" id="L215">            throw new ForbiddenOperationException(</span>
+                    &quot;La invitación ya no está pendiente&quot;
+            );
+        }
+
+<span class="fc" id="L220">        invitation.markAsRejected();</span>
+<span class="fc" id="L221">        goalInvitationRepository.save(invitation);</span>
+
+<span class="fc" id="L223">        notificationPort.markInvitationNotificationAsActioned(</span>
+                userId,
+                invitationId
+        );
+<span class="fc" id="L227">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;ListPendingInvitationsUseCase.InvitationResult&gt; listPendingInvitations(
+            UUID userId
+    ) {
+<span class="fc" id="L234">        List&lt;GoalInvitation&gt; invitations = goalInvitationRepository</span>
+<span class="fc" id="L235">                .findActiveAndNotExpiredByInvitedUserIdAndStatus(</span>
+                        userId,
+                        InvitationStatus.PENDING
+                );
+
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (invitations.isEmpty()) {</span>
+<span class="fc" id="L241">            return List.of();</span>
+        }
+
+<span class="fc" id="L244">        List&lt;UUID&gt; goalIds = invitations.stream()</span>
+<span class="fc" id="L245">                .map(GoalInvitation::getGoalId)</span>
+<span class="fc" id="L246">                .distinct()</span>
+<span class="fc" id="L247">                .toList();</span>
+
+<span class="fc" id="L249">        List&lt;UUID&gt; inviterIds = invitations.stream()</span>
+<span class="fc" id="L250">                .map(GoalInvitation::getInviterUserId)</span>
+<span class="fc" id="L251">                .distinct()</span>
+<span class="fc" id="L252">                .toList();</span>
+
+<span class="fc" id="L254">        Map&lt;UUID, GoalUnit&gt; goalsById = goalUnitRepository</span>
+<span class="fc" id="L255">                .findByIds(goalIds)</span>
+<span class="fc" id="L256">                .stream()</span>
+<span class="fc" id="L257">                .collect(Collectors.toMap(</span>
+                        GoalUnit::getId,
+<span class="fc" id="L259">                        g -&gt; g,</span>
+<span class="nc" id="L260">                        (a, b) -&gt; a</span>
+                ));
+
+<span class="fc" id="L263">        Map&lt;UUID, UserLookupPort.UserInfo&gt; invitersById =</span>
+<span class="fc" id="L264">                userLookupPort.findByIds(inviterIds);</span>
+
+<span class="fc" id="L266">        return invitations.stream()</span>
+<span class="fc" id="L267">                .map(invitation -&gt; {</span>
+<span class="fc" id="L268">                    GoalUnit goal = goalsById.get(</span>
+<span class="fc" id="L269">                            invitation.getGoalId()</span>
+                    );
+<span class="fc" id="L271">                    UserLookupPort.UserInfo inviter = invitersById.get(</span>
+<span class="fc" id="L272">                            invitation.getInviterUserId()</span>
+                    );
+
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">                    String inviterName = inviter != null</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">                            ? (inviter.username() != null</span>
+<span class="fc" id="L277">                            ? inviter.username()</span>
+<span class="nc" id="L278">                            : inviter.email())</span>
+<span class="pc" id="L279">                            : &quot;Usuario desconocido&quot;;</span>
+
+<span class="fc" id="L281">                    return new ListPendingInvitationsUseCase.InvitationResult(</span>
+<span class="fc" id="L282">                            invitation.getId(),</span>
+<span class="fc" id="L283">                            invitation.getGoalId(),</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">                            goal != null ? goal.getName() : &quot;Objetivo eliminado&quot;,</span>
+<span class="fc" id="L285">                            invitation.getInviterUserId(),</span>
+                            inviterName,
+<span class="fc" id="L287">                            invitation.getInvitedUserId(),</span>
+<span class="fc" id="L288">                            invitation.getStatus(),</span>
+<span class="fc" id="L289">                            invitation.getCreatedAt()</span>
+                    );
+                })
+<span class="fc" id="L292">                .toList();</span>
+    }
+
+    private GoalInvitation getInvitation(UUID invitationId) {
+<span class="fc" id="L296">        return goalInvitationRepository.findById(invitationId)</span>
+<span class="fc" id="L297">                .filter(GoalInvitation::isActive)</span>
+<span class="fc" id="L298">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L299">                        new ResourceNotFoundException(</span>
+                                &quot;Invitación no encontrada&quot;
+                        )
+                );
+    }
+
+    private void validateInvitedUser(
+            GoalInvitation invitation,
+            UUID userId
+    ) {
+<span class="fc bfc" id="L309" title="All 2 branches covered.">        if (!invitation.getInvitedUserId().equals(userId)) {</span>
+<span class="fc" id="L310">            throw new ForbiddenOperationException(</span>
+                    &quot;No puedes actuar sobre esta invitación&quot;
+            );
+        }
+<span class="fc" id="L314">    }</span>
+
+    private void requireAdmin(UUID goalId, UUID userId) {
+<span class="fc" id="L317">        GoalMember member = goalMemberRepository</span>
+<span class="fc" id="L318">                .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="fc" id="L319">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L320">                        new ForbiddenOperationException(</span>
+                                &quot;No tienes permisos sobre este objetivo&quot;
+                        )
+                );
+
+<span class="pc bpc" id="L325" title="1 of 4 branches missed.">        if (!member.isActive() || !member.isAdmin()) {</span>
+<span class="fc" id="L326">            throw new ForbiddenOperationException(</span>
+                    &quot;Solo los administradores pueden invitar miembros&quot;
+            );
+        }
+<span class="fc" id="L330">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

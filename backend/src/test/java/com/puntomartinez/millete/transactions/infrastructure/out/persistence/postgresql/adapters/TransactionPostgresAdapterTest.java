@@ -55,7 +55,7 @@ class TransactionPostgresAdapterTest {
                 USER_ID,
                 UUID.randomUUID(),
                 new BigDecimal("50.00"),
-                LocalDateTime.now(),
+                Instant.now(),
                 TransactionType.EXPENSE,
                 "Groceries"
         );
@@ -67,11 +67,11 @@ class TransactionPostgresAdapterTest {
         entity.setUserId(USER_ID);
         entity.setCategoryId(UUID.randomUUID());
         entity.setAmount(new BigDecimal("50.00"));
-        entity.setDate(LocalDateTime.now());
+        entity.setDate(Instant.now());
         entity.setType("EXPENSE");
         entity.setDescription("Groceries");
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         return entity;
     }
@@ -272,7 +272,7 @@ class TransactionPostgresAdapterTest {
             )).thenReturn(List.<Object[]>of(result));
 
             TransactionAggregates aggregates = adapter.getAggregatesByUserIdAndDateBetween(
-                    USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()
+                    USER_ID, Instant.now().minusDays(30), Instant.now()
             );
 
             assertThat(aggregates.totalIncome()).isEqualByComparingTo("1000.00");
@@ -290,7 +290,7 @@ class TransactionPostgresAdapterTest {
             )).thenReturn(List.<Object[]>of(result));
 
             TransactionAggregates aggregates = adapter.getAggregatesByUserIdAndDateBetween(
-                    USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()
+                    USER_ID, Instant.now().minusDays(30), Instant.now()
             );
 
             assertThat(aggregates.totalIncome()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -307,7 +307,7 @@ class TransactionPostgresAdapterTest {
         @DisplayName("Should delegate to repository")
         void shouldDelegateToRepository() {
             UUID categoryId = UUID.randomUUID();
-            LocalDateTime modifiedAt = LocalDateTime.now();
+            LocalDateTime modifiedAt = Instant.now();
 
             adapter.clearCategoryFromActiveTransactions(categoryId, USER_ID, modifiedAt);
 
@@ -333,7 +333,7 @@ class TransactionPostgresAdapterTest {
             when(mapper.toDomain(entity)).thenReturn(domain);
 
             List<Transaction> result = adapter.findByUserIdAndDateBetween(
-                    USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()
+                    USER_ID, Instant.now().minusDays(30), Instant.now()
             );
 
             assertThat(result).containsExactly(domain);
@@ -347,7 +347,7 @@ class TransactionPostgresAdapterTest {
             )).thenReturn(Collections.emptyList());
 
             List<Transaction> result = adapter.findByUserIdAndDateBetween(
-                    USER_ID, LocalDateTime.now().minusDays(30), LocalDateTime.now()
+                    USER_ID, Instant.now().minusDays(30), Instant.now()
             );
 
             assertThat(result).isEmpty();

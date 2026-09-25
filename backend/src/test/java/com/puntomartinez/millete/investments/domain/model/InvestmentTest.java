@@ -24,7 +24,7 @@ class InvestmentTest {
     private static final String VALID_TICKER = "AAPL";
     private static final BigDecimal VALID_QUANTITY = new BigDecimal("10");
     private static final BigDecimal VALID_PURCHASE_PRICE = new BigDecimal("150.00");
-    private static final LocalDateTime VALID_PURCHASE_DATE = LocalDateTime.now().minusDays(30);
+    private static final LocalDateTime VALID_PURCHASE_DATE = Instant.now().minusDays(30);
 
     private Investment createValidStock() {
         return Investment.create(
@@ -235,7 +235,7 @@ class InvestmentTest {
                     VALID_QUANTITY, VALID_PURCHASE_PRICE,
                     VALID_PURCHASE_PRICE, InvestmentType.STOCK,
                     VALID_PURCHASE_DATE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -247,7 +247,7 @@ class InvestmentTest {
                     VALID_QUANTITY, VALID_PURCHASE_PRICE,
                     new BigDecimal("-1.00"), InvestmentType.STOCK,
                     VALID_PURCHASE_DATE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -259,7 +259,7 @@ class InvestmentTest {
                     VALID_QUANTITY, VALID_PURCHASE_PRICE,
                     VALID_PURCHASE_PRICE, InvestmentType.STOCK,
                     VALID_PURCHASE_DATE,
-                    null, LocalDateTime.now(), true
+                    null, Instant.now(), true
             )).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -271,7 +271,7 @@ class InvestmentTest {
                     VALID_QUANTITY, VALID_PURCHASE_PRICE,
                     VALID_PURCHASE_PRICE, InvestmentType.STOCK,
                     VALID_PURCHASE_DATE,
-                    LocalDateTime.now(), null, true
+                    Instant.now(), null, true
             )).isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -289,7 +289,7 @@ class InvestmentTest {
             investment.updateDetails(
                     "Tesla Inc.", "TSLA",
                     new BigDecimal("5"), new BigDecimal("200.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
 
             assertThat(investment.getAssetName()).isEqualTo("Tesla Inc.");
@@ -351,7 +351,7 @@ class InvestmentTest {
                     VALID_QUANTITY, VALID_PURCHASE_PRICE,
                     new BigDecimal("120.00"),
                     InvestmentType.STOCK, VALID_PURCHASE_DATE,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
 
             assertThat(investment.getProfitOrLoss())

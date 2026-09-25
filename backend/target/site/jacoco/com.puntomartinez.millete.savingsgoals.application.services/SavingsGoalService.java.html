@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SavingsGoalService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.savingsgoals.application.services</a> &gt; <span class="el_source">SavingsGoalService.java</span></div><h1>SavingsGoalService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.savingsgoals.application.services;
+
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
+import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class SavingsGoalService implements
+        CreateSavingsGoalUseCase,
+        UpdateSavingsGoalUseCase,
+        AddContributionToGoalUseCase,
+        WithdrawFromGoalUseCase,
+        ListSavingsGoalsUseCase,
+        GetSavingsGoalUseCase,
+        DeleteSavingsGoalUseCase {
+
+    private final SavingsGoalRepository savingsGoalRepository;
+
+<span class="fc" id="L25">    public SavingsGoalService(SavingsGoalRepository savingsGoalRepository) {</span>
+<span class="fc" id="L26">        this.savingsGoalRepository = savingsGoalRepository;</span>
+<span class="fc" id="L27">    }</span>
+
+    @Override
+    @Transactional
+    public SavingsGoal create(CreateSavingsGoalCommand command) {
+<span class="fc" id="L32">        SavingsGoal goal = SavingsGoal.create(</span>
+<span class="fc" id="L33">                command.userId(),</span>
+<span class="fc" id="L34">                command.name(),</span>
+<span class="fc" id="L35">                command.targetAmount(),</span>
+<span class="fc" id="L36">                command.deadline(),</span>
+<span class="fc" id="L37">                command.priority(),</span>
+<span class="fc" id="L38">                command.link()</span>
+        );
+<span class="fc" id="L40">        return savingsGoalRepository.save(goal);</span>
+    }
+
+    @Override
+    @Transactional
+    public SavingsGoal update(UpdateSavingsGoalCommand command) {
+<span class="fc" id="L46">        SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(</span>
+<span class="fc" id="L47">                        command.id(),</span>
+<span class="fc" id="L48">                        command.userId()</span>
+                )
+<span class="fc" id="L50">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L51">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo de ahorro no encontrado.&quot;
+                        )
+                );
+
+<span class="fc" id="L56">        goal.updateDetails(</span>
+<span class="fc" id="L57">                command.name(),</span>
+<span class="fc" id="L58">                command.targetAmount(),</span>
+<span class="fc" id="L59">                command.deadline(),</span>
+<span class="fc" id="L60">                command.priority(),</span>
+<span class="fc" id="L61">                command.link()</span>
+        );
+<span class="fc" id="L63">        return savingsGoalRepository.save(goal);</span>
+    }
+
+    @Override
+    @Transactional
+    public SavingsGoal addContribution(
+            AddContributionToGoalCommand command
+    ) {
+<span class="fc" id="L71">        SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(</span>
+<span class="fc" id="L72">                        command.goalId(),</span>
+<span class="fc" id="L73">                        command.userId()</span>
+                )
+<span class="fc" id="L75">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L76">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo de ahorro no encontrado.&quot;
+                        )
+                );
+
+<span class="fc" id="L81">        goal.addContribution(command.amount());</span>
+<span class="fc" id="L82">        return savingsGoalRepository.save(goal);</span>
+    }
+
+    @Override
+    @Transactional
+    public SavingsGoal withdraw(
+            WithdrawFromGoalCommand command
+    ) {
+<span class="fc" id="L90">        SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(</span>
+<span class="fc" id="L91">                        command.goalId(),</span>
+<span class="fc" id="L92">                        command.userId()</span>
+                )
+<span class="fc" id="L94">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L95">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo de ahorro no encontrado.&quot;
+                        )
+                );
+
+<span class="fc" id="L100">        goal.withdraw(command.amount());</span>
+<span class="fc" id="L101">        return savingsGoalRepository.save(goal);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;SavingsGoal&gt; findByUserId(UUID userId) {
+<span class="fc" id="L107">        return savingsGoalRepository.findAllByUserId(userId);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;SavingsGoal&gt; findByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+<span class="fc" id="L118">        return savingsGoalRepository.findAllByUserId(</span>
+                userId, page, size, search
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L129">        return savingsGoalRepository.countByUserIdAndFilters(</span>
+                userId, search
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SavingsGoal getByIdAndUserId(UUID id, UUID userId) {
+<span class="fc" id="L137">        return savingsGoalRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L138">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L139">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo de ahorro no encontrado.&quot;
+                        )
+                );
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIdAndUserId(UUID id, UUID userId) {
+<span class="fc" id="L148">        SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(</span>
+                        id, userId
+                )
+<span class="fc" id="L151">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L152">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo de ahorro no encontrado.&quot;
+                        )
+                );
+
+<span class="fc" id="L157">        goal.deactivate();</span>
+<span class="fc" id="L158">        savingsGoalRepository.save(goal);</span>
+<span class="fc" id="L159">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

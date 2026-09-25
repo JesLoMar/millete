@@ -22,7 +22,7 @@ class TransactionTest {
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID CATEGORY_ID = UUID.randomUUID();
     private static final BigDecimal VALID_AMOUNT = new BigDecimal("100.00");
-    private static final LocalDateTime VALID_DATE = LocalDateTime.now();
+    private static final LocalDateTime VALID_DATE = Instant.now();
     private static final String VALID_DESCRIPTION = "Groceries";
 
     private Transaction createValidTransaction() {
@@ -310,7 +310,7 @@ class TransactionTest {
                             TransactionType.EXPENSE,
                             VALID_DESCRIPTION,
                             null,
-                            LocalDateTime.now(),
+                            Instant.now(),
                             true
                     )
             ).isInstanceOf(InvalidInputException.class);
@@ -328,7 +328,7 @@ class TransactionTest {
                             VALID_DATE,
                             TransactionType.EXPENSE,
                             VALID_DESCRIPTION,
-                            LocalDateTime.now(),
+                            Instant.now(),
                             null,
                             true
                     )
@@ -349,7 +349,7 @@ class TransactionTest {
 
             transaction.updateDetails(
                     new BigDecimal("200.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.INCOME,
                     "Updated",
                     newCategoryId

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SavingsGoalController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.savingsgoals.infrastructure.in.controller</a> &gt; <span class="el_source">SavingsGoalController.java</span></div><h1>SavingsGoalController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.savingsgoals.infrastructure.in.controller;
+
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.domain.ports.in.*;
+import com.puntomartinez.millete.savingsgoals.domain.utils.GoalPriority;
+import com.puntomartinez.millete.savingsgoals.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping(&quot;/api/v1/savings-goals&quot;)
+public class SavingsGoalController {
+
+    private static final int MAX_PAGE_SIZE = 200;
+
+    private final CreateSavingsGoalUseCase createSavingsGoalUseCase;
+    private final UpdateSavingsGoalUseCase updateSavingsGoalUseCase;
+    private final AddContributionToGoalUseCase addContributionToGoalUseCase;
+    private final WithdrawFromGoalUseCase withdrawFromGoalUseCase;
+    private final ListSavingsGoalsUseCase listSavingsGoalsUseCase;
+    private final GetSavingsGoalUseCase getSavingsGoalUseCase;
+    private final DeleteSavingsGoalUseCase deleteSavingsGoalUseCase;
+
+    public SavingsGoalController(
+            CreateSavingsGoalUseCase createSavingsGoalUseCase,
+            UpdateSavingsGoalUseCase updateSavingsGoalUseCase,
+            AddContributionToGoalUseCase addContributionToGoalUseCase,
+            WithdrawFromGoalUseCase withdrawFromGoalUseCase,
+            ListSavingsGoalsUseCase listSavingsGoalsUseCase,
+            GetSavingsGoalUseCase getSavingsGoalUseCase,
+            DeleteSavingsGoalUseCase deleteSavingsGoalUseCase
+<span class="fc" id="L41">    ) {</span>
+<span class="fc" id="L42">        this.createSavingsGoalUseCase = createSavingsGoalUseCase;</span>
+<span class="fc" id="L43">        this.updateSavingsGoalUseCase = updateSavingsGoalUseCase;</span>
+<span class="fc" id="L44">        this.addContributionToGoalUseCase = addContributionToGoalUseCase;</span>
+<span class="fc" id="L45">        this.withdrawFromGoalUseCase = withdrawFromGoalUseCase;</span>
+<span class="fc" id="L46">        this.listSavingsGoalsUseCase = listSavingsGoalsUseCase;</span>
+<span class="fc" id="L47">        this.getSavingsGoalUseCase = getSavingsGoalUseCase;</span>
+<span class="fc" id="L48">        this.deleteSavingsGoalUseCase = deleteSavingsGoalUseCase;</span>
+<span class="fc" id="L49">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;SavingsGoalResponseDTO&gt; create(
+            @Valid @RequestBody CreateSavingsGoalRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L56">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        GoalPriority priority = request.priority() != null</span>
+<span class="fc" id="L59">                ? request.priority()</span>
+<span class="fc" id="L60">                : GoalPriority.MEDIUM;</span>
+
+<span class="fc" id="L62">        CreateSavingsGoalCommand command = new CreateSavingsGoalCommand(</span>
+                userId,
+<span class="fc" id="L64">                request.name(),</span>
+<span class="fc" id="L65">                request.targetAmount(),</span>
+<span class="fc" id="L66">                request.deadline(),</span>
+                priority,
+<span class="fc" id="L68">                request.link()</span>
+        );
+
+<span class="fc" id="L71">        SavingsGoal goal = createSavingsGoalUseCase.create(command);</span>
+<span class="fc" id="L72">        return ResponseEntity</span>
+<span class="fc" id="L73">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L74">                .body(mapToResponse(goal));</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;SavingsGoalResponseDTO&gt;&gt; getAll(
+            Authentication authentication,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;90&quot;) int size,
+            @RequestParam(required = false) String search
+    ) {
+<span class="fc" id="L84">        validatePaginationParams(page, size);</span>
+<span class="fc" id="L85">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L87">        long totalElements =</span>
+<span class="fc" id="L88">                listSavingsGoalsUseCase.countByUserIdAndFilters(userId, search);</span>
+
+<span class="fc" id="L90">        int totalPages = (int) Math.ceil((double) totalElements / size);</span>
+
+<span class="fc" id="L92">        int maxValidPage = Math.max(0, totalPages - 1);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (page &gt; maxValidPage) {</span>
+<span class="fc" id="L94">            throw new InvalidInputException(</span>
+                    &quot;La página solicitada (&quot; + page
+                            + &quot;) está fuera de rango. Página máxima disponible: &quot;
+                            + maxValidPage + &quot;.&quot;
+            );
+        }
+
+<span class="fc" id="L101">        List&lt;SavingsGoal&gt; goals =</span>
+<span class="fc" id="L102">                listSavingsGoalsUseCase.findByUserId(userId, page, size, search);</span>
+
+<span class="fc" id="L104">        List&lt;SavingsGoalResponseDTO&gt; content =</span>
+<span class="fc" id="L105">                goals.stream().map(this::mapToResponse).toList();</span>
+
+<span class="pc bpc" id="L107" title="1 of 6 branches missed.">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+                        content, page, totalPages, totalElements, size,
+                        page == 0,
+                        page &gt;= totalPages - 1 || totalPages == 0
+                )
+        );
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;SavingsGoalResponseDTO&gt; getById(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L121">        UUID userId = getUserId(authentication);</span>
+<span class="fc" id="L122">        SavingsGoal goal =</span>
+<span class="fc" id="L123">                getSavingsGoalUseCase.getByIdAndUserId(id, userId);</span>
+<span class="fc" id="L124">        return ResponseEntity.ok(mapToResponse(goal));</span>
+    }
+
+    @PatchMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;SavingsGoalResponseDTO&gt; update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateSavingsGoalRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L133">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L135">        UpdateSavingsGoalCommand command = new UpdateSavingsGoalCommand(</span>
+                id,
+                userId,
+<span class="fc" id="L138">                request.name(),</span>
+<span class="fc" id="L139">                request.targetAmount(),</span>
+<span class="fc" id="L140">                request.deadline(),</span>
+<span class="fc" id="L141">                request.priority(),</span>
+<span class="fc" id="L142">                request.link()</span>
+        );
+
+<span class="fc" id="L145">        SavingsGoal goal = updateSavingsGoalUseCase.update(command);</span>
+<span class="fc" id="L146">        return ResponseEntity.ok(mapToResponse(goal));</span>
+    }
+
+    @PatchMapping(&quot;/{id}/contribute&quot;)
+    public ResponseEntity&lt;SavingsGoalResponseDTO&gt; addContribution(
+            @PathVariable UUID id,
+            @Valid @RequestBody AddContributionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L155">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L157">        AddContributionToGoalCommand command =</span>
+<span class="fc" id="L158">                new AddContributionToGoalCommand(id, userId, request.amount());</span>
+
+<span class="fc" id="L160">        SavingsGoal goal =</span>
+<span class="fc" id="L161">                addContributionToGoalUseCase.addContribution(command);</span>
+<span class="fc" id="L162">        return ResponseEntity.ok(mapToResponse(goal));</span>
+    }
+
+    @PatchMapping(&quot;/{id}/withdraw&quot;)
+    public ResponseEntity&lt;SavingsGoalResponseDTO&gt; withdraw(
+            @PathVariable UUID id,
+            @Valid @RequestBody WithdrawRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L171">        UUID userId = getUserId(authentication);</span>
+
+<span class="fc" id="L173">        WithdrawFromGoalCommand command =</span>
+<span class="fc" id="L174">                new WithdrawFromGoalCommand(id, userId, request.amount());</span>
+
+<span class="fc" id="L176">        SavingsGoal goal =</span>
+<span class="fc" id="L177">                withdrawFromGoalUseCase.withdraw(command);</span>
+<span class="fc" id="L178">        return ResponseEntity.ok(mapToResponse(goal));</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; delete(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L186">        UUID userId = getUserId(authentication);</span>
+<span class="fc" id="L187">        deleteSavingsGoalUseCase.deleteByIdAndUserId(id, userId);</span>
+<span class="fc" id="L188">        return ResponseEntity.noContent().build();</span>
+    }
+
+    private UUID getUserId(Authentication authentication) {
+<span class="fc" id="L192">        return ((JwtUser) authentication.getPrincipal()).getId();</span>
+    }
+
+    private void validatePaginationParams(int page, int size) {
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        if (page &lt; 0) {</span>
+<span class="fc" id="L197">            throw new InvalidInputException(</span>
+                    &quot;La página debe ser mayor o igual que 0.&quot;
+            );
+        }
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L202">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página debe ser mayor que 0.&quot;
+            );
+        }
+<span class="fc bfc" id="L206" title="All 2 branches covered.">        if (size &gt; MAX_PAGE_SIZE) {</span>
+<span class="fc" id="L207">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página no puede superar &quot;
+                            + MAX_PAGE_SIZE + &quot;.&quot;
+            );
+        }
+<span class="fc" id="L212">    }</span>
+
+    private SavingsGoalResponseDTO mapToResponse(SavingsGoal goal) {
+<span class="fc" id="L215">        return new SavingsGoalResponseDTO(</span>
+<span class="fc" id="L216">                goal.getId(),</span>
+<span class="fc" id="L217">                goal.getUserId(),</span>
+<span class="fc" id="L218">                goal.getName(),</span>
+<span class="fc" id="L219">                goal.getTargetAmount(),</span>
+<span class="fc" id="L220">                goal.getCurrentAmount(),</span>
+<span class="fc" id="L221">                goal.getDeadline(),</span>
+<span class="fc" id="L222">                goal.getPriority(),</span>
+<span class="fc" id="L223">                goal.getLink(),</span>
+<span class="fc" id="L224">                goal.getCreatedAt(),</span>
+<span class="fc" id="L225">                goal.getModifiedAt(),</span>
+<span class="fc" id="L226">                goal.isActive()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

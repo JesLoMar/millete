@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
@@ -31,7 +30,7 @@ class ZipFileExportAdapterTest {
                 List.of(new ExportData.TransactionExportRow(
                         "Food",
                         new BigDecimal("50.00"),
-                        LocalDateTime.now(),
+                        Instant.now(),
                         "EXPENSE",
                         maliciousDescription
                 )),
@@ -92,7 +91,7 @@ class ZipFileExportAdapterTest {
                 List.of(new ExportData.TransactionExportRow(
                         "+123456789",
                         new BigDecimal("50.00"),
-                        LocalDateTime.now(),
+                        Instant.now(),
                         "@TYPE",
                         "=CMD|' /C calc'!A0"
                 )),
@@ -114,7 +113,7 @@ class ZipFileExportAdapterTest {
                         new BigDecimal("100.00"),
                         new BigDecimal("110.00"),
                         "=TYPE",
-                        LocalDateTime.now()
+                        Instant.now()
                 )),
                 List.of(new ExportData.SavingsGoalExportRow(
                         "=GOAL",

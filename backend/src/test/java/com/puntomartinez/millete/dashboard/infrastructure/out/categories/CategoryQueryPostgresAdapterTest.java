@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +42,7 @@ class CategoryQueryPostgresAdapterTest {
         Category category = Category.reconstitute(
                 categoryId, USER_ID, "Food", "#FF0000",
                 new BigDecimal("100.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryRepository.findByUserId(USER_ID))
@@ -68,7 +67,7 @@ class CategoryQueryPostgresAdapterTest {
         Category category = Category.reconstitute(
                 categoryId, USER_ID, "Food", "#FF0000",
                 null,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryRepository.findByIdsAndUserId(USER_ID, List.of(categoryId)))
@@ -88,7 +87,7 @@ class CategoryQueryPostgresAdapterTest {
         Category category = Category.reconstitute(
                 categoryId, USER_ID, "Food", "#FF0000",
                 new BigDecimal("200.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryRepository.findCategoriesWithBudgetByUserId(USER_ID))

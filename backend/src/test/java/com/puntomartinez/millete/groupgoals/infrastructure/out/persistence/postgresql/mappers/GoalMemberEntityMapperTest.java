@@ -8,13 +8,23 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GoalMemberEntityMapper")
+
 class GoalMemberEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private final GoalMemberEntityMapper mapper =
             Mappers.getMapper(GoalMemberEntityMapper.class);
@@ -22,7 +32,7 @@ class GoalMemberEntityMapperTest {
     @Test
     @DisplayName("Should map domain to entity")
     void shouldMapDomainToEntity() {
-        GoalMember domain = GoalMember.create(
+        GoalMember domain = GoalMember.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(),
                 GoalRole.ADMIN, new BigDecimal("2000.00")
         );
@@ -45,9 +55,9 @@ class GoalMemberEntityMapperTest {
         entity.setUserId(UUID.randomUUID());
         entity.setRole("ADMIN");
         entity.setSalary(new BigDecimal("2000.00"));
-        entity.setJoinedAt(LocalDateTime.now());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setJoinedAt(Instant.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
 
         GoalMember domain = mapper.toDomain(entity);
@@ -62,7 +72,7 @@ class GoalMemberEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        GoalMember original = GoalMember.create(
+        GoalMember original = GoalMember.create(TIME, 
                 UUID.randomUUID(), UUID.randomUUID(),
                 GoalRole.MEMBER, new BigDecimal("1500.00"),
                 new BigDecimal("25.00")

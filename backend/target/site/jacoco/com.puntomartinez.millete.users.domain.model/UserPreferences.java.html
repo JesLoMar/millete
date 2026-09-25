@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserPreferences.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.domain.model</a> &gt; <span class="el_source">UserPreferences.java</span></div><h1>UserPreferences.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Preferencias de usuario almacenadas como JSONB.
+ *
+ * &lt;p&gt;Fase 1 de la normalización temporal: la clave {@link #TIMEZONE_KEY}
+ * guarda el identificador de zona IANA del usuario (por ejemplo,
+ * {@code Europe/Madrid}). Si la clave está ausente o es inválida, se aplica
+ * la zona por defecto técnica {@code UTC} (ver
+ * {@link com.puntomartinez.millete.users.domain.validation.ZoneIdValidator}).&lt;/p&gt;
+ */
+public class UserPreferences {
+
+    public static final String TIMEZONE_KEY = &quot;timezone&quot;;
+
+    private UUID id;
+    private UUID userId;
+    private Map&lt;String, Object&gt; preferences;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+
+<span class="fc" id="L27">    public UserPreferences() {</span>
+<span class="fc" id="L28">        this.preferences = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L29">    }</span>
+
+    public UserPreferences(
+            UUID id,
+            UUID userId,
+            Map&lt;String, Object&gt; preferences
+<span class="fc" id="L35">    ) {</span>
+<span class="fc" id="L36">        this.id = id;</span>
+<span class="fc" id="L37">        this.userId = userId;</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        this.preferences = preferences != null</span>
+<span class="fc" id="L39">                ? new HashMap&lt;&gt;(preferences)</span>
+<span class="pc" id="L40">                : new HashMap&lt;&gt;();</span>
+<span class="fc" id="L41">    }</span>
+
+    public UUID getId() {
+<span class="fc" id="L44">        return id;</span>
+    }
+
+    public void setId(UUID id) {
+<span class="fc" id="L48">        this.id = id;</span>
+<span class="fc" id="L49">    }</span>
+
+    public UUID getUserId() {
+<span class="fc" id="L52">        return userId;</span>
+    }
+
+    public void setUserId(UUID userId) {
+<span class="fc" id="L56">        this.userId = userId;</span>
+<span class="fc" id="L57">    }</span>
+
+    public Map&lt;String, Object&gt; getPreferences() {
+<span class="fc" id="L60">        return preferences;</span>
+    }
+
+    public void setPreferences(Map&lt;String, Object&gt; preferences) {
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        this.preferences = preferences != null</span>
+<span class="fc" id="L65">                ? new HashMap&lt;&gt;(preferences)</span>
+<span class="pc" id="L66">                : new HashMap&lt;&gt;();</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Devuelve la zona horaria IANA del usuario. Si la clave está ausente,
+     * en blanco o no es un string, devuelve el valor por defecto técnico
+     * {@code UTC}. No valida identificadores de offset: para validación
+     * estricta usar {@link com.puntomartinez.millete.users.domain.validation.ZoneIdValidator}.
+     */
+    public String getTimezoneOrDefault() {
+<span class="fc" id="L76">        Object value = preferences.get(TIMEZONE_KEY);</span>
+<span class="pc bpc" id="L77" title="1 of 4 branches missed.">        if (value instanceof String s &amp;&amp; !s.isBlank()) {</span>
+<span class="fc" id="L78">            return s.trim();</span>
+        }
+<span class="fc" id="L80">        return com.puntomartinez.millete.users.domain.validation.ZoneIdValidator.DEFAULT_TIMEZONE;</span>
+    }
+
+    public LocalDateTime getCreatedAt() {
+<span class="fc" id="L84">        return createdAt;</span>
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+<span class="fc" id="L88">        this.createdAt = createdAt;</span>
+<span class="fc" id="L89">    }</span>
+
+    public LocalDateTime getModifiedAt() {
+<span class="fc" id="L92">        return modifiedAt;</span>
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+<span class="fc" id="L96">        this.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L97">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

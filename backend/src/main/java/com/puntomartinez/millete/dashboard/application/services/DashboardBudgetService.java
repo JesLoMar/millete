@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.dashboard.application.services;
 
+import java.time.LocalDate;
 import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
 import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.BudgetItemResponseDTO;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class DashboardBudgetService {
             UUID userId,
             String period
     ) {
-        LocalDateTime[] range =
+        LocalDate[] range =
                 dashboardPeriodService.getDateRange(period);
 
         List<CategoryQueryPort.CategoryData> categoriesWithBudget =

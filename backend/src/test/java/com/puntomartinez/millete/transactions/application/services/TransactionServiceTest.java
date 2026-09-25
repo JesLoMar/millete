@@ -32,10 +32,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TransactionService")
 class TransactionServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID CATEGORY_ID = UUID.randomUUID();
@@ -54,7 +60,7 @@ class TransactionServiceTest {
                 USER_ID,
                 CATEGORY_ID,
                 new BigDecimal("50.00"),
-                LocalDateTime.now(),
+                Instant.now(),
                 TransactionType.EXPENSE,
                 "Original"
         );
@@ -71,7 +77,7 @@ class TransactionServiceTest {
                     USER_ID,
                     null,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.INCOME,
                     "Salary"
             );
@@ -93,12 +99,12 @@ class TransactionServiceTest {
                     USER_ID,
                     CATEGORY_ID,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Groceries"
             );
 
-            Category category = Category.create(USER_ID, "Food", "#FF0000", null);
+            Category category = Category.create(TIME, USER_ID, "Food", "#FF0000", null);
 
             when(categoryRepository.findByIdAndUserId(CATEGORY_ID, USER_ID))
                     .thenReturn(Optional.of(category));
@@ -125,7 +131,7 @@ class TransactionServiceTest {
                     USER_ID,
                     CATEGORY_ID,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Groceries"
             );
@@ -146,7 +152,7 @@ class TransactionServiceTest {
                     USER_ID,
                     null,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Expense"
             );
@@ -173,7 +179,7 @@ class TransactionServiceTest {
                     USER_ID,
                     null,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Expense"
             );
@@ -200,7 +206,7 @@ class TransactionServiceTest {
                     USER_ID,
                     null,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.INCOME,
                     "Salary"
             );
@@ -225,7 +231,7 @@ class TransactionServiceTest {
             UpdateTransactionCommand command = new UpdateTransactionCommand(
                     USER_ID,
                     new BigDecimal("200.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.INCOME,
                     "Updated",
                     null
@@ -249,7 +255,7 @@ class TransactionServiceTest {
             UpdateTransactionCommand command = new UpdateTransactionCommand(
                     USER_ID,
                     new BigDecimal("200.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Updated",
                     null
@@ -272,7 +278,7 @@ class TransactionServiceTest {
             UpdateTransactionCommand command = new UpdateTransactionCommand(
                     USER_ID,
                     new BigDecimal("200.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Updated",
                     newCategoryId

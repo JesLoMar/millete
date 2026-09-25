@@ -17,9 +17,15 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @DisplayName("SavingsGoal aggregate")
 class SavingsGoalTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String VALID_NAME = "Vacation";
@@ -27,7 +33,7 @@ class SavingsGoalTest {
     private static final LocalDate VALID_DEADLINE = LocalDate.now().plusDays(30);
 
     private SavingsGoal createValidGoal() {
-        return SavingsGoal.create(
+        return SavingsGoal.create(TIME, 
                 USER_ID,
                 VALID_NAME,
                 VALID_TARGET,
@@ -88,7 +94,7 @@ class SavingsGoalTest {
         @Test
         @DisplayName("Should default priority to MEDIUM when priority is null")
         void shouldDefaultPriorityToMediumWhenNull() {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -103,7 +109,7 @@ class SavingsGoalTest {
         @Test
         @DisplayName("Should allow null deadline")
         void shouldAllowNullDeadline() {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -118,7 +124,7 @@ class SavingsGoalTest {
         @Test
         @DisplayName("Should allow null link")
         void shouldAllowNullLink() {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -134,7 +140,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject null user id")
         void shouldRejectNullUserId() {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             null,
                             VALID_NAME,
                             VALID_TARGET,
@@ -151,7 +157,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject invalid name")
         void shouldRejectInvalidName(String name) {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             name,
                             VALID_TARGET,
@@ -168,7 +174,7 @@ class SavingsGoalTest {
             String longName = "A".repeat(101);
 
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             longName,
                             VALID_TARGET,
@@ -183,7 +189,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject null target amount")
         void shouldRejectNullTargetAmount() {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             null,
@@ -199,7 +205,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject non-positive target amount")
         void shouldRejectNonPositiveTargetAmount(String amount) {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             new BigDecimal(amount),
@@ -214,7 +220,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject deadline not after today")
         void shouldRejectDeadlineNotAfterToday() {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             VALID_TARGET,
@@ -229,7 +235,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject deadline in the past")
         void shouldRejectDeadlineInThePast() {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             VALID_TARGET,
@@ -292,8 +298,8 @@ class SavingsGoalTest {
                             VALID_DEADLINE,
                             GoalPriority.LOW,
                             null,
-                            LocalDateTime.now(),
-                            LocalDateTime.now(),
+                            Instant.now(),
+                            Instant.now(),
                             true
                     )
             ).isInstanceOf(InvalidInputException.class);
@@ -313,7 +319,7 @@ class SavingsGoalTest {
                             GoalPriority.LOW,
                             null,
                             null,
-                            LocalDateTime.now(),
+                            Instant.now(),
                             true
                     )
             ).isInstanceOf(InvalidInputException.class);
@@ -332,7 +338,7 @@ class SavingsGoalTest {
                             VALID_DEADLINE,
                             GoalPriority.LOW,
                             null,
-                            LocalDateTime.now(),
+                            Instant.now(),
                             null,
                             true
                     )
@@ -352,8 +358,8 @@ class SavingsGoalTest {
                             VALID_DEADLINE,
                             GoalPriority.LOW,
                             null,
-                            LocalDateTime.now(),
-                            LocalDateTime.now(),
+                            Instant.now(),
+                            Instant.now(),
                             true
                     )
             ).isInstanceOf(InvalidInputException.class);
@@ -372,8 +378,8 @@ class SavingsGoalTest {
                             VALID_DEADLINE,
                             null,
                             null,
-                            LocalDateTime.now(),
-                            LocalDateTime.now(),
+                            Instant.now(),
+                            Instant.now(),
                             true
                     )
             ).isInstanceOf(InvalidInputException.class);
@@ -426,7 +432,7 @@ class SavingsGoalTest {
         @Test
         @DisplayName("Should set link to null when link is blank")
         void shouldSetLinkToNullWhenBlank() {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -623,7 +629,7 @@ class SavingsGoalTest {
         })
         @DisplayName("Should normalize and accept valid links")
         void shouldNormalizeAndAcceptValidLinks(String input, String expected) {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -638,7 +644,7 @@ class SavingsGoalTest {
         @Test
         @DisplayName("Should set link to null when link is blank")
         void shouldSetLinkToNullWhenBlank() {
-            SavingsGoal goal = SavingsGoal.create(
+            SavingsGoal goal = SavingsGoal.create(TIME, 
                     USER_ID,
                     VALID_NAME,
                     VALID_TARGET,
@@ -660,7 +666,7 @@ class SavingsGoalTest {
         @DisplayName("Should reject invalid links")
         void shouldRejectInvalidLinks(String link) {
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             VALID_TARGET,
@@ -677,7 +683,7 @@ class SavingsGoalTest {
             String longLink = "https://" + "a".repeat(493);
 
             assertThatThrownBy(() ->
-                    SavingsGoal.create(
+                    SavingsGoal.create(TIME, 
                             USER_ID,
                             VALID_NAME,
                             VALID_TARGET,

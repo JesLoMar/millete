@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupGoalCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.application.services</a> &gt; <span class="el_source">GroupGoalCommandService.java</span></div><h1>GroupGoalCommandService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.application.services;
+
+import com.puntomartinez.millete.groupgoals.domain.model.ContributionType;
+import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.*;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class GroupGoalCommandService implements
+        CreateGoalUnitUseCase,
+        UpdateGoalUseCase,
+        DeleteGoalUnitUseCase,
+        UpdateMemberUseCase,
+        DeleteMemberUseCase,
+        AddContributionUseCase,
+        WithdrawContributionUseCase,
+        LeaveGoalUseCase {
+
+    private final GoalUnitRepository goalUnitRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalContributionRepository goalContributionRepository;
+    private final GoalInvitationRepository goalInvitationRepository;
+
+    public GroupGoalCommandService(
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
+            GoalInvitationRepository goalInvitationRepository
+<span class="fc" id="L46">    ) {</span>
+<span class="fc" id="L47">        this.goalUnitRepository = goalUnitRepository;</span>
+<span class="fc" id="L48">        this.goalMemberRepository = goalMemberRepository;</span>
+<span class="fc" id="L49">        this.goalContributionRepository = goalContributionRepository;</span>
+<span class="fc" id="L50">        this.goalInvitationRepository = goalInvitationRepository;</span>
+<span class="fc" id="L51">    }</span>
+
+    @Override
+    @Transactional
+    public GoalUnit create(CreateGoalUnitCommand command) {
+<span class="fc" id="L56">        GoalUnit goal = GoalUnit.create(</span>
+<span class="fc" id="L57">                command.name(),</span>
+<span class="fc" id="L58">                command.monthlyTarget(),</span>
+<span class="fc" id="L59">                command.distributionMode()</span>
+        );
+
+<span class="fc" id="L62">        GoalUnit saved = goalUnitRepository.save(goal);</span>
+
+<span class="fc" id="L64">        GoalMember admin = GoalMember.create(</span>
+<span class="fc" id="L65">                saved.getId(),</span>
+<span class="fc" id="L66">                command.creatorUserId(),</span>
+                GoalRole.ADMIN,
+                null
+        );
+<span class="fc" id="L70">        goalMemberRepository.save(admin);</span>
+
+<span class="fc" id="L72">        return saved;</span>
+    }
+
+    @Override
+    @Transactional
+    public GoalUnit update(
+            UUID goalId,
+            UUID userId,
+            UpdateGoalCommand command
+    ) {
+<span class="fc" id="L82">        GoalUnit goal = getActiveGoal(goalId);</span>
+<span class="fc" id="L83">        requireAdmin(goalId, userId);</span>
+
+<span class="fc" id="L85">        goal.updateDetails(</span>
+<span class="fc" id="L86">                command.name(),</span>
+<span class="fc" id="L87">                command.monthlyTarget(),</span>
+<span class="fc" id="L88">                command.distributionMode()</span>
+        );
+
+<span class="fc" id="L91">        return goalUnitRepository.save(goal);</span>
+    }
+
+    @Override
+    @Transactional
+    public void deleteGoalUnit(UUID goalId, UUID userId) {
+<span class="fc" id="L97">        getActiveGoal(goalId);</span>
+<span class="fc" id="L98">        requireAdmin(goalId, userId);</span>
+
+<span class="fc" id="L100">        goalUnitRepository.findById(goalId).ifPresent(goal -&gt; {</span>
+<span class="fc" id="L101">            goal.deactivate();</span>
+<span class="fc" id="L102">            goalUnitRepository.save(goal);</span>
+<span class="fc" id="L103">        });</span>
+
+<span class="fc" id="L105">        goalMemberRepository.deactivateByGoalId(goalId);</span>
+<span class="fc" id="L106">        goalInvitationRepository.deactivatePendingByGoalId(goalId);</span>
+<span class="fc" id="L107">        goalContributionRepository.deactivateByGoalId(goalId);</span>
+<span class="fc" id="L108">    }</span>
+
+    @Override
+    @Transactional
+    public GoalMember updateMember(
+            UUID goalId,
+            UUID memberId,
+            UUID requesterUserId,
+            UpdateMemberCommand command
+    ) {
+<span class="fc" id="L118">        getActiveGoal(goalId);</span>
+<span class="fc" id="L119">        requireAdmin(goalId, requesterUserId);</span>
+
+<span class="fc" id="L121">        GoalMember member = goalMemberRepository.findById(memberId)</span>
+<span class="fc" id="L122">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L123">                        new ResourceNotFoundException(&quot;Miembro no encontrado&quot;)</span>
+                );
+
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!member.getGoalId().equals(goalId)) {</span>
+<span class="nc" id="L127">            throw new ForbiddenOperationException(</span>
+                    &quot;El miembro no pertenece a este objetivo&quot;
+            );
+        }
+
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">        if (!member.isActive()) {</span>
+<span class="nc" id="L133">            throw new ResourceNotFoundException(&quot;Miembro no encontrado&quot;);</span>
+        }
+
+<span class="fc" id="L136">        validateDistributionConsistency(goalId, command);</span>
+
+<span class="fc" id="L138">        member.updateDetails(</span>
+<span class="fc" id="L139">                command.role(),</span>
+<span class="fc" id="L140">                command.salary(),</span>
+<span class="fc" id="L141">                command.customPercentage()</span>
+        );
+
+<span class="fc" id="L144">        return goalMemberRepository.save(member);</span>
+    }
+
+    @Override
+    @Transactional
+    public void deleteMember(
+            UUID goalId,
+            UUID memberId,
+            UUID requesterUserId
+    ) {
+<span class="fc" id="L154">        getActiveGoal(goalId);</span>
+<span class="fc" id="L155">        requireAdmin(goalId, requesterUserId);</span>
+
+<span class="fc" id="L157">        GoalMember member = goalMemberRepository.findById(memberId)</span>
+<span class="fc" id="L158">                .orElse(null);</span>
+
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (member == null</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">                || !member.getGoalId().equals(goalId)</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">                || !member.isActive()) {</span>
+<span class="nc" id="L163">            return;</span>
+        }
+
+<span class="fc" id="L166">        preventLastAdminRemoval(goalId, member);</span>
+
+<span class="fc" id="L168">        member.deactivate();</span>
+<span class="fc" id="L169">        goalMemberRepository.save(member);</span>
+<span class="fc" id="L170">    }</span>
+
+    @Override
+    @Transactional
+    public void addContribution(
+            UUID goalId,
+            UUID userId,
+            AddContributionCommand command
+    ) {
+<span class="fc" id="L179">        getActiveGoal(goalId);</span>
+<span class="fc" id="L180">        requireActiveMember(goalId, userId);</span>
+
+<span class="fc" id="L182">        GoalContribution contribution = GoalContribution.create(</span>
+                goalId,
+                userId,
+<span class="fc" id="L185">                command.amount(),</span>
+                ContributionType.DEPOSIT,
+<span class="fc" id="L187">                LocalDateTime.now()</span>
+        );
+
+<span class="fc" id="L190">        goalContributionRepository.save(contribution);</span>
+<span class="fc" id="L191">    }</span>
+
+    @Override
+    @Transactional
+    public void withdrawContribution(
+            UUID goalId,
+            UUID userId,
+            WithdrawContributionCommand command
+    ) {
+<span class="fc" id="L200">        getActiveGoal(goalId);</span>
+<span class="fc" id="L201">        requireActiveMember(goalId, userId);</span>
+
+<span class="fc" id="L203">        GoalContribution contribution = GoalContribution.create(</span>
+                goalId,
+                userId,
+<span class="fc" id="L206">                command.amount(),</span>
+                ContributionType.WITHDRAWAL,
+<span class="fc" id="L208">                LocalDateTime.now()</span>
+        );
+
+<span class="fc" id="L211">        goalContributionRepository.save(contribution);</span>
+<span class="fc" id="L212">    }</span>
+
+    @Override
+    @Transactional
+    public void leaveGoal(UUID goalId, UUID userId) {
+<span class="fc" id="L217">        getActiveGoal(goalId);</span>
+
+<span class="fc" id="L219">        GoalMember member = goalMemberRepository</span>
+<span class="fc" id="L220">                .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="fc" id="L221">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L222">                        new ResourceNotFoundException(</span>
+                                &quot;No perteneces a este objetivo&quot;
+                        )
+                );
+
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (!member.isActive()) {</span>
+<span class="nc" id="L228">            throw new ResourceNotFoundException(</span>
+                    &quot;No perteneces a este objetivo&quot;
+            );
+        }
+
+<span class="nc" id="L233">        preventLastAdminRemoval(goalId, member);</span>
+
+<span class="nc" id="L235">        member.deactivate();</span>
+<span class="nc" id="L236">        goalMemberRepository.save(member);</span>
+<span class="nc" id="L237">    }</span>
+
+    private GoalUnit getActiveGoal(UUID goalId) {
+<span class="fc" id="L240">        return goalUnitRepository.findById(goalId)</span>
+<span class="fc" id="L241">                .filter(GoalUnit::isActive)</span>
+<span class="fc" id="L242">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L243">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo no encontrado&quot;
+                        )
+                );
+    }
+
+    private void requireAdmin(UUID goalId, UUID userId) {
+<span class="fc" id="L250">        GoalMember member = goalMemberRepository</span>
+<span class="fc" id="L251">                .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="fc" id="L252">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L253">                        new ForbiddenOperationException(</span>
+                                &quot;No tienes permisos sobre este objetivo&quot;
+                        )
+                );
+
+<span class="pc bpc" id="L258" title="1 of 4 branches missed.">        if (!member.isActive() || !member.isAdmin()) {</span>
+<span class="fc" id="L259">            throw new ForbiddenOperationException(</span>
+                    &quot;Solo los administradores pueden realizar esta acción&quot;
+            );
+        }
+<span class="fc" id="L263">    }</span>
+
+    private void requireActiveMember(UUID goalId, UUID userId) {
+<span class="fc" id="L266">        GoalMember member = goalMemberRepository</span>
+<span class="fc" id="L267">                .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="fc" id="L268">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L269">                        new ForbiddenOperationException(</span>
+                                &quot;No perteneces a este objetivo&quot;
+                        )
+                );
+
+<span class="fc bfc" id="L274" title="All 2 branches covered.">        if (!member.isActive()) {</span>
+<span class="fc" id="L275">            throw new ForbiddenOperationException(</span>
+                    &quot;No perteneces a este objetivo&quot;
+            );
+        }
+<span class="fc" id="L279">    }</span>
+
+    private void preventLastAdminRemoval(UUID goalId, GoalMember member) {
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (!member.isAdmin()) {</span>
+<span class="fc" id="L283">            return;</span>
+        }
+
+<span class="fc" id="L286">        long activeAdmins = goalMemberRepository.findActiveByGoalId(goalId)</span>
+<span class="fc" id="L287">                .stream()</span>
+<span class="fc" id="L288">                .filter(GoalMember::isAdmin)</span>
+<span class="fc" id="L289">                .count();</span>
+
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">        if (activeAdmins &lt;= 1) {</span>
+<span class="fc" id="L292">            throw new InvalidInputException(</span>
+                    &quot;No se puede eliminar al último administrador del objetivo&quot;
+            );
+        }
+<span class="nc" id="L296">    }</span>
+
+    private void validateDistributionConsistency(
+            UUID goalId,
+            UpdateMemberCommand command
+    ) {
+<span class="fc" id="L302">        GoalUnit goal = goalUnitRepository.findById(goalId)</span>
+<span class="fc" id="L303">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L304">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo no encontrado&quot;
+                        )
+                );
+
+<span class="fc" id="L309">        DistributionMode mode = goal.getDistributionMode();</span>
+
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (mode == DistributionMode.CUSTOM</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                &amp;&amp; command.customPercentage() == null) {</span>
+<span class="nc" id="L313">            throw new InvalidInputException(</span>
+                    &quot;En modo CUSTOM todos los miembros deben tener un porcentaje asignado&quot;
+            );
+        }
+<span class="fc" id="L317">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

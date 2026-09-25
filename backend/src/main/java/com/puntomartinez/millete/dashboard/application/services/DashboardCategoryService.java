@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.dashboard.application.services;
 
+import java.time.LocalDate;
 import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
 import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.CategoryExpenseItemResponseDTO;
@@ -10,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,7 @@ public class DashboardCategoryService {
             UUID userId,
             String period
     ) {
-        LocalDateTime[] range =
+        LocalDate[] range =
                 dashboardPeriodService.getDateRange(period);
 
         List<TransactionQueryPort.TransactionData> expenses =

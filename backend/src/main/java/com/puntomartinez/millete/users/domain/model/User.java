@@ -1,8 +1,9 @@
 package com.puntomartinez.millete.users.domain.model;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -11,13 +12,13 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
     private boolean anonymized;
 
     public User(UUID id, String username, String email, String password,
-                LocalDateTime createdAt, LocalDateTime modifiedAt,
+                Instant createdAt, Instant modifiedAt,
                 boolean active, boolean anonymized) {
 
         boolean hasUsername = username != null && !username.isBlank();
@@ -43,16 +44,16 @@ public class User {
         this.anonymized = anonymized;
     }
 
-    public void anonymize() {
+    public void anonymize(TimeProvider timeProvider) {
         this.username = "user_" + this.id;
         this.email = "anon_" + this.id + "@familybudget.internal";
         this.password = "ANONYMIZED";
         this.anonymized = true;
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void updateProfile(String newUsername, String newEmail) {
+    public void updateProfile(TimeProvider timeProvider, String newUsername, String newEmail) {
         boolean hasUsername = newUsername != null && !newUsername.isBlank();
         boolean hasEmail = newEmail != null && !newEmail.isBlank();
 
@@ -64,21 +65,21 @@ public class User {
 
         this.username = hasUsername ? newUsername : null;
         this.email = hasEmail ? newEmail : null;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void updatePassword(String newHashedPassword) {
+    public void updatePassword(TimeProvider timeProvider, String newHashedPassword) {
         if (newHashedPassword == null || newHashedPassword.isBlank()) {
             throw new IllegalArgumentException("La nueva contraseña no es válida");
         }
 
         this.password = newHashedPassword;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     public boolean hasValidIdentity() {

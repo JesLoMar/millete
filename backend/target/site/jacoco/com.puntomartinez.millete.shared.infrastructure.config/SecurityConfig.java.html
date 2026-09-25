@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.shared.infrastructure.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.shared.infrastructure.config;
+
+import com.puntomartinez.millete.shared.infrastructure.config.filter.JwtAuthenticationFilter;
+import com.puntomartinez.millete.shared.infrastructure.config.filter.LoginRateLimitFilter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
+
+    @Value(&quot;${CORS_ALLOWED_ORIGINS:http://localhost:5173}&quot;)
+    private List&lt;String&gt; allowedOrigins;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter,
+<span class="nc" id="L36">                           LoginRateLimitFilter loginRateLimitFilter) {</span>
+<span class="nc" id="L37">        this.jwtAuthFilter = jwtAuthFilter;</span>
+<span class="nc" id="L38">        this.loginRateLimitFilter = loginRateLimitFilter;</span>
+<span class="nc" id="L39">    }</span>
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="nc" id="L43">        http</span>
+<span class="nc" id="L44">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
+            // CSRF deshabilitado CONSCIENTEMENTE: la autenticación usa JWT en cookie
+            // httpOnly + SameSite=Strict, que el navegador no adjunta en peticiones
+            // cross-site → el vector CSRF clásico no aplica. Además la API es stateless
+            // (no hay sesión de servidor).
+            //
+            // CONTRATO: si algún día el front y el back se separan en dominios distintos
+            // (hoy lo enmascara el proxy nginx, que los sirve same-origin), habrá que
+            // relajar SameSite a Lax y entonces SÍ hace falta protección CSRF
+            // (token sincronizado). No quites este comentario sin revisar esa decisión.
+<span class="nc" id="L54">            .csrf(csrf -&gt; csrf.disable())</span>
+<span class="nc" id="L55">            .sessionManagement(session -&gt; session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+<span class="nc" id="L56">            .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="nc" id="L57">                .requestMatchers(HttpMethod.OPTIONS, &quot;/**&quot;).permitAll()</span>
+<span class="nc" id="L58">                .requestMatchers(HttpMethod.POST, &quot;/api/v1/auth/register&quot;).permitAll()</span>
+<span class="nc" id="L59">                .requestMatchers(HttpMethod.POST, &quot;/api/v1/auth/login&quot;).permitAll()</span>
+<span class="nc" id="L60">                .anyRequest().authenticated()</span>
+            )
+<span class="nc" id="L62">            .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)</span>
+<span class="nc" id="L63">            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);</span>
+
+<span class="nc" id="L65">        return http.build();</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+<span class="nc" id="L70">        CorsConfiguration configuration = new CorsConfiguration();</span>
+
+<span class="nc" id="L72">        configuration.setAllowedOrigins(allowedOrigins);</span>
+<span class="nc" id="L73">        configuration.setAllowedMethods(Arrays.asList(</span>
+                &quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;
+        ));
+<span class="nc" id="L76">        configuration.setAllowedHeaders(Arrays.asList(</span>
+                &quot;Authorization&quot;,
+                &quot;Content-Type&quot;,
+                &quot;X-Requested-With&quot;,
+                &quot;Accept&quot;,
+                &quot;Origin&quot;,
+                &quot;Cookie&quot;
+        ));
+<span class="nc" id="L84">        configuration.setExposedHeaders(List.of(&quot;Authorization&quot;));</span>
+<span class="nc" id="L85">        configuration.setAllowCredentials(true);</span>
+
+<span class="nc" id="L87">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="nc" id="L88">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="nc" id="L89">        return source;</span>
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="nc" id="L94">        return new BCryptPasswordEncoder();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

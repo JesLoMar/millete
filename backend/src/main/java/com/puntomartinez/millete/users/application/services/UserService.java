@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.users.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
@@ -12,13 +13,14 @@ import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsEx
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
 public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUserDataUseCase {
 
     private final UserRepository userRepository;
+    private final TimeProvider timeProvider;
     private final PasswordHasherPort passwordHasher;
     private final AccountLockService accountLockService;
 
@@ -26,7 +28,10 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
 
     public UserService(UserRepository userRepository,
                        PasswordHasherPort passwordHasher,
-                       AccountLockService accountLockService) {
+                       AccountLockService accountLockService,
+            TimeProvider timeProvider
+    ) {
+        this.timeProvider = timeProvider;
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.accountLockService = accountLockService;
@@ -54,7 +59,7 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
             throw new ResourceAlreadyExistsException("El usuario o el email ya están registrados.");
         }
         String encryptedPassword = passwordHasher.hashPassword(command.rawPassword());
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
         User newUser = new User(
                 UUID.randomUUID(),
                 hasUsername ? command.username() : null,

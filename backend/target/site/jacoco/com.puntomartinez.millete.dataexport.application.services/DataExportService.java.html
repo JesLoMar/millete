@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataExportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.application.services</a> &gt; <span class="el_source">DataExportService.java</span></div><h1>DataExportService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.application.services;
+
+import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.ExportData;
+import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.PeriodType;
+import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
+import com.puntomartinez.millete.dataexport.domain.model.PlannedTransactionSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.SavingsGoalSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.TransactionSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+<span class="fc" id="L31">@Slf4j</span>
+@Service
+public class DataExportService {
+
+    private final CategoryExportPort categoryExportPort;
+    private final TransactionExportPort transactionExportPort;
+    private final PlannedTransactionExportPort plannedTransactionExportPort;
+    private final InvestmentExportPort investmentExportPort;
+    private final SavingsGoalExportPort savingsGoalExportPort;
+    private final UserPreferencesExportPort userPreferencesExportPort;
+    private final FileZipExportPort fileZipExportPort;
+    private final FileCsvExportPort fileCsvExportPort;
+    private final FilePdfExportPort filePdfExportPort;
+
+    @Value(&quot;${app.version:0.0.1}&quot;)
+    private String appVersion;
+
+    public DataExportService(
+            CategoryExportPort categoryExportPort,
+            TransactionExportPort transactionExportPort,
+            PlannedTransactionExportPort plannedTransactionExportPort,
+            InvestmentExportPort investmentExportPort,
+            SavingsGoalExportPort savingsGoalExportPort,
+            UserPreferencesExportPort userPreferencesExportPort,
+            FileZipExportPort fileZipExportPort,
+            FileCsvExportPort fileCsvExportPort,
+            @Qualifier(&quot;pdfFileExportAdapter&quot;)
+<span class="fc" id="L58">            FilePdfExportPort filePdfExportPort) {</span>
+
+<span class="fc" id="L60">        this.categoryExportPort = categoryExportPort;</span>
+<span class="fc" id="L61">        this.transactionExportPort = transactionExportPort;</span>
+<span class="fc" id="L62">        this.plannedTransactionExportPort = plannedTransactionExportPort;</span>
+<span class="fc" id="L63">        this.investmentExportPort = investmentExportPort;</span>
+<span class="fc" id="L64">        this.savingsGoalExportPort = savingsGoalExportPort;</span>
+<span class="fc" id="L65">        this.userPreferencesExportPort = userPreferencesExportPort;</span>
+<span class="fc" id="L66">        this.fileZipExportPort = fileZipExportPort;</span>
+<span class="fc" id="L67">        this.fileCsvExportPort = fileCsvExportPort;</span>
+<span class="fc" id="L68">        this.filePdfExportPort = filePdfExportPort;</span>
+<span class="fc" id="L69">    }</span>
+
+    public UserDataSnapshot exportAllUserData(UUID userId) {
+
+<span class="fc" id="L73">        log.info(&quot;Exportando datos para usuario: {}&quot;, userId);</span>
+
+<span class="fc" id="L75">        List&lt;CategorySnapshot&gt; categories =</span>
+<span class="fc" id="L76">                categoryExportPort.findByUserId(userId);</span>
+
+<span class="fc" id="L78">        List&lt;TransactionSnapshot&gt; transactions =</span>
+<span class="fc" id="L79">                transactionExportPort.findAllByUserId(userId);</span>
+
+<span class="fc" id="L81">        List&lt;PlannedTransactionSnapshot&gt; plannedTransactions =</span>
+<span class="fc" id="L82">                plannedTransactionExportPort.findAllByUserId(userId);</span>
+
+<span class="fc" id="L84">        List&lt;InvestmentSnapshot&gt; investments =</span>
+<span class="fc" id="L85">                investmentExportPort.findAllByUserId(userId);</span>
+
+<span class="fc" id="L87">        List&lt;SavingsGoalSnapshot&gt; savingsGoals =</span>
+<span class="fc" id="L88">                savingsGoalExportPort.findAllByUserId(userId);</span>
+
+<span class="fc" id="L90">        UserPreferencesSnapshot userPreferences =</span>
+                userPreferencesExportPort
+<span class="fc" id="L92">                        .findByUserId(userId)</span>
+<span class="fc" id="L93">                        .orElse(null);</span>
+
+<span class="fc" id="L95">        UserDataSnapshot snapshot =</span>
+                new UserDataSnapshot(
+                        new UserDataSnapshot.SnapshotMetadata(
+<span class="fc" id="L98">                                ExportVersion.CURRENT.toString(),</span>
+<span class="fc" id="L99">                                LocalDateTime.now(),</span>
+                                appVersion
+                        ),
+                        categories,
+                        transactions,
+                        plannedTransactions,
+                        investments,
+                        savingsGoals,
+                        userPreferences
+                );
+
+<span class="fc" id="L110">        log.info(</span>
+                &quot;Exportación completada. v{}&quot;,
+                ExportVersion.CURRENT
+        );
+
+<span class="fc" id="L115">        return snapshot;</span>
+    }
+
+    public ExportData buildExportData(UUID userId) {
+
+<span class="fc" id="L120">        UserDataSnapshot snapshot =</span>
+<span class="fc" id="L121">                exportAllUserData(userId);</span>
+
+<span class="fc" id="L123">        Map&lt;UUID, String&gt; categoryNames = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        for (CategorySnapshot category : snapshot.categories()) {</span>
+<span class="fc" id="L126">            categoryNames.put(</span>
+<span class="fc" id="L127">                    category.id(),</span>
+<span class="fc" id="L128">                    category.name()</span>
+            );
+<span class="fc" id="L130">        }</span>
+
+<span class="fc" id="L132">        List&lt;ExportData.CategoryExportRow&gt; categories =</span>
+<span class="fc" id="L133">                snapshot.categories().stream()</span>
+<span class="fc" id="L134">                        .filter(CategorySnapshot::active)</span>
+<span class="fc" id="L135">                        .map(category -&gt;</span>
+<span class="fc" id="L136">                                new ExportData.CategoryExportRow(</span>
+<span class="fc" id="L137">                                        category.name(),</span>
+<span class="fc" id="L138">                                        category.budgetLimit()</span>
+                                )
+                        )
+<span class="fc" id="L141">                        .toList();</span>
+
+<span class="fc" id="L143">        List&lt;ExportData.TransactionExportRow&gt; transactions =</span>
+<span class="fc" id="L144">                snapshot.transactions().stream()</span>
+<span class="fc" id="L145">                        .filter(TransactionSnapshot::active)</span>
+<span class="fc" id="L146">                        .map(transaction -&gt;</span>
+<span class="fc" id="L147">                                new ExportData.TransactionExportRow(</span>
+<span class="fc" id="L148">                                        categoryNames.getOrDefault(</span>
+<span class="fc" id="L149">                                                transaction.categoryId(),</span>
+                                                &quot;Sin categoría&quot;
+                                        ),
+<span class="fc" id="L152">                                        transaction.amount(),</span>
+<span class="fc" id="L153">                                        transaction.date(),</span>
+<span class="fc" id="L154">                                        transaction.type(),</span>
+<span class="fc" id="L155">                                        transaction.description()</span>
+                                )
+                        )
+<span class="fc" id="L158">                        .toList();</span>
+
+<span class="fc" id="L160">        List&lt;ExportData.PlannedTransactionExportRow&gt; planned =</span>
+<span class="fc" id="L161">                snapshot.plannedTransactions().stream()</span>
+<span class="fc" id="L162">                        .filter(PlannedTransactionSnapshot::active)</span>
+<span class="fc" id="L163">                        .map(plannedTransaction -&gt;</span>
+<span class="nc" id="L164">                                new ExportData.PlannedTransactionExportRow(</span>
+<span class="nc" id="L165">                                        categoryNames.getOrDefault(</span>
+<span class="nc" id="L166">                                                plannedTransaction.categoryId(),</span>
+                                                &quot;Sin categoría&quot;
+                                        ),
+<span class="nc" id="L169">                                        plannedTransaction.amount(),</span>
+<span class="nc" id="L170">                                        plannedTransaction.type(),</span>
+<span class="nc" id="L171">                                        plannedTransaction.description(),</span>
+<span class="nc" id="L172">                                        plannedTransaction.frequencyType(),</span>
+<span class="nc" id="L173">                                        plannedTransaction.frequencyInterval(),</span>
+<span class="nc" id="L174">                                        plannedTransaction.startDate(),</span>
+<span class="nc" id="L175">                                        plannedTransaction.endDate(),</span>
+<span class="nc" id="L176">                                        plannedTransaction.lastExecutedDate()</span>
+                                )
+                        )
+<span class="fc" id="L179">                        .toList();</span>
+
+<span class="fc" id="L181">        List&lt;ExportData.InvestmentExportRow&gt; investments =</span>
+<span class="fc" id="L182">                snapshot.investments().stream()</span>
+<span class="fc" id="L183">                        .filter(InvestmentSnapshot::active)</span>
+<span class="fc" id="L184">                        .map(investment -&gt;</span>
+<span class="nc" id="L185">                                new ExportData.InvestmentExportRow(</span>
+<span class="nc" id="L186">                                        investment.assetName(),</span>
+<span class="nc" id="L187">                                        investment.ticker(),</span>
+<span class="nc" id="L188">                                        investment.quantity(),</span>
+<span class="nc" id="L189">                                        investment.purchasePrice(),</span>
+<span class="nc" id="L190">                                        investment.currentPrice(),</span>
+<span class="nc" id="L191">                                        investment.type(),</span>
+<span class="nc" id="L192">                                        investment.purchaseDate().atStartOfDay()</span>
+                                )
+                        )
+<span class="fc" id="L195">                        .toList();</span>
+
+<span class="fc" id="L197">        List&lt;ExportData.SavingsGoalExportRow&gt; savingsGoals =</span>
+<span class="fc" id="L198">                snapshot.savingsGoals().stream()</span>
+<span class="fc" id="L199">                        .filter(SavingsGoalSnapshot::active)</span>
+<span class="fc" id="L200">                        .map(goal -&gt;</span>
+<span class="nc" id="L201">                                new ExportData.SavingsGoalExportRow(</span>
+<span class="nc" id="L202">                                        goal.name(),</span>
+<span class="nc" id="L203">                                        goal.targetAmount(),</span>
+<span class="nc" id="L204">                                        goal.currentAmount(),</span>
+<span class="nc" id="L205">                                        calculatePercentage(</span>
+<span class="nc" id="L206">                                                goal.currentAmount(),</span>
+<span class="nc" id="L207">                                                goal.targetAmount()</span>
+                                        ),
+<span class="nc" id="L209">                                        goal.deadline(),</span>
+<span class="nc" id="L210">                                        goal.priority(),</span>
+<span class="nc" id="L211">                                        goal.link()</span>
+                                )
+                        )
+<span class="fc" id="L214">                        .toList();</span>
+
+<span class="fc" id="L216">        return new ExportData(</span>
+                categories,
+                transactions,
+                planned,
+                investments,
+                savingsGoals
+        );
+    }
+
+    public PdfExportData buildPdfExportData(
+            UUID userId,
+            PeriodType period) {
+
+<span class="fc" id="L229">        LocalDate endDate = period.getEndDate();</span>
+<span class="fc" id="L230">        LocalDate startDate = period.getStartDate();</span>
+
+<span class="fc" id="L232">        LocalDateTime startDateTime =</span>
+<span class="fc" id="L233">                startDate.atStartOfDay();</span>
+
+<span class="fc" id="L235">        LocalDateTime endDateTime =</span>
+<span class="fc" id="L236">                endDate.atTime(LocalTime.MAX);</span>
+
+<span class="fc" id="L238">        List&lt;TransactionSnapshot&gt; periodTransactions =</span>
+                transactionExportPort
+<span class="fc" id="L240">                        .findByUserIdAndDateBetween(</span>
+                                userId,
+                                startDateTime,
+                                endDateTime
+                        )
+<span class="fc" id="L245">                        .stream()</span>
+<span class="fc" id="L246">                        .filter(TransactionSnapshot::active)</span>
+<span class="fc" id="L247">                        .sorted(</span>
+<span class="fc" id="L248">                                Comparator.comparing(</span>
+                                        TransactionSnapshot::date
+<span class="fc" id="L250">                                ).reversed()</span>
+                        )
+<span class="fc" id="L252">                        .toList();</span>
+
+<span class="fc" id="L254">        List&lt;CategorySnapshot&gt; categories =</span>
+<span class="fc" id="L255">                categoryExportPort.findByUserId(userId);</span>
+
+<span class="fc" id="L257">        Map&lt;UUID, String&gt; categoryNames = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        for (CategorySnapshot category : categories) {</span>
+<span class="fc" id="L260">            categoryNames.put(</span>
+<span class="fc" id="L261">                    category.id(),</span>
+<span class="fc" id="L262">                    category.name()</span>
+            );
+<span class="fc" id="L264">        }</span>
+
+<span class="fc" id="L266">        BigDecimal totalIncome = BigDecimal.ZERO;</span>
+<span class="fc" id="L267">        BigDecimal totalExpenses = BigDecimal.ZERO;</span>
+
+<span class="fc" id="L269">        Map&lt;String, BigDecimal&gt; expensesByCategory =</span>
+                new HashMap&lt;&gt;();
+
+<span class="fc bfc" id="L272" title="All 2 branches covered.">        for (TransactionSnapshot transaction : periodTransactions) {</span>
+
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            if (transaction.type().equals(&quot;INCOME&quot;)) {</span>
+<span class="fc" id="L275">                totalIncome =</span>
+<span class="fc" id="L276">                        totalIncome.add(</span>
+<span class="fc" id="L277">                                transaction.amount().abs()</span>
+                        );
+            } else {
+<span class="fc" id="L280">                totalExpenses =</span>
+<span class="fc" id="L281">                        totalExpenses.add(</span>
+<span class="fc" id="L282">                                transaction.amount().abs()</span>
+                        );
+
+<span class="fc" id="L285">                String categoryName =</span>
+<span class="fc" id="L286">                        categoryNames.getOrDefault(</span>
+<span class="fc" id="L287">                                transaction.categoryId(),</span>
+                                &quot;Sin categoría&quot;
+                        );
+
+<span class="fc" id="L291">                expensesByCategory.merge(</span>
+                        categoryName,
+<span class="fc" id="L293">                        transaction.amount().abs(),</span>
+                        BigDecimal::add
+                );
+            }
+<span class="fc" id="L297">        }</span>
+
+<span class="fc" id="L299">        BigDecimal balance =</span>
+<span class="fc" id="L300">                totalIncome.subtract(totalExpenses);</span>
+
+<span class="fc" id="L302">        String topCategoryName = &quot;—&quot;;</span>
+<span class="fc" id="L303">        BigDecimal topCategoryAmount = BigDecimal.ZERO;</span>
+<span class="fc" id="L304">        double topCategoryPercentage = 0.0;</span>
+
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (!expensesByCategory.isEmpty()) {</span>
+
+<span class="fc" id="L308">            var topEntry =</span>
+<span class="fc" id="L309">                    expensesByCategory.entrySet()</span>
+<span class="fc" id="L310">                            .stream()</span>
+<span class="fc" id="L311">                            .max(Map.Entry.comparingByValue())</span>
+<span class="fc" id="L312">                            .orElse(null);</span>
+
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">            if (topEntry != null) {</span>
+<span class="fc" id="L315">                topCategoryName = topEntry.getKey();</span>
+<span class="fc" id="L316">                topCategoryAmount = topEntry.getValue();</span>
+
+<span class="fc" id="L318">                topCategoryPercentage =</span>
+<span class="fc" id="L319">                        calculatePercentage(</span>
+                                topCategoryAmount,
+                                totalExpenses
+                        );
+            }
+        }
+
+<span class="fc" id="L326">        List&lt;InvestmentSnapshot&gt; activeInvestments =</span>
+                investmentExportPort
+<span class="fc" id="L328">                        .findAllByUserId(userId)</span>
+<span class="fc" id="L329">                        .stream()</span>
+<span class="fc" id="L330">                        .filter(InvestmentSnapshot::active)</span>
+<span class="fc" id="L331">                        .toList();</span>
+
+<span class="fc" id="L333">        BigDecimal investmentsTotalValue =</span>
+<span class="fc" id="L334">                activeInvestments.stream()</span>
+<span class="fc" id="L335">                        .map(InvestmentSnapshot::currentValue)</span>
+<span class="fc" id="L336">                        .reduce(</span>
+                                BigDecimal.ZERO,
+                                BigDecimal::add
+                        );
+
+<span class="fc" id="L341">        List&lt;PdfExportData.TransactionRow&gt; txRows =</span>
+<span class="fc" id="L342">                periodTransactions.stream()</span>
+<span class="fc" id="L343">                        .map(transaction -&gt;</span>
+<span class="fc" id="L344">                                new PdfExportData.TransactionRow(</span>
+<span class="fc" id="L345">                                        transaction.date(),</span>
+<span class="fc" id="L346">                                        categoryNames.getOrDefault(</span>
+<span class="fc" id="L347">                                                transaction.categoryId(),</span>
+                                                &quot;Sin categoría&quot;
+                                        ),
+<span class="fc" id="L350">                                        transaction.description(),</span>
+<span class="fc" id="L351">                                        transaction.type()</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">                                                .equals(&quot;INCOME&quot;)</span>
+<span class="fc" id="L353">                                                ? &quot;Ingreso&quot;</span>
+<span class="fc" id="L354">                                                : &quot;Gasto&quot;,</span>
+<span class="fc" id="L355">                                        transaction.amount().abs()</span>
+                                )
+                        )
+<span class="fc" id="L358">                        .toList();</span>
+
+<span class="fc" id="L360">        List&lt;PdfExportData.InvestmentRow&gt; invRows =</span>
+<span class="fc" id="L361">                activeInvestments.stream()</span>
+<span class="fc" id="L362">                        .map(investment -&gt;</span>
+<span class="nc" id="L363">                                new PdfExportData.InvestmentRow(</span>
+<span class="nc" id="L364">                                        investment.assetName(),</span>
+<span class="nc" id="L365">                                        investment.ticker(),</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">                                        investment.type() != null</span>
+<span class="nc" id="L367">                                                ? investment.type()</span>
+<span class="nc" id="L368">                                                : &quot;&quot;,</span>
+<span class="nc" id="L369">                                        investment.quantity(),</span>
+<span class="nc" id="L370">                                        investment.purchasePrice(),</span>
+<span class="nc" id="L371">                                        investment.currentPrice(),</span>
+<span class="nc" id="L372">                                        investment.currentValue(),</span>
+<span class="nc" id="L373">                                        investment.profitOrLoss(),</span>
+<span class="nc" id="L374">                                        investment.returnOnInvestmentPercentage()</span>
+<span class="nc" id="L375">                                                .doubleValue()</span>
+                                )
+                        )
+<span class="fc" id="L378">                        .toList();</span>
+
+<span class="fc" id="L380">        List&lt;SavingsGoalSnapshot&gt; activeSavingsGoals =</span>
+                savingsGoalExportPort
+<span class="fc" id="L382">                        .findAllByUserId(userId)</span>
+<span class="fc" id="L383">                        .stream()</span>
+<span class="fc" id="L384">                        .filter(SavingsGoalSnapshot::active)</span>
+<span class="fc" id="L385">                        .toList();</span>
+
+<span class="fc" id="L387">        List&lt;PdfExportData.SavingsGoalRow&gt; sgRows =</span>
+<span class="fc" id="L388">                activeSavingsGoals.stream()</span>
+<span class="fc" id="L389">                        .map(goal -&gt;</span>
+<span class="nc" id="L390">                                new PdfExportData.SavingsGoalRow(</span>
+<span class="nc" id="L391">                                        goal.name(),</span>
+<span class="nc" id="L392">                                        goal.targetAmount(),</span>
+<span class="nc" id="L393">                                        goal.currentAmount(),</span>
+<span class="nc" id="L394">                                        calculatePercentage(</span>
+<span class="nc" id="L395">                                                goal.currentAmount(),</span>
+<span class="nc" id="L396">                                                goal.targetAmount()</span>
+                                        ),
+<span class="nc" id="L398">                                        goal.deadline(),</span>
+<span class="nc" id="L399">                                        goal.priority(),</span>
+<span class="nc" id="L400">                                        goal.link()</span>
+                                )
+                        )
+<span class="fc" id="L403">                        .toList();</span>
+
+<span class="fc" id="L405">        BigDecimal totalSavedAmount =</span>
+<span class="fc" id="L406">                sgRows.stream()</span>
+<span class="fc" id="L407">                        .map(</span>
+                                PdfExportData.SavingsGoalRow::currentAmount
+                        )
+<span class="fc" id="L410">                        .reduce(</span>
+                                BigDecimal.ZERO,
+                                BigDecimal::add
+                        );
+
+<span class="fc" id="L415">        PdfExportData.Summary summary =</span>
+                new PdfExportData.Summary(
+                        balance,
+                        totalIncome,
+                        totalExpenses,
+<span class="fc" id="L420">                        periodTransactions.size(),</span>
+                        topCategoryName,
+                        topCategoryAmount,
+                        topCategoryPercentage,
+                        investmentsTotalValue,
+<span class="fc" id="L425">                        activeInvestments.size(),</span>
+<span class="fc" id="L426">                        sgRows.size(),</span>
+                        totalSavedAmount
+                );
+
+<span class="fc" id="L430">        return new PdfExportData(</span>
+<span class="fc" id="L431">                period.getDisplayName(),</span>
+                startDate,
+                endDate,
+                summary,
+                txRows,
+                invRows,
+                sgRows
+        );
+    }
+
+    private double calculatePercentage(
+            BigDecimal currentAmount,
+            BigDecimal targetAmount) {
+
+<span class="pc bpc" id="L445" title="2 of 4 branches missed.">        if (currentAmount == null</span>
+                || targetAmount == null
+<span class="pc bpc" id="L447" title="1 of 2 branches missed.">                || targetAmount.compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+
+<span class="nc" id="L449">            return 0.0;</span>
+        }
+
+<span class="fc" id="L452">        return currentAmount</span>
+<span class="fc" id="L453">                .multiply(new BigDecimal(&quot;100&quot;))</span>
+<span class="fc" id="L454">                .divide(</span>
+                        targetAmount,
+                        1,
+                        RoundingMode.HALF_UP
+                )
+<span class="fc" id="L459">                .doubleValue();</span>
+    }
+
+    public byte[] exportUserDataAsZip(UUID userId) {
+
+<span class="fc" id="L464">        log.info(</span>
+                &quot;Exportando datos ZIP para usuario: {}&quot;,
+                userId
+        );
+
+<span class="fc" id="L469">        ExportData data =</span>
+<span class="fc" id="L470">                buildExportData(userId);</span>
+
+<span class="fc" id="L472">        byte[] zip =</span>
+<span class="fc" id="L473">                fileZipExportPort.generateZip(data);</span>
+
+<span class="fc" id="L475">        log.info(</span>
+                &quot;Exportación ZIP completada para usuario: {}&quot;,
+                userId
+        );
+
+<span class="fc" id="L480">        return zip;</span>
+    }
+
+    public byte[] exportUserDataAsCsv(
+            UUID userId,
+            String entityType) {
+
+<span class="fc" id="L487">        log.info(</span>
+                &quot;Exportando datos CSV ({}) para usuario: {}&quot;,
+                entityType,
+                userId
+        );
+
+<span class="fc" id="L493">        ExportData data =</span>
+<span class="fc" id="L494">                buildExportData(userId);</span>
+
+<span class="fc" id="L496">        byte[] csv =</span>
+<span class="fc" id="L497">                fileCsvExportPort.generateCsv(</span>
+                        data,
+                        entityType
+                );
+
+<span class="fc" id="L502">        log.info(</span>
+                &quot;Exportación CSV ({}) completada para usuario: {}&quot;,
+                entityType,
+                userId
+        );
+
+<span class="fc" id="L508">        return csv;</span>
+    }
+
+    public byte[] exportUserDataAsPdf(
+            UUID userId,
+            PeriodType period) {
+
+<span class="fc" id="L515">        log.info(</span>
+                &quot;Exportando datos PDF para usuario: {} (periodo: {})&quot;,
+                userId,
+<span class="fc" id="L518">                period.getCode()</span>
+        );
+
+<span class="fc" id="L521">        PdfExportData data =</span>
+<span class="fc" id="L522">                buildPdfExportData(</span>
+                        userId,
+                        period
+                );
+
+<span class="fc" id="L527">        byte[] pdf =</span>
+<span class="fc" id="L528">                filePdfExportPort.generatePdf(data);</span>
+
+<span class="fc" id="L530">        log.info(</span>
+                &quot;Exportación PDF completada para usuario: {}&quot;,
+                userId
+        );
+
+<span class="fc" id="L535">        return pdf;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -41,12 +41,12 @@ class TransactionMetricsServiceTest {
         service = new TransactionMetricsService(transactionRepository, transactionPeriodService);
 
         LocalDateTime[] currentRange = {
-                LocalDateTime.now().minusDays(30),
-                LocalDateTime.now()
+                Instant.now().minusDays(30),
+                Instant.now()
         };
         LocalDateTime[] previousRange = {
-                LocalDateTime.now().minusDays(60),
-                LocalDateTime.now().minusDays(30)
+                Instant.now().minusDays(60),
+                Instant.now().minusDays(30)
         };
 
         lenient().when(transactionPeriodService.getDateRange(any())).thenReturn(currentRange);

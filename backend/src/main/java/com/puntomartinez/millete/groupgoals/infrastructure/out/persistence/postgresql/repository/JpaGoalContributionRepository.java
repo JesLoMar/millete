@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +49,6 @@ public interface JpaGoalContributionRepository
             """)
     int deactivateByGoalId(
             @Param("goalId") UUID goalId,
-            @Param("modifiedAt") LocalDateTime modifiedAt
+            @Param("modifiedAt") Instant modifiedAt
     );
 }

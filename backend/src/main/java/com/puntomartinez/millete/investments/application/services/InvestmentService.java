@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.investments.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.investments.domain.model.Investment;
 import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
 import com.puntomartinez.millete.investments.domain.ports.in.DeleteInvestmentUseCase;
@@ -26,14 +27,19 @@ public class InvestmentService implements
         UpdateInvestmentUseCase {
 
     private final InvestmentRepository investmentRepository;
+    private final TimeProvider timeProvider;
 
-    public InvestmentService(InvestmentRepository investmentRepository) {
+    public InvestmentService(InvestmentRepository investmentRepository,
+            TimeProvider timeProvider
+    ) {
         this.investmentRepository = investmentRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     public Investment register(RegisterInvestmentCommand command) {
         Investment investment = Investment.create(
+                timeProvider,
                 command.userId(),
                 command.assetName(),
                 command.ticker(),
@@ -98,7 +104,7 @@ public class InvestmentService implements
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Inversión no encontrada."));
 
-        investment.updateCurrentPrice(newPrice);
+        investment.updateCurrentPrice(timeProvider, newPrice);
 
         return investmentRepository.save(investment);
     }
@@ -109,7 +115,7 @@ public class InvestmentService implements
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Inversión no encontrada."));
 
-        investment.deactivate();
+        investment.deactivate(timeProvider);
 
         investmentRepository.save(investment);
     }
@@ -121,7 +127,7 @@ public class InvestmentService implements
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Inversión no encontrada."));
 
-        investment.updateDetails(
+        investment.updateDetails(timeProvider, 
                 command.assetName(),
                 command.ticker(),
                 command.quantity(),

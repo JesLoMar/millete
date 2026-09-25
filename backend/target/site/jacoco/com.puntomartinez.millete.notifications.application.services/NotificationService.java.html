@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.notifications.application.services</a> &gt; <span class="el_source">NotificationService.java</span></div><h1>NotificationService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.notifications.application.services;
+
+import com.puntomartinez.millete.notifications.domain.model.Notification;
+import com.puntomartinez.millete.notifications.domain.model.NotificationType;
+import com.puntomartinez.millete.notifications.domain.model.PaginatedNotifications;
+import com.puntomartinez.millete.notifications.domain.ports.in.*;
+import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class NotificationService implements
+        CreateNotificationUseCase,
+        GetNotificationsUseCase,
+        MarkNotificationAsReadUseCase,
+        MarkNotificationAsActionedUseCase,
+        DeleteNotificationUseCase {
+
+    private static final int DEFAULT_NOTIFICATION_LIMIT = 25;
+    private static final int MAX_NOTIFICATION_LIMIT = 100;
+    private static final int MAX_PAGE_SIZE = 100;
+
+    private final NotificationRepository notificationRepository;
+
+    @Override
+    public Notification create(CreateNotificationCommand command) {
+<span class="fc" id="L37">        Notification notification = Notification.create(</span>
+<span class="fc" id="L38">                command.userId(),</span>
+<span class="fc" id="L39">                command.type(),</span>
+<span class="fc" id="L40">                command.title(),</span>
+<span class="fc" id="L41">                command.message(),</span>
+<span class="fc" id="L42">                command.metadata(),</span>
+<span class="fc" id="L43">                command.actionRequired(),</span>
+<span class="fc" id="L44">                command.expiresAt()</span>
+        );
+
+<span class="fc" id="L47">        return notificationRepository.save(notification);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;Notification&gt; getUserNotifications(
+            UUID userId,
+            int limit
+    ) {
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        int safeLimit = limit &lt;= 0</span>
+<span class="fc" id="L57">                ? DEFAULT_NOTIFICATION_LIMIT</span>
+<span class="fc" id="L58">                : Math.min(limit, MAX_NOTIFICATION_LIMIT);</span>
+
+<span class="fc" id="L60">        return notificationRepository</span>
+<span class="fc" id="L61">                .findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(</span>
+                        userId,
+                        safeLimit,
+<span class="fc" id="L64">                        LocalDateTime.now()</span>
+                );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginatedNotifications getUserNotificationsPage(
+            UUID userId,
+            int page,
+            int size
+    ) {
+<span class="fc" id="L75">        validatePaginationParams(page, size);</span>
+
+<span class="fc" id="L77">        return notificationRepository</span>
+<span class="fc" id="L78">                .findActiveAndNotExpiredByUserIdPaginated(</span>
+                        userId,
+                        page,
+                        size,
+<span class="fc" id="L82">                        LocalDateTime.now()</span>
+                );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUnreadCount(UUID userId) {
+<span class="fc" id="L89">        return notificationRepository</span>
+<span class="fc" id="L90">                .countUnreadActiveAndNotExpiredByUserId(</span>
+                        userId,
+<span class="fc" id="L92">                        LocalDateTime.now()</span>
+                );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional&lt;Notification&gt; findUserNotificationByTypeAndMetadataValue(
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue
+    ) {
+<span class="nc" id="L104">        return notificationRepository</span>
+<span class="nc" id="L105">                .findActiveByUserIdAndTypeAndMetadataValue(</span>
+                        userId,
+                        type,
+                        metadataKey,
+                        metadataValue
+                );
+    }
+
+    @Override
+    public void markAsRead(
+            UUID userId,
+            UUID notificationId
+    ) {
+<span class="fc" id="L118">        Notification notification = notificationRepository</span>
+<span class="fc" id="L119">                .findActiveAndNotExpiredByIdAndUserId(</span>
+                        notificationId,
+                        userId,
+<span class="fc" id="L122">                        LocalDateTime.now()</span>
+                )
+<span class="fc" id="L124">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L125">                        new ResourceNotFoundException(</span>
+                                &quot;Notificación no encontrada.&quot;
+                        )
+                );
+
+<span class="fc" id="L130">        boolean changed = notification.markAsRead();</span>
+
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        if (changed) {</span>
+<span class="fc" id="L133">            notificationRepository.save(notification);</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    @Override
+    public boolean markAsActioned(
+            UUID userId,
+            UUID notificationId
+    ) {
+<span class="fc" id="L142">        Notification notification = notificationRepository</span>
+<span class="fc" id="L143">                .findActiveAndNotExpiredByIdAndUserId(</span>
+                        notificationId,
+                        userId,
+<span class="fc" id="L146">                        LocalDateTime.now()</span>
+                )
+<span class="fc" id="L148">                .orElse(null);</span>
+
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (notification == null) {</span>
+<span class="fc" id="L151">            return false;</span>
+        }
+
+<span class="fc" id="L154">        boolean changed = notification.markAsActioned();</span>
+
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (changed) {</span>
+<span class="fc" id="L157">            notificationRepository.save(notification);</span>
+        }
+
+<span class="fc" id="L160">        return true;</span>
+    }
+
+    @Override
+    public void delete(
+            UUID userId,
+            UUID notificationId
+    ) {
+<span class="fc" id="L168">        Notification notification = notificationRepository</span>
+<span class="fc" id="L169">                .findActiveAndNotExpiredByIdAndUserId(</span>
+                        notificationId,
+                        userId,
+<span class="fc" id="L172">                        LocalDateTime.now()</span>
+                )
+<span class="fc" id="L174">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L175">                        new ResourceNotFoundException(</span>
+                                &quot;Notificación no encontrada.&quot;
+                        )
+                );
+
+<span class="fc" id="L180">        notification.softDelete();</span>
+<span class="fc" id="L181">        notificationRepository.save(notification);</span>
+<span class="fc" id="L182">    }</span>
+
+    private void validatePaginationParams(int page, int size) {
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        if (page &lt; 0) {</span>
+<span class="fc" id="L186">            throw new InvalidInputException(</span>
+                    &quot;La página debe ser mayor o igual que 0.&quot;
+            );
+        }
+
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L192">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página debe ser mayor que 0.&quot;
+            );
+        }
+
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (size &gt; MAX_PAGE_SIZE) {</span>
+<span class="fc" id="L198">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página no puede superar &quot;
+                            + MAX_PAGE_SIZE + &quot;.&quot;
+            );
+        }
+<span class="fc" id="L203">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

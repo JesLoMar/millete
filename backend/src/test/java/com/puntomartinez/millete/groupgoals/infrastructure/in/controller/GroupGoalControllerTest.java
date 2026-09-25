@@ -19,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +33,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupGoalController")
+
 class GroupGoalControllerTest {
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     @Mock
     private CreateGoalUnitUseCase createGoalUnitUseCase;
@@ -105,7 +112,7 @@ class GroupGoalControllerTest {
         GoalUnit goal = GoalUnit.reconstitute(
                 goalId, "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(createGoalUnitUseCase.create(any()))
@@ -131,7 +138,7 @@ class GroupGoalControllerTest {
     void shouldListGoals() {
         ListGoalsUseCase.GoalSummary summary = new ListGoalsUseCase.GoalSummary(
                 goalId, "Family trip", new BigDecimal("300.00"),
-                DistributionMode.EQUITATIVE, 1L, true, LocalDateTime.now()
+                DistributionMode.EQUITATIVE, 1L, true, Instant.now()
         );
 
         when(listGoalsUseCase.listGoals(userId))
@@ -221,7 +228,7 @@ class GroupGoalControllerTest {
                         UUID.randomUUID(), goalId, "Family trip",
                         userId, "testuser", UUID.randomUUID(),
                         com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus.PENDING,
-                        LocalDateTime.now()
+                        Instant.now()
                 );
 
         when(inviteMemberUseCase.inviteMember(eq(goalId), eq(userId), any()))

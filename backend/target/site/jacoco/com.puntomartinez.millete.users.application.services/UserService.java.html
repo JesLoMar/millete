@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.application.services</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.application.services;
+
+import com.puntomartinez.millete.users.domain.model.User;
+import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
+import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
+import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
+import com.puntomartinez.millete.shared.domain.exception.AuthenticationFailedException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUserDataUseCase {
+
+    private final UserRepository userRepository;
+    private final PasswordHasherPort passwordHasher;
+    private final AccountLockService accountLockService;
+
+    private final String dummyPasswordHash;
+
+    public UserService(UserRepository userRepository,
+                       PasswordHasherPort passwordHasher,
+<span class="nc" id="L29">                       AccountLockService accountLockService) {</span>
+<span class="nc" id="L30">        this.userRepository = userRepository;</span>
+<span class="nc" id="L31">        this.passwordHasher = passwordHasher;</span>
+<span class="nc" id="L32">        this.accountLockService = accountLockService;</span>
+<span class="nc" id="L33">        this.dummyPasswordHash = passwordHasher.hashPassword(UUID.randomUUID().toString());</span>
+<span class="nc" id="L34">    }</span>
+
+    @Override
+    public User register(RegisterUserCommand command) {
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if (command.rawPassword() == null</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                || command.rawPassword().length() &lt; 8</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                || command.rawPassword().length() &gt; 100) {</span>
+<span class="nc" id="L41">            throw new InvalidInputException(</span>
+                    &quot;La contraseña debe tener entre 8 y 100 caracteres&quot;
+            );
+        }
+<span class="nc bnc" id="L45" title="All 4 branches missed.">        boolean hasUsername = command.username() != null &amp;&amp; !command.username().isBlank();</span>
+<span class="nc bnc" id="L46" title="All 4 branches missed.">        boolean hasEmail = command.email() != null &amp;&amp; !command.email().isBlank();</span>
+<span class="nc bnc" id="L47" title="All 4 branches missed.">        if (!hasUsername &amp;&amp; !hasEmail) {</span>
+<span class="nc" id="L48">            throw new InvalidInputException(&quot;Se requiere un email o un nombre de usuario para registrarse.&quot;);</span>
+        }
+<span class="nc bnc" id="L50" title="All 4 branches missed.">        if (hasEmail &amp;&amp; userRepository.findByEmail(command.email()).isPresent()) {</span>
+<span class="nc" id="L51">            throw new ResourceAlreadyExistsException(&quot;El usuario o el email ya están registrados.&quot;);</span>
+        }
+<span class="nc bnc" id="L53" title="All 4 branches missed.">        if (hasUsername &amp;&amp; userRepository.findByUsername(command.username()).isPresent()) {</span>
+<span class="nc" id="L54">            throw new ResourceAlreadyExistsException(&quot;El usuario o el email ya están registrados.&quot;);</span>
+        }
+<span class="nc" id="L56">        String encryptedPassword = passwordHasher.hashPassword(command.rawPassword());</span>
+<span class="nc" id="L57">        LocalDateTime now = LocalDateTime.now();</span>
+<span class="nc" id="L58">        User newUser = new User(</span>
+<span class="nc" id="L59">                UUID.randomUUID(),</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                hasUsername ? command.username() : null,</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                hasEmail ? command.email() : null,</span>
+                encryptedPassword,
+                now,
+                now,
+                true,
+                false
+        );
+<span class="nc" id="L68">        return userRepository.save(newUser);</span>
+    }
+
+    @Override
+    public User login(LoginUserCommand command) {
+<span class="nc" id="L73">        var maybeUser = userRepository.findByIdentifier(command.identifier());</span>
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (maybeUser.isEmpty()) {</span>
+<span class="nc" id="L76">            passwordHasher.matches(command.rawPassword(), dummyPasswordHash);</span>
+<span class="nc" id="L77">            throw new AuthenticationFailedException(&quot;Credenciales inválidas&quot;);</span>
+        }
+
+<span class="nc" id="L80">        User user = maybeUser.get();</span>
+<span class="nc" id="L81">        accountLockService.checkLockStatus(user.getId());</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (!passwordHasher.matches(command.rawPassword(), user.getPassword())) {</span>
+<span class="nc" id="L83">            accountLockService.handleFailedLogin(user.getId());</span>
+<span class="nc" id="L84">            throw new AuthenticationFailedException(&quot;Credenciales inválidas&quot;);</span>
+        }
+<span class="nc" id="L86">        accountLockService.handleSuccessfulLogin(user.getId());</span>
+<span class="nc" id="L87">        return user;</span>
+    }
+
+    @Override
+    public User getUserById(UUID id) {
+<span class="nc" id="L92">        return userRepository.findById(id)</span>
+<span class="nc" id="L93">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Usuario no encontrado con el ID proporcionado&quot;));</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

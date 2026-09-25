@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.dataexport.application.services;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.ExportData;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +32,7 @@ import java.util.UUID;
 public class DataExportService {
 
     private final CategoryExportPort categoryExportPort;
+    private final TimeProvider timeProvider;
     private final TransactionExportPort transactionExportPort;
     private final PlannedTransactionExportPort plannedTransactionExportPort;
     private final InvestmentExportPort investmentExportPort;
@@ -55,7 +55,10 @@ public class DataExportService {
             FileZipExportPort fileZipExportPort,
             FileCsvExportPort fileCsvExportPort,
             @Qualifier("pdfFileExportAdapter")
-            FilePdfExportPort filePdfExportPort) {
+            FilePdfExportPort filePdfExportPort,
+            TimeProvider timeProvider
+    ) {
+        this.timeProvider = timeProvider;
 
         this.categoryExportPort = categoryExportPort;
         this.transactionExportPort = transactionExportPort;
@@ -96,7 +99,7 @@ public class DataExportService {
                 new UserDataSnapshot(
                         new UserDataSnapshot.SnapshotMetadata(
                                 ExportVersion.CURRENT.toString(),
-                                LocalDateTime.now(),
+                                timeProvider.instantNow(),
                                 appVersion
                         ),
                         categories,
@@ -189,7 +192,7 @@ public class DataExportService {
                                         investment.purchasePrice(),
                                         investment.currentPrice(),
                                         investment.type(),
-                                        investment.purchaseDate().atStartOfDay()
+                                        investment.purchaseDate()
                                 )
                         )
                         .toList();
@@ -229,18 +232,12 @@ public class DataExportService {
         LocalDate endDate = period.getEndDate();
         LocalDate startDate = period.getStartDate();
 
-        LocalDateTime startDateTime =
-                startDate.atStartOfDay();
-
-        LocalDateTime endDateTime =
-                endDate.atTime(LocalTime.MAX);
-
         List<TransactionSnapshot> periodTransactions =
                 transactionExportPort
                         .findByUserIdAndDateBetween(
                                 userId,
-                                startDateTime,
-                                endDateTime
+                                startDate,
+                                endDate
                         )
                         .stream()
                         .filter(TransactionSnapshot::active)

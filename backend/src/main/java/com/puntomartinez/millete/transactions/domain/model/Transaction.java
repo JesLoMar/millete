@@ -1,10 +1,12 @@
 package com.puntomartinez.millete.transactions.domain.model;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter
@@ -16,11 +18,11 @@ public class Transaction {
     private final UUID userId;
     private UUID categoryId;
     private BigDecimal amount;
-    private LocalDateTime date;
+    private LocalDate date;
     private TransactionType type;
     private String description;
-    private final LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
+    private final Instant createdAt;
+    private Instant modifiedAt;
     private boolean active;
 
     public enum TransactionType {
@@ -33,11 +35,11 @@ public class Transaction {
             UUID userId,
             UUID categoryId,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             TransactionType type,
             String description,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         validateId(id);
@@ -62,14 +64,15 @@ public class Transaction {
     }
 
     public static Transaction create(
+            TimeProvider timeProvider,
             UUID userId,
             UUID categoryId,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             TransactionType type,
             String description
     ) {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = timeProvider.instantNow();
         return new Transaction(
                 UUID.randomUUID(),
                 userId,
@@ -89,11 +92,11 @@ public class Transaction {
             UUID userId,
             UUID categoryId,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             TransactionType type,
             String description,
-            LocalDateTime createdAt,
-            LocalDateTime modifiedAt,
+            Instant createdAt,
+            Instant modifiedAt,
             boolean active
     ) {
         return new Transaction(
@@ -111,8 +114,9 @@ public class Transaction {
     }
 
     public void updateDetails(
+            TimeProvider timeProvider,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             TransactionType type,
             String description,
             UUID categoryId
@@ -127,23 +131,23 @@ public class Transaction {
         this.type = type;
         this.description = description;
         this.categoryId = categoryId;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void unassignCategory() {
+    public void unassignCategory(TimeProvider timeProvider) {
         if (this.categoryId == null) {
             return;
         }
         this.categoryId = null;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
-    public void deactivate() {
+    public void deactivate(TimeProvider timeProvider) {
         if (!this.active) {
             return;
         }
         this.active = false;
-        this.modifiedAt = LocalDateTime.now();
+        this.modifiedAt = timeProvider.instantNow();
     }
 
     private static void validateId(UUID id) {
@@ -170,7 +174,7 @@ public class Transaction {
         }
     }
 
-    private static void validateDate(LocalDateTime date) {
+    private static void validateDate(LocalDate date) {
         if (date == null) {
             throw new InvalidInputException(
                     "La fecha de la transacción es obligatoria"
@@ -200,7 +204,7 @@ public class Transaction {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación es obligatoria"
@@ -208,7 +212,7 @@ public class Transaction {
         }
     }
 
-    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+    private static void validateModifiedAt(Instant modifiedAt) {
         if (modifiedAt == null) {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"

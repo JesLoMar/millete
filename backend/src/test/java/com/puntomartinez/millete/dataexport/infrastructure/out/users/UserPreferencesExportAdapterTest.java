@@ -10,13 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserPreferencesExportAdapter")
@@ -36,8 +36,8 @@ class UserPreferencesExportAdapterTest {
         UserPreferences prefs = new UserPreferences(
                 UUID.randomUUID(), userId, Map.of("theme", "dark")
         );
-        prefs.setCreatedAt(LocalDateTime.now());
-        prefs.setModifiedAt(LocalDateTime.now());
+        prefs.setCreatedAt(Instant.now());
+        prefs.setModifiedAt(Instant.now());
 
         when(userPreferencesRepository.findByUserId(userId))
                 .thenReturn(Optional.of(prefs));

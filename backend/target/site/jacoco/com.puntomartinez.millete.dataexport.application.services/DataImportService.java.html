@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataImportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.application.services</a> &gt; <span class="el_source">DataImportService.java</span></div><h1>DataImportService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.application.services;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.puntomartinez.millete.dataexport.domain.migration.MigrationChain;
+import com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult;
+import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
+import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.InvestmentImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.PlannedTransactionImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.SavingsGoalImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.TransactionImportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.TransactionImportVerificationPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.UserPreferencesImportPort;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
+import java.util.Map;
+import java.util.UUID;
+
+<span class="fc" id="L29">@Slf4j</span>
+@Service
+public class DataImportService {
+
+    private static final long MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
+
+    private final CategoryImportPort categoryImportPort;
+    private final TransactionImportPort transactionImportPort;
+    private final PlannedTransactionImportPort plannedTransactionImportPort;
+    private final InvestmentImportPort investmentImportPort;
+    private final SavingsGoalImportPort savingsGoalImportPort;
+    private final UserPreferencesImportPort userPreferencesImportPort;
+    private final TransactionImportVerificationPort transactionImportVerificationPort;
+    private final MigrationChain migrationChain;
+    private final ObjectMapper objectMapper;
+
+    public DataImportService(
+            CategoryImportPort categoryImportPort,
+            TransactionImportPort transactionImportPort,
+            PlannedTransactionImportPort plannedTransactionImportPort,
+            InvestmentImportPort investmentImportPort,
+            SavingsGoalImportPort savingsGoalImportPort,
+            UserPreferencesImportPort userPreferencesImportPort,
+            TransactionImportVerificationPort transactionImportVerificationPort,
+            MigrationChain migrationChain
+<span class="fc" id="L54">    ) {</span>
+<span class="fc" id="L55">        this.categoryImportPort = categoryImportPort;</span>
+<span class="fc" id="L56">        this.transactionImportPort = transactionImportPort;</span>
+<span class="fc" id="L57">        this.plannedTransactionImportPort =</span>
+                plannedTransactionImportPort;
+<span class="fc" id="L59">        this.investmentImportPort =</span>
+                investmentImportPort;
+<span class="fc" id="L61">        this.savingsGoalImportPort =</span>
+                savingsGoalImportPort;
+<span class="fc" id="L63">        this.userPreferencesImportPort = userPreferencesImportPort;</span>
+<span class="fc" id="L64">        this.transactionImportVerificationPort =</span>
+                transactionImportVerificationPort;
+<span class="fc" id="L66">        this.migrationChain = migrationChain;</span>
+<span class="fc" id="L67">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L68">        this.objectMapper.registerModule(new JavaTimeModule());</span>
+<span class="fc" id="L69">    }</span>
+
+    @Transactional
+    public String importUserData(
+            MultipartFile file,
+            UUID loggedInUserId
+    ) {
+<span class="fc" id="L76">        validateFileSize(file);</span>
+
+<span class="fc" id="L78">        try (InputStream inputStream = file.getInputStream()) {</span>
+<span class="fc" id="L79">            log.debug(&quot;Leyendo archivo de importación...&quot;);</span>
+
+            UserDataSnapshot snapshot;
+            try {
+<span class="fc" id="L83">                snapshot = objectMapper.readValue(</span>
+                        inputStream,
+                        UserDataSnapshot.class
+                );
+<span class="nc" id="L87">            } catch (MismatchedInputException e) {</span>
+<span class="nc" id="L88">                throw new InvalidInputException(</span>
+                        &quot;El archivo tiene una estructura inesperada. &quot;
+                                + &quot;Asegúrate de exportar desde esta aplicación.&quot;
+                );
+<span class="fc" id="L92">            } catch (JsonParseException e) {</span>
+<span class="fc" id="L93">                throw new InvalidInputException(</span>
+                        &quot;El archivo no contiene JSON válido.&quot;
+                );
+<span class="nc" id="L96">            } catch (JsonMappingException e) {</span>
+<span class="nc" id="L97">                throw new InvalidInputException(</span>
+                        &quot;El archivo contiene campos con formato incorrecto: &quot;
+<span class="nc" id="L99">                                + e.getOriginalMessage()</span>
+                );
+<span class="fc" id="L101">            }</span>
+
+<span class="fc" id="L103">            log.info(</span>
+                    &quot;Archivo leído. v{}&quot;,
+<span class="fc" id="L105">                    snapshot.metadata().version()</span>
+            );
+
+<span class="fc" id="L108">            snapshot = validateAndMigrate(snapshot);</span>
+
+<span class="fc" id="L110">            CategoryImportResult categoryImportResult =</span>
+<span class="fc" id="L111">                    categoryImportPort.importCategories(</span>
+<span class="fc" id="L112">                            snapshot.categories(),</span>
+                            loggedInUserId
+                    );
+
+<span class="fc" id="L116">            Map&lt;UUID, UUID&gt; categoryIdMap =</span>
+<span class="fc" id="L117">                    categoryImportResult.categoryIdMap();</span>
+
+<span class="fc" id="L119">            int totalImported =</span>
+<span class="fc" id="L120">                    categoryImportResult.importedCount();</span>
+
+<span class="fc" id="L122">            totalImported +=</span>
+<span class="fc" id="L123">                    transactionImportPort.importTransactions(</span>
+<span class="fc" id="L124">                            snapshot.transactions(),</span>
+                            loggedInUserId,
+                            categoryIdMap
+                    );
+
+<span class="fc" id="L129">            totalImported +=</span>
+<span class="fc" id="L130">                    plannedTransactionImportPort.importPlannedTransactions(</span>
+<span class="fc" id="L131">                            snapshot.plannedTransactions(),</span>
+                            loggedInUserId,
+                            categoryIdMap
+                    );
+
+<span class="fc" id="L136">            totalImported +=</span>
+<span class="fc" id="L137">                    investmentImportPort.importInvestments(</span>
+<span class="fc" id="L138">                            snapshot.investments(),</span>
+                            loggedInUserId
+                    );
+
+<span class="fc" id="L142">            totalImported +=</span>
+<span class="fc" id="L143">                    savingsGoalImportPort.importSavingsGoals(</span>
+<span class="fc" id="L144">                            snapshot.savingsGoals(),</span>
+                            loggedInUserId
+                    );
+
+<span class="fc" id="L148">            totalImported += importUserPreferences(</span>
+                    snapshot,
+                    loggedInUserId
+            );
+
+<span class="fc" id="L153">            transactionImportVerificationPort</span>
+<span class="fc" id="L154">                    .verifyImportedTransactions(</span>
+                            loggedInUserId
+                    );
+
+<span class="fc" id="L158">            String summary = String.format(</span>
+                    &quot;Importación exitosa. %d registros importados. v%s&quot;,
+<span class="fc" id="L160">                    totalImported,</span>
+                    ExportVersion.CURRENT
+            );
+
+<span class="fc" id="L164">            log.info(summary);</span>
+<span class="fc" id="L165">            return summary;</span>
+
+<span class="fc" id="L167">        } catch (InvalidInputException e) {</span>
+<span class="fc" id="L168">            throw e;</span>
+<span class="nc" id="L169">        } catch (Exception e) {</span>
+<span class="nc" id="L170">            log.error(</span>
+                    &quot;Error al importar: {}&quot;,
+<span class="nc" id="L172">                    e.getMessage(),</span>
+                    e
+            );
+<span class="nc" id="L175">            throw new InvalidInputException(</span>
+                    &quot;Error inesperado al importar el archivo. &quot;
+                            + &quot;Asegúrate de que sea compatible con v&quot;
+                            + ExportVersion.CURRENT
+            );
+        }
+    }
+
+    private void validateFileSize(MultipartFile file) {
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (file.getSize() &gt; MAX_FILE_SIZE_BYTES) {</span>
+<span class="fc" id="L185">            throw new InvalidInputException(</span>
+                    &quot;El archivo es demasiado grande. &quot;
+                            + &quot;El tamaño máximo permitido es 50 MB.&quot;
+            );
+        }
+<span class="fc" id="L190">    }</span>
+
+    private UserDataSnapshot validateAndMigrate(
+            UserDataSnapshot snapshot
+    ) {
+        ExportVersion fileVersion;
+        try {
+<span class="fc" id="L197">            fileVersion = ExportVersion.fromString(</span>
+<span class="fc" id="L198">                    snapshot.metadata().version()</span>
+            );
+<span class="nc" id="L200">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L201">            throw new InvalidInputException(</span>
+                    &quot;El archivo no indica una versión válida: &quot;
+<span class="nc" id="L203">                            + snapshot.metadata().version()</span>
+            );
+<span class="fc" id="L205">        }</span>
+
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (!fileVersion.isCompatibleWith(</span>
+                ExportVersion.CURRENT
+        )) {
+<span class="fc" id="L210">            throw new InvalidInputException(</span>
+<span class="fc" id="L211">                    String.format(</span>
+                            &quot;Versión incompatible. Archivo v%s, sistema v%s.&quot;,
+                            fileVersion,
+                            ExportVersion.CURRENT
+                    )
+            );
+        }
+
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (fileVersion.needsMigration(</span>
+                ExportVersion.CURRENT
+        )) {
+<span class="fc" id="L222">            log.warn(</span>
+                    &quot;Migrando de v{} a v{}&quot;,
+                    fileVersion,
+                    ExportVersion.CURRENT
+            );
+<span class="fc" id="L227">            return migrationChain.migrateToLatest(snapshot);</span>
+        }
+
+<span class="fc" id="L230">        log.debug(</span>
+                &quot;v{} compatible&quot;,
+                fileVersion
+        );
+<span class="fc" id="L234">        return snapshot;</span>
+    }
+
+    private int importUserPreferences(
+            UserDataSnapshot snapshot,
+            UUID loggedInUserId
+    ) {
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">        if (snapshot.userPreferences() == null) {</span>
+<span class="fc" id="L242">            return 0;</span>
+        }
+
+<span class="nc" id="L245">        userPreferencesImportPort.save(</span>
+<span class="nc" id="L246">                snapshot.userPreferences(),</span>
+                loggedInUserId
+        );
+
+<span class="nc" id="L250">        log.debug(</span>
+                &quot;Preferencias de usuario importadas&quot;
+        );
+<span class="nc" id="L253">        return 1;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

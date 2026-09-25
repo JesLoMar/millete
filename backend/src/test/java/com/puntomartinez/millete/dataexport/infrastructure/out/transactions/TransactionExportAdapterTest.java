@@ -37,9 +37,9 @@ class TransactionExportAdapterTest {
     void findAllByUserIdShouldMapTransactionsToSnapshots() {
         Transaction tx = Transaction.reconstitute(
                 UUID.randomUUID(), userId, UUID.randomUUID(),
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 Transaction.TransactionType.EXPENSE, "Lunch",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(transactionRepository.findAllByUserId(userId)).thenReturn(List.of(tx));
@@ -58,13 +58,13 @@ class TransactionExportAdapterTest {
     void findByUserIdAndDateBetweenShouldFilterByDateRange() {
         Transaction tx = Transaction.reconstitute(
                 UUID.randomUUID(), userId, UUID.randomUUID(),
-                new BigDecimal("50.00"), LocalDateTime.now(),
+                new BigDecimal("50.00"), Instant.now(),
                 Transaction.TransactionType.EXPENSE, "Lunch",
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
-        LocalDateTime start = LocalDateTime.now().minusDays(30);
-        LocalDateTime end = LocalDateTime.now();
+        LocalDate start = LocalDate.now().minusDays(30);
+        LocalDate end = LocalDate.now();
 
         when(transactionRepository.findByUserIdAndDateBetween(
                 eq(userId), any(LocalDateTime.class), any(LocalDateTime.class)

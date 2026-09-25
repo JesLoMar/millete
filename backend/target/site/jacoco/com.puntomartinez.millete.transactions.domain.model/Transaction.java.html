@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Transaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.domain.model</a> &gt; <span class="el_source">Transaction.java</span></div><h1>Transaction.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.domain.model;
+
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Getter
+public class Transaction {
+
+    private static final int MAX_DESCRIPTION_LENGTH = 50;
+
+    private final UUID id;
+    private final UUID userId;
+    private UUID categoryId;
+    private BigDecimal amount;
+    private LocalDateTime date;
+    private TransactionType type;
+    private String description;
+    private final LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+
+<span class="fc" id="L26">    public enum TransactionType {</span>
+<span class="fc" id="L27">        INCOME,</span>
+<span class="fc" id="L28">        EXPENSE</span>
+    }
+
+    private Transaction(
+            UUID id,
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            LocalDateTime date,
+            TransactionType type,
+            String description,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+<span class="fc" id="L42">    ) {</span>
+<span class="fc" id="L43">        validateId(id);</span>
+<span class="fc" id="L44">        validateUserId(userId);</span>
+<span class="fc" id="L45">        validateAmount(amount);</span>
+<span class="fc" id="L46">        validateDate(date);</span>
+<span class="fc" id="L47">        validateType(type);</span>
+<span class="fc" id="L48">        validateDescription(description);</span>
+<span class="fc" id="L49">        validateCreatedAt(createdAt);</span>
+<span class="fc" id="L50">        validateModifiedAt(modifiedAt);</span>
+
+<span class="fc" id="L52">        this.id = id;</span>
+<span class="fc" id="L53">        this.userId = userId;</span>
+<span class="fc" id="L54">        this.categoryId = categoryId;</span>
+<span class="fc" id="L55">        this.amount = amount;</span>
+<span class="fc" id="L56">        this.date = date;</span>
+<span class="fc" id="L57">        this.type = type;</span>
+<span class="fc" id="L58">        this.description = description;</span>
+<span class="fc" id="L59">        this.createdAt = createdAt;</span>
+<span class="fc" id="L60">        this.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L61">        this.active = active;</span>
+<span class="fc" id="L62">    }</span>
+
+    public static Transaction create(
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            LocalDateTime date,
+            TransactionType type,
+            String description
+    ) {
+<span class="fc" id="L72">        LocalDateTime now = LocalDateTime.now();</span>
+<span class="fc" id="L73">        return new Transaction(</span>
+<span class="fc" id="L74">                UUID.randomUUID(),</span>
+                userId,
+                categoryId,
+                amount,
+                date,
+                type,
+                description,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static Transaction reconstitute(
+            UUID id,
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            LocalDateTime date,
+            TransactionType type,
+            String description,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+<span class="fc" id="L99">        return new Transaction(</span>
+                id,
+                userId,
+                categoryId,
+                amount,
+                date,
+                type,
+                description,
+                createdAt,
+                modifiedAt,
+                active
+        );
+    }
+
+    public void updateDetails(
+            BigDecimal amount,
+            LocalDateTime date,
+            TransactionType type,
+            String description,
+            UUID categoryId
+    ) {
+<span class="fc" id="L120">        validateAmount(amount);</span>
+<span class="fc" id="L121">        validateDate(date);</span>
+<span class="fc" id="L122">        validateType(type);</span>
+<span class="fc" id="L123">        validateDescription(description);</span>
+
+<span class="fc" id="L125">        this.amount = amount;</span>
+<span class="fc" id="L126">        this.date = date;</span>
+<span class="fc" id="L127">        this.type = type;</span>
+<span class="fc" id="L128">        this.description = description;</span>
+<span class="fc" id="L129">        this.categoryId = categoryId;</span>
+<span class="fc" id="L130">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L131">    }</span>
+
+    public void unassignCategory() {
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (this.categoryId == null) {</span>
+<span class="fc" id="L135">            return;</span>
+        }
+<span class="fc" id="L137">        this.categoryId = null;</span>
+<span class="fc" id="L138">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L139">    }</span>
+
+    public void deactivate() {
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (!this.active) {</span>
+<span class="fc" id="L143">            return;</span>
+        }
+<span class="fc" id="L145">        this.active = false;</span>
+<span class="fc" id="L146">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L147">    }</span>
+
+    private static void validateId(UUID id) {
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L151">            throw new InvalidInputException(</span>
+                    &quot;El identificador de la transacción es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L155">    }</span>
+
+    private static void validateUserId(UUID userId) {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L159">            throw new InvalidInputException(</span>
+                    &quot;El identificador del usuario es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L163">    }</span>
+
+    private static void validateAmount(BigDecimal amount) {
+<span class="fc bfc" id="L166" title="All 4 branches covered.">        if (amount == null || amount.compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+<span class="fc" id="L167">            throw new InvalidInputException(</span>
+                    &quot;La cantidad debe ser mayor que cero.&quot;
+            );
+        }
+<span class="fc" id="L171">    }</span>
+
+    private static void validateDate(LocalDateTime date) {
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        if (date == null) {</span>
+<span class="fc" id="L175">            throw new InvalidInputException(</span>
+                    &quot;La fecha de la transacción es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L179">    }</span>
+
+    private static void validateType(TransactionType type) {
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (type == null) {</span>
+<span class="fc" id="L183">            throw new InvalidInputException(</span>
+                    &quot;El tipo de transacción es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L187">    }</span>
+
+    private static void validateDescription(String description) {
+<span class="fc bfc" id="L190" title="All 4 branches covered.">        if (description == null || description.isBlank()) {</span>
+<span class="fc" id="L191">            throw new InvalidInputException(</span>
+                    &quot;La descripción de la transacción es obligatoria&quot;
+            );
+        }
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        if (description.length() &gt; MAX_DESCRIPTION_LENGTH) {</span>
+<span class="fc" id="L196">            throw new InvalidInputException(</span>
+                    &quot;La descripción no puede superar los &quot;
+                            + MAX_DESCRIPTION_LENGTH + &quot; caracteres&quot;
+            );
+        }
+<span class="fc" id="L201">    }</span>
+
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (createdAt == null) {</span>
+<span class="fc" id="L205">            throw new InvalidInputException(</span>
+                    &quot;La fecha de creación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L209">    }</span>
+
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (modifiedAt == null) {</span>
+<span class="fc" id="L213">            throw new InvalidInputException(</span>
+                    &quot;La fecha de modificación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L217">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

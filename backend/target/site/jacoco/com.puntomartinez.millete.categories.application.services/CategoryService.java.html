@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.categories.application.services</a> &gt; <span class="el_source">CategoryService.java</span></div><h1>CategoryService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.categories.application.services;
+
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.in.DeleteCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryCommand;
+import com.puntomartinez.millete.categories.domain.ports.in.RegisterCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryCommand;
+import com.puntomartinez.millete.categories.domain.ports.in.UpdateCategoryUseCase;
+import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.transactions.domain.ports.in.UnassignCategoryFromTransactionsUseCase;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class CategoryService implements
+        RegisterCategoryUseCase,
+        UpdateCategoryUseCase,
+        GetCategoryUseCase,
+        DeleteCategoryUseCase {
+
+    private static final String CATEGORY_NAME_UNIQUE_INDEX =
+            &quot;idx_categories_user_name_active&quot;;
+
+    private final CategoryRepository categoryRepository;
+    private final UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase;
+
+    public CategoryService(
+            CategoryRepository categoryRepository,
+            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase
+<span class="fc" id="L37">    ) {</span>
+<span class="fc" id="L38">        this.categoryRepository = categoryRepository;</span>
+<span class="fc" id="L39">        this.unassignCategoryFromTransactionsUseCase =</span>
+                unassignCategoryFromTransactionsUseCase;
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    public Category register(RegisterCategoryCommand command) {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (categoryRepository.existsActiveByUserIdAndName(</span>
+<span class="fc" id="L46">                command.userId(),</span>
+<span class="fc" id="L47">                command.name()</span>
+        )) {
+<span class="fc" id="L49">            throw new ResourceAlreadyExistsException(</span>
+                    &quot;Ya existe una categoría con el nombre '&quot;
+<span class="fc" id="L51">                            + command.name() + &quot;'.&quot;</span>
+            );
+        }
+
+<span class="fc" id="L55">        Category category = Category.create(</span>
+<span class="fc" id="L56">                command.userId(),</span>
+<span class="fc" id="L57">                command.name(),</span>
+<span class="fc" id="L58">                command.color(),</span>
+<span class="fc" id="L59">                command.budgetLimit()</span>
+        );
+
+        try {
+<span class="fc" id="L63">            return categoryRepository.save(category);</span>
+<span class="fc" id="L64">        } catch (DataIntegrityViolationException ex) {</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (isDuplicateCategoryNameViolation(ex)) {</span>
+<span class="fc" id="L66">                throw new ResourceAlreadyExistsException(</span>
+                        &quot;Ya existe una categoría con el nombre '&quot;
+<span class="fc" id="L68">                                + command.name() + &quot;'.&quot;,</span>
+                        ex
+                );
+            }
+
+<span class="fc" id="L73">            throw ex;</span>
+        }
+    }
+
+    @Override
+    public List&lt;Category&gt; findByUserId(UUID userId) {
+<span class="fc" id="L79">        return categoryRepository.findByUserId(userId);</span>
+    }
+
+    @Override
+    public Category findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L87">        return getCategory(id, userId);</span>
+    }
+
+    @Override
+    public List&lt;Category&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+<span class="fc" id="L97">        return categoryRepository.findAllByUserId(</span>
+                userId,
+                page,
+                size,
+                search
+        );
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L110">        return categoryRepository.countByUserIdAndFilters(</span>
+                userId,
+                search
+        );
+    }
+
+    @Override
+    public Category update(
+            UUID id,
+            UUID userId,
+            UpdateCategoryCommand command
+    ) {
+<span class="fc" id="L122">        Category category = getCategory(id, userId);</span>
+
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (categoryRepository.existsActiveByUserIdAndNameExcludingId(</span>
+                userId,
+<span class="fc" id="L126">                command.name(),</span>
+                id
+        )) {
+<span class="fc" id="L129">            throw new ResourceAlreadyExistsException(</span>
+                    &quot;Ya existe otra categoría con el nombre '&quot;
+<span class="fc" id="L131">                            + command.name() + &quot;'.&quot;</span>
+            );
+        }
+
+<span class="fc" id="L135">        category.updateDetails(</span>
+<span class="fc" id="L136">                command.name(),</span>
+<span class="fc" id="L137">                command.color(),</span>
+<span class="fc" id="L138">                command.budgetLimit()</span>
+        );
+
+        try {
+<span class="fc" id="L142">            return categoryRepository.save(category);</span>
+<span class="fc" id="L143">        } catch (DataIntegrityViolationException ex) {</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">            if (isDuplicateCategoryNameViolation(ex)) {</span>
+<span class="fc" id="L145">                throw new ResourceAlreadyExistsException(</span>
+                        &quot;Ya existe otra categoría con el nombre '&quot;
+<span class="fc" id="L147">                                + command.name() + &quot;'.&quot;,</span>
+                        ex
+                );
+            }
+
+<span class="fc" id="L152">            throw ex;</span>
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L162">        Category category = getCategory(id, userId);</span>
+
+<span class="fc" id="L164">        category.deactivate();</span>
+<span class="fc" id="L165">        categoryRepository.save(category);</span>
+
+<span class="fc" id="L167">        unassignCategoryFromTransactionsUseCase.unassignCategory(</span>
+                id,
+                userId
+        );
+<span class="fc" id="L171">    }</span>
+
+    private Category getCategory(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L177">        return categoryRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L178">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L179">                        new ResourceNotFoundException(</span>
+                                &quot;Categoría no encontrada&quot;
+                        )
+                );
+    }
+
+    private boolean isDuplicateCategoryNameViolation(
+            DataIntegrityViolationException ex
+    ) {
+<span class="fc" id="L188">        Throwable current = ex;</span>
+
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        while (current != null) {</span>
+<span class="fc" id="L191">            String message = current.getMessage();</span>
+
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">            if (message != null</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">                    &amp;&amp; message.contains(CATEGORY_NAME_UNIQUE_INDEX)) {</span>
+<span class="fc" id="L195">                return true;</span>
+            }
+
+<span class="fc" id="L198">            current = current.getCause();</span>
+<span class="fc" id="L199">        }</span>
+
+<span class="fc" id="L201">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginRateLimitFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.shared.infrastructure.config.filter</a> &gt; <span class="el_source">LoginRateLimitFilter.java</span></div><h1>LoginRateLimitFilter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.shared.infrastructure.config.filter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Rate limiting para el endpoint de login.
+ *
+ * &lt;p&gt;Implementación en memoria (ConcurrentHashMap) diseñada para
+ * despliegues self-hosted de una sola instancia. Para despliegues
+ * multi-instancia, migrar a Redis + Bucket4j o rate limiting en
+ * el proxy/nginx.&lt;/p&gt;
+ *
+ * &lt;p&gt;La IP del cliente se resuelve respetando X-Forwarded-For cuando
+ * la aplicación está detrás de un proxy inverso (nginx, Cloudflare).
+ * El proxy DEBE configurarse para enviar la cabecera de forma fiable.&lt;/p&gt;
+ */
+@Component
+<span class="fc" id="L29">public class LoginRateLimitFilter extends OncePerRequestFilter {</span>
+
+    private static final int MAX_ATTEMPTS = 20;
+<span class="fc" id="L32">    private static final long WINDOW_MS = TimeUnit.MINUTES.toMillis(1);</span>
+    private static final int MAX_IPS = 500;
+    private static final String LOGIN_PATH = &quot;/api/v1/auth/login&quot;;
+
+<span class="fc" id="L36">    private final ConcurrentHashMap&lt;String, RateLimitEntry&gt; attemptsPerIp =</span>
+            new ConcurrentHashMap&lt;&gt;();
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     FilterChain filterChain)
+            throws ServletException, IOException {
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (!isLoginRequest(request)) {</span>
+<span class="fc" id="L46">            filterChain.doFilter(request, response);</span>
+<span class="fc" id="L47">            return;</span>
+        }
+
+<span class="fc" id="L50">        String clientIp = resolveClientIp(request);</span>
+<span class="fc" id="L51">        long now = System.currentTimeMillis();</span>
+
+<span class="fc" id="L53">        RateLimitEntry entry = attemptsPerIp.compute(clientIp, (ip, current) -&gt; {</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">            if (current == null || now - current.windowStart &gt; WINDOW_MS) {</span>
+<span class="fc" id="L55">                return new RateLimitEntry(now, 1);</span>
+            }
+<span class="fc" id="L57">            current.attempts++;</span>
+<span class="fc" id="L58">            return current;</span>
+        });
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (entry.attempts &gt; MAX_ATTEMPTS) {</span>
+<span class="fc" id="L62">            long secondsUntilReset =</span>
+<span class="fc" id="L63">                    Math.max(0, (WINDOW_MS - (now - entry.windowStart)) / 1000);</span>
+
+<span class="fc" id="L65">            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());</span>
+<span class="fc" id="L66">            response.setContentType(&quot;application/json&quot;);</span>
+<span class="fc" id="L67">            response.getWriter().write(</span>
+                    &quot;{\&quot;status\&quot;:429,\&quot;error\&quot;:\&quot;Too Many Requests\&quot;,\&quot;message\&quot;:\&quot;Demasiados intentos. Espera %d segundos.\&quot;}&quot;
+<span class="fc" id="L69">                            .formatted(secondsUntilReset)</span>
+            );
+<span class="fc" id="L71">            return;</span>
+        }
+
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (attemptsPerIp.size() &gt; MAX_IPS) {</span>
+<span class="nc" id="L75">            evictExpiredEntries(now);</span>
+        }
+
+<span class="fc" id="L78">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Resuelve la IP real del cliente.
+     *
+     * &lt;p&gt;Si la aplicación está detrás de un proxy inverso (nginx,
+     * Cloudflare), usa la primera entrada de X-Forwarded-For.
+     * El proxy debe estar configurado para enviar esta cabecera
+     * de forma fiable y sobreescribir cualquier valor enviado
+     * por el cliente.&lt;/p&gt;
+     *
+     * &lt;p&gt;Configuración mínima de nginx:
+     * &lt;pre&gt;
+     * proxy_set_header X-Forwarded-For $remote_addr;
+     * &lt;/pre&gt;
+     * &lt;/p&gt;
+     */
+    public static String resolveClientIp(HttpServletRequest request) {
+<span class="fc" id="L97">        String xForwardedFor = request.getHeader(&quot;X-Forwarded-For&quot;);</span>
+<span class="fc bfc" id="L98" title="All 4 branches covered.">        if (xForwardedFor != null &amp;&amp; !xForwardedFor.isBlank()) {</span>
+<span class="fc" id="L99">            return xForwardedFor.split(&quot;,&quot;)[0].trim();</span>
+        }
+<span class="fc" id="L101">        return request.getRemoteAddr();</span>
+    }
+
+    public void resetForIp(String ip) {
+<span class="fc" id="L105">        attemptsPerIp.remove(ip);</span>
+<span class="fc" id="L106">    }</span>
+
+    private boolean isLoginRequest(HttpServletRequest request) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        return &quot;POST&quot;.equalsIgnoreCase(request.getMethod())</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                &amp;&amp; request.getRequestURI().equals(LOGIN_PATH);</span>
+    }
+
+    private void evictExpiredEntries(long now) {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (Map.Entry&lt;String, RateLimitEntry&gt; entry : attemptsPerIp.entrySet()) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (now - entry.getValue().windowStart &gt; WINDOW_MS) {</span>
+<span class="nc" id="L116">                attemptsPerIp.remove(entry.getKey(), entry.getValue());</span>
+            }
+<span class="nc" id="L118">        }</span>
+<span class="nc" id="L119">    }</span>
+
+    private static final class RateLimitEntry {
+        private final long windowStart;
+        private int attempts;
+
+<span class="fc" id="L125">        private RateLimitEntry(long windowStart, int attempts) {</span>
+<span class="fc" id="L126">            this.windowStart = windowStart;</span>
+<span class="fc" id="L127">            this.attempts = attempts;</span>
+<span class="fc" id="L128">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

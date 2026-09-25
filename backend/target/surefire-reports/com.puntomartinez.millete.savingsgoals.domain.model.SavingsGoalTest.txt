@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoalTest
+-------------------------------------------------------------------------------
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.508 s -- in com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoalTest

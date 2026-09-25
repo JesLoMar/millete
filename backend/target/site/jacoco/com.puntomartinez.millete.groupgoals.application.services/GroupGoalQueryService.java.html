@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupGoalQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.application.services</a> &gt; <span class="el_source">GroupGoalQueryService.java</span></div><h1>GroupGoalQueryService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.application.services;
+
+import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalMember;
+import com.puntomartinez.millete.groupgoals.domain.model.GoalUnit;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.CalculateContributionsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHistoryUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.GetGoalDetailUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.ListGoalsUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalMemberRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+public class GroupGoalQueryService implements
+        ListGoalsUseCase,
+        GetGoalDetailUseCase,
+        GetContributionHistoryUseCase,
+        CalculateContributionsUseCase {
+
+    private final GoalUnitRepository goalUnitRepository;
+    private final GoalMemberRepository goalMemberRepository;
+    private final GoalContributionRepository goalContributionRepository;
+    private final UserLookupPort userLookupPort;
+
+    public GroupGoalQueryService(
+            GoalUnitRepository goalUnitRepository,
+            GoalMemberRepository goalMemberRepository,
+            GoalContributionRepository goalContributionRepository,
+            UserLookupPort userLookupPort
+<span class="fc" id="L47">    ) {</span>
+<span class="fc" id="L48">        this.goalUnitRepository = goalUnitRepository;</span>
+<span class="fc" id="L49">        this.goalMemberRepository = goalMemberRepository;</span>
+<span class="fc" id="L50">        this.goalContributionRepository = goalContributionRepository;</span>
+<span class="fc" id="L51">        this.userLookupPort = userLookupPort;</span>
+<span class="fc" id="L52">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;GoalSummary&gt; listGoals(UUID userId) {
+<span class="fc" id="L57">        List&lt;GoalMember&gt; memberships =</span>
+<span class="fc" id="L58">                goalMemberRepository.findActiveByUserId(userId);</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (memberships.isEmpty()) {</span>
+<span class="fc" id="L61">            return List.of();</span>
+        }
+
+<span class="fc" id="L64">        List&lt;UUID&gt; goalIds = memberships.stream()</span>
+<span class="fc" id="L65">                .map(GoalMember::getGoalId)</span>
+<span class="fc" id="L66">                .toList();</span>
+
+<span class="fc" id="L68">        List&lt;GoalUnit&gt; goals =</span>
+<span class="fc" id="L69">                goalUnitRepository.findByIds(goalIds);</span>
+
+<span class="fc" id="L71">        Map&lt;UUID, GoalMember&gt; memberByGoal =</span>
+<span class="fc" id="L72">                memberships.stream()</span>
+<span class="fc" id="L73">                        .collect(Collectors.toMap(</span>
+                                GoalMember::getGoalId,
+<span class="fc" id="L75">                                m -&gt; m,</span>
+<span class="nc" id="L76">                                (a, b) -&gt; a</span>
+                        ));
+
+        /*
+         * IMPORTANTE:
+         *
+         * Obtenemos todos los miembros activos de todas las metas
+         * en una única consulta batch.
+         *
+         * NO hacer findActiveByGoalId() dentro del map()
+         * porque eso introduciría un N+1.
+         */
+<span class="fc" id="L88">        List&lt;GoalMember&gt; allActiveMembers =</span>
+<span class="fc" id="L89">                goalMemberRepository.findActiveByGoalIdIn(goalIds);</span>
+
+<span class="fc" id="L91">        Map&lt;UUID, Long&gt; memberCountByGoal =</span>
+<span class="fc" id="L92">                allActiveMembers.stream()</span>
+<span class="fc" id="L93">                        .collect(Collectors.groupingBy(</span>
+                                GoalMember::getGoalId,
+<span class="fc" id="L95">                                Collectors.counting()</span>
+                        ));
+
+<span class="fc" id="L98">        return goals.stream()</span>
+<span class="fc" id="L99">                .filter(GoalUnit::isActive)</span>
+<span class="fc" id="L100">                .map(goal -&gt; {</span>
+<span class="fc" id="L101">                    GoalMember membership =</span>
+<span class="fc" id="L102">                            memberByGoal.get(goal.getId());</span>
+
+<span class="fc" id="L104">                    long memberCount =</span>
+<span class="fc" id="L105">                            memberCountByGoal.getOrDefault(</span>
+<span class="fc" id="L106">                                    goal.getId(),</span>
+<span class="fc" id="L107">                                    0L</span>
+                            );
+
+<span class="fc" id="L110">                    return new GoalSummary(</span>
+<span class="fc" id="L111">                            goal.getId(),</span>
+<span class="fc" id="L112">                            goal.getName(),</span>
+<span class="fc" id="L113">                            goal.getMonthlyTarget(),</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                            goal.getDistributionMode(),</span>
+                            memberCount,
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">                            membership != null &amp;&amp; membership.isAdmin(),</span>
+<span class="fc" id="L117">                            goal.getCreatedAt()</span>
+                    );
+                })
+<span class="fc" id="L120">                .toList();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalDetail getGoalDetail(
+            UUID goalId,
+            UUID userId
+    ) {
+<span class="nc" id="L129">        GoalUnit goal = goalUnitRepository.findById(goalId)</span>
+<span class="nc" id="L130">                .filter(GoalUnit::isActive)</span>
+<span class="nc" id="L131">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L132">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo no encontrado&quot;
+                        )
+                );
+
+<span class="nc" id="L137">        GoalMember requester =</span>
+                goalMemberRepository
+<span class="nc" id="L139">                        .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="nc" id="L140">                        .filter(GoalMember::isActive)</span>
+<span class="nc" id="L141">                        .orElseThrow(() -&gt;</span>
+<span class="nc" id="L142">                                new ForbiddenOperationException(</span>
+                                        &quot;No perteneces a este objetivo&quot;
+                                )
+                        );
+
+<span class="nc" id="L147">        List&lt;GoalMember&gt; members =</span>
+<span class="nc" id="L148">                goalMemberRepository.findActiveByGoalId(goalId);</span>
+
+<span class="nc" id="L150">        List&lt;UUID&gt; memberUserIds = members.stream()</span>
+<span class="nc" id="L151">                .map(GoalMember::getUserId)</span>
+<span class="nc" id="L152">                .toList();</span>
+
+<span class="nc" id="L154">        Map&lt;UUID, UserLookupPort.UserInfo&gt; usersById =</span>
+<span class="nc" id="L155">                userLookupPort.findByIds(memberUserIds);</span>
+
+<span class="nc" id="L157">        boolean requesterIsAdmin = requester.isAdmin();</span>
+
+<span class="nc" id="L159">        List&lt;MemberDetail&gt; memberDetails =</span>
+<span class="nc" id="L160">                members.stream()</span>
+<span class="nc" id="L161">                        .map(member -&gt; {</span>
+<span class="nc" id="L162">                            UserLookupPort.UserInfo userInfo =</span>
+<span class="nc" id="L163">                                    usersById.get(member.getUserId());</span>
+
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                            boolean canSeeFinancialData =</span>
+                                    requesterIsAdmin
+<span class="nc" id="L167">                                            || member.getUserId()</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                                            .equals(userId);</span>
+
+<span class="nc" id="L170">                            return new MemberDetail(</span>
+<span class="nc" id="L171">                                    member.getId(),</span>
+<span class="nc" id="L172">                                    member.getUserId(),</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">                                    userInfo != null</span>
+<span class="nc" id="L174">                                            ? userInfo.username()</span>
+<span class="nc" id="L175">                                            : null,</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                                    userInfo != null</span>
+<span class="nc" id="L177">                                            ? userInfo.email()</span>
+<span class="nc" id="L178">                                            : null,</span>
+<span class="nc" id="L179">                                    member.getRole(),</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                                    canSeeFinancialData</span>
+<span class="nc" id="L181">                                            ? member.getSalary()</span>
+<span class="nc" id="L182">                                            : null,</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                                    canSeeFinancialData</span>
+<span class="nc" id="L184">                                            ? member.getCustomPercentage()</span>
+<span class="nc" id="L185">                                            : null,</span>
+<span class="nc" id="L186">                                    member.getJoinedAt()</span>
+                            );
+                        })
+<span class="nc" id="L189">                        .toList();</span>
+
+<span class="nc" id="L191">        List&lt;MemberContributionTotals&gt; totals =</span>
+<span class="nc" id="L192">                goalContributionRepository.sumByGoalId(goalId);</span>
+
+<span class="nc" id="L194">        return new GoalDetail(</span>
+<span class="nc" id="L195">                goal.getId(),</span>
+<span class="nc" id="L196">                goal.getName(),</span>
+<span class="nc" id="L197">                goal.getMonthlyTarget(),</span>
+<span class="nc" id="L198">                goal.getDistributionMode(),</span>
+<span class="nc" id="L199">                goal.getCreatedAt(),</span>
+                memberDetails,
+                totals
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginatedContributions getContributionHistory(
+            UUID goalId,
+            UUID userId,
+            int page,
+            int size
+    ) {
+<span class="fc" id="L213">        requireActiveMember(goalId, userId);</span>
+
+<span class="fc" id="L215">        return goalContributionRepository.findByGoalId(</span>
+                goalId,
+                page,
+                size
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;MemberContributionTotals&gt; getTotalsByMember(
+            UUID goalId,
+            UUID userId
+    ) {
+<span class="nc" id="L228">        requireActiveMember(goalId, userId);</span>
+
+<span class="nc" id="L230">        return goalContributionRepository.sumByGoalId(goalId);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContributionsCalculation calculateContributions(
+            UUID goalId,
+            UUID userId
+    ) {
+<span class="fc" id="L239">        GoalUnit goal = goalUnitRepository.findById(goalId)</span>
+<span class="fc" id="L240">                .filter(GoalUnit::isActive)</span>
+<span class="fc" id="L241">                .orElseThrow(() -&gt;</span>
+<span class="nc" id="L242">                        new ResourceNotFoundException(</span>
+                                &quot;Objetivo no encontrado&quot;
+                        )
+                );
+
+<span class="fc" id="L247">        requireActiveMember(goalId, userId);</span>
+
+<span class="fc" id="L249">        List&lt;GoalMember&gt; members =</span>
+<span class="fc" id="L250">                goalMemberRepository.findActiveByGoalId(goalId);</span>
+
+<span class="fc" id="L252">        BigDecimal target = goal.getMonthlyTarget();</span>
+<span class="fc" id="L253">        DistributionMode mode = goal.getDistributionMode();</span>
+
+<span class="pc bpc" id="L255" title="1 of 3 branches missed.">        List&lt;MemberContribution&gt; contributions = switch (mode) {</span>
+            case EQUITATIVE -&gt;
+<span class="fc" id="L257">                    calculateEquitative(members, target);</span>
+            case PROPORTIONAL -&gt;
+<span class="fc" id="L259">                    calculateProportional(members, target);</span>
+            case CUSTOM -&gt;
+<span class="nc" id="L261">                    calculateCustom(members, target);</span>
+        };
+
+<span class="fc" id="L264">        return new ContributionsCalculation(</span>
+                target,
+                mode,
+                contributions
+        );
+    }
+
+    private List&lt;MemberContribution&gt; calculateEquitative(
+            List&lt;GoalMember&gt; members,
+            BigDecimal target
+    ) {
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (members.isEmpty()) {</span>
+<span class="nc" id="L276">            return List.of();</span>
+        }
+
+<span class="fc" id="L279">        BigDecimal perMember = target.divide(</span>
+<span class="fc" id="L280">                new BigDecimal(members.size()),</span>
+                2,
+                RoundingMode.HALF_UP
+        );
+
+<span class="fc" id="L285">        return members.stream()</span>
+<span class="fc" id="L286">                .map(member -&gt;</span>
+<span class="fc" id="L287">                        new MemberContribution(</span>
+<span class="fc" id="L288">                                member.getUserId(),</span>
+                                perMember
+                        )
+                )
+<span class="fc" id="L292">                .toList();</span>
+    }
+
+    private List&lt;MemberContribution&gt; calculateProportional(
+            List&lt;GoalMember&gt; members,
+            BigDecimal target
+    ) {
+<span class="fc" id="L299">        BigDecimal totalSalary = members.stream()</span>
+<span class="fc" id="L300">                .map(member -&gt;</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">                        member.getSalary() != null</span>
+<span class="fc" id="L302">                                ? member.getSalary()</span>
+<span class="fc" id="L303">                                : BigDecimal.ZERO</span>
+                )
+<span class="fc" id="L305">                .reduce(</span>
+                        BigDecimal.ZERO,
+                        BigDecimal::add
+                );
+
+<span class="fc bfc" id="L310" title="All 2 branches covered.">        if (totalSalary.compareTo(BigDecimal.ZERO) == 0) {</span>
+<span class="fc" id="L311">            throw new InvalidInputException(</span>
+                    &quot;No se puede calcular el reparto proporcional &quot;
+                            + &quot;porque ningún miembro tiene salario asignado&quot;
+            );
+        }
+
+<span class="fc" id="L317">        return members.stream()</span>
+<span class="fc" id="L318">                .map(member -&gt; {</span>
+                    BigDecimal salary =
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">                            member.getSalary() != null</span>
+<span class="fc" id="L321">                                    ? member.getSalary()</span>
+<span class="pc" id="L322">                                    : BigDecimal.ZERO;</span>
+
+<span class="fc" id="L324">                    BigDecimal share = target</span>
+<span class="fc" id="L325">                            .multiply(salary)</span>
+<span class="fc" id="L326">                            .divide(</span>
+                                    totalSalary,
+                                    2,
+                                    RoundingMode.HALF_UP
+                            );
+
+<span class="fc" id="L332">                    return new MemberContribution(</span>
+<span class="fc" id="L333">                            member.getUserId(),</span>
+                            share
+                    );
+                })
+<span class="fc" id="L337">                .toList();</span>
+    }
+
+    private List&lt;MemberContribution&gt; calculateCustom(
+            List&lt;GoalMember&gt; members,
+            BigDecimal target
+    ) {
+<span class="fc" id="L344">        List&lt;MemberContribution&gt; result =</span>
+                new ArrayList&lt;&gt;();
+
+<span class="fc" id="L347">        BigDecimal totalPercentage =</span>
+                BigDecimal.ZERO;
+
+<span class="pc bpc" id="L350" title="1 of 2 branches missed.">        for (GoalMember member : members) {</span>
+<span class="fc" id="L351">            BigDecimal percentage =</span>
+<span class="fc" id="L352">                    member.getCustomPercentage();</span>
+
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">            if (percentage == null) {</span>
+<span class="fc" id="L355">                throw new InvalidInputException(</span>
+                        &quot;En modo CUSTOM todos los miembros deben &quot;
+                                + &quot;tener un porcentaje asignado&quot;
+                );
+            }
+
+<span class="nc" id="L361">            totalPercentage =</span>
+<span class="nc" id="L362">                    totalPercentage.add(percentage);</span>
+
+<span class="nc" id="L364">            BigDecimal share = target</span>
+<span class="nc" id="L365">                    .multiply(percentage)</span>
+<span class="nc" id="L366">                    .divide(</span>
+                            new BigDecimal(&quot;100&quot;),
+                            2,
+                            RoundingMode.HALF_UP
+                    );
+
+<span class="nc" id="L372">            result.add(</span>
+                    new MemberContribution(
+<span class="nc" id="L374">                            member.getUserId(),</span>
+                            share
+                    )
+            );
+<span class="nc" id="L378">        }</span>
+
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (totalPercentage.compareTo(</span>
+                new BigDecimal(&quot;100&quot;)
+        ) != 0) {
+<span class="nc" id="L383">            throw new InvalidInputException(</span>
+                    &quot;Los porcentajes personalizados deben sumar 100. &quot;
+                            + &quot;Actual: &quot; + totalPercentage
+            );
+        }
+
+<span class="nc" id="L389">        return result;</span>
+    }
+
+    private void requireActiveMember(
+            UUID goalId,
+            UUID userId
+    ) {
+<span class="fc" id="L396">        goalMemberRepository</span>
+<span class="fc" id="L397">                .findByGoalIdAndUserId(goalId, userId)</span>
+<span class="fc" id="L398">                .filter(GoalMember::isActive)</span>
+<span class="fc" id="L399">                .orElseThrow(() -&gt;</span>
+<span class="fc" id="L400">                        new ForbiddenOperationException(</span>
+                                &quot;No perteneces a este objetivo&quot;
+                        )
+                );
+<span class="fc" id="L404">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

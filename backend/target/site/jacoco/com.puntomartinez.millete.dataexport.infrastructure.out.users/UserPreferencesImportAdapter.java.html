@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserPreferencesImportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.users</a> &gt; <span class="el_source">UserPreferencesImportAdapter.java</span></div><h1>UserPreferencesImportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.users;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.UserPreferencesImportPort;
+import com.puntomartinez.millete.users.domain.model.UserPreferences;
+import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class UserPreferencesImportAdapter
+        implements UserPreferencesImportPort {
+
+    private final UserPreferencesRepository userPreferencesRepository;
+    private final ObjectMapper objectMapper;
+
+    public UserPreferencesImportAdapter(
+            UserPreferencesRepository userPreferencesRepository
+<span class="fc" id="L27">    ) {</span>
+<span class="fc" id="L28">        this.userPreferencesRepository = userPreferencesRepository;</span>
+<span class="fc" id="L29">        this.objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L30">    }</span>
+
+    @Override
+    public Optional&lt;UserPreferencesSnapshot&gt; findByUserId(UUID userId) {
+<span class="nc" id="L34">        return userPreferencesRepository.findByUserId(userId)</span>
+<span class="nc" id="L35">                .map(preferences -&gt;</span>
+<span class="nc" id="L36">                        new UserPreferencesSnapshot(</span>
+<span class="nc" id="L37">                                preferences.getId(),</span>
+<span class="nc" id="L38">                                preferences.getUserId(),</span>
+<span class="nc" id="L39">                                toJson(preferences.getPreferences()),</span>
+<span class="nc" id="L40">                                preferences.getCreatedAt(),</span>
+<span class="nc" id="L41">                                preferences.getModifiedAt()</span>
+                        )
+                );
+    }
+
+    @Override
+    public void save(
+            UserPreferencesSnapshot preferences,
+            UUID userId
+    ) {
+<span class="fc" id="L51">        Map&lt;String, Object&gt; preferencesMap =</span>
+<span class="fc" id="L52">                fromJson(preferences.preferencesJson());</span>
+
+<span class="fc" id="L54">        UserPreferences existing =</span>
+                userPreferencesRepository
+<span class="fc" id="L56">                        .findByUserId(userId)</span>
+<span class="fc" id="L57">                        .orElse(null);</span>
+
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (existing != null) {</span>
+<span class="fc" id="L60">            existing.setPreferences(preferencesMap);</span>
+<span class="fc" id="L61">            existing.setModifiedAt(LocalDateTime.now());</span>
+<span class="fc" id="L62">            userPreferencesRepository.save(existing);</span>
+<span class="fc" id="L63">            return;</span>
+        }
+
+<span class="fc" id="L66">        UserPreferences newPreferences =</span>
+                new UserPreferences(
+<span class="fc" id="L68">                        UUID.randomUUID(),</span>
+                        userId,
+                        preferencesMap
+                );
+<span class="fc" id="L72">        newPreferences.setCreatedAt(preferences.createdAt());</span>
+<span class="fc" id="L73">        newPreferences.setModifiedAt(preferences.modifiedAt());</span>
+<span class="fc" id="L74">        userPreferencesRepository.save(newPreferences);</span>
+<span class="fc" id="L75">    }</span>
+
+    private String toJson(Object value) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L79">            return &quot;{}&quot;;</span>
+        }
+        try {
+<span class="nc" id="L82">            return objectMapper.writeValueAsString(value);</span>
+<span class="nc" id="L83">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L84">            return &quot;{}&quot;;</span>
+        }
+    }
+
+    private Map&lt;String, Object&gt; fromJson(String json) {
+<span class="pc bpc" id="L89" title="2 of 4 branches missed.">        if (json == null || json.isBlank()) {</span>
+<span class="nc" id="L90">            return new HashMap&lt;&gt;();</span>
+        }
+        try {
+<span class="fc" id="L93">            return objectMapper.readValue(</span>
+                    json,
+<span class="fc" id="L95">                    new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {}</span>
+            );
+<span class="nc" id="L97">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L98">            return new HashMap&lt;&gt;();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

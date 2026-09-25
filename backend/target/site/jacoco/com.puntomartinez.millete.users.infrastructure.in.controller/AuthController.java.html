@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.infrastructure.in.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.infrastructure.in.controller;
+
+import com.puntomartinez.millete.shared.infrastructure.config.CookieAuthFactory;
+import com.puntomartinez.millete.shared.infrastructure.config.filter.LoginRateLimitFilter;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.users.domain.model.User;
+import com.puntomartinez.millete.users.domain.model.UserSession;
+import com.puntomartinez.millete.users.domain.ports.in.GetUserDataUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.ManageUserSessionUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
+import com.puntomartinez.millete.users.infrastructure.in.controller.dto.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
+@RequestMapping(&quot;/api/v1/auth&quot;)
+public class AuthController {
+
+    private final RegisterUserUseCase registerUserUseCase;
+    private final LoginUserUseCase loginUserUseCase;
+    private final GetUserDataUseCase getUserDataUseCase;
+    private final TokenProvider tokenProvider;
+    private final ManageUserSessionUseCase manageUserSessionUseCase;
+    private final CookieAuthFactory cookieAuthFactory;
+    private final LoginRateLimitFilter loginRateLimitFilter;
+
+    public AuthController(
+            RegisterUserUseCase registerUserUseCase,
+            LoginUserUseCase loginUserUseCase,
+            GetUserDataUseCase getUserDataUseCase,
+            TokenProvider tokenProvider,
+            ManageUserSessionUseCase manageUserSessionUseCase,
+            CookieAuthFactory cookieAuthFactory,
+            LoginRateLimitFilter loginRateLimitFilter
+<span class="nc" id="L49">    ) {</span>
+<span class="nc" id="L50">        this.registerUserUseCase = registerUserUseCase;</span>
+<span class="nc" id="L51">        this.loginUserUseCase = loginUserUseCase;</span>
+<span class="nc" id="L52">        this.getUserDataUseCase = getUserDataUseCase;</span>
+<span class="nc" id="L53">        this.tokenProvider = tokenProvider;</span>
+<span class="nc" id="L54">        this.manageUserSessionUseCase = manageUserSessionUseCase;</span>
+<span class="nc" id="L55">        this.cookieAuthFactory = cookieAuthFactory;</span>
+<span class="nc" id="L56">        this.loginRateLimitFilter = loginRateLimitFilter;</span>
+<span class="nc" id="L57">    }</span>
+
+    @PostMapping(&quot;/register&quot;)
+    public ResponseEntity&lt;UserResponseDTO&gt; register(
+            @Valid @RequestBody RegisterUserRequestDTO request
+    ) {
+<span class="nc" id="L63">        RegisterUserUseCase.RegisterUserCommand command =</span>
+                new RegisterUserUseCase.RegisterUserCommand(
+<span class="nc" id="L65">                        request.username(),</span>
+<span class="nc" id="L66">                        request.email(),</span>
+<span class="nc" id="L67">                        request.password()</span>
+                );
+
+<span class="nc" id="L70">        User user = registerUserUseCase.register(command);</span>
+
+<span class="nc" id="L72">        UserResponseDTO response = new UserResponseDTO(</span>
+<span class="nc" id="L73">                user.getId(),</span>
+<span class="nc" id="L74">                user.getUsername(),</span>
+<span class="nc" id="L75">                user.getEmail(),</span>
+<span class="nc" id="L76">                user.getCreatedAt(),</span>
+<span class="nc" id="L77">                user.getModifiedAt(),</span>
+<span class="nc" id="L78">                user.isActive(),</span>
+<span class="nc" id="L79">                user.isAnonymized()</span>
+        );
+
+<span class="nc" id="L82">        return new ResponseEntity&lt;&gt;(response, HttpStatus.CREATED);</span>
+    }
+
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; login(
+            @Valid @RequestBody LoginRequestDTO request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse response
+    ) {
+<span class="nc" id="L91">        LoginUserUseCase.LoginUserCommand command =</span>
+                new LoginUserUseCase.LoginUserCommand(
+<span class="nc" id="L93">                        request.identifier(),</span>
+<span class="nc" id="L94">                        request.password()</span>
+                );
+
+<span class="nc" id="L97">        User user = loginUserUseCase.login(command);</span>
+
+        // Resetear el rate limit tras login exitoso (Bug 11)
+<span class="nc" id="L100">        String clientIp = LoginRateLimitFilter.resolveClientIp(httpRequest);</span>
+<span class="nc" id="L101">        loginRateLimitFilter.resetForIp(clientIp);</span>
+
+<span class="nc" id="L103">        UserSession session = manageUserSessionUseCase.createSession(</span>
+<span class="nc" id="L104">                user.getId(),</span>
+                UserSession.CHANNEL_WEB
+        );
+
+<span class="nc" id="L108">        String jwt = tokenProvider.generateToken(user, session.getId());</span>
+
+<span class="nc" id="L110">        ResponseCookie cookie = cookieAuthFactory.createJwtCookie(jwt);</span>
+<span class="nc" id="L111">        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());</span>
+
+<span class="nc" id="L113">        Map&lt;String, String&gt; body = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L114">        body.put(&quot;status&quot;, &quot;authenticated&quot;);</span>
+
+<span class="nc" id="L116">        return ResponseEntity.ok(body);</span>
+    }
+
+    @PostMapping(&quot;/logout&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    public ResponseEntity&lt;Void&gt; logout(
+            @RequestAttribute(&quot;sessionId&quot;) UUID sessionId,
+            HttpServletResponse response
+    ) {
+<span class="nc" id="L125">        manageUserSessionUseCase.markSessionAsInactive(sessionId);</span>
+
+<span class="nc" id="L127">        ResponseCookie expiredCookie = cookieAuthFactory.createExpiredCookie();</span>
+<span class="nc" id="L128">        response.addHeader(HttpHeaders.SET_COOKIE, expiredCookie.toString());</span>
+
+<span class="nc" id="L130">        return ResponseEntity.ok().build();</span>
+    }
+
+    @GetMapping(&quot;/me/topnav&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    public ResponseEntity&lt;TopNavUserResponseDTO&gt; getTopNavUserInfo(
+            Authentication authentication,
+            @RequestAttribute(&quot;sessionId&quot;) UUID sessionId
+    ) {
+<span class="nc bnc" id="L139" title="All 4 branches missed.">        if (authentication == null || !authentication.isAuthenticated()) {</span>
+<span class="nc" id="L140">            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+        }
+
+<span class="nc" id="L143">        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();</span>
+
+<span class="nc" id="L145">        User user = getUserDataUseCase.getUserById(jwtUser.getId());</span>
+
+<span class="nc" id="L147">        TopNavUserResponseDTO response = new TopNavUserResponseDTO(</span>
+<span class="nc" id="L148">                user.getUsername(),</span>
+<span class="nc" id="L149">                user.getEmail(),</span>
+                sessionId
+        );
+
+<span class="nc" id="L153">        return ResponseEntity.ok(response);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

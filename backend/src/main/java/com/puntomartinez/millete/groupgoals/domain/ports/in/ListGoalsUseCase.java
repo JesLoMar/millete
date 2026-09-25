@@ -3,7 +3,7 @@ package com.puntomartinez.millete.groupgoals.domain.ports.in;
 import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public interface ListGoalsUseCase {
             DistributionMode distributionMode,
             long memberCount,
             boolean admin,
-            LocalDateTime createdAt
+            Instant createdAt
     ) {
     }
 }

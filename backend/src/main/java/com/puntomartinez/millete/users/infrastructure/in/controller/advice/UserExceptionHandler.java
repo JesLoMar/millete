@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.users.infrastructure.in.controller.advice;
 
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.ErrorResponseDTO;
 import com.puntomartinez.millete.users.domain.exception.AccountLockedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,11 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @RestControllerAdvice
 public class UserExceptionHandler {
+
+    private final TimeProvider timeProvider;
+
+    public UserExceptionHandler(TimeProvider timeProvider) {
+        this.timeProvider = timeProvider;
+    }
 
     @ExceptionHandler(AccountLockedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccountLockedException(
@@ -23,7 +28,7 @@ public class UserExceptionHandler {
         log.warn("Cuenta bloqueada: {}", ex.getMessage());
 
         ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                LocalDateTime.now(),
+                timeProvider.instantNow(),
                 HttpStatus.LOCKED.value(),
                 HttpStatus.LOCKED.getReasonPhrase(),
                 ex.getMessage(),

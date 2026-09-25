@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +34,7 @@ class CategoryDisplayAdapterTest {
         return Category.reconstitute(
                 id, USER_ID, "Food", "#FF0000",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 

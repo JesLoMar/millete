@@ -33,7 +33,7 @@ public class InvestmentExportAdapter implements InvestmentExportPort {
                                 investment.getPurchasePrice(),
                                 investment.getCurrentPrice(),
                                 investment.getType().name(),
-                                investment.getPurchaseDate().toLocalDate(),
+                                investment.getPurchaseDate(),
                                 investment.getCreatedAt(),
                                 investment.getModifiedAt(),
                                 investment.isActive(),

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExportVersion.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.domain.model</a> &gt; <span class="el_source">ExportVersion.java</span></div><h1>ExportVersion.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.domain.model;
+
+import java.util.regex.Pattern;
+
+/**
+ * Versión del formato de exportación de datos.
+ *
+ * &lt;p&gt;CONTRATO: Al añadir una nueva migración en MigrationChain,
+ * actualizar {@link #CURRENT} al {@code toVersion()} de la última
+ * migración registrada. MigrationChain.validateChain() detectará
+ * al arrancar si hay inconsistencia.&lt;/p&gt;
+ */
+<span class="fc" id="L13">public record ExportVersion(</span>
+        int major,
+        int minor,
+        int patch
+) implements Comparable&lt;ExportVersion&gt; {
+
+<span class="fc" id="L19">    private static final Pattern VERSION_PATTERN =</span>
+<span class="fc" id="L20">            Pattern.compile(&quot;^(\\d+)\\.(\\d+)\\.(\\d+)$&quot;);</span>
+
+<span class="fc" id="L22">    public static final ExportVersion CURRENT =</span>
+            new ExportVersion(0, 2, 0);
+
+    public static ExportVersion fromString(String version) {
+<span class="fc bfc" id="L26" title="All 4 branches covered.">        if (version == null || version.isBlank()) {</span>
+<span class="fc" id="L27">            throw new IllegalArgumentException(</span>
+                    &quot;La versión no puede ser nula o vacía&quot;
+            );
+        }
+
+<span class="fc" id="L32">        var matcher = VERSION_PATTERN.matcher(version.trim());</span>
+
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (!matcher.matches()) {</span>
+<span class="fc" id="L35">            throw new IllegalArgumentException(</span>
+                    &quot;Formato de versión inválido: '&quot;
+                            + version + &quot;'&quot;
+            );
+        }
+
+<span class="fc" id="L41">        return new ExportVersion(</span>
+<span class="fc" id="L42">                Integer.parseInt(matcher.group(1)),</span>
+<span class="fc" id="L43">                Integer.parseInt(matcher.group(2)),</span>
+<span class="fc" id="L44">                Integer.parseInt(matcher.group(3))</span>
+        );
+    }
+
+    public boolean isCompatibleWith(ExportVersion other) {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        return this.major == other.major;</span>
+    }
+
+    public boolean needsMigration(ExportVersion target) {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        return this.compareTo(target) &lt; 0;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L58">        return major + &quot;.&quot; + minor + &quot;.&quot; + patch;</span>
+    }
+
+    @Override
+    public int compareTo(ExportVersion other) {
+<span class="fc" id="L63">        int majorCompare =</span>
+<span class="fc" id="L64">                Integer.compare(this.major, other.major);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        if (majorCompare != 0) return majorCompare;</span>
+
+<span class="fc" id="L67">        int minorCompare =</span>
+<span class="fc" id="L68">                Integer.compare(this.minor, other.minor);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (minorCompare != 0) return minorCompare;</span>
+
+<span class="fc" id="L71">        return Integer.compare(this.patch, other.patch);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

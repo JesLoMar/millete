@@ -29,7 +29,7 @@ class NotificationEntityMapperTest {
                 "You have been invited",
                 Map.of("goalId", "some-id"),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
 
         NotificationEntity entity = mapper.toEntity(domain);
@@ -51,7 +51,7 @@ class NotificationEntityMapperTest {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+        LocalDateTime expiresAt = Instant.now().plusDays(7);
 
         NotificationEntity entity = new NotificationEntity();
         entity.setId(id);
@@ -94,7 +94,7 @@ class NotificationEntityMapperTest {
                 "You have been invited to a goal",
                 Map.of("goalId", "goal-123"),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
 
         NotificationEntity entity = mapper.toEntity(original);

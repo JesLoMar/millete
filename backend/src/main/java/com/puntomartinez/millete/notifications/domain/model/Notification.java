@@ -2,7 +2,8 @@ package com.puntomartinez.millete.notifications.domain.model;
 
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,9 +19,9 @@ public class Notification {
     private final Map<String, Object> metadata;
     private boolean read;
     private final boolean actionRequired;
-    private LocalDateTime actionedAt;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime expiresAt;
+    private Instant actionedAt;
+    private final Instant createdAt;
+    private final Instant expiresAt;
     private boolean active;
 
     private Notification(
@@ -32,9 +33,9 @@ public class Notification {
             Map<String, Object> metadata,
             boolean read,
             boolean actionRequired,
-            LocalDateTime actionedAt,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt,
+            Instant actionedAt,
+            Instant createdAt,
+            Instant expiresAt,
             boolean active
     ) {
         validateId(id);
@@ -60,13 +61,14 @@ public class Notification {
     }
 
     public static Notification create(
+            TimeProvider timeProvider,
             UUID userId,
             NotificationType type,
             String title,
             String message,
             Map<String, Object> metadata,
             boolean actionRequired,
-            LocalDateTime expiresAt
+            Instant expiresAt
     ) {
         return new Notification(
                 UUID.randomUUID(),
@@ -78,7 +80,7 @@ public class Notification {
                 false,
                 actionRequired,
                 null,
-                LocalDateTime.now(),
+                timeProvider.instantNow(),
                 expiresAt,
                 true
         );
@@ -93,9 +95,9 @@ public class Notification {
             Map<String, Object> metadata,
             boolean read,
             boolean actionRequired,
-            LocalDateTime actionedAt,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt,
+            Instant actionedAt,
+            Instant createdAt,
+            Instant expiresAt,
             boolean active
     ) {
         return new Notification(
@@ -123,7 +125,7 @@ public class Notification {
         return true;
     }
 
-    public boolean markAsActioned() {
+    public boolean markAsActioned(TimeProvider timeProvider) {
         if (!this.actionRequired) {
             throw new InvalidInputException(
                     "La notificación no requiere ninguna acción."
@@ -134,7 +136,7 @@ public class Notification {
             return false;
         }
 
-        this.actionedAt = LocalDateTime.now();
+        this.actionedAt = timeProvider.instantNow();
         return true;
     }
 
@@ -142,9 +144,9 @@ public class Notification {
         this.active = false;
     }
 
-    public boolean isExpired() {
+    public boolean isExpired(TimeProvider timeProvider) {
         return expiresAt != null
-                && LocalDateTime.now().isAfter(expiresAt);
+                && timeProvider.instantNow().isAfter(expiresAt);
     }
 
     private static void validateId(UUID id) {
@@ -186,7 +188,7 @@ public class Notification {
         }
     }
 
-    private static void validateCreatedAt(LocalDateTime createdAt) {
+    private static void validateCreatedAt(Instant createdAt) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación de la notificación es obligatoria."
@@ -226,15 +228,15 @@ public class Notification {
         return actionRequired;
     }
 
-    public LocalDateTime getActionedAt() {
+    public Instant getActionedAt() {
         return actionedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 

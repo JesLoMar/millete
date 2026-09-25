@@ -21,7 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,10 +30,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CategoryPostgresAdapter")
 class CategoryPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
 
@@ -47,7 +52,7 @@ class CategoryPostgresAdapterTest {
     private CategoryPostgresAdapter adapter;
 
     private Category domainCategory() {
-        return Category.create(
+        return Category.create(TIME, 
                 USER_ID,
                 "Food",
                 "#FF5733",
@@ -62,8 +67,8 @@ class CategoryPostgresAdapterTest {
         entity.setName("Food");
         entity.setColor("#FF5733");
         entity.setBudgetLimit(BigDecimal.TEN);
-        entity.setCreatedAt(LocalDateTime.of(2024, 1, 1, 10, 0));
-        entity.setModifiedAt(LocalDateTime.of(2024, 1, 1, 10, 0));
+        entity.setCreatedAt(Instant.parse("2024-01-01T10:00:00Z"));
+        entity.setModifiedAt(Instant.parse("2024-01-01T10:00:00Z"));
         entity.setActive(true);
         return entity;
     }

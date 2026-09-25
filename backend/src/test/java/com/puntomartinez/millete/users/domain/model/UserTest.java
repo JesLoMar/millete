@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserTest {
 
     private static final UUID ID = UUID.randomUUID();
-    private static final LocalDateTime NOW = LocalDateTime.now();
+    private static final LocalDateTime NOW = Instant.now();
 
     @Nested
     @DisplayName("constructor")

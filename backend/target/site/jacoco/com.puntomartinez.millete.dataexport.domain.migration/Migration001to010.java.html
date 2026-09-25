@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Migration001to010.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.domain.migration</a> &gt; <span class="el_source">Migration001to010.java</span></div><h1>Migration001to010.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.domain.migration;
+
+import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
+import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
+
+<span class="fc" id="L6">public class Migration001to010 implements DataMigration {</span>
+
+    @Override
+    public ExportVersion fromVersion() {
+<span class="fc" id="L10">        return new ExportVersion(0, 0, 1);</span>
+    }
+
+    @Override
+    public ExportVersion toVersion() {
+<span class="fc" id="L15">        return new ExportVersion(0, 1, 0);</span>
+    }
+
+    @Override
+    public String description() {
+<span class="fc" id="L20">        return &quot;Añade soporte para UserPreferences&quot;;</span>
+    }
+
+    @Override
+    public UserDataSnapshot migrate(UserDataSnapshot snapshot) {
+<span class="fc" id="L25">        UserDataSnapshot.SnapshotMetadata updatedMetadata =</span>
+                new UserDataSnapshot.SnapshotMetadata(
+<span class="fc" id="L27">                        toVersion().toString(),</span>
+<span class="fc" id="L28">                        snapshot.metadata().exportDate(),</span>
+<span class="fc" id="L29">                        snapshot.metadata().appVersion()</span>
+                );
+
+<span class="fc" id="L32">        return new UserDataSnapshot(</span>
+                updatedMetadata,
+<span class="fc" id="L34">                snapshot.categories(),</span>
+<span class="fc" id="L35">                snapshot.transactions(),</span>
+<span class="fc" id="L36">                snapshot.plannedTransactions(),</span>
+<span class="fc" id="L37">                snapshot.investments(),</span>
+<span class="fc" id="L38">                snapshot.savingsGoals(),</span>
+                null
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

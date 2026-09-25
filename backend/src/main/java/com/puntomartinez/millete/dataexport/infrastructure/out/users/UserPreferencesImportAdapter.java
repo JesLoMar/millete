@@ -9,7 +9,6 @@ import com.puntomartinez.millete.users.domain.model.UserPreferences;
 import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,15 +31,21 @@ public class UserPreferencesImportAdapter
     @Override
     public Optional<UserPreferencesSnapshot> findByUserId(UUID userId) {
         return userPreferencesRepository.findByUserId(userId)
-                .map(preferences ->
-                        new UserPreferencesSnapshot(
-                                preferences.getId(),
-                                preferences.getUserId(),
-                                toJson(preferences.getPreferences()),
-                                preferences.getCreatedAt(),
-                                preferences.getModifiedAt()
-                        )
-                );
+                .map(preferences -> {
+                    // El export siempre incluye la zona efectiva (nunca nula):
+                    // si la clave falta, se materializa el default técnico UTC.
+                    Map<String, Object> exported = new HashMap<>(preferences.getPreferences());
+                    exported.putIfAbsent(
+                            UserPreferences.TIMEZONE_KEY,
+                            preferences.getTimezoneOrDefault());
+                    return new UserPreferencesSnapshot(
+                            preferences.getId(),
+                            preferences.getUserId(),
+                            toJson(exported),
+                            preferences.getCreatedAt(),
+                            preferences.getModifiedAt()
+                    );
+                });
     }
 
     @Override
@@ -57,8 +62,13 @@ public class UserPreferencesImportAdapter
                         .orElse(null);
 
         if (existing != null) {
+            // setPreferences reemplaza el mapa completo: si el snapshot no trae
+            // timezone, se preserva la zona actual del usuario en destino.
+            String currentTz = existing.getTimezoneOrDefault();
             existing.setPreferences(preferencesMap);
-            existing.setModifiedAt(LocalDateTime.now());
+            if (!preferencesMap.containsKey(UserPreferences.TIMEZONE_KEY)) {
+                existing.getPreferences().put(UserPreferences.TIMEZONE_KEY, currentTz);
+            }
             userPreferencesRepository.save(existing);
             return;
         }
@@ -69,6 +79,11 @@ public class UserPreferencesImportAdapter
                         userId,
                         preferencesMap
                 );
+        if (!preferencesMap.containsKey(UserPreferences.TIMEZONE_KEY)) {
+            newPreferences.getPreferences()
+                    .put(UserPreferences.TIMEZONE_KEY,
+                            newPreferences.getTimezoneOrDefault());
+        }
         newPreferences.setCreatedAt(preferences.createdAt());
         newPreferences.setModifiedAt(preferences.modifiedAt());
         userPreferencesRepository.save(newPreferences);

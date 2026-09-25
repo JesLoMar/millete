@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.categories.infrastructure.in.controller.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record CategoryResponseDTO(
@@ -10,7 +10,7 @@ public record CategoryResponseDTO(
         String name,
         String color,
         BigDecimal budgetLimit,
-        LocalDateTime createdAt,
+        Instant createdAt,
         boolean active
 ) {
 }

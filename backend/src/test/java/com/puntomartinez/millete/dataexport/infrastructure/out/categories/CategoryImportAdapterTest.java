@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +39,7 @@ class CategoryImportAdapterTest {
         CategorySnapshot snapshot = new CategorySnapshot(
                 sourceCategoryId, UUID.randomUUID(), "Food", "#FF5733",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryRepository.findByUserId(userId)).thenReturn(new ArrayList<>());
@@ -67,13 +66,13 @@ class CategoryImportAdapterTest {
         Category existingCategory = Category.reconstitute(
                 existingCategoryId, userId, "Food", "#00FF00",
                 new BigDecimal("300.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         CategorySnapshot snapshot = new CategorySnapshot(
                 sourceCategoryId, UUID.randomUUID(), "Food", "#FF5733",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(categoryRepository.findByUserId(userId))
@@ -95,7 +94,7 @@ class CategoryImportAdapterTest {
         CategorySnapshot inactiveSnapshot = new CategorySnapshot(
                 UUID.randomUUID(), UUID.randomUUID(), "Inactive", "#FF5733",
                 new BigDecimal("500.00"),
-                LocalDateTime.now(), LocalDateTime.now(), false
+                Instant.now(), Instant.now(), false
         );
 
         CategoryImportResult result = adapter.importCategories(

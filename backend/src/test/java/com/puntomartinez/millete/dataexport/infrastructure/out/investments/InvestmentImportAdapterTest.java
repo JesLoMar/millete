@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ class InvestmentImportAdapterTest {
                 new BigDecimal("10"), new BigDecimal("150.00"),
                 new BigDecimal("180.00"), "STOCK",
                 LocalDate.now().minusMonths(3),
-                LocalDateTime.now(), LocalDateTime.now(), true,
+                Instant.now(), Instant.now(), true,
                 new BigDecimal("1800.00"), new BigDecimal("300.00"),
                 new BigDecimal("20.00")
         );
@@ -72,7 +71,7 @@ class InvestmentImportAdapterTest {
                 new BigDecimal("10"), new BigDecimal("150.00"),
                 new BigDecimal("180.00"), "STOCK",
                 LocalDate.now().minusMonths(3),
-                LocalDateTime.now(), LocalDateTime.now(), false,
+                Instant.now(), Instant.now(), false,
                 new BigDecimal("1800.00"), new BigDecimal("300.00"),
                 new BigDecimal("20.00")
         );

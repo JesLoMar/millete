@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryEntityMapperImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers</a> &gt; <span class="el_source">CategoryEntityMapperImpl.java</span></div><h1>CategoryEntityMapperImpl.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers;
+
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = &quot;org.mapstruct.ap.MappingProcessor&quot;,
+    date = &quot;2026-09-25T17:31:41+0000&quot;,
+    comments = &quot;version: 1.6.3, compiler: javac, environment: Java 25.0.4.1 (Eclipse Adoptium)&quot;
+)
+@Component
+<span class="fc" id="L14">public class CategoryEntityMapperImpl implements CategoryEntityMapper {</span>
+
+    @Override
+    public CategoryEntity toEntity(Category domain) {
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if ( domain == null ) {</span>
+<span class="fc" id="L19">            return null;</span>
+        }
+
+<span class="fc" id="L22">        CategoryEntity categoryEntity = new CategoryEntity();</span>
+
+<span class="fc" id="L24">        categoryEntity.setId( domain.getId() );</span>
+<span class="fc" id="L25">        categoryEntity.setUserId( domain.getUserId() );</span>
+<span class="fc" id="L26">        categoryEntity.setName( domain.getName() );</span>
+<span class="fc" id="L27">        categoryEntity.setColor( domain.getColor() );</span>
+<span class="fc" id="L28">        categoryEntity.setBudgetLimit( domain.getBudgetLimit() );</span>
+<span class="fc" id="L29">        categoryEntity.setCreatedAt( domain.getCreatedAt() );</span>
+<span class="fc" id="L30">        categoryEntity.setModifiedAt( domain.getModifiedAt() );</span>
+<span class="fc" id="L31">        categoryEntity.setActive( domain.isActive() );</span>
+
+<span class="fc" id="L33">        return categoryEntity;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

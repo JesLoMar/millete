@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SavingsGoalPostgresAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.adapters</a> &gt; <span class="el_source">SavingsGoalPostgresAdapter.java</span></div><h1>SavingsGoalPostgresAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.adapters;
+
+import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
+import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.entity.SavingsGoalEntity;
+import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.mappers.SavingsGoalEntityMapper;
+import com.puntomartinez.millete.savingsgoals.infrastructure.out.persistence.postgresql.repository.JpaSavingsGoalRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public class SavingsGoalPostgresAdapter implements SavingsGoalRepository {
+
+    private final JpaSavingsGoalRepository jpaRepository;
+    private final SavingsGoalEntityMapper mapper;
+
+    public SavingsGoalPostgresAdapter(
+            JpaSavingsGoalRepository jpaRepository,
+            SavingsGoalEntityMapper mapper
+<span class="fc" id="L27">    ) {</span>
+<span class="fc" id="L28">        this.jpaRepository = jpaRepository;</span>
+<span class="fc" id="L29">        this.mapper = mapper;</span>
+<span class="fc" id="L30">    }</span>
+
+    @Override
+    public SavingsGoal save(SavingsGoal savingsGoal) {
+<span class="fc" id="L34">        SavingsGoalEntity entity = mapper.toEntity(savingsGoal);</span>
+<span class="fc" id="L35">        SavingsGoalEntity savedEntity = jpaRepository.save(entity);</span>
+<span class="fc" id="L36">        return mapper.toDomain(savedEntity);</span>
+    }
+
+    @Override
+    public Optional&lt;SavingsGoal&gt; findById(UUID id) {
+<span class="fc" id="L41">        return jpaRepository.findById(id)</span>
+<span class="fc" id="L42">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public Optional&lt;SavingsGoal&gt; findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L50">        return jpaRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L51">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public List&lt;SavingsGoal&gt; findAllByUserId(UUID userId) {
+<span class="fc" id="L56">        return jpaRepository</span>
+<span class="fc" id="L57">                .findAllByUserId(userId)</span>
+<span class="fc" id="L58">                .stream()</span>
+<span class="fc" id="L59">                .map(mapper::toDomain)</span>
+<span class="fc" id="L60">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;SavingsGoal&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+<span class="fc" id="L70">        Specification&lt;SavingsGoalEntity&gt; spec =</span>
+<span class="fc" id="L71">                buildSpecification(userId, search);</span>
+
+<span class="fc" id="L73">        Page&lt;SavingsGoalEntity&gt; result =</span>
+<span class="fc" id="L74">                jpaRepository.findAll(</span>
+                        spec,
+<span class="fc" id="L76">                        PageRequest.of(</span>
+                                page,
+                                size,
+<span class="fc" id="L79">                                Sort.by(&quot;createdAt&quot;).descending()</span>
+                        )
+                );
+
+<span class="fc" id="L83">        return result.getContent()</span>
+<span class="fc" id="L84">                .stream()</span>
+<span class="fc" id="L85">                .map(mapper::toDomain)</span>
+<span class="fc" id="L86">                .toList();</span>
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L94">        return jpaRepository.count(</span>
+<span class="fc" id="L95">                buildSpecification(userId, search)</span>
+        );
+    }
+
+    private Specification&lt;SavingsGoalEntity&gt; buildSpecification(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L103">        Specification&lt;SavingsGoalEntity&gt; spec =</span>
+                (root, query, cb) -&gt;
+<span class="nc" id="L105">                        cb.equal(root.get(&quot;userId&quot;), userId);</span>
+
+<span class="pc bpc" id="L107" title="2 of 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
+<span class="fc" id="L108">            String pattern = &quot;%&quot; + search.toLowerCase() + &quot;%&quot;;</span>
+
+<span class="fc" id="L110">            spec = spec.and(</span>
+                    (root, query, cb) -&gt;
+<span class="nc" id="L112">                            cb.like(</span>
+<span class="nc" id="L113">                                    cb.lower(root.get(&quot;name&quot;)),</span>
+                                    pattern
+                            )
+            );
+        }
+
+<span class="fc" id="L119">        return spec;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

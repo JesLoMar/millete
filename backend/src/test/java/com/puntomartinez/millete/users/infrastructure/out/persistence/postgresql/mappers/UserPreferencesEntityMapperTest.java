@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,8 +24,8 @@ class UserPreferencesEntityMapperTest {
         domain.setId(UUID.randomUUID());
         domain.setUserId(UUID.randomUUID());
         domain.setPreferences(Map.of("theme", "dark"));
-        domain.setCreatedAt(LocalDateTime.now());
-        domain.setModifiedAt(LocalDateTime.now());
+        domain.setCreatedAt(Instant.now());
+        domain.setModifiedAt(Instant.now());
 
         UserPreferencesEntity entity = mapper.toEntity(domain);
 
@@ -43,8 +42,8 @@ class UserPreferencesEntityMapperTest {
         entity.setId(UUID.randomUUID());
         entity.setUserId(UUID.randomUUID());
         entity.setPreferences(Map.of("theme", "dark"));
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
 
         UserPreferences domain = mapper.toDomain(entity);
 

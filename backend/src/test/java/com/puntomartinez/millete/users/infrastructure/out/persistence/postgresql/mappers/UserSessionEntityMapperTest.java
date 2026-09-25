@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,8 +24,8 @@ class UserSessionEntityMapperTest {
         domain.setUserId(UUID.randomUUID());
         domain.setChannel("WEB");
         domain.setActive(true);
-        domain.setCreatedAt(LocalDateTime.now());
-        domain.setModifiedAt(LocalDateTime.now());
+        domain.setCreatedAt(Instant.now());
+        domain.setModifiedAt(Instant.now());
 
         UserSessionEntity entity = mapper.toEntity(domain);
 
@@ -45,8 +44,8 @@ class UserSessionEntityMapperTest {
         entity.setUserId(UUID.randomUUID());
         entity.setChannel("WEB");
         entity.setActive(true);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
 
         UserSession domain = mapper.toDomain(entity);
 

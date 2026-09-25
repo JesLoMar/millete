@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.puntomartinez.millete.users.application.services.AuthenticationServiceTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.421 s -- in com.puntomartinez.millete.users.application.services.AuthenticationServiceTest

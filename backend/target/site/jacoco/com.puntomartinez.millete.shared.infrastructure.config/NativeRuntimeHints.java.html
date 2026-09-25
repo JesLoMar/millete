@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeRuntimeHints.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.shared.infrastructure.config</a> &gt; <span class="el_source">NativeRuntimeHints.java</span></div><h1>NativeRuntimeHints.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.shared.infrastructure.config;
+
+import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
+
+import java.util.UUID;
+
+<span class="nc" id="L10">public class NativeRuntimeHints implements RuntimeHintsRegistrar {</span>
+
+    @Override
+    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+
+        // UUID
+<span class="nc" id="L16">        hints.reflection().registerType(</span>
+                UUID[].class
+        );
+
+        // PDFBox resources
+<span class="nc" id="L21">        hints.resources().registerPattern(</span>
+                &quot;org/apache/pdfbox/resources/afm/*.afm&quot;
+        );
+<span class="nc" id="L24">        hints.resources().registerPattern(</span>
+                &quot;org/apache/pdfbox/resources/glyphlist/glyphlist.txt&quot;
+        );
+<span class="nc" id="L27">        hints.resources().registerPattern(</span>
+                &quot;org/apache/pdfbox/resources/glyphlist/zapfdingbats.txt&quot;
+        );
+
+        // PDF export DTOs
+<span class="nc" id="L32">        hints.reflection().registerType(</span>
+                PdfExportData.Summary.class,
+                MemberCategory.INVOKE_PUBLIC_METHODS
+        );
+
+<span class="nc" id="L37">        hints.reflection().registerType(</span>
+                PdfExportData.InvestmentRow.class,
+                MemberCategory.INVOKE_PUBLIC_METHODS
+        );
+
+<span class="nc" id="L42">        hints.reflection().registerType(</span>
+                PdfExportData.TransactionRow.class,
+                MemberCategory.INVOKE_PUBLIC_METHODS
+        );
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

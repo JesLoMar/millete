@@ -21,7 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +36,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("NotificationController")
+
 class NotificationControllerTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID NOTIFICATION_ID = UUID.randomUUID();
@@ -63,14 +73,14 @@ class NotificationControllerTest {
     }
 
     private Notification validNotification() {
-        return Notification.create(
+        return Notification.create(TIME, 
                 USER_ID,
                 NotificationType.GOAL_INVITATION,
                 "New invitation",
                 "You have been invited",
                 Map.of("goalId", UUID.randomUUID().toString()),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
     }
 

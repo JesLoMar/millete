@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionMetricsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.application.services</a> &gt; <span class="el_source">TransactionMetricsService.java</span></div><h1>TransactionMetricsService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.application.services;
+
+import com.puntomartinez.millete.transactions.domain.ports.in.GetTransactionMetricsUseCase;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
+import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository.TransactionAggregates;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+public class TransactionMetricsService implements GetTransactionMetricsUseCase {
+
+    private final TransactionRepository transactionRepository;
+    private final TransactionPeriodService transactionPeriodService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public MetricsResult getMetrics(MetricsCommand command) {
+<span class="fc" id="L24">        LocalDateTime[] currentRange =</span>
+<span class="fc" id="L25">                transactionPeriodService.getDateRange(command.period());</span>
+
+<span class="fc" id="L27">        LocalDateTime[] previousRange =</span>
+<span class="fc" id="L28">                transactionPeriodService.getPreviousPeriod(command.period());</span>
+
+<span class="fc" id="L30">        TransactionAggregates currentAggregates =</span>
+<span class="fc" id="L31">                transactionRepository.getAggregatesByUserIdAndDateBetween(</span>
+<span class="fc" id="L32">                        command.userId(),</span>
+                        currentRange[0],
+                        currentRange[1]
+                );
+
+<span class="fc" id="L37">        TransactionAggregates previousAggregates =</span>
+<span class="fc" id="L38">                transactionRepository.getAggregatesByUserIdAndDateBetween(</span>
+<span class="fc" id="L39">                        command.userId(),</span>
+                        previousRange[0],
+                        previousRange[1]
+                );
+
+<span class="fc" id="L44">        BigDecimal currentIncome = currentAggregates.totalIncome();</span>
+<span class="fc" id="L45">        BigDecimal currentExpenses = currentAggregates.totalExpense();</span>
+<span class="fc" id="L46">        BigDecimal currentBalance = currentIncome.subtract(currentExpenses);</span>
+<span class="fc" id="L47">        long currentCount = currentAggregates.count();</span>
+
+<span class="fc" id="L49">        BigDecimal previousIncome = previousAggregates.totalIncome();</span>
+<span class="fc" id="L50">        BigDecimal previousExpenses = previousAggregates.totalExpense();</span>
+<span class="fc" id="L51">        BigDecimal previousBalance = previousIncome.subtract(previousExpenses);</span>
+
+<span class="fc" id="L53">        double incomeTrend =</span>
+<span class="fc" id="L54">                calculateTrend(currentIncome, previousIncome);</span>
+
+<span class="fc" id="L56">        double expensesTrend =</span>
+<span class="fc" id="L57">                calculateTrend(currentExpenses, previousExpenses);</span>
+
+<span class="fc" id="L59">        double balanceTrend =</span>
+<span class="fc" id="L60">                calculateTrend(currentBalance, previousBalance);</span>
+
+<span class="fc" id="L62">        double countTrend =</span>
+<span class="fc" id="L63">                calculateCountTrend(currentCount, previousAggregates.count());</span>
+
+<span class="fc" id="L65">        return new MetricsResult(</span>
+                currentIncome,
+                currentExpenses,
+                currentBalance,
+                currentCount,
+                incomeTrend,
+                expensesTrend,
+                balanceTrend,
+                countTrend
+        );
+    }
+
+    private double calculateTrend(
+            BigDecimal current,
+            BigDecimal previous
+    ) {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (previous.compareTo(BigDecimal.ZERO) == 0) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">            return current.compareTo(BigDecimal.ZERO) &gt; 0</span>
+<span class="fc" id="L83">                    ? 100.0</span>
+<span class="fc" id="L84">                    : 0.0;</span>
+        }
+
+<span class="fc" id="L87">        return current.subtract(previous)</span>
+<span class="fc" id="L88">                .multiply(new BigDecimal(&quot;100&quot;))</span>
+<span class="fc" id="L89">                .divide(</span>
+<span class="fc" id="L90">                        previous.abs(),</span>
+                        1,
+                        RoundingMode.HALF_UP
+                )
+<span class="fc" id="L94">                .doubleValue();</span>
+    }
+
+    private double calculateCountTrend(
+            long current,
+            long previous
+    ) {
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (previous == 0) {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            return current &gt; 0</span>
+<span class="fc" id="L103">                    ? 100.0</span>
+<span class="fc" id="L104">                    : 0.0;</span>
+        }
+
+<span class="fc" id="L107">        return Math.round(</span>
+                ((double) (current - previous) / previous) * 1000.0
+        ) / 10.0;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

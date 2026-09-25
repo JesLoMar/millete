@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SavingsGoalExportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.savingsgoals</a> &gt; <span class="el_source">SavingsGoalExportAdapter.java</span></div><h1>SavingsGoalExportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.savingsgoals;
+
+import com.puntomartinez.millete.dataexport.domain.model.SavingsGoalSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.SavingsGoalExportPort;
+import com.puntomartinez.millete.savingsgoals.domain.ports.out.SavingsGoalRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+public class SavingsGoalExportAdapter implements SavingsGoalExportPort {
+
+    private final SavingsGoalRepository savingsGoalRepository;
+
+    public SavingsGoalExportAdapter(
+            SavingsGoalRepository savingsGoalRepository
+<span class="nc" id="L18">    ) {</span>
+<span class="nc" id="L19">        this.savingsGoalRepository = savingsGoalRepository;</span>
+<span class="nc" id="L20">    }</span>
+
+    @Override
+    public List&lt;SavingsGoalSnapshot&gt; findAllByUserId(UUID userId) {
+<span class="nc" id="L24">        return savingsGoalRepository.findAllByUserId(userId)</span>
+<span class="nc" id="L25">                .stream()</span>
+<span class="nc" id="L26">                .map(savingsGoal -&gt;</span>
+<span class="nc" id="L27">                        new SavingsGoalSnapshot(</span>
+<span class="nc" id="L28">                                savingsGoal.getId(),</span>
+<span class="nc" id="L29">                                savingsGoal.getUserId(),</span>
+<span class="nc" id="L30">                                savingsGoal.getName(),</span>
+<span class="nc" id="L31">                                savingsGoal.getTargetAmount(),</span>
+<span class="nc" id="L32">                                savingsGoal.getCurrentAmount(),</span>
+<span class="nc" id="L33">                                savingsGoal.getDeadline(),</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">                                savingsGoal.getPriority() != null</span>
+<span class="nc" id="L35">                                        ? savingsGoal.getPriority().name()</span>
+<span class="nc" id="L36">                                        : null,</span>
+<span class="nc" id="L37">                                savingsGoal.getLink(),</span>
+<span class="nc" id="L38">                                savingsGoal.getCreatedAt(),</span>
+<span class="nc" id="L39">                                savingsGoal.getModifiedAt(),</span>
+<span class="nc" id="L40">                                savingsGoal.isActive()</span>
+                        )
+                )
+<span class="nc" id="L43">                .toList();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

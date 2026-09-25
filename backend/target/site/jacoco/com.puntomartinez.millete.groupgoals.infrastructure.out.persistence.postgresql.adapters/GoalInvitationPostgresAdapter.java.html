@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GoalInvitationPostgresAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.adapters</a> &gt; <span class="el_source">GoalInvitationPostgresAdapter.java</span></div><h1>GoalInvitationPostgresAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.adapters;
+
+import com.puntomartinez.millete.groupgoals.domain.model.GoalInvitation;
+import com.puntomartinez.millete.groupgoals.domain.model.InvitationStatus;
+import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalInvitationRepository;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalInvitationEntity;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalInvitationEntityMapper;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalInvitationRepository;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class GoalInvitationPostgresAdapter
+        implements GoalInvitationRepository {
+
+    private final JpaGoalInvitationRepository repository;
+    private final GoalInvitationEntityMapper mapper;
+
+    public GoalInvitationPostgresAdapter(
+            JpaGoalInvitationRepository repository,
+            GoalInvitationEntityMapper mapper
+<span class="fc" id="L26">    ) {</span>
+<span class="fc" id="L27">        this.repository = repository;</span>
+<span class="fc" id="L28">        this.mapper = mapper;</span>
+<span class="fc" id="L29">    }</span>
+
+    @Override
+    public GoalInvitation save(GoalInvitation invitation) {
+<span class="fc" id="L33">        GoalInvitationEntity entity = mapper.toEntity(invitation);</span>
+<span class="fc" id="L34">        GoalInvitationEntity saved = repository.save(entity);</span>
+<span class="fc" id="L35">        return mapper.toDomain(saved);</span>
+    }
+
+    @Override
+    public Optional&lt;GoalInvitation&gt; findById(UUID id) {
+<span class="fc" id="L40">        return repository.findByIdAndActiveTrue(id)</span>
+<span class="fc" id="L41">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public Optional&lt;GoalInvitation&gt; findByGoalIdAndInvitedUserIdAndStatus(
+            UUID goalId,
+            UUID invitedUserId,
+            InvitationStatus status
+    ) {
+<span class="fc" id="L50">        return repository</span>
+<span class="fc" id="L51">                .findByGoalIdAndInvitedUserIdAndStatusAndActiveTrue(</span>
+                        goalId,
+                        invitedUserId,
+<span class="fc" id="L54">                        status.name()</span>
+                )
+<span class="fc" id="L56">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public List&lt;GoalInvitation&gt; findActiveAndNotExpiredByInvitedUserIdAndStatus(
+            UUID invitedUserId,
+            InvitationStatus status
+    ) {
+<span class="fc" id="L64">        return repository</span>
+<span class="fc" id="L65">                .findActiveAndNotExpiredByInvitedUserIdAndStatus(</span>
+                        invitedUserId,
+<span class="fc" id="L67">                        status.name(),</span>
+<span class="fc" id="L68">                        LocalDateTime.now()</span>
+                )
+<span class="fc" id="L70">                .stream()</span>
+<span class="fc" id="L71">                .map(mapper::toDomain)</span>
+<span class="fc" id="L72">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;GoalInvitation&gt; findActiveByGoalIdAndStatus(
+            UUID goalId,
+            InvitationStatus status
+    ) {
+<span class="fc" id="L80">        return repository</span>
+<span class="fc" id="L81">                .findByGoalIdAndStatusAndActiveTrue(</span>
+                        goalId,
+<span class="fc" id="L83">                        status.name()</span>
+                )
+<span class="fc" id="L85">                .stream()</span>
+<span class="fc" id="L86">                .map(mapper::toDomain)</span>
+<span class="fc" id="L87">                .toList();</span>
+    }
+
+    @Override
+    public void deactivatePendingByGoalId(UUID goalId) {
+<span class="fc" id="L92">        repository.deactivatePendingByGoalId(goalId, LocalDateTime.now());</span>
+<span class="fc" id="L93">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

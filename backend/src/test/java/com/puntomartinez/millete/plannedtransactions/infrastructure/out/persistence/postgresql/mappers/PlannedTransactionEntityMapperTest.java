@@ -134,8 +134,8 @@ class PlannedTransactionEntityMapperTest {
         entity.setFrequencyType(null);
         entity.setFrequencyInterval(1);
         entity.setStartDate(LocalDate.now());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         entity.setFailureCount(0);
 

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryPostgresAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.adapters</a> &gt; <span class="el_source">CategoryPostgresAdapter.java</span></div><h1>CategoryPostgresAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.adapters;
+
+import com.puntomartinez.millete.categories.domain.model.Category;
+import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.entity.CategoryEntity;
+import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.mappers.CategoryEntityMapper;
+import com.puntomartinez.millete.categories.infrastructure.out.persistence.postgresql.repository.JpaCategoryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public class CategoryPostgresAdapter implements CategoryRepository {
+
+    private final JpaCategoryRepository jpaRepository;
+    private final CategoryEntityMapper mapper;
+
+    public CategoryPostgresAdapter(
+            JpaCategoryRepository jpaRepository,
+            CategoryEntityMapper mapper
+<span class="fc" id="L27">    ) {</span>
+<span class="fc" id="L28">        this.jpaRepository = jpaRepository;</span>
+<span class="fc" id="L29">        this.mapper = mapper;</span>
+<span class="fc" id="L30">    }</span>
+
+    @Override
+    public Category save(Category category) {
+<span class="fc" id="L34">        CategoryEntity entity = mapper.toEntity(category);</span>
+<span class="fc" id="L35">        CategoryEntity savedEntity = jpaRepository.save(entity);</span>
+
+<span class="fc" id="L37">        return mapper.toDomain(savedEntity);</span>
+    }
+
+    @Override
+    public Optional&lt;Category&gt; findByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L45">        return jpaRepository.findByIdAndUserId(id, userId)</span>
+<span class="fc" id="L46">                .map(mapper::toDomain);</span>
+    }
+
+    @Override
+    public List&lt;Category&gt; findByUserId(UUID userId) {
+<span class="fc" id="L51">        return jpaRepository.findByUserId(userId)</span>
+<span class="fc" id="L52">                .stream()</span>
+<span class="fc" id="L53">                .map(mapper::toDomain)</span>
+<span class="fc" id="L54">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;Category&gt; findByIdsAndUserId(
+            UUID userId,
+            List&lt;UUID&gt; categoryIds
+    ) {
+<span class="fc" id="L62">        return jpaRepository.findByUserIdAndIdIn(</span>
+                        userId,
+                        categoryIds
+                )
+<span class="fc" id="L66">                .stream()</span>
+<span class="fc" id="L67">                .map(mapper::toDomain)</span>
+<span class="fc" id="L68">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;Category&gt; findCategoriesWithBudgetByUserId(UUID userId) {
+<span class="fc" id="L73">        return jpaRepository.findCategoriesWithBudgetByUserId(userId)</span>
+<span class="fc" id="L74">                .stream()</span>
+<span class="fc" id="L75">                .map(mapper::toDomain)</span>
+<span class="fc" id="L76">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;Category&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search
+    ) {
+<span class="fc" id="L86">        Specification&lt;CategoryEntity&gt; specification =</span>
+<span class="fc" id="L87">                buildSpecification(userId, search);</span>
+
+<span class="fc" id="L89">        Page&lt;CategoryEntity&gt; result = jpaRepository.findAll(</span>
+                specification,
+<span class="fc" id="L91">                PageRequest.of(</span>
+                        page,
+                        size,
+<span class="fc" id="L94">                        Sort.by(&quot;createdAt&quot;).descending()</span>
+                )
+        );
+
+<span class="fc" id="L98">        return result.getContent()</span>
+<span class="fc" id="L99">                .stream()</span>
+<span class="fc" id="L100">                .map(mapper::toDomain)</span>
+<span class="fc" id="L101">                .toList();</span>
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L109">        return jpaRepository.count(</span>
+<span class="fc" id="L110">                buildSpecification(userId, search)</span>
+        );
+    }
+
+    @Override
+    public boolean existsActiveByUserIdAndName(
+            UUID userId,
+            String name
+    ) {
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        return jpaRepository.countActiveByUserIdAndName(</span>
+                userId,
+                name
+        ) &gt; 0;
+    }
+
+    @Override
+    public boolean existsActiveByUserIdAndNameExcludingId(
+            UUID userId,
+            String name,
+            UUID excludeId
+    ) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        return jpaRepository.countActiveByUserIdAndNameExcludingId(</span>
+                userId,
+                name,
+                excludeId
+        ) &gt; 0;
+    }
+
+    private Specification&lt;CategoryEntity&gt; buildSpecification(
+            UUID userId,
+            String search
+    ) {
+<span class="fc" id="L142">        Specification&lt;CategoryEntity&gt; specification =</span>
+                (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L144">                        criteriaBuilder.equal(</span>
+<span class="nc" id="L145">                                root.get(&quot;userId&quot;),</span>
+                                userId
+                        );
+
+<span class="fc" id="L149">        specification = specification.and(</span>
+                (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L151">                        criteriaBuilder.isTrue(</span>
+<span class="nc" id="L152">                                root.get(&quot;active&quot;)</span>
+                        )
+        );
+
+<span class="pc bpc" id="L156" title="2 of 4 branches missed.">        if (search != null &amp;&amp; !search.isBlank()) {</span>
+<span class="fc" id="L157">            String pattern = &quot;%&quot; + search.toLowerCase() + &quot;%&quot;;</span>
+
+<span class="fc" id="L159">            specification = specification.and(</span>
+                    (root, query, criteriaBuilder) -&gt;
+<span class="nc" id="L161">                            criteriaBuilder.like(</span>
+<span class="nc" id="L162">                                    criteriaBuilder.lower(root.get(&quot;name&quot;)),</span>
+                                    pattern
+                            )
+            );
+        }
+
+<span class="fc" id="L168">        return specification;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

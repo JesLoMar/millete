@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Notification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.notifications.domain.model</a> &gt; <span class="el_source">Notification.java</span></div><h1>Notification.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.notifications.domain.model;
+
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
+
+public class Notification {
+
+    private static final int MAX_TITLE_LENGTH = 255;
+
+    private final UUID id;
+    private final UUID userId;
+    private final NotificationType type;
+    private final String title;
+    private final String message;
+    private final Map&lt;String, Object&gt; metadata;
+    private boolean read;
+    private final boolean actionRequired;
+    private LocalDateTime actionedAt;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime expiresAt;
+    private boolean active;
+
+    private Notification(
+            UUID id,
+            UUID userId,
+            NotificationType type,
+            String title,
+            String message,
+            Map&lt;String, Object&gt; metadata,
+            boolean read,
+            boolean actionRequired,
+            LocalDateTime actionedAt,
+            LocalDateTime createdAt,
+            LocalDateTime expiresAt,
+            boolean active
+<span class="fc" id="L39">    ) {</span>
+<span class="fc" id="L40">        validateId(id);</span>
+<span class="fc" id="L41">        validateUserId(userId);</span>
+<span class="fc" id="L42">        validateType(type);</span>
+<span class="fc" id="L43">        validateTitle(title);</span>
+<span class="fc" id="L44">        validateCreatedAt(createdAt);</span>
+
+<span class="fc" id="L46">        this.id = id;</span>
+<span class="fc" id="L47">        this.userId = userId;</span>
+<span class="fc" id="L48">        this.type = type;</span>
+<span class="fc" id="L49">        this.title = title;</span>
+<span class="fc" id="L50">        this.message = message;</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        this.metadata = metadata == null</span>
+<span class="fc" id="L52">                ? null</span>
+<span class="fc" id="L53">                : Map.copyOf(metadata);</span>
+<span class="fc" id="L54">        this.read = read;</span>
+<span class="fc" id="L55">        this.actionRequired = actionRequired;</span>
+<span class="fc" id="L56">        this.actionedAt = actionedAt;</span>
+<span class="fc" id="L57">        this.createdAt = createdAt;</span>
+<span class="fc" id="L58">        this.expiresAt = expiresAt;</span>
+<span class="fc" id="L59">        this.active = active;</span>
+<span class="fc" id="L60">    }</span>
+
+    public static Notification create(
+            UUID userId,
+            NotificationType type,
+            String title,
+            String message,
+            Map&lt;String, Object&gt; metadata,
+            boolean actionRequired,
+            LocalDateTime expiresAt
+    ) {
+<span class="fc" id="L71">        return new Notification(</span>
+<span class="fc" id="L72">                UUID.randomUUID(),</span>
+                userId,
+                type,
+                title,
+                message,
+                metadata,
+                false,
+                actionRequired,
+                null,
+<span class="fc" id="L81">                LocalDateTime.now(),</span>
+                expiresAt,
+                true
+        );
+    }
+
+    public static Notification reconstitute(
+            UUID id,
+            UUID userId,
+            NotificationType type,
+            String title,
+            String message,
+            Map&lt;String, Object&gt; metadata,
+            boolean read,
+            boolean actionRequired,
+            LocalDateTime actionedAt,
+            LocalDateTime createdAt,
+            LocalDateTime expiresAt,
+            boolean active
+    ) {
+<span class="fc" id="L101">        return new Notification(</span>
+                id,
+                userId,
+                type,
+                title,
+                message,
+                metadata,
+                read,
+                actionRequired,
+                actionedAt,
+                createdAt,
+                expiresAt,
+                active
+        );
+    }
+
+    public boolean markAsRead() {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (this.read) {</span>
+<span class="fc" id="L119">            return false;</span>
+        }
+
+<span class="fc" id="L122">        this.read = true;</span>
+<span class="fc" id="L123">        return true;</span>
+    }
+
+    public boolean markAsActioned() {
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        if (!this.actionRequired) {</span>
+<span class="fc" id="L128">            throw new InvalidInputException(</span>
+                    &quot;La notificación no requiere ninguna acción.&quot;
+            );
+        }
+
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (this.actionedAt != null) {</span>
+<span class="fc" id="L134">            return false;</span>
+        }
+
+<span class="fc" id="L137">        this.actionedAt = LocalDateTime.now();</span>
+<span class="fc" id="L138">        return true;</span>
+    }
+
+    public void softDelete() {
+<span class="fc" id="L142">        this.active = false;</span>
+<span class="fc" id="L143">    }</span>
+
+    public boolean isExpired() {
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        return expiresAt != null</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                &amp;&amp; LocalDateTime.now().isAfter(expiresAt);</span>
+    }
+
+    private static void validateId(UUID id) {
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L152">            throw new InvalidInputException(</span>
+                    &quot;El id de la notificación es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L156">    }</span>
+
+    private static void validateUserId(UUID userId) {
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L160">            throw new InvalidInputException(</span>
+                    &quot;El userId de la notificación es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L164">    }</span>
+
+    private static void validateType(NotificationType type) {
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (type == null) {</span>
+<span class="fc" id="L168">            throw new InvalidInputException(</span>
+                    &quot;El tipo de notificación es obligatorio.&quot;
+            );
+        }
+<span class="fc" id="L172">    }</span>
+
+    private static void validateTitle(String title) {
+<span class="fc bfc" id="L175" title="All 4 branches covered.">        if (title == null || title.isBlank()) {</span>
+<span class="fc" id="L176">            throw new InvalidInputException(</span>
+                    &quot;El título de la notificación es obligatorio.&quot;
+            );
+        }
+
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (title.length() &gt; MAX_TITLE_LENGTH) {</span>
+<span class="fc" id="L182">            throw new InvalidInputException(</span>
+                    &quot;El título de la notificación no puede superar los &quot;
+                            + MAX_TITLE_LENGTH + &quot; caracteres.&quot;
+            );
+        }
+<span class="fc" id="L187">    }</span>
+
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (createdAt == null) {</span>
+<span class="fc" id="L191">            throw new InvalidInputException(</span>
+                    &quot;La fecha de creación de la notificación es obligatoria.&quot;
+            );
+        }
+<span class="fc" id="L195">    }</span>
+
+    public UUID getId() {
+<span class="fc" id="L198">        return id;</span>
+    }
+
+    public UUID getUserId() {
+<span class="fc" id="L202">        return userId;</span>
+    }
+
+    public NotificationType getType() {
+<span class="fc" id="L206">        return type;</span>
+    }
+
+    public String getTitle() {
+<span class="fc" id="L210">        return title;</span>
+    }
+
+    public String getMessage() {
+<span class="fc" id="L214">        return message;</span>
+    }
+
+    public Map&lt;String, Object&gt; getMetadata() {
+<span class="fc" id="L218">        return metadata;</span>
+    }
+
+    public boolean isRead() {
+<span class="fc" id="L222">        return read;</span>
+    }
+
+    public boolean isActionRequired() {
+<span class="fc" id="L226">        return actionRequired;</span>
+    }
+
+    public LocalDateTime getActionedAt() {
+<span class="fc" id="L230">        return actionedAt;</span>
+    }
+
+    public LocalDateTime getCreatedAt() {
+<span class="fc" id="L234">        return createdAt;</span>
+    }
+
+    public LocalDateTime getExpiresAt() {
+<span class="fc" id="L238">        return expiresAt;</span>
+    }
+
+    public boolean isActive() {
+<span class="fc" id="L242">        return active;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

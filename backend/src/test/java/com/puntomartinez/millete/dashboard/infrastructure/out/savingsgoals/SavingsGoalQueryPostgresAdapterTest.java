@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -21,10 +20,16 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SavingsGoalQueryPostgresAdapter")
 class SavingsGoalQueryPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
 
@@ -47,8 +52,8 @@ class SavingsGoalQueryPostgresAdapterTest {
                 new BigDecimal("1000.00"), new BigDecimal("500.00"),
                 LocalDate.now().plusDays(30), GoalPriority.HIGH,
                 null,
-                LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.of(2024, 1, 2, 10, 0),
+                Instant.parse("2024-01-01T10:00:00Z"),
+                Instant.parse("2024-01-02T10:00:00Z"),
                 true
         );
 
@@ -72,7 +77,7 @@ class SavingsGoalQueryPostgresAdapterTest {
     @Test
     @DisplayName("Should return null priority when goal priority is null")
     void shouldReturnNullPriorityWhenNull() {
-        SavingsGoal goal = SavingsGoal.create(
+        SavingsGoal goal = SavingsGoal.create(TIME, 
                 USER_ID, "Goal", new BigDecimal("100.00"),
                 LocalDate.now().plusDays(30), null, null
         );

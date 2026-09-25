@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -48,9 +47,9 @@ class DashboardCategoryServiceTest {
                 categoryQueryPort,
                 dashboardPeriodService
         );
-        LocalDateTime[] range = {
-                LocalDateTime.now().minusDays(30),
-                LocalDateTime.now()
+        LocalDate[] range = {
+                LocalDate.now().minusDays(30),
+                LocalDate.now()
         };
         org.mockito.Mockito.lenient()
                 .when(dashboardPeriodService.getDateRange(any()))
@@ -68,13 +67,13 @@ class DashboardCategoryServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Groceries", CATEGORY_ID_1,
                             new BigDecimal("100.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
             TransactionQueryPort.TransactionData tx2 =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Transport", CATEGORY_ID_2,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -105,7 +104,7 @@ class DashboardCategoryServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Orphan", null,
                             new BigDecimal("30.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -131,13 +130,13 @@ class DashboardCategoryServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Small", CATEGORY_ID_1,
                             new BigDecimal("10.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
             TransactionQueryPort.TransactionData tx2 =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Big", CATEGORY_ID_2,
                             new BigDecimal("90.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -188,7 +187,7 @@ class DashboardCategoryServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Salary", CATEGORY_ID_1,
                             new BigDecimal("2000.00"),
-                            LocalDateTime.now(), "INCOME"
+                            Instant.now(), "INCOME"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(

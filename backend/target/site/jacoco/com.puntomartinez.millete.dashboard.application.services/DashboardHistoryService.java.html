@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardHistoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dashboard.application.services</a> &gt; <span class="el_source">DashboardHistoryService.java</span></div><h1>DashboardHistoryService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dashboard.application.services;
+
+import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardHistoryResponseDTO;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Servicio de histórico de gastos del dashboard.
+ *
+ * &lt;p&gt;LÓGICA DE PERIODOS (deuda técnica documentada):
+ * Este servicio tiene su propia lógica de rangos semanales/mensuales/anuales
+ * en vez de reutilizar {@link DashboardPeriodService}. La razón histórica
+ * es que el histórico necesita rangos más granulares (día a día, semana a
+ * semana, mes a mes) que el servicio de periodos genérico no cubre.
+ * Se podría valorar unificar criterios en un futuro refactor.&lt;/p&gt;
+ *
+ * &lt;p&gt;HISTÓRICO MENSUAL: El periodo &quot;month&quot; no usa semanas naturales ni ISO,
+ * sino bloques de 7 días desde el día 1 del mes. Esto significa que:&lt;/p&gt;
+ * &lt;ul&gt;
+ *   &lt;li&gt;&quot;Sem 1&quot; = días 1-7&lt;/li&gt;
+ *   &lt;li&gt;&quot;Sem 2&quot; = días 8-14&lt;/li&gt;
+ *   &lt;li&gt;&quot;Sem 3&quot; = días 15-21&lt;/li&gt;
+ *   &lt;li&gt;&quot;Sem 4&quot; = días 22-28&lt;/li&gt;
+ *   &lt;li&gt;&quot;Sem 5&quot; = días 29-fin de mes (si aplica)&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;p&gt;Este comportamiento es intencional y debe mantenerse consistente
+ * con lo que el frontend renderiza en los gráficos.&lt;/p&gt;
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class DashboardHistoryService {
+
+    private final TransactionQueryPort transactionQueryPort;
+
+    public DashboardHistoryResponseDTO getHistory(
+            java.util.UUID userId,
+            String period
+    ) {
+<span class="fc bfc" id="L50" title="All 4 branches covered.">        return switch (period.toLowerCase()) {</span>
+<span class="fc" id="L51">            case &quot;week&quot; -&gt; getWeeklyHistory(userId);</span>
+<span class="fc" id="L52">            case &quot;month&quot; -&gt; getMonthlyHistory(userId);</span>
+<span class="fc" id="L53">            case &quot;year&quot; -&gt; getYearlyHistory(userId);</span>
+<span class="fc" id="L54">            default -&gt; throw new InvalidInputException(</span>
+                    &quot;Periodo no válido: '&quot; + period
+                            + &quot;'. Valores aceptados: week, month, year.&quot;
+            );
+        };
+    }
+
+    private DashboardHistoryResponseDTO getWeeklyHistory(
+            java.util.UUID userId
+    ) {
+<span class="fc" id="L64">        List&lt;String&gt; labels = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L65">        List&lt;BigDecimal&gt; data = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L67">        String[] dayNames = {</span>
+                &quot;Lun&quot;, &quot;Mar&quot;, &quot;Mié&quot;, &quot;Jue&quot;, &quot;Vie&quot;, &quot;Sáb&quot;, &quot;Dom&quot;
+        };
+
+<span class="fc" id="L71">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L72">        LocalDate weekStart = today.with(java.time.DayOfWeek.MONDAY);</span>
+
+<span class="fc" id="L74">        List&lt;TransactionQueryPort.TransactionData&gt; transactions =</span>
+<span class="fc" id="L75">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+<span class="fc" id="L77">                        weekStart.atStartOfDay(),</span>
+<span class="fc" id="L78">                        weekStart.plusDays(6).atTime(LocalTime.MAX)</span>
+                );
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        for (int i = 0; i &lt; 7; i++) {</span>
+<span class="fc" id="L82">            LocalDate day = weekStart.plusDays(i);</span>
+<span class="fc" id="L83">            labels.add(dayNames[i]);</span>
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (day.isAfter(today)) {</span>
+<span class="fc" id="L86">                data.add(BigDecimal.ZERO);</span>
+<span class="fc" id="L87">                continue;</span>
+            }
+
+<span class="fc" id="L90">            LocalDateTime dayStart = day.atStartOfDay();</span>
+<span class="fc" id="L91">            LocalDateTime dayEnd = day.atTime(LocalTime.MAX);</span>
+
+<span class="fc" id="L93">            BigDecimal dayExpenses = transactions.stream()</span>
+<span class="fc" id="L94">                    .filter(t -&gt;</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">                            !t.date().isBefore(dayStart)</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">                                    &amp;&amp; !t.date().isAfter(dayEnd))</span>
+<span class="fc" id="L97">                    .filter(t -&gt; &quot;EXPENSE&quot;.equals(t.type()))</span>
+<span class="fc" id="L98">                    .map(t -&gt; t.amount().abs())</span>
+<span class="fc" id="L99">                    .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L101">            data.add(dayExpenses);</span>
+        }
+
+<span class="fc" id="L104">        return new DashboardHistoryResponseDTO(&quot;week&quot;, labels, data);</span>
+    }
+
+    private DashboardHistoryResponseDTO getMonthlyHistory(
+            java.util.UUID userId
+    ) {
+<span class="fc" id="L110">        List&lt;String&gt; labels = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L111">        List&lt;BigDecimal&gt; data = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L113">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L114">        LocalDate monthStart = today.withDayOfMonth(1);</span>
+<span class="fc" id="L115">        LocalDate lastDayOfMonth = monthStart.with(</span>
+<span class="fc" id="L116">                java.time.temporal.TemporalAdjusters.lastDayOfMonth()</span>
+        );
+
+<span class="fc" id="L119">        List&lt;TransactionQueryPort.TransactionData&gt; transactions =</span>
+<span class="fc" id="L120">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+<span class="fc" id="L122">                        monthStart.atStartOfDay(),</span>
+<span class="fc" id="L123">                        lastDayOfMonth.atTime(LocalTime.MAX)</span>
+                );
+
+<span class="fc" id="L126">        int weekNumber = 1;</span>
+<span class="fc" id="L127">        LocalDate weekStart = monthStart;</span>
+
+<span class="pc bpc" id="L129" title="1 of 4 branches missed.">        while (weekStart.isBefore(lastDayOfMonth.plusDays(1))</span>
+                &amp;&amp; weekNumber &lt;= 5) {
+
+<span class="fc" id="L132">            LocalDate weekEnd = weekStart.plusDays(6);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">            if (weekEnd.isAfter(lastDayOfMonth)) {</span>
+<span class="fc" id="L134">                weekEnd = lastDayOfMonth;</span>
+            }
+
+<span class="fc" id="L137">            LocalDateTime startDateTime = weekStart.atStartOfDay();</span>
+<span class="fc" id="L138">            LocalDateTime endDateTime = weekEnd.atTime(LocalTime.MAX);</span>
+
+<span class="fc" id="L140">            BigDecimal weekExpenses = transactions.stream()</span>
+<span class="fc" id="L141">                    .filter(t -&gt;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                            !t.date().isBefore(startDateTime)</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                                    &amp;&amp; !t.date().isAfter(endDateTime))</span>
+<span class="pc" id="L144">                    .filter(t -&gt; &quot;EXPENSE&quot;.equals(t.type()))</span>
+<span class="pc" id="L145">                    .map(t -&gt; t.amount().abs())</span>
+<span class="fc" id="L146">                    .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L148">            labels.add(&quot;Sem &quot; + weekNumber);</span>
+<span class="fc" id="L149">            data.add(weekExpenses);</span>
+
+<span class="fc" id="L151">            weekStart = weekStart.plusWeeks(1);</span>
+<span class="fc" id="L152">            weekNumber++;</span>
+<span class="fc" id="L153">        }</span>
+
+<span class="fc" id="L155">        return new DashboardHistoryResponseDTO(&quot;month&quot;, labels, data);</span>
+    }
+
+    private DashboardHistoryResponseDTO getYearlyHistory(
+            java.util.UUID userId
+    ) {
+<span class="fc" id="L161">        List&lt;String&gt; labels = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L162">        List&lt;BigDecimal&gt; data = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L164">        String[] monthNames = {</span>
+                &quot;Ene&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Abr&quot;, &quot;May&quot;, &quot;Jun&quot;,
+                &quot;Jul&quot;, &quot;Ago&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dic&quot;
+        };
+
+<span class="fc" id="L169">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L170">        int currentYear = today.getYear();</span>
+
+<span class="fc" id="L172">        List&lt;TransactionQueryPort.TransactionData&gt; transactions =</span>
+<span class="fc" id="L173">                transactionQueryPort.findByUserIdAndDateBetween(</span>
+                        userId,
+<span class="fc" id="L175">                        LocalDate.of(currentYear, 1, 1).atStartOfDay(),</span>
+<span class="fc" id="L176">                        today.atTime(LocalTime.MAX)</span>
+                );
+
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        for (int month = 1; month &lt;= 12; month++) {</span>
+<span class="fc" id="L180">            LocalDate monthStart = LocalDate.of(currentYear, month, 1);</span>
+
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            if (monthStart.isAfter(today)) {</span>
+<span class="fc" id="L183">                break;</span>
+            }
+
+<span class="fc" id="L186">            LocalDate monthEnd = monthStart.with(</span>
+<span class="fc" id="L187">                    java.time.temporal.TemporalAdjusters.lastDayOfMonth()</span>
+            );
+<span class="fc bfc" id="L189" title="All 2 branches covered.">            if (monthEnd.isAfter(today)) {</span>
+<span class="fc" id="L190">                monthEnd = today;</span>
+            }
+
+<span class="fc" id="L193">            LocalDateTime startDateTime = monthStart.atStartOfDay();</span>
+<span class="fc" id="L194">            LocalDateTime endDateTime = monthEnd.atTime(LocalTime.MAX);</span>
+
+<span class="fc" id="L196">            BigDecimal monthExpenses = transactions.stream()</span>
+<span class="fc" id="L197">                    .filter(t -&gt;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                            !t.date().isBefore(startDateTime)</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">                                    &amp;&amp; !t.date().isAfter(endDateTime))</span>
+<span class="pc" id="L200">                    .filter(t -&gt; &quot;EXPENSE&quot;.equals(t.type()))</span>
+<span class="pc" id="L201">                    .map(t -&gt; t.amount().abs())</span>
+<span class="fc" id="L202">                    .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L204">            labels.add(monthNames[month - 1]);</span>
+<span class="fc" id="L205">            data.add(monthExpenses);</span>
+        }
+
+<span class="fc" id="L208">        return new DashboardHistoryResponseDTO(&quot;year&quot;, labels, data);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

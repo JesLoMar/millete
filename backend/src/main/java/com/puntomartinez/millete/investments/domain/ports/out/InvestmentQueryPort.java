@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.investments.domain.ports.out;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ public interface InvestmentQueryPort {
             BigDecimal purchasePrice,
             BigDecimal currentPrice,
             String type,
-            LocalDateTime purchaseDate,
+            LocalDate purchaseDate,
             boolean active
     ) {
 

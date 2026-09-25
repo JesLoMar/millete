@@ -8,6 +8,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessPlan
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
@@ -33,6 +34,7 @@ public class PlannedTransactionService implements
     private static final int SCHEDULER_BATCH_SIZE = 500;
 
     private final PlannedTransactionRepository plannedTransactionRepository;
+    private final TimeProvider timeProvider;
     private final PlannedTransactionExecutionService executionService;
 
     @Override
@@ -41,6 +43,7 @@ public class PlannedTransactionService implements
     ) {
         PlannedTransaction plannedTransaction =
                 PlannedTransaction.create(
+                timeProvider,
                         command.userId(),
                         command.categoryId(),
                         command.amount(),
@@ -105,7 +108,7 @@ public class PlannedTransactionService implements
         PlannedTransaction plannedTransaction =
                 getActiveTemplate(id, userId);
 
-        plannedTransaction.updateDetails(
+        plannedTransaction.updateDetails(timeProvider, 
                 command.amount(),
                 command.type(),
                 command.description(),
@@ -127,7 +130,7 @@ public class PlannedTransactionService implements
         PlannedTransaction plannedTransaction =
                 getActiveTemplate(id, userId);
 
-        plannedTransaction.deactivate();
+        plannedTransaction.deactivate(timeProvider);
         plannedTransactionRepository.save(
                 plannedTransaction
         );
@@ -183,10 +186,10 @@ public class PlannedTransactionService implements
                 executionService.execute(template, pendingDate);
             } catch (Exception e) {
                 boolean shouldDeactivate =
-                        template.incrementFailureCount();
+                        template.incrementFailureCount(timeProvider);
 
                 if (shouldDeactivate) {
-                    template.deactivate();
+                    template.deactivate(timeProvider);
                     log.warn(
                             "La plantilla recurrente {} se ha "
                                     + "desactivado tras {} fallos "

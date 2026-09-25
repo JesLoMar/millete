@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +37,7 @@ class InvestmentQueryPostgresAdapterTest {
         Investment investment = Investment.create(
                 USER_ID, "Apple Inc.", "AAPL",
                 new BigDecimal("10"), new BigDecimal("150.00"),
-                InvestmentType.STOCK, LocalDateTime.now().minusDays(30)
+                InvestmentType.STOCK, Instant.now().minusDays(30)
         );
 
         when(investmentRepository.findAllByUserId(USER_ID))

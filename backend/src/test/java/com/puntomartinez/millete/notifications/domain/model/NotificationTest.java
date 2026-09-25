@@ -8,7 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,21 +18,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Notification aggregate")
+
 class NotificationTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String VALID_TITLE = "New invitation";
     private static final String VALID_MESSAGE = "You have been invited to a goal.";
 
     private Notification createValid() {
-        return Notification.create(
+        return Notification.create(TIME, 
                 USER_ID,
                 NotificationType.GOAL_INVITATION,
                 VALID_TITLE,
                 VALID_MESSAGE,
                 Map.of("goalId", UUID.randomUUID().toString()),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
     }
 
@@ -45,8 +55,8 @@ class NotificationTest {
                 false,
                 true,
                 null,
-                LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.now().plusDays(7),
+                Instant.parse("2024-01-01T10:00:00Z"),
+                Instant.now().plusDays(7),
                 active
         );
     }
@@ -77,7 +87,7 @@ class NotificationTest {
         @Test
         @DisplayName("Should create notification with null metadata")
         void shouldCreateWithNullMetadata() {
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
@@ -95,7 +105,7 @@ class NotificationTest {
         @Test
         @DisplayName("Should create notification with null expiresAt")
         void shouldCreateWithNullExpiresAt() {
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
@@ -111,7 +121,7 @@ class NotificationTest {
         @Test
         @DisplayName("Should reject null userId")
         void shouldRejectNullUserId() {
-            assertThatThrownBy(() -> Notification.create(
+            assertThatThrownBy(() -> Notification.create(TIME, 
                     null,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
@@ -125,7 +135,7 @@ class NotificationTest {
         @Test
         @DisplayName("Should reject null type")
         void shouldRejectNullType() {
-            assertThatThrownBy(() -> Notification.create(
+            assertThatThrownBy(() -> Notification.create(TIME, 
                     USER_ID,
                     null,
                     VALID_TITLE,
@@ -141,7 +151,7 @@ class NotificationTest {
         @ValueSource(strings = {"   "})
         @DisplayName("Should reject blank title")
         void shouldRejectBlankTitle(String title) {
-            assertThatThrownBy(() -> Notification.create(
+            assertThatThrownBy(() -> Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     title,
@@ -157,7 +167,7 @@ class NotificationTest {
         void shouldRejectTitleExceedingMaxLength() {
             String longTitle = "A".repeat(256);
 
-            assertThatThrownBy(() -> Notification.create(
+            assertThatThrownBy(() -> Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     longTitle,
@@ -173,7 +183,7 @@ class NotificationTest {
         void shouldAllowTitleAtMaxLength() {
             String maxTitle = "A".repeat(255);
 
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     maxTitle,
@@ -192,7 +202,7 @@ class NotificationTest {
             var mutableMetadata = new java.util.HashMap<String, Object>();
             mutableMetadata.put("key", "value");
 
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
@@ -216,8 +226,8 @@ class NotificationTest {
         @DisplayName("Should reconstitute existing notification")
         void shouldReconstituteNotification() {
             UUID id = UUID.randomUUID();
-            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+            Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+            Instant expiresAt = Instant.now().plusDays(7);
 
             Notification notification = Notification.reconstitute(
                     id, USER_ID, NotificationType.SYSTEM,
@@ -238,7 +248,7 @@ class NotificationTest {
                     null, USER_ID, NotificationType.SYSTEM,
                     VALID_TITLE, VALID_MESSAGE, null,
                     false, false, null,
-                    LocalDateTime.now(), null, true
+                    Instant.now(), null, true
             )).isInstanceOf(InvalidInputException.class);
         }
 
@@ -290,7 +300,7 @@ class NotificationTest {
         void shouldMarkAsActioned() {
             Notification notification = createValid();
 
-            boolean changed = notification.markAsActioned();
+            boolean changed = notification.markAsActioned(TIME);
 
             assertThat(changed).isTrue();
             assertThat(notification.getActionedAt()).isNotNull();
@@ -300,9 +310,9 @@ class NotificationTest {
         @DisplayName("Should return false when already actioned")
         void shouldReturnFalseWhenAlreadyActioned() {
             Notification notification = createValid();
-            notification.markAsActioned();
+            notification.markAsActioned(TIME);
 
-            boolean changed = notification.markAsActioned();
+            boolean changed = notification.markAsActioned(TIME);
 
             assertThat(changed).isFalse();
         }
@@ -310,7 +320,7 @@ class NotificationTest {
         @Test
         @DisplayName("Should throw when notification does not require action")
         void shouldThrowWhenNotActionRequired() {
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID,
                     NotificationType.SYSTEM,
                     VALID_TITLE,
@@ -347,12 +357,12 @@ class NotificationTest {
         @Test
         @DisplayName("Should return false when expiresAt is null")
         void shouldReturnFalseWhenNoExpiry() {
-            Notification notification = Notification.create(
+            Notification notification = Notification.create(TIME, 
                     USER_ID, NotificationType.SYSTEM,
                     VALID_TITLE, VALID_MESSAGE, null, false, null
             );
 
-            assertThat(notification.isExpired()).isFalse();
+            assertThat(notification.isExpired(TIME)).isFalse();
         }
 
         @Test
@@ -360,7 +370,7 @@ class NotificationTest {
         void shouldReturnFalseWhenNotExpired() {
             Notification notification = createValid();
 
-            assertThat(notification.isExpired()).isFalse();
+            assertThat(notification.isExpired(TIME)).isFalse();
         }
 
         @Test
@@ -370,12 +380,12 @@ class NotificationTest {
                     UUID.randomUUID(), USER_ID, NotificationType.SYSTEM,
                     VALID_TITLE, VALID_MESSAGE, null,
                     false, false, null,
-                    LocalDateTime.now().minusDays(10),
-                    LocalDateTime.now().minusDays(1),
+                    Instant.now().minusDays(10),
+                    Instant.now().minusDays(1),
                     true
             );
 
-            assertThat(notification.isExpired()).isTrue();
+            assertThat(notification.isExpired(TIME)).isTrue();
         }
     }
 }

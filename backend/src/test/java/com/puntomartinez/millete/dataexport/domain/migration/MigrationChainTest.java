@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +23,7 @@ class MigrationChainTest {
 
         UserDataSnapshot oldSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.0.1", LocalDateTime.now(), "0.0.1"
+                        "0.0.1", Instant.now(), "0.0.1"
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
         );
@@ -44,7 +43,7 @@ class MigrationChainTest {
         UserDataSnapshot currentSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
                         ExportVersion.CURRENT.toString(),
-                        LocalDateTime.now(),
+                        Instant.now(),
                         ExportVersion.CURRENT.toString()
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
@@ -74,7 +73,7 @@ class MigrationChainTest {
 
         UserDataSnapshot oldSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.0.1", LocalDateTime.now(), "0.0.1"
+                        "0.0.1", Instant.now(), "0.0.1"
                 ),
                 List.of(), List.of(), List.of(), List.of(), List.of(), null
         );
@@ -103,12 +102,12 @@ class MigrationChainTest {
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("-100.00"), "EXPENSE", "Alquiler",
                 "MONTHS", 1, LocalDate.now(), null,
-                LocalDateTime.now(), LocalDateTime.now(), true, null
+                Instant.now(), Instant.now(), true, null
         );
 
         UserDataSnapshot oldSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.1.0", LocalDateTime.now(), "0.1.0"
+                        "0.1.0", Instant.now(), "0.1.0"
                 ),
                 List.of(), List.of(), List.of(negativePtx),
                 List.of(), List.of(), null
@@ -130,12 +129,12 @@ class MigrationChainTest {
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
                 new BigDecimal("200.00"), "EXPENSE", "Alquiler",
                 "MONTHS", 1, LocalDate.now(), null,
-                LocalDateTime.now(), LocalDateTime.now(), true, null
+                Instant.now(), Instant.now(), true, null
         );
 
         UserDataSnapshot oldSnapshot = new UserDataSnapshot(
                 new UserDataSnapshot.SnapshotMetadata(
-                        "0.1.0", LocalDateTime.now(), "0.1.0"
+                        "0.1.0", Instant.now(), "0.1.0"
                 ),
                 List.of(), List.of(), List.of(positivePtx),
                 List.of(), List.of(), null

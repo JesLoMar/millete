@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,7 +42,7 @@ class InvestmentServiceTest {
         return Investment.create(
                 USER_ID, "Apple Inc.", "AAPL",
                 new BigDecimal("10"), new BigDecimal("150.00"),
-                InvestmentType.STOCK, LocalDateTime.now().minusDays(30)
+                InvestmentType.STOCK, Instant.now().minusDays(30)
         );
     }
 
@@ -57,7 +56,7 @@ class InvestmentServiceTest {
             RegisterInvestmentCommand command = new RegisterInvestmentCommand(
                     USER_ID, "Nvidia", "NVDA",
                     new BigDecimal("10"), new BigDecimal("100.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
 
             when(investmentRepository.save(any(Investment.class)))
@@ -234,7 +233,7 @@ class InvestmentServiceTest {
                     investment.getId(), USER_ID,
                     "Tesla Inc.", "TSLA",
                     new BigDecimal("5"), new BigDecimal("200.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
 
             when(investmentRepository.findByIdAndUserId(investment.getId(), USER_ID))
@@ -257,7 +256,7 @@ class InvestmentServiceTest {
                     investmentId, USER_ID,
                     "Tesla Inc.", "TSLA",
                     new BigDecimal("5"), new BigDecimal("200.00"),
-                    InvestmentType.STOCK, LocalDateTime.now()
+                    InvestmentType.STOCK, Instant.now()
             );
 
             when(investmentRepository.findByIdAndUserId(investmentId, USER_ID))

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserLoginSecurity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.domain.model</a> &gt; <span class="el_source">UserLoginSecurity.java</span></div><h1>UserLoginSecurity.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.domain.model;
+
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
+/**
+ * Estado de seguridad de login por cuenta.
+ *
+ * &lt;p&gt;Tras la Fase 1 de la normalización temporal, todos sus momentos se
+ * modelan con {@link Instant} (la tabla {@code user_login_security} ya usaba
+ * TIMESTAMPTZ desde V3). El tiempo actual se obtiene exclusivamente a través
+ * del puerto {@link TimeProvider}, lo que hace deterministas las comparaciones
+ * de bloqueo en tests multi-zona.&lt;/p&gt;
+ */
+@Getter
+@Setter
+public class UserLoginSecurity {
+
+    private static final long MAX_LOCK_DURATION_MINUTES = 1440;
+
+    private UUID userId;
+    private int failedAttempts;
+    private Instant blockedUntil;
+    private Instant lastAttemptAt;
+    private Instant createdAt;
+    private Instant modifiedAt;
+
+<span class="fc" id="L33">    public UserLoginSecurity() {}</span>
+
+    public boolean isBlocked(TimeProvider timeProvider) {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (this.blockedUntil != null) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (timeProvider.instantNow().isAfter(this.blockedUntil)) {</span>
+<span class="fc" id="L38">                this.blockedUntil = null;</span>
+<span class="fc" id="L39">                this.modifiedAt = timeProvider.instantNow();</span>
+<span class="fc" id="L40">                return false;</span>
+            }
+<span class="fc" id="L42">            return true;</span>
+        }
+<span class="fc" id="L44">        return false;</span>
+    }
+
+    public void registerFailedAttempt(
+            TimeProvider timeProvider,
+            int maxAttempts,
+            long baseLockDurationMinutes
+    ) {
+<span class="fc" id="L52">        this.failedAttempts++;</span>
+<span class="fc" id="L53">        this.lastAttemptAt = timeProvider.instantNow();</span>
+<span class="fc" id="L54">        this.modifiedAt = timeProvider.instantNow();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (this.failedAttempts &gt;= maxAttempts) {</span>
+<span class="fc" id="L56">            this.blockedUntil = timeProvider.instantNow()</span>
+<span class="fc" id="L57">                    .plus(calculateLockDurationMinutes(maxAttempts, baseLockDurationMinutes), ChronoUnit.MINUTES);</span>
+        }
+<span class="fc" id="L59">    }</span>
+
+    private long calculateLockDurationMinutes(int maxAttempts, long baseLockDurationMinutes) {
+<span class="fc" id="L62">        int extraAttempts = this.failedAttempts - maxAttempts;</span>
+<span class="fc" id="L63">        long duration = baseLockDurationMinutes &lt;&lt; Math.min(extraAttempts, 6);</span>
+<span class="fc" id="L64">        return Math.min(duration, MAX_LOCK_DURATION_MINUTES);</span>
+    }
+
+    public void resetAttempts(TimeProvider timeProvider) {
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">        if (this.failedAttempts &gt; 0 || this.blockedUntil != null) {</span>
+<span class="fc" id="L69">            this.failedAttempts = 0;</span>
+<span class="fc" id="L70">            this.blockedUntil = null;</span>
+<span class="fc" id="L71">            this.lastAttemptAt = timeProvider.instantNow();</span>
+<span class="fc" id="L72">            this.modifiedAt = timeProvider.instantNow();</span>
+        }
+<span class="fc" id="L74">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

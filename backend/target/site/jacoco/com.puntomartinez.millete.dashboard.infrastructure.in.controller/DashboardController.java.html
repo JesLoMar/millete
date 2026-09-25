@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dashboard.infrastructure.in.controller</a> &gt; <span class="el_source">DashboardController.java</span></div><h1>DashboardController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dashboard.infrastructure.in.controller;
+
+import com.puntomartinez.millete.dashboard.domain.ports.in.GetDashboardDataUseCase;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+
+/**
+ * Controller del dashboard financiero.
+ *
+ * &lt;p&gt;ACOPLE CON OTROS MÓDULOS (deuda técnica documentada):
+ * &lt;ul&gt;
+ *   &lt;li&gt;El puerto {@code GetDashboardDataUseCase} devuelve directamente
+ *       DTOs de infraestructura (REST). Lo correcto hexagonalmente sería
+ *       definir resultados de aplicación y mapear a DTOs solo en el
+ *       controlador. Se mantiene así por pragmatismo hasta que se revise
+ *       el frontend y se pueda hacer la migración coordinada.&lt;/li&gt;
+ *   &lt;li&gt;Los adaptadores de salida dependen de repositorios de otros
+ *       bounded contexts (categories, transactions, savingsgoals).
+ *       Esto es mejor que depender de entidades JPA directamente, pero
+ *       genera acoplamiento con los puertos de salida de otros módulos.
+ *       Si se desea una frontera más fuerte, definir APIs de consulta
+ *       explícitas para módulos consumidores.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/p&gt;
+ */
+@RestController
+@RequestMapping(&quot;/api/v1/dashboard&quot;)
+@RequiredArgsConstructor
+public class DashboardController {
+
+    private static final int MAX_RECENT_TRANSACTIONS = 50;
+
+    private final GetDashboardDataUseCase getDashboardDataUseCase;
+
+    private UUID getUserId(Authentication authentication) {
+<span class="fc" id="L46">        return ((JwtUser) authentication.getPrincipal()).getId();</span>
+    }
+
+    @GetMapping(&quot;/metrics&quot;)
+    public ResponseEntity&lt;DashboardMetricsResponseDTO&gt; getMetrics(
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L54">        return ResponseEntity.ok(</span>
+<span class="fc" id="L55">                getDashboardDataUseCase.getMetrics(</span>
+<span class="fc" id="L56">                        getUserId(authentication),</span>
+                        period
+                )
+        );
+    }
+
+    @GetMapping(&quot;/history&quot;)
+    public ResponseEntity&lt;DashboardHistoryResponseDTO&gt; getHistory(
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L67">        return ResponseEntity.ok(</span>
+<span class="fc" id="L68">                getDashboardDataUseCase.getHistory(</span>
+<span class="fc" id="L69">                        getUserId(authentication),</span>
+                        period
+                )
+        );
+    }
+
+    @GetMapping(&quot;/categories&quot;)
+    public ResponseEntity&lt;DashboardCategoriesResponseDTO&gt; getCategories(
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L80">        return ResponseEntity.ok(</span>
+<span class="fc" id="L81">                getDashboardDataUseCase.getCategories(</span>
+<span class="fc" id="L82">                        getUserId(authentication),</span>
+                        period
+                )
+        );
+    }
+
+    @GetMapping(&quot;/budgets&quot;)
+    public ResponseEntity&lt;DashboardBudgetsResponseDTO&gt; getBudgets(
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L93">        return ResponseEntity.ok(</span>
+<span class="fc" id="L94">                getDashboardDataUseCase.getBudgets(</span>
+<span class="fc" id="L95">                        getUserId(authentication),</span>
+                        period
+                )
+        );
+    }
+
+    @GetMapping(&quot;/recent-transactions&quot;)
+    public ResponseEntity&lt;DashboardTransactionsResponseDTO&gt; getRecentTransactions(
+            @RequestParam(defaultValue = &quot;5&quot;) int limit,
+            Authentication authentication
+    ) {
+<span class="fc" id="L106">        int safeLimit = Math.min(</span>
+<span class="fc" id="L107">                Math.max(limit, 1),</span>
+                MAX_RECENT_TRANSACTIONS
+        );
+
+<span class="fc" id="L111">        return ResponseEntity.ok(</span>
+<span class="fc" id="L112">                getDashboardDataUseCase.getRecentTransactions(</span>
+<span class="fc" id="L113">                        getUserId(authentication),</span>
+                        safeLimit
+                )
+        );
+    }
+
+    /**
+     * Devuelve los objetivos de ahorro activos del usuario.
+     *
+     * &lt;p&gt;LÍMITE: Se devuelven como máximo 20 objetivos, ordenados por
+     * prioridad (HIGH → MEDIUM → LOW) y fecha de creación descendente.
+     * Si el usuario tiene más de 20 objetivos, los restantes no se
+     * muestran en el dashboard.&lt;/p&gt;
+     */
+    @GetMapping(&quot;/savings-goals&quot;)
+    public ResponseEntity&lt;DashboardGoalsResponseDTO&gt; getSavingsGoals(
+            Authentication authentication
+    ) {
+<span class="fc" id="L131">        return ResponseEntity.ok(</span>
+<span class="fc" id="L132">                getDashboardDataUseCase.getSavingsGoals(</span>
+<span class="fc" id="L133">                        getUserId(authentication)</span>
+                )
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -4,7 +4,7 @@ import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalRole;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ public interface GetGoalDetailUseCase {
             GoalRole role,
             BigDecimal salary,
             BigDecimal customPercentage,
-            LocalDateTime joinedAt
+            Instant joinedAt
     ) {
     }
 
@@ -29,7 +29,7 @@ public interface GetGoalDetailUseCase {
             String name,
             BigDecimal monthlyTarget,
             DistributionMode distributionMode,
-            LocalDateTime createdAt,
+            Instant createdAt,
             List<MemberDetail> members,
             List<MemberContributionTotals> totals
     ) {

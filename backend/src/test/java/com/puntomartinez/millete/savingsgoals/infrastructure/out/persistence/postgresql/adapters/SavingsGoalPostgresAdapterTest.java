@@ -31,10 +31,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SavingsGoalPostgresAdapter")
 class SavingsGoalPostgresAdapterTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
 
@@ -48,7 +54,7 @@ class SavingsGoalPostgresAdapterTest {
     private SavingsGoalPostgresAdapter adapter;
 
     private SavingsGoal domainGoal() {
-        return SavingsGoal.create(
+        return SavingsGoal.create(TIME, 
                 USER_ID,
                 "Vacation",
                 new BigDecimal("1000.00"),

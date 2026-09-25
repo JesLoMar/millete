@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlannedTransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.plannedtransactions.application.services</a> &gt; <span class="el_source">PlannedTransactionService.java</span></div><h1>PlannedTransactionService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.plannedtransactions.application.services;
+
+import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.DeletePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.GetPlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ListPlannedTransactionsUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.ProcessPlannedTransactionsUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.RegisterPlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlannedTransactionUseCase;
+import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
+import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L24">@Slf4j</span>
+public class PlannedTransactionService implements
+        RegisterPlannedTransactionUseCase,
+        ProcessPlannedTransactionsUseCase,
+        UpdatePlannedTransactionUseCase,
+        DeletePlannedTransactionUseCase,
+        ListPlannedTransactionsUseCase,
+        GetPlannedTransactionUseCase {
+
+    private static final int SCHEDULER_BATCH_SIZE = 500;
+
+    private final PlannedTransactionRepository plannedTransactionRepository;
+    private final PlannedTransactionExecutionService executionService;
+
+    @Override
+    public PlannedTransaction register(
+            RegisterPlannedTransactionCommand command
+    ) {
+<span class="fc" id="L42">        PlannedTransaction plannedTransaction =</span>
+<span class="fc" id="L43">                PlannedTransaction.create(</span>
+<span class="fc" id="L44">                        command.userId(),</span>
+<span class="fc" id="L45">                        command.categoryId(),</span>
+<span class="fc" id="L46">                        command.amount(),</span>
+<span class="fc" id="L47">                        command.type(),</span>
+<span class="fc" id="L48">                        command.description(),</span>
+<span class="fc" id="L49">                        command.frequencyType(),</span>
+<span class="fc" id="L50">                        command.frequencyInterval(),</span>
+<span class="fc" id="L51">                        command.startDate(),</span>
+<span class="fc" id="L52">                        command.endDate()</span>
+                );
+
+<span class="fc" id="L55">        return plannedTransactionRepository.save(</span>
+                plannedTransaction
+        );
+    }
+
+    /**
+     * Procesa todas las plantillas activas que tengan ejecuciones
+     * pendientes.
+     *
+     * Nota: el modificador 'synchronized' protege contra ejecuciones
+     * concurrentes dentro de la misma JVM. Para despliegues
+     * multi-instancia se necesitaría un lock distribuido (ShedLock,
+     * líder único, etc.). En el contexto self-hosted single-instance
+     * actual, 'synchronized' es suficiente.
+     */
+    @Override
+    public synchronized void processScheduledTasks() {
+<span class="fc" id="L72">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L73">        int page = 0;</span>
+
+        while (true) {
+<span class="fc" id="L76">            List&lt;PlannedTransaction&gt; templates =</span>
+<span class="fc" id="L77">                    plannedTransactionRepository.findAllActive(</span>
+                            page,
+                            SCHEDULER_BATCH_SIZE,
+                            today
+                    );
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (templates.isEmpty()) {</span>
+<span class="fc" id="L84">                break;</span>
+            }
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">            for (PlannedTransaction template : templates) {</span>
+<span class="fc" id="L88">                processTemplate(template, today);</span>
+<span class="fc" id="L89">            }</span>
+
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">            if (templates.size() &lt; SCHEDULER_BATCH_SIZE) {</span>
+<span class="fc" id="L92">                break;</span>
+            }
+
+<span class="nc" id="L95">            page++;</span>
+<span class="nc" id="L96">        }</span>
+<span class="fc" id="L97">    }</span>
+
+    @Override
+    public PlannedTransaction update(
+            UUID id,
+            UUID userId,
+            UpdatePlannedTransactionCommand command
+    ) {
+<span class="fc" id="L105">        PlannedTransaction plannedTransaction =</span>
+<span class="fc" id="L106">                getActiveTemplate(id, userId);</span>
+
+<span class="fc" id="L108">        plannedTransaction.updateDetails(</span>
+<span class="fc" id="L109">                command.amount(),</span>
+<span class="fc" id="L110">                command.type(),</span>
+<span class="fc" id="L111">                command.description(),</span>
+<span class="fc" id="L112">                command.frequencyType(),</span>
+<span class="fc" id="L113">                command.frequencyInterval(),</span>
+<span class="fc" id="L114">                command.categoryId()</span>
+        );
+
+<span class="fc" id="L117">        return plannedTransactionRepository.save(</span>
+                plannedTransaction
+        );
+    }
+
+    @Override
+    public void deleteByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L127">        PlannedTransaction plannedTransaction =</span>
+<span class="fc" id="L128">                getActiveTemplate(id, userId);</span>
+
+<span class="fc" id="L130">        plannedTransaction.deactivate();</span>
+<span class="fc" id="L131">        plannedTransactionRepository.save(</span>
+                plannedTransaction
+        );
+<span class="fc" id="L134">    }</span>
+
+    @Override
+    public List&lt;PlannedTransaction&gt; findAllByUserId(
+            UUID userId,
+            int page,
+            int size,
+            String search,
+            TransactionType type
+    ) {
+<span class="fc" id="L144">        return plannedTransactionRepository.findAllByUserId(</span>
+                userId,
+                page,
+                size,
+                search,
+                type
+        );
+    }
+
+    @Override
+    public long countByUserIdAndFilters(
+            UUID userId,
+            String search,
+            TransactionType type
+    ) {
+<span class="fc" id="L159">        return plannedTransactionRepository.countByUserIdAndFilters(</span>
+                userId,
+                search,
+                type
+        );
+    }
+
+    @Override
+    public PlannedTransaction getByIdAndUserId(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L171">        return getActiveTemplate(id, userId);</span>
+    }
+
+    private void processTemplate(
+            PlannedTransaction template,
+            LocalDate today
+    ) {
+<span class="fc" id="L178">        LocalDate pendingDate =</span>
+<span class="fc" id="L179">                getNextPendingExecutionDate(template, today);</span>
+
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        while (pendingDate != null) {</span>
+            try {
+<span class="fc" id="L183">                executionService.execute(template, pendingDate);</span>
+<span class="fc" id="L184">            } catch (Exception e) {</span>
+<span class="fc" id="L185">                boolean shouldDeactivate =</span>
+<span class="fc" id="L186">                        template.incrementFailureCount();</span>
+
+<span class="fc bfc" id="L188" title="All 2 branches covered.">                if (shouldDeactivate) {</span>
+<span class="fc" id="L189">                    template.deactivate();</span>
+<span class="fc" id="L190">                    log.warn(</span>
+                            &quot;La plantilla recurrente {} se ha &quot;
+                                    + &quot;desactivado tras {} fallos &quot;
+                                    + &quot;consecutivos. Motivo: {}&quot;,
+<span class="fc" id="L194">                            template.getId(),</span>
+<span class="fc" id="L195">                            PlannedTransaction.MAX_CONSECUTIVE_FAILURES,</span>
+<span class="fc" id="L196">                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'</span>
+                    );
+                } else {
+<span class="fc" id="L199">                    log.error(</span>
+                            &quot;Error ejecutando la plantilla recurrente &quot;
+                                    + &quot;{} para la fecha {} &quot;
+                                    + &quot;(intento {}/{}). Motivo: {}&quot;,
+<span class="fc" id="L203">                            template.getId(),</span>
+                            pendingDate,
+<span class="fc" id="L205">                            template.getFailureCount(),</span>
+<span class="fc" id="L206">                            PlannedTransaction.MAX_CONSECUTIVE_FAILURES,</span>
+<span class="fc" id="L207">                            e.getMessage() // 👈 Cambiado de 'e' a 'e.getMessage()'</span>
+                    );
+                }
+<span class="fc" id="L210">                plannedTransactionRepository.save(template);</span>
+<span class="fc" id="L211">                break;</span>
+<span class="fc" id="L212">            }</span>
+<span class="fc" id="L213">            pendingDate =</span>
+<span class="fc" id="L214">                    getNextPendingExecutionDate(template, today);</span>
+        }
+<span class="fc" id="L216">    }</span>
+
+    private LocalDate getNextPendingExecutionDate(
+            PlannedTransaction template,
+            LocalDate today
+    ) {
+<span class="fc" id="L222">        LocalDate startDate = template.getStartDate();</span>
+<span class="fc" id="L223">        LocalDate endDate = template.getEndDate();</span>
+<span class="fc" id="L224">        LocalDate lastExecutedDate = template.getLastExecutedDate();</span>
+
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        if (startDate.isAfter(today)) {</span>
+<span class="nc" id="L227">            return null;</span>
+        }
+
+        LocalDate nextExecution;
+
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        if (lastExecutedDate == null) {</span>
+<span class="fc" id="L233">            nextExecution = startDate;</span>
+        } else {
+<span class="fc" id="L235">            nextExecution = addFrequency(template, lastExecutedDate);</span>
+        }
+
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (nextExecution.isAfter(today)) {</span>
+<span class="fc" id="L239">            return null;</span>
+        }
+
+<span class="pc bpc" id="L242" title="3 of 4 branches missed.">        if (endDate != null &amp;&amp; nextExecution.isAfter(endDate)) {</span>
+<span class="nc" id="L243">            return null;</span>
+        }
+
+<span class="fc" id="L246">        return nextExecution;</span>
+    }
+
+    private LocalDate addFrequency(
+            PlannedTransaction template,
+            LocalDate baseDate
+    ) {
+<span class="fc" id="L253">        PlannedTransaction.FrequencyType frequencyType =</span>
+<span class="fc" id="L254">                template.getFrequencyType();</span>
+<span class="fc" id="L255">        Integer frequencyInterval =</span>
+<span class="fc" id="L256">                template.getFrequencyInterval();</span>
+<span class="fc" id="L257">        LocalDate startDate = template.getStartDate();</span>
+
+<span class="pc bpc" id="L259" title="3 of 4 branches missed.">        return switch (frequencyType) {</span>
+            case DAYS -&gt;
+<span class="fc" id="L261">                    baseDate.plusDays(frequencyInterval);</span>
+            case WEEKS -&gt;
+<span class="nc" id="L263">                    baseDate.plusWeeks(frequencyInterval);</span>
+            case MONTHS -&gt; {
+<span class="nc" id="L265">                java.time.YearMonth targetMonth =</span>
+<span class="nc" id="L266">                        java.time.YearMonth.from(baseDate)</span>
+<span class="nc" id="L267">                                .plusMonths(frequencyInterval);</span>
+<span class="nc" id="L268">                int dayOfMonth = Math.min(</span>
+<span class="nc" id="L269">                        startDate.getDayOfMonth(),</span>
+<span class="nc" id="L270">                        targetMonth.lengthOfMonth()</span>
+                );
+<span class="nc" id="L272">                yield targetMonth.atDay(dayOfMonth);</span>
+            }
+            case YEARS -&gt; {
+<span class="nc" id="L275">                int targetYear =</span>
+<span class="nc" id="L276">                        baseDate.getYear() + frequencyInterval;</span>
+<span class="nc" id="L277">                java.time.YearMonth targetMonth =</span>
+<span class="nc" id="L278">                        java.time.YearMonth.of(</span>
+                                targetYear,
+<span class="nc" id="L280">                                startDate.getMonth()</span>
+                        );
+<span class="nc" id="L282">                int dayOfMonth = Math.min(</span>
+<span class="nc" id="L283">                        startDate.getDayOfMonth(),</span>
+<span class="nc" id="L284">                        targetMonth.lengthOfMonth()</span>
+                );
+<span class="nc" id="L286">                yield targetMonth.atDay(dayOfMonth);</span>
+            }
+        };
+    }
+
+    private PlannedTransaction getActiveTemplate(
+            UUID id,
+            UUID userId
+    ) {
+<span class="fc" id="L295">        PlannedTransaction plannedTransaction =</span>
+<span class="fc" id="L296">                plannedTransactionRepository.findById(id)</span>
+<span class="fc" id="L297">                        .orElseThrow(() -&gt;</span>
+<span class="fc" id="L298">                                new ResourceNotFoundException(</span>
+                                        &quot;Transacción recurrente no encontrada&quot;
+                                )
+                        );
+
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        if (!plannedTransaction.getUserId().equals(userId)) {</span>
+<span class="fc" id="L304">            throw new ForbiddenOperationException(</span>
+                    &quot;La transacción recurrente no pertenece al usuario&quot;
+            );
+        }
+
+<span class="fc bfc" id="L309" title="All 2 branches covered.">        if (!plannedTransaction.isActive()) {</span>
+<span class="fc" id="L310">            throw new ResourceNotFoundException(</span>
+                    &quot;Transacción recurrente no encontrada&quot;
+            );
+        }
+
+<span class="fc" id="L315">        return plannedTransaction;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

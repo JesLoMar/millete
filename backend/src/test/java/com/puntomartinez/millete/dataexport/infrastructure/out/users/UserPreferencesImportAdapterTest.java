@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,7 +36,7 @@ class UserPreferencesImportAdapterTest {
         UserPreferencesSnapshot snapshot = new UserPreferencesSnapshot(
                 UUID.randomUUID(), UUID.randomUUID(),
                 "{\"theme\":\"dark\"}",
-                LocalDateTime.now(), LocalDateTime.now()
+                Instant.now(), Instant.now()
         );
 
         when(userPreferencesRepository.findByUserId(userId))
@@ -68,7 +67,7 @@ class UserPreferencesImportAdapterTest {
         UserPreferencesSnapshot snapshot = new UserPreferencesSnapshot(
                 UUID.randomUUID(), UUID.randomUUID(),
                 "{\"theme\":\"dark\"}",
-                LocalDateTime.now(), LocalDateTime.now()
+                Instant.now(), Instant.now()
         );
 
         when(userPreferencesRepository.findByUserId(userId))

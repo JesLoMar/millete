@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.users.domain.model</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.users.domain.model;
+
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Getter
+public class User {
+    private final UUID id;
+    private String username;
+    private String email;
+    private String password;
+    private final LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+    private boolean anonymized;
+
+    public User(UUID id, String username, String email, String password,
+                LocalDateTime createdAt, LocalDateTime modifiedAt,
+<span class="fc" id="L21">                boolean active, boolean anonymized) {</span>
+
+<span class="pc bpc" id="L23" title="1 of 4 branches missed.">        boolean hasUsername = username != null &amp;&amp; !username.isBlank();</span>
+<span class="pc bpc" id="L24" title="1 of 4 branches missed.">        boolean hasEmail = email != null &amp;&amp; !email.isBlank();</span>
+
+<span class="fc bfc" id="L26" title="All 4 branches covered.">        if (!hasUsername &amp;&amp; !hasEmail) {</span>
+<span class="fc" id="L27">            throw new IllegalArgumentException(</span>
+                    &quot;El usuario debe tener al menos un email o un nombre de usuario&quot;
+            );
+        }
+
+<span class="fc bfc" id="L32" title="All 4 branches covered.">        if (password == null || password.isBlank()) {</span>
+<span class="fc" id="L33">            throw new IllegalArgumentException(&quot;La contraseña es obligatoria&quot;);</span>
+        }
+
+<span class="fc" id="L36">        this.id = id;</span>
+<span class="fc" id="L37">        this.username = username;</span>
+<span class="fc" id="L38">        this.email = email;</span>
+<span class="fc" id="L39">        this.password = password;</span>
+<span class="fc" id="L40">        this.createdAt = createdAt;</span>
+<span class="fc" id="L41">        this.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L42">        this.active = active;</span>
+<span class="fc" id="L43">        this.anonymized = anonymized;</span>
+<span class="fc" id="L44">    }</span>
+
+    public void anonymize() {
+<span class="fc" id="L47">        this.username = &quot;user_&quot; + this.id;</span>
+<span class="fc" id="L48">        this.email = &quot;anon_&quot; + this.id + &quot;@familybudget.internal&quot;;</span>
+<span class="fc" id="L49">        this.password = &quot;ANONYMIZED&quot;;</span>
+<span class="fc" id="L50">        this.anonymized = true;</span>
+<span class="fc" id="L51">        this.active = false;</span>
+<span class="fc" id="L52">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L53">    }</span>
+
+    public void updateProfile(String newUsername, String newEmail) {
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">        boolean hasUsername = newUsername != null &amp;&amp; !newUsername.isBlank();</span>
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">        boolean hasEmail = newEmail != null &amp;&amp; !newEmail.isBlank();</span>
+
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">        if (!hasUsername &amp;&amp; !hasEmail) {</span>
+<span class="fc" id="L60">            throw new IllegalArgumentException(</span>
+                    &quot;El usuario debe tener al menos un email o un nombre de usuario&quot;
+            );
+        }
+
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        this.username = hasUsername ? newUsername : null;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        this.email = hasEmail ? newEmail : null;</span>
+<span class="fc" id="L67">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L68">    }</span>
+
+    public void updatePassword(String newHashedPassword) {
+<span class="fc bfc" id="L71" title="All 4 branches covered.">        if (newHashedPassword == null || newHashedPassword.isBlank()) {</span>
+<span class="fc" id="L72">            throw new IllegalArgumentException(&quot;La nueva contraseña no es válida&quot;);</span>
+        }
+
+<span class="fc" id="L75">        this.password = newHashedPassword;</span>
+<span class="fc" id="L76">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L77">    }</span>
+
+    public void deactivate() {
+<span class="fc" id="L80">        this.active = false;</span>
+<span class="fc" id="L81">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L82">    }</span>
+
+    public boolean hasValidIdentity() {
+<span class="pc bpc" id="L85" title="2 of 6 branches missed.">        return (username != null &amp;&amp; !username.isBlank())</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">                || (email != null &amp;&amp; !email.isBlank());</span>
+    }
+
+    public String getPrimaryIdentifier() {
+<span class="pc bpc" id="L90" title="1 of 4 branches missed.">        if (email != null &amp;&amp; !email.isBlank()) {</span>
+<span class="fc" id="L91">            return email;</span>
+        }
+<span class="fc" id="L93">        return username;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

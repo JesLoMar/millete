@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record PlannedTransactionSnapshot(
@@ -39,10 +39,10 @@ public record PlannedTransactionSnapshot(
         LocalDate endDate,
 
         @JsonProperty("createdAt")
-        LocalDateTime createdAt,
+        Instant createdAt,
 
         @JsonProperty("modifiedAt")
-        LocalDateTime modifiedAt,
+        Instant modifiedAt,
 
         @JsonProperty("active")
         boolean active,

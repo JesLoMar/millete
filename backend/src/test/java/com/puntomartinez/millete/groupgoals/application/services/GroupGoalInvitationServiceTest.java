@@ -17,7 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+import org.mockito.Spy;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +34,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupGoalInvitationService")
 class GroupGoalInvitationServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     @Mock
     private GoalInvitationRepository goalInvitationRepository;
@@ -46,7 +53,9 @@ class GroupGoalInvitationServiceTest {
     @Mock
     private GoalInvitationNotificationPort notificationPort;
 
-    @InjectMocks
+    private final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
     private GroupGoalInvitationService service;
 
     private final UUID goalId = UUID.randomUUID();
@@ -57,7 +66,7 @@ class GroupGoalInvitationServiceTest {
         return GoalUnit.reconstitute(
                 goalId, "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 
@@ -65,8 +74,16 @@ class GroupGoalInvitationServiceTest {
         return GoalMember.reconstitute(
                 UUID.randomUUID(), goalId, inviterId,
                 GoalRole.ADMIN, null, null,
-                LocalDateTime.now(), LocalDateTime.now(),
-                LocalDateTime.now(), true
+                Instant.now(), Instant.now(),
+                Instant.now(), true
+        );
+    }
+
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        service = new GroupGoalInvitationService(
+                goalInvitationRepository, goalMemberRepository, goalUnitRepository, userLookupPort, notificationPort, TIME
         );
     }
 
@@ -150,8 +167,8 @@ class GroupGoalInvitationServiceTest {
             GoalMember existingMember = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, invitedId,
                     GoalRole.MEMBER, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
             UserLookupPort.UserInfo invitedUser =
                     new UserLookupPort.UserInfo(invitedId, "invited", "invited@mail.com");
@@ -181,6 +198,7 @@ class GroupGoalInvitationServiceTest {
             UserLookupPort.UserInfo invitedUser =
                     new UserLookupPort.UserInfo(invitedId, "invited", "invited@mail.com");
             GoalInvitation existingInvitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
 
@@ -211,8 +229,8 @@ class GroupGoalInvitationServiceTest {
             GoalMember member = GoalMember.reconstitute(
                     UUID.randomUUID(), goalId, inviterId,
                     GoalRole.MEMBER, null, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
-                    LocalDateTime.now(), true
+                    Instant.now(), Instant.now(),
+                    Instant.now(), true
             );
 
             when(goalUnitRepository.findById(goalId))
@@ -237,6 +255,7 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should accept valid invitation and create member")
         void shouldAcceptValidInvitationAndCreateMember() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
             GoalUnit goal = createActiveGoal();
@@ -274,9 +293,10 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should throw when invitation is not acceptable")
         void shouldThrowWhenInvitationNotAcceptable() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
-            invitation.markAsAccepted();
+            invitation.markAsAccepted(TIME);
 
             when(goalInvitationRepository.findById(invitation.getId()))
                     .thenReturn(Optional.of(invitation));
@@ -290,6 +310,7 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should throw when not the invited user")
         void shouldThrowWhenNotInvitedUser() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
 
@@ -312,6 +333,7 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should reject valid pending invitation")
         void shouldRejectValidPendingInvitation() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
 
@@ -333,9 +355,10 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should throw when invitation is not pending")
         void shouldThrowWhenInvitationNotPending() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
-            invitation.markAsAccepted();
+            invitation.markAsAccepted(TIME);
 
             when(goalInvitationRepository.findById(invitation.getId()))
                     .thenReturn(Optional.of(invitation));
@@ -354,6 +377,7 @@ class GroupGoalInvitationServiceTest {
         @DisplayName("Should list pending invitations with goal and inviter info")
         void shouldListPendingInvitations() {
             GoalInvitation invitation = GoalInvitation.create(
+                    TIME,
                     goalId, inviterId, invitedId
             );
             GoalUnit goal = createActiveGoal();

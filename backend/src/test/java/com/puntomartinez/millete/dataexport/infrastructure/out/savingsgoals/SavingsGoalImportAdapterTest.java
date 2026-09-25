@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +40,7 @@ class SavingsGoalImportAdapterTest {
                 sourceGoalId, UUID.randomUUID(), "Vacation",
                 new BigDecimal("2000.00"), new BigDecimal("500.00"),
                 LocalDate.now().plusMonths(6), "HIGH", null,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
 
         when(savingsGoalRepository.save(any(SavingsGoal.class)))
@@ -68,7 +67,7 @@ class SavingsGoalImportAdapterTest {
                 UUID.randomUUID(), UUID.randomUUID(), "Inactive",
                 new BigDecimal("1000.00"), BigDecimal.ZERO,
                 LocalDate.now().plusMonths(3), "MEDIUM", null,
-                LocalDateTime.now(), LocalDateTime.now(), false
+                Instant.now(), Instant.now(), false
         );
 
         int count = adapter.importSavingsGoals(List.of(inactiveSnapshot), userId);

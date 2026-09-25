@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public interface JpaNotificationRepository
     Optional<NotificationEntity> findActiveAndNotExpiredByIdAndUserId(
             @Param("id") UUID id,
             @Param("userId") UUID userId,
-            @Param("now") LocalDateTime now
+            @Param("now") Instant now
     );
 
     @Query("""
@@ -40,7 +40,7 @@ public interface JpaNotificationRepository
             """)
     List<NotificationEntity> findActiveAndNotExpiredByUserId(
             @Param("userId") UUID userId,
-            @Param("now") LocalDateTime now,
+            @Param("now") Instant now,
             Pageable pageable
     );
 
@@ -53,7 +53,7 @@ public interface JpaNotificationRepository
             """)
     Page<NotificationEntity> findActiveAndNotExpiredByUserIdPage(
             @Param("userId") UUID userId,
-            @Param("now") LocalDateTime now,
+            @Param("now") Instant now,
             Pageable pageable
     );
 
@@ -67,7 +67,7 @@ public interface JpaNotificationRepository
             """)
     long countUnreadActiveAndNotExpiredByUserId(
             @Param("userId") UUID userId,
-            @Param("now") LocalDateTime now
+            @Param("now") Instant now
     );
 
     @Query(

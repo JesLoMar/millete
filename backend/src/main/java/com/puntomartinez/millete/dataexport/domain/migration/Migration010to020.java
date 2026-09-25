@@ -21,11 +21,16 @@ public class Migration010to020 implements DataMigration {
 
     @Override
     public String description() {
-        return "Normaliza los importes de las transacciones planificadas a valores positivos";
+        return "Normaliza los importes de las transacciones planificadas a valores "
+                + "positivos y aplica la normalización temporal (Instant UTC, LocalDate)";
     }
 
     @Override
     public UserDataSnapshot migrate(UserDataSnapshot snapshot) {
+
+        // La normalización temporal es parte del formato 0.2.0 (no sube de versión):
+        // reinterpreta timestamps sin zona como UTC y trunca transactions.date a día.
+        snapshot = TemporalNormalizer.normalize(snapshot);
 
         List<PlannedTransactionSnapshot> migratedPlannedTransactions =
                 snapshot.plannedTransactions() == null

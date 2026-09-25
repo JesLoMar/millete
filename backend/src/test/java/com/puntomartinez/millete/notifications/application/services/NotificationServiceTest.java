@@ -15,7 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +32,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("NotificationService")
+
 class NotificationServiceTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID NOTIFICATION_ID = UUID.randomUUID();
@@ -38,19 +48,24 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
-    @InjectMocks
     private NotificationService notificationService;
 
     private Notification validNotification() {
-        return Notification.create(
+        return Notification.create(TIME, 
                 USER_ID,
                 NotificationType.GOAL_INVITATION,
                 "Nueva invitación",
                 "Te han invitado a una meta",
                 Map.of("goalId", UUID.randomUUID().toString()),
                 true,
-                LocalDateTime.now().plusDays(7)
+                Instant.now().plusDays(7)
         );
+    }
+
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        notificationService = new NotificationService(notificationRepository, TIME);
     }
 
     @Nested
@@ -66,7 +81,7 @@ class NotificationServiceTest {
                     "Te han invitado a una meta",
                     Map.of("goalId", UUID.randomUUID().toString()),
                     true,
-                    LocalDateTime.now().plusDays(7)
+                    Instant.now().plusDays(7)
             );
 
             when(notificationRepository.save(any(Notification.class)))
@@ -91,14 +106,14 @@ class NotificationServiceTest {
         @DisplayName("Should use default limit when limit is zero or negative")
         void shouldUseDefaultLimitWhenZeroOrNegative() {
             when(notificationRepository.findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                    eq(USER_ID), eq(25), any(LocalDateTime.class)
+                    eq(USER_ID), eq(25), any(Instant.class)
             )).thenReturn(List.of());
 
             notificationService.getUserNotifications(USER_ID, 0);
 
             verify(notificationRepository)
                     .findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                            eq(USER_ID), eq(25), any(LocalDateTime.class)
+                            eq(USER_ID), eq(25), any(Instant.class)
                     );
         }
 
@@ -106,14 +121,14 @@ class NotificationServiceTest {
         @DisplayName("Should cap limit at 100 when exceeding max")
         void shouldCapLimitAtMax() {
             when(notificationRepository.findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                    eq(USER_ID), eq(100), any(LocalDateTime.class)
+                    eq(USER_ID), eq(100), any(Instant.class)
             )).thenReturn(List.of());
 
             notificationService.getUserNotifications(USER_ID, 500);
 
             verify(notificationRepository)
                     .findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                            eq(USER_ID), eq(100), any(LocalDateTime.class)
+                            eq(USER_ID), eq(100), any(Instant.class)
                     );
         }
 
@@ -122,7 +137,7 @@ class NotificationServiceTest {
         void shouldUseProvidedLimitWhenWithinBounds() {
             Notification n1 = validNotification();
             when(notificationRepository.findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(
-                    eq(USER_ID), eq(10), any(LocalDateTime.class)
+                    eq(USER_ID), eq(10), any(Instant.class)
             )).thenReturn(List.of(n1));
 
             List<Notification> result = notificationService.getUserNotifications(USER_ID, 10);
@@ -141,7 +156,7 @@ class NotificationServiceTest {
                     List.of(validNotification()), 0, 1, 1, 25, true, true
             );
             when(notificationRepository.findActiveAndNotExpiredByUserIdPaginated(
-                    eq(USER_ID), eq(0), eq(25), any(LocalDateTime.class)
+                    eq(USER_ID), eq(0), eq(25), any(Instant.class)
             )).thenReturn(expected);
 
             PaginatedNotifications result =
@@ -183,7 +198,7 @@ class NotificationServiceTest {
         @DisplayName("Should return unread count")
         void shouldReturnUnreadCount() {
             when(notificationRepository.countUnreadActiveAndNotExpiredByUserId(
-                    eq(USER_ID), any(LocalDateTime.class)
+                    eq(USER_ID), any(Instant.class)
             )).thenReturn(5L);
 
             long count = notificationService.getUnreadCount(USER_ID);
@@ -200,7 +215,7 @@ class NotificationServiceTest {
         void shouldMarkAsReadAndSave() {
             Notification notification = validNotification();
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(notification));
 
             notificationService.markAsRead(USER_ID, NOTIFICATION_ID);
@@ -215,7 +230,7 @@ class NotificationServiceTest {
             Notification notification = validNotification();
             notification.markAsRead();
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(notification));
 
             notificationService.markAsRead(USER_ID, NOTIFICATION_ID);
@@ -227,7 +242,7 @@ class NotificationServiceTest {
         @DisplayName("Should throw ResourceNotFoundException when not found")
         void shouldThrowWhenNotFound() {
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.empty());
 
             assertThatThrownBy(() ->
@@ -241,7 +256,7 @@ class NotificationServiceTest {
             // El repositorio filtra por userId, así que si la notificación
             // es de otro usuario, simplemente no la encuentra
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.empty());
 
             assertThatThrownBy(() ->
@@ -258,7 +273,7 @@ class NotificationServiceTest {
         void shouldMarkAsActionedAndReturnTrue() {
             Notification notification = validNotification();
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(notification));
 
             boolean result = notificationService.markAsActioned(USER_ID, NOTIFICATION_ID);
@@ -272,7 +287,7 @@ class NotificationServiceTest {
         @DisplayName("Should return false when not found")
         void shouldReturnFalseWhenNotFound() {
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.empty());
 
             boolean result = notificationService.markAsActioned(USER_ID, NOTIFICATION_ID);
@@ -285,9 +300,9 @@ class NotificationServiceTest {
         @DisplayName("Should return true without saving when already actioned")
         void shouldReturnTrueWithoutSavingWhenAlreadyActioned() {
             Notification notification = validNotification();
-            notification.markAsActioned();
+            notification.markAsActioned(TIME);
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(notification));
 
             boolean result = notificationService.markAsActioned(USER_ID, NOTIFICATION_ID);
@@ -305,7 +320,7 @@ class NotificationServiceTest {
         void shouldSoftDeleteAndSave() {
             Notification notification = validNotification();
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.of(notification));
 
             notificationService.delete(USER_ID, NOTIFICATION_ID);
@@ -318,7 +333,7 @@ class NotificationServiceTest {
         @DisplayName("Should throw when not found")
         void shouldThrowWhenNotFound() {
             when(notificationRepository.findActiveAndNotExpiredByIdAndUserId(
-                    eq(NOTIFICATION_ID), eq(USER_ID), any(LocalDateTime.class)
+                    eq(NOTIFICATION_ID), eq(USER_ID), any(Instant.class)
             )).thenReturn(Optional.empty());
 
             assertThatThrownBy(() ->

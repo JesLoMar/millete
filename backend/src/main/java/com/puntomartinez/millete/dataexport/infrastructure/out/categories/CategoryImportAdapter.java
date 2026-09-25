@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.out.categories;
 
 import com.puntomartinez.millete.categories.domain.model.Category;
 import com.puntomartinez.millete.categories.domain.ports.out.CategoryRepository;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.dataexport.domain.model.CategoryImportResult;
 import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.CategoryImportPort;
@@ -16,11 +17,14 @@ import java.util.UUID;
 public class CategoryImportAdapter implements CategoryImportPort {
 
     private final CategoryRepository categoryRepository;
+    private final TimeProvider timeProvider;
 
     public CategoryImportAdapter(
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            TimeProvider timeProvider
     ) {
         this.categoryRepository = categoryRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -70,6 +74,7 @@ public class CategoryImportAdapter implements CategoryImportPort {
             if (existing != null) {
 
                 existing.updateDetails(
+                        timeProvider,
                         category.name(),
                         category.color(),
                         category.budgetLimit()

@@ -20,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -87,7 +87,7 @@ public class TransactionController {
 
         Transaction.TransactionType transactionType = parseType(type);
 
-        LocalDateTime[] range =
+        LocalDate[] range =
                 transactionPeriodService.getDateRange(period);
 
         long totalElements =

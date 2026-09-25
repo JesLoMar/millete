@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.plannedtransactions.application.services;
 
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.CategoryExistencePort;
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase;
@@ -21,6 +22,7 @@ public class PlannedTransactionExecutionService {
     private static final int MAX_DESCRIPTION_LENGTH = 50;
 
     private final RegisterTransactionUseCase registerTransactionUseCase;
+    private final TimeProvider timeProvider;
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final CategoryExistencePort categoryExistencePort;
 
@@ -43,7 +45,7 @@ public class PlannedTransactionExecutionService {
                         template.getUserId(),
                         effectiveCategoryId,
                         template.getAmount(),
-                        executionDate.atStartOfDay(),
+                        executionDate,
                         template.getType(),
                         buildRecurringDescription(
                                 template.getDescription()
@@ -52,7 +54,7 @@ public class PlannedTransactionExecutionService {
 
         registerTransactionUseCase.register(command);
 
-        template.markAsExecuted(executionDate);
+        template.markAsExecuted(timeProvider, executionDate);
         plannedTransactionRepository.save(template);
     }
 

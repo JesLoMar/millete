@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionPeriodService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.application.services</a> &gt; <span class="el_source">TransactionPeriodService.java</span></div><h1>TransactionPeriodService.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.application.services;
+
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import org.springframework.stereotype.Service;
+
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
+
+@Service
+<span class="fc" id="L12">public class TransactionPeriodService {</span>
+
+    public LocalDateTime[] getDateRange(String period) {
+<span class="fc" id="L15">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc bfc" id="L17" title="All 4 branches covered.">        return switch (period.toLowerCase()) {</span>
+<span class="fc" id="L18">            case &quot;week&quot; -&gt; new LocalDateTime[]{</span>
+<span class="fc" id="L19">                    now.with(DayOfWeek.MONDAY)</span>
+<span class="fc" id="L20">                            .withHour(0)</span>
+<span class="fc" id="L21">                            .withMinute(0)</span>
+<span class="fc" id="L22">                            .withSecond(0)</span>
+<span class="fc" id="L23">                            .withNano(0),</span>
+<span class="fc" id="L24">                    now.with(DayOfWeek.SUNDAY)</span>
+<span class="fc" id="L25">                            .with(LocalTime.MAX)</span>
+            };
+<span class="fc" id="L27">            case &quot;month&quot; -&gt; new LocalDateTime[]{</span>
+<span class="fc" id="L28">                    now.withDayOfMonth(1)</span>
+<span class="fc" id="L29">                            .withHour(0)</span>
+<span class="fc" id="L30">                            .withMinute(0)</span>
+<span class="fc" id="L31">                            .withSecond(0)</span>
+<span class="fc" id="L32">                            .withNano(0),</span>
+<span class="fc" id="L33">                    now.with(TemporalAdjusters.lastDayOfMonth())</span>
+<span class="fc" id="L34">                            .with(LocalTime.MAX)</span>
+            };
+<span class="fc" id="L36">            case &quot;year&quot; -&gt; new LocalDateTime[]{</span>
+<span class="fc" id="L37">                    now.withDayOfYear(1)</span>
+<span class="fc" id="L38">                            .withHour(0)</span>
+<span class="fc" id="L39">                            .withMinute(0)</span>
+<span class="fc" id="L40">                            .withSecond(0)</span>
+<span class="fc" id="L41">                            .withNano(0),</span>
+<span class="fc" id="L42">                    now.with(TemporalAdjusters.lastDayOfYear())</span>
+<span class="fc" id="L43">                            .with(LocalTime.MAX)</span>
+            };
+<span class="fc" id="L45">            default -&gt; throw new InvalidInputException(</span>
+                    &quot;Periodo no válido: &quot; + period
+            );
+        };
+    }
+
+    public LocalDateTime[] getPreviousPeriod(String period) {
+<span class="fc" id="L52">        LocalDateTime[] currentRange = getDateRange(period);</span>
+
+        LocalDateTime previousStart;
+        LocalDateTime previousEnd;
+
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">        switch (period.toLowerCase()) {</span>
+            case &quot;week&quot; -&gt; {
+<span class="fc" id="L59">                previousStart = currentRange[0].minusWeeks(1);</span>
+<span class="fc" id="L60">                previousEnd = currentRange[1].minusWeeks(1);</span>
+<span class="fc" id="L61">            }</span>
+            case &quot;month&quot; -&gt; {
+<span class="fc" id="L63">                previousStart = currentRange[0].minusMonths(1);</span>
+<span class="fc" id="L64">                previousEnd = currentRange[0]</span>
+<span class="fc" id="L65">                        .minusDays(1)</span>
+<span class="fc" id="L66">                        .with(LocalTime.MAX);</span>
+<span class="fc" id="L67">            }</span>
+            case &quot;year&quot; -&gt; {
+<span class="fc" id="L69">                previousStart = currentRange[0].minusYears(1);</span>
+<span class="fc" id="L70">                previousEnd = currentRange[0]</span>
+<span class="fc" id="L71">                        .minusDays(1)</span>
+<span class="fc" id="L72">                        .with(LocalTime.MAX);</span>
+<span class="fc" id="L73">            }</span>
+<span class="nc" id="L74">            default -&gt; throw new InvalidInputException(</span>
+                    &quot;Periodo no válido: &quot; + period
+            );
+        }
+
+<span class="fc" id="L79">        return new LocalDateTime[]{previousStart, previousEnd};</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

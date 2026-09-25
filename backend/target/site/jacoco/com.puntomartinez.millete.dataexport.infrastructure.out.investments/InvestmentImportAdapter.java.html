@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InvestmentImportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.investments</a> &gt; <span class="el_source">InvestmentImportAdapter.java</span></div><h1>InvestmentImportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.investments;
+
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentSnapshot;
+import com.puntomartinez.millete.dataexport.domain.ports.out.InvestmentImportPort;
+import com.puntomartinez.millete.investments.domain.model.Investment;
+import com.puntomartinez.millete.investments.domain.ports.out.InvestmentRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+public class InvestmentImportAdapter
+        implements InvestmentImportPort {
+
+    private final InvestmentRepository investmentRepository;
+
+    public InvestmentImportAdapter(
+            InvestmentRepository investmentRepository
+<span class="fc" id="L20">    ) {</span>
+<span class="fc" id="L21">        this.investmentRepository = investmentRepository;</span>
+<span class="fc" id="L22">    }</span>
+
+    @Override
+    public int importInvestments(
+            List&lt;InvestmentSnapshot&gt; investments,
+            UUID userId) {
+
+<span class="pc bpc" id="L29" title="2 of 4 branches missed.">        if (investments == null || investments.isEmpty()) {</span>
+<span class="nc" id="L30">            return 0;</span>
+        }
+
+<span class="fc" id="L33">        int count = 0;</span>
+
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (InvestmentSnapshot investment : investments) {</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (!investment.active()) {</span>
+<span class="fc" id="L38">                continue;</span>
+            }
+
+            Investment importedInvestment =
+<span class="fc" id="L42">                    Investment.reconstitute(</span>
+<span class="fc" id="L43">                            UUID.randomUUID(),</span>
+                            userId,
+<span class="fc" id="L45">                            investment.assetName(),</span>
+<span class="fc" id="L46">                            investment.ticker(),</span>
+<span class="fc" id="L47">                            investment.quantity(),</span>
+<span class="fc" id="L48">                            investment.purchasePrice(),</span>
+<span class="fc" id="L49">                            investment.currentPrice(),</span>
+<span class="fc" id="L50">                            Investment.InvestmentType.valueOf(</span>
+<span class="fc" id="L51">                                    investment.type()</span>
+                            ),
+<span class="fc" id="L53">                            investment.purchaseDate().atStartOfDay(),</span>
+<span class="fc" id="L54">                            investment.createdAt(),</span>
+<span class="fc" id="L55">                            investment.modifiedAt(),</span>
+<span class="fc" id="L56">                            investment.active()</span>
+                    );
+
+<span class="fc" id="L59">            investmentRepository.save(</span>
+                    importedInvestment
+            );
+
+<span class="fc" id="L63">            count++;</span>
+<span class="fc" id="L64">        }</span>
+
+<span class="fc" id="L66">        return count;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

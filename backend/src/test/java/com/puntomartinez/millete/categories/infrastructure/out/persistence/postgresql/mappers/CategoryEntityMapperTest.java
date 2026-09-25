@@ -7,13 +7,18 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 
 @DisplayName("CategoryEntityMapper")
 class CategoryEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
 
     private final CategoryEntityMapper mapper =
             Mappers.getMapper(CategoryEntityMapper.class);
@@ -23,8 +28,8 @@ class CategoryEntityMapperTest {
     void shouldMapDomainToEntity() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 11, 30);
+        Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+        Instant modifiedAt = Instant.parse("2024-01-02T11:30:00Z");
 
         Category domain = Category.reconstitute(
                 id,
@@ -55,8 +60,8 @@ class CategoryEntityMapperTest {
     void shouldMapEntityToDomain() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-        LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 11, 30);
+        Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+        Instant modifiedAt = Instant.parse("2024-01-02T11:30:00Z");
 
         CategoryEntity entity = new CategoryEntity();
         entity.setId(id);
@@ -96,7 +101,7 @@ class CategoryEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        Category original = Category.create(
+        Category original = Category.create(TIME, 
                 UUID.randomUUID(),
                 "Food",
                 "#FF5733",

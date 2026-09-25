@@ -19,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +52,7 @@ class PlannedTransactionServiceTest {
                 new BigDecimal("100.00"), TransactionType.EXPENSE,
                 "Rent", FrequencyType.MONTHS, 1,
                 LocalDate.now().minusMonths(1), null,
-                LocalDateTime.now(), LocalDateTime.now(),
+                Instant.now(), Instant.now(),
                 true, null, 0
         );
     }
@@ -248,7 +247,7 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Daily", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, 0
             );
 
@@ -288,7 +287,7 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Fail", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, PlannedTransaction.MAX_CONSECUTIVE_FAILURES - 1
             );
 
@@ -313,7 +312,7 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Fail", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, 0
             );
 

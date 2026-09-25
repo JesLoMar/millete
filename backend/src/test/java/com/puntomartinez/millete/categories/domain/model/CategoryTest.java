@@ -8,7 +8,9 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,9 +22,12 @@ class CategoryTest {
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String VALID_NAME = "Food";
     private static final String VALID_COLOR = "#FF5733";
+    private static final FixedTimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
 
     private Category createValidCategory() {
-        return Category.create(
+        return Category.create(TIME, 
+                TIME,
                 USER_ID,
                 VALID_NAME,
                 VALID_COLOR,
@@ -37,8 +42,8 @@ class CategoryTest {
                 VALID_NAME,
                 VALID_COLOR,
                 new BigDecimal("100.00"),
-                LocalDateTime.of(2024, 1, 1, 10, 0),
-                LocalDateTime.of(2024, 1, 2, 10, 0),
+                Instant.parse("2024-01-01T10:00:00Z"),
+                Instant.parse("2024-01-02T10:00:00Z"),
                 active
         );
     }
@@ -76,7 +81,7 @@ class CategoryTest {
         @DisplayName("Should reject null user id")
         void shouldRejectNullUserId() {
             assertThatThrownBy(() ->
-                    Category.create(null, VALID_NAME, VALID_COLOR, BigDecimal.TEN)
+                    Category.create(TIME, TIME, null, VALID_NAME, VALID_COLOR, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -89,7 +94,7 @@ class CategoryTest {
         @DisplayName("Should reject invalid name")
         void shouldRejectInvalidName(String name) {
             assertThatThrownBy(() ->
-                    Category.create(USER_ID, name, VALID_COLOR, BigDecimal.TEN)
+                    Category.create(TIME, TIME, USER_ID, name, VALID_COLOR, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -97,7 +102,7 @@ class CategoryTest {
         @DisplayName("Should reject null color")
         void shouldRejectNullColor() {
             assertThatThrownBy(() ->
-                    Category.create(USER_ID, VALID_NAME, null, BigDecimal.TEN)
+                    Category.create(TIME, TIME, USER_ID, VALID_NAME, null, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -113,7 +118,7 @@ class CategoryTest {
         @DisplayName("Should reject invalid color")
         void shouldRejectInvalidColor(String color) {
             assertThatThrownBy(() ->
-                    Category.create(USER_ID, VALID_NAME, color, BigDecimal.TEN)
+                    Category.create(TIME, TIME, USER_ID, VALID_NAME, color, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -121,14 +126,14 @@ class CategoryTest {
         @DisplayName("Should reject negative budget limit")
         void shouldRejectNegativeBudgetLimit() {
             assertThatThrownBy(() ->
-                    Category.create(USER_ID, VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
+                    Category.create(TIME, TIME, USER_ID, VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test
         @DisplayName("Should allow null budget limit")
         void shouldAllowNullBudgetLimit() {
-            Category category = Category.create(USER_ID, VALID_NAME, VALID_COLOR, null);
+            Category category = Category.create(TIME, TIME, USER_ID, VALID_NAME, VALID_COLOR, null);
 
             assertThat(category.getBudgetLimit()).isNull();
         }
@@ -136,7 +141,7 @@ class CategoryTest {
         @Test
         @DisplayName("Should allow zero budget limit")
         void shouldAllowZeroBudgetLimit() {
-            Category category = Category.create(USER_ID, VALID_NAME, VALID_COLOR, BigDecimal.ZERO);
+            Category category = Category.create(TIME, TIME, USER_ID, VALID_NAME, VALID_COLOR, BigDecimal.ZERO);
 
             assertThat(category.getBudgetLimit()).isEqualByComparingTo(BigDecimal.ZERO);
         }
@@ -150,8 +155,8 @@ class CategoryTest {
         @DisplayName("Should reconstitute an existing category")
         void shouldReconstituteCategory() {
             UUID id = UUID.randomUUID();
-            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 12, 30);
+            Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+            Instant modifiedAt = Instant.parse("2024-01-02T12:30:00Z");
             BigDecimal budgetLimit = new BigDecimal("250.50");
 
             Category category = Category.reconstitute(
@@ -178,8 +183,8 @@ class CategoryTest {
         @Test
         @DisplayName("Should reject null id")
         void shouldRejectNullId() {
-            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+            Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+            Instant modifiedAt = Instant.parse("2024-01-02T10:00:00Z");
 
             assertThatThrownBy(() ->
                     Category.reconstitute(
@@ -198,8 +203,8 @@ class CategoryTest {
         @Test
         @DisplayName("Should reject null user id")
         void shouldRejectNullUserId() {
-            LocalDateTime createdAt = LocalDateTime.of(2024, 1, 1, 10, 0);
-            LocalDateTime modifiedAt = LocalDateTime.of(2024, 1, 2, 10, 0);
+            Instant createdAt = Instant.parse("2024-01-01T10:00:00Z");
+            Instant modifiedAt = Instant.parse("2024-01-02T10:00:00Z");
 
             assertThatThrownBy(() ->
                     Category.reconstitute(
@@ -226,7 +231,7 @@ class CategoryTest {
                             VALID_COLOR,
                             BigDecimal.TEN,
                             null,
-                            LocalDateTime.of(2024, 1, 2, 10, 0),
+                            Instant.parse("2024-01-02T10:00:00Z"),
                             true
                     )
             ).isInstanceOf(IllegalArgumentException.class);
@@ -242,7 +247,7 @@ class CategoryTest {
                             VALID_NAME,
                             VALID_COLOR,
                             BigDecimal.TEN,
-                            LocalDateTime.of(2024, 1, 1, 10, 0),
+                            Instant.parse("2024-01-01T10:00:00Z"),
                             null,
                             true
                     )
@@ -258,9 +263,9 @@ class CategoryTest {
         @DisplayName("Should update valid details")
         void shouldUpdateValidDetails() {
             Category category = reconstituteValidCategory(true);
-            LocalDateTime previousModifiedAt = category.getModifiedAt();
+            Instant previousModifiedAt = category.getModifiedAt();
 
-            category.updateDetails("Updated", "#0000FF", new BigDecimal("20.00"));
+            category.updateDetails(TIME, "Updated", "#0000FF", new BigDecimal("20.00"));
 
             assertThat(category.getName()).isEqualTo("Updated");
             assertThat(category.getColor()).isEqualTo("#0000FF");
@@ -279,7 +284,7 @@ class CategoryTest {
             Category category = createValidCategory();
 
             assertThatThrownBy(() ->
-                    category.updateDetails(name, VALID_COLOR, BigDecimal.TEN)
+                    category.updateDetails(TIME, name, VALID_COLOR, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -289,7 +294,7 @@ class CategoryTest {
             Category category = createValidCategory();
 
             assertThatThrownBy(() ->
-                    category.updateDetails(VALID_NAME, null, BigDecimal.TEN)
+                    category.updateDetails(TIME, VALID_NAME, null, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -307,7 +312,7 @@ class CategoryTest {
             Category category = createValidCategory();
 
             assertThatThrownBy(() ->
-                    category.updateDetails(VALID_NAME, color, BigDecimal.TEN)
+                    category.updateDetails(TIME, VALID_NAME, color, BigDecimal.TEN)
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -317,7 +322,7 @@ class CategoryTest {
             Category category = createValidCategory();
 
             assertThatThrownBy(() ->
-                    category.updateDetails(VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
+                    category.updateDetails(TIME, VALID_NAME, VALID_COLOR, new BigDecimal("-0.01"))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -326,7 +331,7 @@ class CategoryTest {
         void shouldAllowNullBudgetLimitOnUpdate() {
             Category category = createValidCategory();
 
-            category.updateDetails(VALID_NAME, VALID_COLOR, null);
+            category.updateDetails(TIME, VALID_NAME, VALID_COLOR, null);
 
             assertThat(category.getBudgetLimit()).isNull();
         }
@@ -340,9 +345,9 @@ class CategoryTest {
         @DisplayName("Should deactivate an active category")
         void shouldDeactivateActiveCategory() {
             Category category = reconstituteValidCategory(true);
-            LocalDateTime previousModifiedAt = category.getModifiedAt();
+            Instant previousModifiedAt = category.getModifiedAt();
 
-            category.deactivate();
+            category.deactivate(TIME);
 
             assertThat(category.isActive()).isFalse();
             assertThat(category.getModifiedAt()).isAfter(previousModifiedAt);
@@ -352,9 +357,9 @@ class CategoryTest {
         @DisplayName("Should not change modified at when category is already inactive")
         void shouldNotChangeModifiedAtWhenAlreadyInactive() {
             Category category = reconstituteValidCategory(false);
-            LocalDateTime previousModifiedAt = category.getModifiedAt();
+            Instant previousModifiedAt = category.getModifiedAt();
 
-            category.deactivate();
+            category.deactivate(TIME);
 
             assertThat(category.isActive()).isFalse();
             assertThat(category.getModifiedAt()).isEqualTo(previousModifiedAt);

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GoalUnit.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.domain.model</a> &gt; <span class="el_source">GoalUnit.java</span></div><h1>GoalUnit.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.domain.model;
+
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class GoalUnit {
+
+    private static final int MAX_NAME_LENGTH = 100;
+
+    private final UUID id;
+    private String name;
+    private BigDecimal monthlyTarget;
+    private DistributionMode distributionMode;
+    private final LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+
+    private GoalUnit(
+            UUID id,
+            String name,
+            BigDecimal monthlyTarget,
+            DistributionMode distributionMode,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+<span class="fc" id="L29">    ) {</span>
+<span class="fc" id="L30">        validateId(id);</span>
+<span class="fc" id="L31">        validateName(name);</span>
+<span class="fc" id="L32">        validateMonthlyTarget(monthlyTarget);</span>
+<span class="fc" id="L33">        validateDistributionMode(distributionMode);</span>
+<span class="fc" id="L34">        validateCreatedAt(createdAt);</span>
+<span class="fc" id="L35">        validateModifiedAt(modifiedAt);</span>
+
+<span class="fc" id="L37">        this.id = id;</span>
+<span class="fc" id="L38">        this.name = name;</span>
+<span class="fc" id="L39">        this.monthlyTarget = monthlyTarget;</span>
+<span class="fc" id="L40">        this.distributionMode = distributionMode;</span>
+<span class="fc" id="L41">        this.createdAt = createdAt;</span>
+<span class="fc" id="L42">        this.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L43">        this.active = active;</span>
+<span class="fc" id="L44">    }</span>
+
+    public static GoalUnit create(
+            String name,
+            BigDecimal monthlyTarget,
+            DistributionMode distributionMode
+    ) {
+<span class="fc" id="L51">        LocalDateTime now = LocalDateTime.now();</span>
+<span class="fc" id="L52">        return new GoalUnit(</span>
+<span class="fc" id="L53">                UUID.randomUUID(),</span>
+                name,
+                monthlyTarget,
+                distributionMode,
+                now,
+                now,
+                true
+        );
+    }
+
+    public static GoalUnit reconstitute(
+            UUID id,
+            String name,
+            BigDecimal monthlyTarget,
+            DistributionMode distributionMode,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active
+    ) {
+<span class="fc" id="L72">        return new GoalUnit(</span>
+                id, name, monthlyTarget, distributionMode,
+                createdAt, modifiedAt, active
+        );
+    }
+
+    public void updateDetails(
+            String name,
+            BigDecimal monthlyTarget,
+            DistributionMode distributionMode
+    ) {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (name != null) {</span>
+<span class="fc" id="L84">            validateName(name);</span>
+<span class="fc" id="L85">            this.name = name;</span>
+        }
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (monthlyTarget != null) {</span>
+<span class="fc" id="L88">            validateMonthlyTarget(monthlyTarget);</span>
+<span class="fc" id="L89">            this.monthlyTarget = monthlyTarget;</span>
+        }
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (distributionMode != null) {</span>
+<span class="fc" id="L92">            validateDistributionMode(distributionMode);</span>
+<span class="fc" id="L93">            this.distributionMode = distributionMode;</span>
+        }
+<span class="fc" id="L95">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L96">    }</span>
+
+    public void deactivate() {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!this.active) {</span>
+<span class="fc" id="L100">            return;</span>
+        }
+<span class="fc" id="L102">        this.active = false;</span>
+<span class="fc" id="L103">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L104">    }</span>
+
+    // ── Validaciones ──────────────────────────────────────────
+
+    private static void validateId(UUID id) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L110">            throw new InvalidInputException(</span>
+                    &quot;El id de la meta es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L114">    }</span>
+
+    private static void validateName(String name) {
+<span class="fc bfc" id="L117" title="All 4 branches covered.">        if (name == null || name.isBlank()) {</span>
+<span class="fc" id="L118">            throw new InvalidInputException(</span>
+                    &quot;El nombre de la meta es obligatorio&quot;
+            );
+        }
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if (name.length() &gt; MAX_NAME_LENGTH) {</span>
+<span class="fc" id="L123">            throw new InvalidInputException(</span>
+                    &quot;El nombre no puede exceder los &quot;
+                            + MAX_NAME_LENGTH + &quot; caracteres&quot;
+            );
+        }
+<span class="fc" id="L128">    }</span>
+
+    private static void validateMonthlyTarget(BigDecimal monthlyTarget) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (monthlyTarget == null) {</span>
+<span class="fc" id="L132">            throw new InvalidInputException(</span>
+                    &quot;El objetivo mensual es obligatorio&quot;
+            );
+        }
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (monthlyTarget.compareTo(BigDecimal.ZERO) &lt; 0) {</span>
+<span class="fc" id="L137">            throw new InvalidInputException(</span>
+                    &quot;El objetivo mensual no puede ser negativo&quot;
+            );
+        }
+<span class="fc" id="L141">    }</span>
+
+    private static void validateDistributionMode(
+            DistributionMode distributionMode
+    ) {
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (distributionMode == null) {</span>
+<span class="fc" id="L147">            throw new InvalidInputException(</span>
+                    &quot;El modo de distribución es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L151">    }</span>
+
+    private static void validateCreatedAt(LocalDateTime createdAt) {
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        if (createdAt == null) {</span>
+<span class="nc" id="L155">            throw new InvalidInputException(</span>
+                    &quot;La fecha de creación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L159">    }</span>
+
+    private static void validateModifiedAt(LocalDateTime modifiedAt) {
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        if (modifiedAt == null) {</span>
+<span class="nc" id="L163">            throw new InvalidInputException(</span>
+                    &quot;La fecha de modificación es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L167">    }</span>
+
+    // ── Getters ───────────────────────────────────────────────
+
+<span class="fc" id="L171">    public UUID getId() { return id; }</span>
+<span class="fc" id="L172">    public String getName() { return name; }</span>
+<span class="fc" id="L173">    public BigDecimal getMonthlyTarget() { return monthlyTarget; }</span>
+<span class="fc" id="L174">    public DistributionMode getDistributionMode() { return distributionMode; }</span>
+<span class="fc" id="L175">    public LocalDateTime getCreatedAt() { return createdAt; }</span>
+<span class="fc" id="L176">    public LocalDateTime getModifiedAt() { return modifiedAt; }</span>
+<span class="fc" id="L177">    public boolean isActive() { return active; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

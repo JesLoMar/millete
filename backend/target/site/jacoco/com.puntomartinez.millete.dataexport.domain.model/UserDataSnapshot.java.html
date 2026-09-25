@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDataSnapshot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.domain.model</a> &gt; <span class="el_source">UserDataSnapshot.java</span></div><h1>UserDataSnapshot.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.domain.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record UserDataSnapshot(
+        @JsonProperty(&quot;metadata&quot;)
+        SnapshotMetadata metadata,
+
+        @JsonProperty(&quot;categories&quot;)
+        List&lt;CategorySnapshot&gt; categories,
+
+        @JsonProperty(&quot;transactions&quot;)
+        List&lt;TransactionSnapshot&gt; transactions,
+
+        @JsonProperty(&quot;plannedTransactions&quot;)
+        List&lt;PlannedTransactionSnapshot&gt; plannedTransactions,
+
+        @JsonProperty(&quot;investments&quot;)
+        List&lt;InvestmentSnapshot&gt; investments,
+
+        @JsonProperty(&quot;savingsGoals&quot;)
+        List&lt;SavingsGoalSnapshot&gt; savingsGoals,
+
+        @JsonProperty(&quot;userPreferences&quot;)
+        UserPreferencesSnapshot userPreferences
+) {
+
+<span class="fc" id="L33">    public UserDataSnapshot {</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (metadata == null) {</span>
+<span class="fc" id="L35">            throw new IllegalArgumentException(</span>
+                    &quot;El metadata del snapshot es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L39">    }</span>
+
+<span class="fc" id="L41">    public record SnapshotMetadata(</span>
+            @JsonProperty(&quot;version&quot;)
+            String version,
+
+            @JsonProperty(&quot;exportDate&quot;)
+            LocalDateTime exportDate,
+
+            @JsonProperty(&quot;appVersion&quot;)
+            String appVersion
+    ) {}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

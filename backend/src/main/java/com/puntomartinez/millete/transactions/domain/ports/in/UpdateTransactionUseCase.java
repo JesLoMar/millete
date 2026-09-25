@@ -2,7 +2,7 @@ package com.puntomartinez.millete.transactions.domain.ports.in;
 
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public interface UpdateTransactionUseCase {
@@ -11,7 +11,7 @@ public interface UpdateTransactionUseCase {
     record UpdateTransactionCommand(
             UUID userId,
             BigDecimal amount,
-            LocalDateTime date,
+            LocalDate date,
             Transaction.TransactionType type,
             String description,
             UUID categoryId

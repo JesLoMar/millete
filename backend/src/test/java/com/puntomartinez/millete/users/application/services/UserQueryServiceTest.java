@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +32,7 @@ class UserQueryServiceTest {
     private User createUser(UUID id, String username, String email) {
         return new User(
                 id, username, email, "hashed",
-                LocalDateTime.now(), LocalDateTime.now(), true, false
+                Instant.now(), Instant.now(), true, false
         );
     }
 

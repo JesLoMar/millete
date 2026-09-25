@@ -1,9 +1,9 @@
 package com.puntomartinez.millete.shared.infrastructure.in.controller.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ErrorResponseDTO(
-        LocalDateTime timestamp,
+        Instant timestamp,
         int status,
         String error,
         String message,

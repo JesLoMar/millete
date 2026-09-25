@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.transactions.infrastructure.in.controller</a> &gt; <span class="el_source">TransactionController.java</span></div><h1>TransactionController.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.transactions.infrastructure.in.controller;
+
+import com.puntomartinez.millete.categories.domain.ports.in.GetCategoryUseCase;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
+import com.puntomartinez.millete.transactions.application.services.TransactionPeriodService;
+import com.puntomartinez.millete.transactions.domain.model.Transaction;
+import com.puntomartinez.millete.transactions.domain.ports.in.*;
+import com.puntomartinez.millete.transactions.domain.ports.in.RegisterTransactionUseCase.RegisterTransactionCommand;
+import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.RegisterTransactionRequestDTO;
+import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionMetricsResponseDTO;
+import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.TransactionResponseDTO;
+import com.puntomartinez.millete.transactions.infrastructure.in.controller.dto.UpdateTransactionRequestDTO;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/api/v1/transactions&quot;)
+@RequiredArgsConstructor
+public class TransactionController {
+
+    private final RegisterTransactionUseCase registerTransactionUseCase;
+    private final DeleteTransactionUseCase deleteTransactionUseCase;
+    private final GetTransactionUseCase getTransactionUseCase;
+    private final UpdateTransactionUseCase updateTransactionUseCase;
+    private final ListTransactionsUseCase listTransactionsUseCase;
+    private final GetTransactionMetricsUseCase transactionMetricsUseCase;
+    private final GetCategoryUseCase getCategoryUseCase;
+    private final TransactionPeriodService transactionPeriodService;
+
+    @GetMapping(&quot;/metrics&quot;)
+    public ResponseEntity&lt;TransactionMetricsResponseDTO&gt; getMetrics(
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L49">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L51">        GetTransactionMetricsUseCase.MetricsCommand command =</span>
+                new GetTransactionMetricsUseCase.MetricsCommand(
+                        userId,
+                        period
+                );
+
+<span class="fc" id="L57">        GetTransactionMetricsUseCase.MetricsResult result =</span>
+<span class="fc" id="L58">                transactionMetricsUseCase.getMetrics(command);</span>
+
+<span class="fc" id="L60">        TransactionMetricsResponseDTO response =</span>
+                new TransactionMetricsResponseDTO(
+<span class="fc" id="L62">                        result.income(),</span>
+<span class="fc" id="L63">                        result.expenses(),</span>
+<span class="fc" id="L64">                        result.balance(),</span>
+<span class="fc" id="L65">                        result.count(),</span>
+<span class="fc" id="L66">                        result.incomeTrend(),</span>
+<span class="fc" id="L67">                        result.expensesTrend(),</span>
+<span class="fc" id="L68">                        result.balanceTrend(),</span>
+<span class="fc" id="L69">                        result.countTrend()</span>
+                );
+
+<span class="fc" id="L72">        return ResponseEntity.ok(response);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;PaginatedResponseDTO&lt;TransactionResponseDTO&gt;&gt; listTransactions(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;50&quot;) int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = &quot;month&quot;) String period,
+            Authentication authentication
+    ) {
+<span class="fc" id="L84">        validatePagination(page, size);</span>
+
+<span class="fc" id="L86">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L88">        Transaction.TransactionType transactionType = parseType(type);</span>
+
+<span class="fc" id="L90">        LocalDateTime[] range =</span>
+<span class="fc" id="L91">                transactionPeriodService.getDateRange(period);</span>
+
+<span class="fc" id="L93">        long totalElements =</span>
+<span class="fc" id="L94">                listTransactionsUseCase.countByUserIdAndFilters(</span>
+                        userId,
+                        search,
+                        transactionType,
+                        range[0],
+                        range[1]
+                );
+
+<span class="fc" id="L102">        int totalPages = (int) Math.ceil(</span>
+                (double) totalElements / size
+        );
+
+<span class="fc" id="L106">        int safePage = Math.min(</span>
+                page,
+<span class="fc" id="L108">                Math.max(0, totalPages - 1)</span>
+        );
+
+<span class="fc" id="L111">        List&lt;Transaction&gt; transactions =</span>
+<span class="fc" id="L112">                listTransactionsUseCase.findAllByUserId(</span>
+                        userId,
+                        safePage,
+                        size,
+                        search,
+                        transactionType,
+                        range[0],
+                        range[1]
+                );
+
+<span class="fc" id="L122">        Map&lt;UUID, CategoryInfo&gt; categoryMap =</span>
+<span class="fc" id="L123">                getCategoryUseCase.findByUserId(userId)</span>
+<span class="fc" id="L124">                        .stream()</span>
+<span class="fc" id="L125">                        .collect(Collectors.toMap(</span>
+<span class="fc" id="L126">                                category -&gt; category.getId(),</span>
+<span class="fc" id="L127">                                category -&gt; new CategoryInfo(</span>
+<span class="fc" id="L128">                                        category.getName(),</span>
+<span class="fc" id="L129">                                        category.getColor()</span>
+                                ),
+<span class="nc" id="L131">                                (a, b) -&gt; a</span>
+                        ));
+
+<span class="fc" id="L134">        List&lt;TransactionResponseDTO&gt; content =</span>
+<span class="fc" id="L135">                transactions.stream()</span>
+<span class="fc" id="L136">                        .map(tx -&gt; mapToDTO(tx, categoryMap))</span>
+<span class="fc" id="L137">                        .toList();</span>
+
+<span class="pc bpc" id="L139" title="4 of 6 branches missed.">        return ResponseEntity.ok(</span>
+                new PaginatedResponseDTO&lt;&gt;(
+                        content,
+                        safePage,
+                        totalPages,
+                        totalElements,
+                        size,
+                        safePage == 0,
+                        safePage &gt;= totalPages - 1 || totalPages == 0
+                )
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;TransactionResponseDTO&gt; registerTransaction(
+            @Valid @RequestBody RegisterTransactionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L157">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L159">        RegisterTransactionCommand command =</span>
+                new RegisterTransactionCommand(
+                        userId,
+<span class="fc" id="L162">                        request.categoryId(),</span>
+<span class="fc" id="L163">                        request.amount(),</span>
+<span class="fc" id="L164">                        request.date(),</span>
+<span class="fc" id="L165">                        request.type(),</span>
+<span class="fc" id="L166">                        request.description()</span>
+                );
+
+<span class="fc" id="L169">        RegisterTransactionUseCase.RegisterTransactionResult result =</span>
+<span class="fc" id="L170">                registerTransactionUseCase.register(command);</span>
+
+<span class="fc" id="L172">        return ResponseEntity</span>
+<span class="fc" id="L173">                .status(HttpStatus.CREATED)</span>
+<span class="fc" id="L174">                .body(mapToDTO(</span>
+<span class="fc" id="L175">                        result.transaction(),</span>
+                        userId
+                ));
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteTransaction(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L185">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L187">        deleteTransactionUseCase.deleteByIdAndUserId(</span>
+                id,
+                userId
+        );
+
+<span class="fc" id="L192">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TransactionResponseDTO&gt; getTransactionById(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+<span class="fc" id="L200">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L202">        Transaction transaction =</span>
+<span class="fc" id="L203">                getTransactionUseCase.getByIdAndUserId(</span>
+                        id,
+                        userId
+                );
+
+<span class="fc" id="L208">        return ResponseEntity.ok(</span>
+<span class="fc" id="L209">                mapToDTO(</span>
+                        transaction,
+                        userId
+                )
+        );
+    }
+
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TransactionResponseDTO&gt; updateTransaction(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateTransactionRequestDTO request,
+            Authentication authentication
+    ) {
+<span class="fc" id="L222">        UUID userId = ((JwtUser) authentication.getPrincipal()).getId();</span>
+
+<span class="fc" id="L224">        UpdateTransactionUseCase.UpdateTransactionCommand command =</span>
+                new UpdateTransactionUseCase.UpdateTransactionCommand(
+                        userId,
+<span class="fc" id="L227">                        request.amount(),</span>
+<span class="fc" id="L228">                        request.date(),</span>
+<span class="fc" id="L229">                        request.type(),</span>
+<span class="fc" id="L230">                        request.description(),</span>
+<span class="fc" id="L231">                        request.categoryId()</span>
+                );
+
+<span class="fc" id="L234">        Transaction updatedTransaction =</span>
+<span class="fc" id="L235">                updateTransactionUseCase.update(</span>
+                        id,
+                        command
+                );
+
+<span class="fc" id="L240">        return ResponseEntity.ok(</span>
+<span class="fc" id="L241">                mapToDTO(</span>
+                        updatedTransaction,
+                        userId
+                )
+        );
+    }
+
+<span class="fc" id="L248">    private record CategoryInfo(</span>
+            String name,
+            String color
+    ) {
+    }
+
+    private CategoryInfo resolveCategoryInfo(
+            UUID categoryId,
+            UUID userId
+    ) {
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        if (categoryId == null) {</span>
+<span class="fc" id="L259">            return new CategoryInfo(</span>
+                    &quot;Sin categoría&quot;,
+                    null
+            );
+        }
+
+        try {
+<span class="fc" id="L266">            var category =</span>
+<span class="nc" id="L267">                    getCategoryUseCase.findByIdAndUserId(</span>
+                            categoryId,
+                            userId
+                    );
+
+<span class="nc" id="L272">            return new CategoryInfo(</span>
+<span class="nc" id="L273">                    category.getName(),</span>
+<span class="nc" id="L274">                    category.getColor()</span>
+            );
+<span class="fc" id="L276">        } catch (ResourceNotFoundException e) {</span>
+<span class="fc" id="L277">            return new CategoryInfo(</span>
+                    &quot;Sin categoría&quot;,
+                    null
+            );
+        }
+    }
+
+    private TransactionResponseDTO mapToDTO(
+            Transaction transaction,
+            UUID userId
+    ) {
+<span class="fc" id="L288">        CategoryInfo info =</span>
+<span class="fc" id="L289">                resolveCategoryInfo(</span>
+<span class="fc" id="L290">                        transaction.getCategoryId(),</span>
+                        userId
+                );
+
+<span class="fc" id="L294">        return mapToDTO(</span>
+                transaction,
+                info
+        );
+    }
+
+    private TransactionResponseDTO mapToDTO(
+            Transaction transaction,
+            CategoryInfo info
+    ) {
+<span class="fc" id="L304">        return new TransactionResponseDTO(</span>
+<span class="fc" id="L305">                transaction.getId(),</span>
+<span class="fc" id="L306">                transaction.getCategoryId(),</span>
+<span class="fc" id="L307">                info.name(),</span>
+<span class="fc" id="L308">                info.color(),</span>
+<span class="fc" id="L309">                transaction.getAmount(),</span>
+<span class="fc" id="L310">                transaction.getDate(),</span>
+<span class="fc" id="L311">                transaction.getType(),</span>
+<span class="fc" id="L312">                transaction.getDescription(),</span>
+                false,
+<span class="fc" id="L314">                transaction.isActive()</span>
+        );
+    }
+
+    private TransactionResponseDTO mapToDTO(
+            Transaction transaction,
+            Map&lt;UUID, CategoryInfo&gt; categoryMap
+    ) {
+        CategoryInfo info =
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">                transaction.getCategoryId() != null</span>
+<span class="fc" id="L324">                        ? categoryMap.get(transaction.getCategoryId())</span>
+<span class="pc" id="L325">                        : null;</span>
+
+<span class="fc bfc" id="L327" title="All 2 branches covered.">        if (info == null) {</span>
+<span class="fc" id="L328">            info = new CategoryInfo(</span>
+                    &quot;Sin categoría&quot;,
+                    null
+            );
+        }
+
+<span class="fc" id="L334">        return mapToDTO(</span>
+                transaction,
+                info
+        );
+    }
+
+    private Transaction.TransactionType parseType(String type) {
+<span class="pc bpc" id="L341" title="1 of 4 branches missed.">        if (type == null || type.isBlank()) {</span>
+<span class="fc" id="L342">            return null;</span>
+        }
+
+        try {
+<span class="fc" id="L346">            return Transaction.TransactionType.valueOf(</span>
+<span class="fc" id="L347">                    type.toUpperCase(Locale.ROOT)</span>
+            );
+<span class="fc" id="L349">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L350">            throw new InvalidInputException(</span>
+                    &quot;Tipo de transacción no válido: &quot; + type
+            );
+        }
+    }
+
+    private void validatePagination(int page, int size) {
+<span class="fc bfc" id="L357" title="All 2 branches covered.">        if (page &lt; 0) {</span>
+<span class="fc" id="L358">            throw new InvalidInputException(</span>
+                    &quot;La página debe ser mayor o igual que 0.&quot;
+            );
+        }
+
+<span class="fc bfc" id="L363" title="All 2 branches covered.">        if (size &lt;= 0) {</span>
+<span class="fc" id="L364">            throw new InvalidInputException(</span>
+                    &quot;El tamaño de página debe ser mayor que 0.&quot;
+            );
+        }
+<span class="fc" id="L368">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

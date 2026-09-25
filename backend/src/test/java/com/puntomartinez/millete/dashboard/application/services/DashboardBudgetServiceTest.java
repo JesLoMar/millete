@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -47,9 +46,9 @@ class DashboardBudgetServiceTest {
                 categoryQueryPort,
                 dashboardPeriodService
         );
-        LocalDateTime[] range = {
-                LocalDateTime.now().minusDays(30),
-                LocalDateTime.now()
+        LocalDate[] range = {
+                LocalDate.now().minusDays(30),
+                LocalDate.now()
         };
         org.mockito.Mockito.lenient()
                 .when(dashboardPeriodService.getDateRange(any()))
@@ -67,7 +66,7 @@ class DashboardBudgetServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Groceries", CATEGORY_ID,
                             new BigDecimal("75.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -103,13 +102,13 @@ class DashboardBudgetServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Over", catId1,
                             new BigDecimal("150.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
             TransactionQueryPort.TransactionData tx2 =
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Under", catId2,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(
@@ -185,7 +184,7 @@ class DashboardBudgetServiceTest {
                     new TransactionQueryPort.TransactionData(
                             UUID.randomUUID(), "Expense", CATEGORY_ID,
                             new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
+                            Instant.now(), "EXPENSE"
                     );
 
             when(transactionQueryPort.findByUserIdAndDateBetween(

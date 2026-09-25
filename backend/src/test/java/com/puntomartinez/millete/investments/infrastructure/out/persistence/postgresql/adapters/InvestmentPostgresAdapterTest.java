@@ -20,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,7 +48,7 @@ class InvestmentPostgresAdapterTest {
         return Investment.create(
                 USER_ID, "Apple Inc.", "AAPL",
                 new BigDecimal("10"), new BigDecimal("150.00"),
-                InvestmentType.STOCK, LocalDateTime.now().minusDays(30)
+                InvestmentType.STOCK, Instant.now().minusDays(30)
         );
     }
 
@@ -63,9 +62,9 @@ class InvestmentPostgresAdapterTest {
         entity.setPurchasePrice(new BigDecimal("150.00"));
         entity.setCurrentPrice(new BigDecimal("180.00"));
         entity.setType("STOCK");
-        entity.setPurchaseDate(LocalDateTime.now().minusDays(30));
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setPurchaseDate(Instant.now().minusDays(30));
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         return entity;
     }

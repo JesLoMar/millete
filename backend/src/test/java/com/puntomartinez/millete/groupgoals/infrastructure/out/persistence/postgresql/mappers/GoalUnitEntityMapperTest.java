@@ -8,13 +8,23 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import com.puntomartinez.millete.shared.domain.time.TimeProvider;
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GoalUnitEntityMapper")
+
 class GoalUnitEntityMapperTest {
+    static final TimeProvider TIME = new FixedTimeProvider(
+            Instant.parse("2024-01-15T10:00:00Z"));
+
+
+    private static final TimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
 
     private final GoalUnitEntityMapper mapper =
             Mappers.getMapper(GoalUnitEntityMapper.class);
@@ -22,7 +32,7 @@ class GoalUnitEntityMapperTest {
     @Test
     @DisplayName("Should map domain to entity")
     void shouldMapDomainToEntity() {
-        GoalUnit domain = GoalUnit.create(
+        GoalUnit domain = GoalUnit.create(TIME, 
                 "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE
         );
@@ -45,8 +55,8 @@ class GoalUnitEntityMapperTest {
         entity.setName("Family trip");
         entity.setMonthlyTarget(new BigDecimal("300.00"));
         entity.setDistributionMode("EQUITATIVE");
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
 
         GoalUnit domain = mapper.toDomain(entity);
@@ -61,7 +71,7 @@ class GoalUnitEntityMapperTest {
     @Test
     @DisplayName("Should preserve data in domain-entity-domain round trip")
     void shouldPreserveDataInRoundTrip() {
-        GoalUnit original = GoalUnit.create(
+        GoalUnit original = GoalUnit.create(TIME, 
                 "Family trip", new BigDecimal("300.00"),
                 DistributionMode.PROPORTIONAL
         );

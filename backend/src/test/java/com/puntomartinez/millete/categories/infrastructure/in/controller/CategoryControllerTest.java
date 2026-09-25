@@ -27,7 +27,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
+import com.puntomartinez.millete.shared.domain.time.FixedTimeProvider;
+
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,13 +68,17 @@ class CategoryControllerTest {
     @InjectMocks
     private CategoryController controller;
 
+    private static final FixedTimeProvider TIME =
+            new FixedTimeProvider(Instant.parse("2024-01-01T10:00:00Z"));
+
     private void mockAuthenticatedUser() {
         JwtUser jwtUser = new JwtUser(USER_ID, "username", "user@example.com");
         when(authentication.getPrincipal()).thenReturn(jwtUser);
     }
 
     private Category validCategory() {
-        return Category.create(
+        return Category.create(TIME, 
+                TIME,
                 USER_ID,
                 "Food",
                 "#FF5733",
@@ -256,7 +263,7 @@ class CategoryControllerTest {
             UUID categoryId = UUID.randomUUID();
             UpdateCategoryRequestDTO request =
                     new UpdateCategoryRequestDTO("Updated", "#00FF00", BigDecimal.ONE);
-            Category category = Category.create(USER_ID, "Updated", "#00FF00", BigDecimal.ONE);
+            Category category = Category.create(TIME, USER_ID, "Updated", "#00FF00", BigDecimal.ONE);
 
             when(updateCategoryUseCase.update(
                     eq(categoryId),

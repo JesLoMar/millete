@@ -2,7 +2,7 @@ package com.puntomartinez.millete.dataexport.domain.ports.out;
 
 import com.puntomartinez.millete.dataexport.domain.model.TransactionSnapshot;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ public interface TransactionExportPort {
 
     List<TransactionSnapshot> findByUserIdAndDateBetween(
             UUID userId,
-            LocalDateTime start,
-            LocalDateTime end
+            LocalDate start,
+            LocalDate end
     );
 }

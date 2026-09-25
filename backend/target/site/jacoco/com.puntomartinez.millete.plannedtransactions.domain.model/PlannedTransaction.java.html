@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlannedTransaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.plannedtransactions.domain.model</a> &gt; <span class="el_source">PlannedTransaction.java</span></div><h1>PlannedTransaction.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.plannedtransactions.domain.model;
+
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
+import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Getter
+public class PlannedTransaction {
+
+    public static final int MAX_CONSECUTIVE_FAILURES = 3;
+    private static final int MAX_DESCRIPTION_LENGTH = 50;
+
+    private UUID id;
+    private UUID userId;
+    private UUID categoryId;
+    private BigDecimal amount;
+    private TransactionType type;
+    private String description;
+    private FrequencyType frequencyType;
+    private Integer frequencyInterval;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private boolean active;
+    private LocalDate lastExecutedDate;
+    private int failureCount;
+
+<span class="fc" id="L34">    public enum FrequencyType {</span>
+<span class="fc" id="L35">        DAYS,</span>
+<span class="fc" id="L36">        WEEKS,</span>
+<span class="fc" id="L37">        MONTHS,</span>
+<span class="fc" id="L38">        YEARS</span>
+    }
+
+    private PlannedTransaction() {
+    }
+
+    public static PlannedTransaction create(
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            TransactionType type,
+            String description,
+            FrequencyType frequencyType,
+            Integer frequencyInterval,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+<span class="fc" id="L55">        validateUserId(userId);</span>
+<span class="fc" id="L56">        validateAmount(amount);</span>
+<span class="fc" id="L57">        validateType(type);</span>
+<span class="fc" id="L58">        validateDescription(description);</span>
+<span class="fc" id="L59">        validateFrequencyType(frequencyType);</span>
+<span class="fc" id="L60">        validateFrequencyInterval(frequencyInterval);</span>
+<span class="fc" id="L61">        validateStartDate(startDate);</span>
+<span class="fc" id="L62">        validateEndDate(startDate, endDate);</span>
+
+<span class="fc" id="L64">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc" id="L66">        PlannedTransaction plannedTransaction =</span>
+                new PlannedTransaction();
+<span class="fc" id="L68">        plannedTransaction.id = UUID.randomUUID();</span>
+<span class="fc" id="L69">        plannedTransaction.userId = userId;</span>
+<span class="fc" id="L70">        plannedTransaction.categoryId = categoryId;</span>
+<span class="fc" id="L71">        plannedTransaction.amount = amount;</span>
+<span class="fc" id="L72">        plannedTransaction.type = type;</span>
+<span class="fc" id="L73">        plannedTransaction.description = description;</span>
+<span class="fc" id="L74">        plannedTransaction.frequencyType = frequencyType;</span>
+<span class="fc" id="L75">        plannedTransaction.frequencyInterval = frequencyInterval;</span>
+<span class="fc" id="L76">        plannedTransaction.startDate = startDate;</span>
+<span class="fc" id="L77">        plannedTransaction.endDate = endDate;</span>
+<span class="fc" id="L78">        plannedTransaction.createdAt = now;</span>
+<span class="fc" id="L79">        plannedTransaction.modifiedAt = now;</span>
+<span class="fc" id="L80">        plannedTransaction.active = true;</span>
+<span class="fc" id="L81">        plannedTransaction.lastExecutedDate = null;</span>
+<span class="fc" id="L82">        plannedTransaction.failureCount = 0;</span>
+
+<span class="fc" id="L84">        return plannedTransaction;</span>
+    }
+
+    public static PlannedTransaction reconstitute(
+            UUID id,
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            TransactionType type,
+            String description,
+            FrequencyType frequencyType,
+            Integer frequencyInterval,
+            LocalDate startDate,
+            LocalDate endDate,
+            LocalDateTime createdAt,
+            LocalDateTime modifiedAt,
+            boolean active,
+            LocalDate lastExecutedDate,
+            int failureCount
+    ) {
+<span class="fc" id="L104">        validateId(id);</span>
+<span class="fc" id="L105">        validateUserId(userId);</span>
+<span class="fc" id="L106">        validateAmount(amount);</span>
+<span class="fc" id="L107">        validateType(type);</span>
+<span class="fc" id="L108">        validateDescription(description);</span>
+<span class="fc" id="L109">        validateFrequencyType(frequencyType);</span>
+<span class="fc" id="L110">        validateFrequencyInterval(frequencyInterval);</span>
+<span class="fc" id="L111">        validateStartDate(startDate);</span>
+<span class="fc" id="L112">        validateEndDate(startDate, endDate);</span>
+
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (createdAt == null) {</span>
+<span class="fc" id="L115">            throw new InvalidInputException(</span>
+                    &quot;La fecha de creación es obligatoria&quot;
+            );
+        }
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        if (modifiedAt == null) {</span>
+<span class="fc" id="L120">            throw new InvalidInputException(</span>
+                    &quot;La fecha de modificación es obligatoria&quot;
+            );
+        }
+
+<span class="fc" id="L125">        PlannedTransaction plannedTransaction =</span>
+                new PlannedTransaction();
+<span class="fc" id="L127">        plannedTransaction.id = id;</span>
+<span class="fc" id="L128">        plannedTransaction.userId = userId;</span>
+<span class="fc" id="L129">        plannedTransaction.categoryId = categoryId;</span>
+<span class="fc" id="L130">        plannedTransaction.amount = amount;</span>
+<span class="fc" id="L131">        plannedTransaction.type = type;</span>
+<span class="fc" id="L132">        plannedTransaction.description = description;</span>
+<span class="fc" id="L133">        plannedTransaction.frequencyType = frequencyType;</span>
+<span class="fc" id="L134">        plannedTransaction.frequencyInterval = frequencyInterval;</span>
+<span class="fc" id="L135">        plannedTransaction.startDate = startDate;</span>
+<span class="fc" id="L136">        plannedTransaction.endDate = endDate;</span>
+<span class="fc" id="L137">        plannedTransaction.createdAt = createdAt;</span>
+<span class="fc" id="L138">        plannedTransaction.modifiedAt = modifiedAt;</span>
+<span class="fc" id="L139">        plannedTransaction.active = active;</span>
+<span class="fc" id="L140">        plannedTransaction.lastExecutedDate = lastExecutedDate;</span>
+<span class="fc" id="L141">        plannedTransaction.failureCount = failureCount;</span>
+
+<span class="fc" id="L143">        return plannedTransaction;</span>
+    }
+
+    public void updateDetails(
+            BigDecimal amount,
+            TransactionType type,
+            String description,
+            FrequencyType frequencyType,
+            Integer frequencyInterval,
+            UUID categoryId
+    ) {
+<span class="fc" id="L154">        validateAmount(amount);</span>
+<span class="fc" id="L155">        validateType(type);</span>
+<span class="fc" id="L156">        validateDescription(description);</span>
+<span class="fc" id="L157">        validateFrequencyType(frequencyType);</span>
+<span class="fc" id="L158">        validateFrequencyInterval(frequencyInterval);</span>
+
+<span class="fc" id="L160">        this.amount = amount;</span>
+<span class="fc" id="L161">        this.type = type;</span>
+<span class="fc" id="L162">        this.description = description;</span>
+<span class="fc" id="L163">        this.frequencyType = frequencyType;</span>
+<span class="fc" id="L164">        this.frequencyInterval = frequencyInterval;</span>
+<span class="fc" id="L165">        this.categoryId = categoryId;</span>
+<span class="fc" id="L166">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L167">    }</span>
+
+    public void markAsExecuted(LocalDate executionDate) {
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        if (executionDate == null) {</span>
+<span class="fc" id="L171">            throw new InvalidInputException(</span>
+                    &quot;La fecha de ejecución es obligatoria&quot;
+            );
+        }
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (executionDate.isBefore(startDate)) {</span>
+<span class="fc" id="L176">            throw new InvalidInputException(</span>
+                    &quot;La fecha de ejecución no puede ser anterior a la fecha de inicio&quot;
+            );
+        }
+<span class="pc bpc" id="L180" title="1 of 4 branches missed.">        if (endDate != null &amp;&amp; executionDate.isAfter(endDate)) {</span>
+<span class="fc" id="L181">            throw new InvalidInputException(</span>
+                    &quot;La fecha de ejecución no puede ser posterior a la fecha de fin&quot;
+            );
+        }
+
+<span class="fc" id="L186">        this.lastExecutedDate = executionDate;</span>
+<span class="fc" id="L187">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L188">    }</span>
+
+    public boolean incrementFailureCount() {
+<span class="fc" id="L191">        this.failureCount++;</span>
+<span class="fc" id="L192">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        return this.failureCount &gt;= MAX_CONSECUTIVE_FAILURES;</span>
+    }
+
+    public void resetFailureCount() {
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (this.failureCount &gt; 0) {</span>
+<span class="fc" id="L198">            this.failureCount = 0;</span>
+<span class="fc" id="L199">            this.modifiedAt = LocalDateTime.now();</span>
+        }
+<span class="fc" id="L201">    }</span>
+
+    public void deactivate() {
+<span class="fc" id="L204">        this.active = false;</span>
+<span class="fc" id="L205">        this.modifiedAt = LocalDateTime.now();</span>
+<span class="fc" id="L206">    }</span>
+
+    private static void validateId(UUID id) {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        if (id == null) {</span>
+<span class="fc" id="L210">            throw new InvalidInputException(</span>
+                    &quot;El id es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L214">    }</span>
+
+    private static void validateUserId(UUID userId) {
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        if (userId == null) {</span>
+<span class="fc" id="L218">            throw new InvalidInputException(</span>
+                    &quot;El usuario es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L222">    }</span>
+
+    private static void validateAmount(BigDecimal amount) {
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (amount == null</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">                || amount.compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+<span class="fc" id="L227">            throw new InvalidInputException(</span>
+                    &quot;La cantidad debe ser mayor que cero&quot;
+            );
+        }
+<span class="fc" id="L231">    }</span>
+
+    private static void validateType(TransactionType type) {
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (type == null) {</span>
+<span class="fc" id="L235">            throw new InvalidInputException(</span>
+                    &quot;El tipo de transacción es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L239">    }</span>
+
+    private static void validateDescription(String description) {
+<span class="fc bfc" id="L242" title="All 4 branches covered.">        if (description == null || description.isBlank()) {</span>
+<span class="fc" id="L243">            throw new InvalidInputException(</span>
+                    &quot;La descripción no puede estar vacía&quot;
+            );
+        }
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        if (description.length() &gt; MAX_DESCRIPTION_LENGTH) {</span>
+<span class="fc" id="L248">            throw new InvalidInputException(</span>
+                    &quot;La descripción no puede superar los &quot;
+                            + MAX_DESCRIPTION_LENGTH
+                            + &quot; caracteres&quot;
+            );
+        }
+<span class="fc" id="L254">    }</span>
+
+    private static void validateFrequencyType(
+            FrequencyType frequencyType
+    ) {
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        if (frequencyType == null) {</span>
+<span class="fc" id="L260">            throw new InvalidInputException(</span>
+                    &quot;El tipo de frecuencia es obligatorio&quot;
+            );
+        }
+<span class="fc" id="L264">    }</span>
+
+    private static void validateFrequencyInterval(
+            Integer frequencyInterval
+    ) {
+<span class="fc bfc" id="L269" title="All 4 branches covered.">        if (frequencyInterval == null || frequencyInterval &lt;= 0) {</span>
+<span class="fc" id="L270">            throw new InvalidInputException(</span>
+                    &quot;El intervalo de frecuencia debe ser mayor que cero&quot;
+            );
+        }
+<span class="fc" id="L274">    }</span>
+
+    private static void validateStartDate(LocalDate startDate) {
+<span class="fc bfc" id="L277" title="All 2 branches covered.">        if (startDate == null) {</span>
+<span class="fc" id="L278">            throw new InvalidInputException(</span>
+                    &quot;La fecha de inicio es obligatoria&quot;
+            );
+        }
+<span class="fc" id="L282">    }</span>
+
+    private static void validateEndDate(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+<span class="fc bfc" id="L288" title="All 4 branches covered.">        if (endDate != null &amp;&amp; endDate.isBefore(startDate)) {</span>
+<span class="fc" id="L289">            throw new InvalidInputException(</span>
+                    &quot;La fecha de fin no puede ser anterior a la fecha de inicio&quot;
+            );
+        }
+<span class="fc" id="L293">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZipFileExportAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.dataexport.infrastructure.out.fileexport</a> &gt; <span class="el_source">ZipFileExportAdapter.java</span></div><h1>ZipFileExportAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.dataexport.infrastructure.out.fileexport;
+
+import com.puntomartinez.millete.dataexport.domain.model.ExportData;
+import com.puntomartinez.millete.dataexport.domain.ports.out.FileCsvExportPort;
+import com.puntomartinez.millete.dataexport.domain.ports.out.FileZipExportPort;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+/**
+ * Adaptador dual que implementa tanto FileZipExportPort como
+ * FileCsvExportPort.
+ *
+ * &lt;p&gt;DECISIÓN DE DISEÑO: Esta clase implementa dos puertos porque
+ * el ZIP contiene internamente archivos CSV. Es una decisión
+ * pragmática: el ZIP es simplemente un contenedor de CSVs, por
+ * lo que la lógica de generación CSV se reusa directamente.
+ * No refactorizar en dos clases separadas sin una razón de peso.&lt;/p&gt;
+ */
+@Component(&quot;zipFileExportAdapter&quot;)
+<span class="fc" id="L28">public class ZipFileExportAdapter</span>
+        implements FileZipExportPort, FileCsvExportPort {
+
+    private static final String FORMULA_PREFIXES = &quot;=+-@\t\r\n&quot;;
+
+    @Override
+    public byte[] generateZip(ExportData data) {
+<span class="fc" id="L35">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+
+<span class="fc" id="L37">        try (ZipOutputStream zos = new ZipOutputStream(baos)) {</span>
+<span class="fc" id="L38">            writeCsvToZip(</span>
+                    zos,
+                    &quot;categories.csv&quot;,
+                    new String[]{&quot;name&quot;, &quot;budget_limit&quot;},
+<span class="fc" id="L42">                    data.categories(),</span>
+<span class="fc" id="L43">                    (csv, row) -&gt; csv.printRecord(</span>
+<span class="fc" id="L44">                            sanitizeCsvField(row.name()),</span>
+<span class="fc" id="L45">                            row.budgetLimit()</span>
+                    )
+            );
+
+<span class="fc" id="L49">            writeCsvToZip(</span>
+                    zos,
+                    &quot;transactions.csv&quot;,
+                    new String[]{
+                            &quot;category_name&quot;,
+                            &quot;amount&quot;,
+                            &quot;date&quot;,
+                            &quot;type&quot;,
+                            &quot;description&quot;
+                    },
+<span class="fc" id="L59">                    data.transactions(),</span>
+<span class="fc" id="L60">                    (csv, row) -&gt; csv.printRecord(</span>
+<span class="fc" id="L61">                            sanitizeCsvField(row.categoryName()),</span>
+<span class="fc" id="L62">                            row.amount(),</span>
+<span class="fc" id="L63">                            row.date(),</span>
+<span class="fc" id="L64">                            sanitizeCsvField(row.type()),</span>
+<span class="fc" id="L65">                            sanitizeCsvField(row.description())</span>
+                    )
+            );
+
+<span class="fc" id="L69">            writeCsvToZip(</span>
+                    zos,
+                    &quot;planned_transactions.csv&quot;,
+                    new String[]{
+                            &quot;category_name&quot;,
+                            &quot;amount&quot;,
+                            &quot;type&quot;,
+                            &quot;description&quot;,
+                            &quot;frequency_type&quot;,
+                            &quot;frequency_interval&quot;,
+                            &quot;start_date&quot;,
+                            &quot;end_date&quot;,
+                            &quot;last_executed_date&quot;
+                    },
+<span class="fc" id="L83">                    data.plannedTransactions(),</span>
+<span class="fc" id="L84">                    (csv, row) -&gt; csv.printRecord(</span>
+<span class="fc" id="L85">                            sanitizeCsvField(row.categoryName()),</span>
+<span class="fc" id="L86">                            row.amount(),</span>
+<span class="fc" id="L87">                            sanitizeCsvField(row.type()),</span>
+<span class="fc" id="L88">                            sanitizeCsvField(row.description()),</span>
+<span class="fc" id="L89">                            sanitizeCsvField(row.frequencyType()),</span>
+<span class="fc" id="L90">                            row.frequencyInterval(),</span>
+<span class="fc" id="L91">                            row.startDate(),</span>
+<span class="fc" id="L92">                            row.endDate(),</span>
+<span class="fc" id="L93">                            row.lastExecutedDate()</span>
+                    )
+            );
+
+<span class="fc" id="L97">            writeCsvToZip(</span>
+                    zos,
+                    &quot;investments.csv&quot;,
+                    new String[]{
+                            &quot;asset_name&quot;,
+                            &quot;ticker&quot;,
+                            &quot;quantity&quot;,
+                            &quot;purchase_price&quot;,
+                            &quot;current_price&quot;,
+                            &quot;type&quot;,
+                            &quot;purchase_date&quot;
+                    },
+<span class="fc" id="L109">                    data.investments(),</span>
+<span class="fc" id="L110">                    (csv, row) -&gt; csv.printRecord(</span>
+<span class="fc" id="L111">                            sanitizeCsvField(row.assetName()),</span>
+<span class="fc" id="L112">                            sanitizeCsvField(row.ticker()),</span>
+<span class="fc" id="L113">                            row.quantity(),</span>
+<span class="fc" id="L114">                            row.purchasePrice(),</span>
+<span class="fc" id="L115">                            row.currentPrice(),</span>
+<span class="fc" id="L116">                            sanitizeCsvField(row.type()),</span>
+<span class="fc" id="L117">                            row.purchaseDate()</span>
+                    )
+            );
+
+<span class="fc" id="L121">            writeCsvToZip(</span>
+                    zos,
+                    &quot;savings_goals.csv&quot;,
+                    new String[]{
+                            &quot;name&quot;,
+                            &quot;target_amount&quot;,
+                            &quot;current_amount&quot;,
+                            &quot;progress&quot;,
+                            &quot;deadline&quot;,
+                            &quot;priority&quot;,
+                            &quot;link&quot;
+                    },
+<span class="fc" id="L133">                    data.savingsGoals(),</span>
+<span class="fc" id="L134">                    (csv, row) -&gt; csv.printRecord(</span>
+<span class="fc" id="L135">                            sanitizeCsvField(row.name()),</span>
+<span class="fc" id="L136">                            row.targetAmount(),</span>
+<span class="fc" id="L137">                            row.currentAmount(),</span>
+<span class="fc" id="L138">                            row.progress(),</span>
+<span class="fc" id="L139">                            row.deadline(),</span>
+<span class="fc" id="L140">                            sanitizeCsvField(row.priority()),</span>
+<span class="fc" id="L141">                            sanitizeCsvField(row.link())</span>
+                    )
+            );
+
+<span class="fc" id="L145">            zos.finish();</span>
+<span class="fc" id="L146">            return baos.toByteArray();</span>
+
+<span class="nc" id="L148">        } catch (IOException e) {</span>
+<span class="nc" id="L149">            throw new RuntimeException(</span>
+                    &quot;Error generando ZIP de exportación&quot;,
+                    e
+            );
+        }
+    }
+
+    @Override
+    public byte[] generateCsv(ExportData data, String entityType) {
+<span class="fc" id="L158">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+
+        try (
+<span class="fc" id="L161">                OutputStreamWriter writer =</span>
+                        new OutputStreamWriter(
+                                baos,
+                                StandardCharsets.UTF_8
+                        );
+<span class="fc" id="L166">                CSVPrinter csv =</span>
+                        new CSVPrinter(
+                                writer,
+                                CSVFormat.DEFAULT
+                        )
+        ) {
+<span class="pc bpc" id="L172" title="4 of 6 branches missed.">            switch (entityType.toLowerCase()) {</span>
+                case &quot;categories&quot; -&gt; {
+<span class="fc" id="L174">                    csv.printRecord(</span>
+                            &quot;name&quot;,
+                            &quot;budget_limit&quot;
+                    );
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">                    if (data.categories() != null) {</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">                        for (var row : data.categories()) {</span>
+<span class="fc" id="L180">                            csv.printRecord(</span>
+<span class="fc" id="L181">                                    sanitizeCsvField(row.name()),</span>
+<span class="fc" id="L182">                                    row.budgetLimit()</span>
+                            );
+<span class="fc" id="L184">                        }</span>
+                    }
+                }
+                case &quot;transactions&quot; -&gt; {
+<span class="fc" id="L188">                    csv.printRecord(</span>
+                            &quot;category_name&quot;,
+                            &quot;amount&quot;,
+                            &quot;date&quot;,
+                            &quot;type&quot;,
+                            &quot;description&quot;
+                    );
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">                    if (data.transactions() != null) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">                        for (var row : data.transactions()) {</span>
+<span class="fc" id="L197">                            csv.printRecord(</span>
+<span class="fc" id="L198">                                    sanitizeCsvField(row.categoryName()),</span>
+<span class="fc" id="L199">                                    row.amount(),</span>
+<span class="fc" id="L200">                                    row.date(),</span>
+<span class="fc" id="L201">                                    sanitizeCsvField(row.type()),</span>
+<span class="fc" id="L202">                                    sanitizeCsvField(row.description())</span>
+                            );
+<span class="fc" id="L204">                        }</span>
+                    }
+                }
+                case &quot;planned_transactions&quot; -&gt; {
+<span class="nc" id="L208">                    csv.printRecord(</span>
+                            &quot;category_name&quot;,
+                            &quot;amount&quot;,
+                            &quot;type&quot;,
+                            &quot;description&quot;,
+                            &quot;frequency_type&quot;,
+                            &quot;frequency_interval&quot;,
+                            &quot;start_date&quot;,
+                            &quot;end_date&quot;,
+                            &quot;last_executed_date&quot;
+                    );
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                    if (data.plannedTransactions() != null) {</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                        for (var row : data.plannedTransactions()) {</span>
+<span class="nc" id="L221">                            csv.printRecord(</span>
+<span class="nc" id="L222">                                    sanitizeCsvField(row.categoryName()),</span>
+<span class="nc" id="L223">                                    row.amount(),</span>
+<span class="nc" id="L224">                                    sanitizeCsvField(row.type()),</span>
+<span class="nc" id="L225">                                    sanitizeCsvField(row.description()),</span>
+<span class="nc" id="L226">                                    sanitizeCsvField(row.frequencyType()),</span>
+<span class="nc" id="L227">                                    row.frequencyInterval(),</span>
+<span class="nc" id="L228">                                    row.startDate(),</span>
+<span class="nc" id="L229">                                    row.endDate(),</span>
+<span class="nc" id="L230">                                    row.lastExecutedDate()</span>
+                            );
+<span class="nc" id="L232">                        }</span>
+                    }
+                }
+                case &quot;investments&quot; -&gt; {
+<span class="nc" id="L236">                    csv.printRecord(</span>
+                            &quot;asset_name&quot;,
+                            &quot;ticker&quot;,
+                            &quot;quantity&quot;,
+                            &quot;purchase_price&quot;,
+                            &quot;current_price&quot;,
+                            &quot;type&quot;,
+                            &quot;purchase_date&quot;
+                    );
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                    if (data.investments() != null) {</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                        for (var row : data.investments()) {</span>
+<span class="nc" id="L247">                            csv.printRecord(</span>
+<span class="nc" id="L248">                                    sanitizeCsvField(row.assetName()),</span>
+<span class="nc" id="L249">                                    sanitizeCsvField(row.ticker()),</span>
+<span class="nc" id="L250">                                    row.quantity(),</span>
+<span class="nc" id="L251">                                    row.purchasePrice(),</span>
+<span class="nc" id="L252">                                    row.currentPrice(),</span>
+<span class="nc" id="L253">                                    sanitizeCsvField(row.type()),</span>
+<span class="nc" id="L254">                                    row.purchaseDate()</span>
+                            );
+<span class="nc" id="L256">                        }</span>
+                    }
+                }
+                case &quot;savings_goals&quot;, &quot;savingsgoals&quot; -&gt; {
+<span class="nc" id="L260">                    csv.printRecord(</span>
+                            &quot;name&quot;,
+                            &quot;target_amount&quot;,
+                            &quot;current_amount&quot;,
+                            &quot;progress&quot;,
+                            &quot;deadline&quot;,
+                            &quot;priority&quot;,
+                            &quot;link&quot;
+                    );
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                    if (data.savingsGoals() != null) {</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                        for (var row : data.savingsGoals()) {</span>
+<span class="nc" id="L271">                            csv.printRecord(</span>
+<span class="nc" id="L272">                                    sanitizeCsvField(row.name()),</span>
+<span class="nc" id="L273">                                    row.targetAmount(),</span>
+<span class="nc" id="L274">                                    row.currentAmount(),</span>
+<span class="nc" id="L275">                                    row.progress(),</span>
+<span class="nc" id="L276">                                    row.deadline(),</span>
+<span class="nc" id="L277">                                    sanitizeCsvField(row.priority()),</span>
+<span class="nc" id="L278">                                    sanitizeCsvField(row.link())</span>
+                            );
+<span class="nc" id="L280">                        }</span>
+                    }
+                }
+<span class="nc" id="L283">                default -&gt; throw new IllegalArgumentException(</span>
+                        &quot;Tipo de entidad no válido: &quot; + entityType
+                );
+            }
+
+<span class="fc" id="L288">            csv.flush();</span>
+<span class="fc" id="L289">            return baos.toByteArray();</span>
+
+<span class="nc" id="L291">        } catch (IOException e) {</span>
+<span class="nc" id="L292">            throw new RuntimeException(</span>
+                    &quot;Error generando CSV para &quot; + entityType,
+                    e
+            );
+        }
+    }
+
+    @FunctionalInterface
+    private interface RowWriter&lt;T&gt; {
+        void write(CSVPrinter csv, T row) throws IOException;
+    }
+
+    private &lt;T&gt; void writeCsvToZip(
+            ZipOutputStream zos,
+            String fileName,
+            String[] headers,
+            java.util.List&lt;T&gt; rows,
+            RowWriter&lt;T&gt; writer
+    ) throws IOException {
+<span class="fc" id="L311">        zos.putNextEntry(new ZipEntry(fileName));</span>
+
+<span class="fc" id="L313">        ByteArrayOutputStream csvBaos =</span>
+                new ByteArrayOutputStream();
+
+        try (
+<span class="fc" id="L317">                OutputStreamWriter osw =</span>
+                        new OutputStreamWriter(
+                                csvBaos,
+                                StandardCharsets.UTF_8
+                        );
+<span class="fc" id="L322">                CSVPrinter csv =</span>
+                        new CSVPrinter(
+                                osw,
+<span class="fc" id="L325">                                CSVFormat.DEFAULT.withHeader(headers)</span>
+                        )
+        ) {
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">            if (rows != null) {</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">                for (T row : rows) {</span>
+<span class="fc" id="L330">                    writer.write(csv, row);</span>
+<span class="fc" id="L331">                }</span>
+            }
+<span class="fc" id="L333">            csv.flush();</span>
+        }
+
+<span class="fc" id="L336">        zos.write(csvBaos.toByteArray());</span>
+<span class="fc" id="L337">        zos.closeEntry();</span>
+<span class="fc" id="L338">    }</span>
+
+    /**
+     * Sanitiza un campo CSV para prevenir CSV injection.
+     *
+     * &lt;p&gt;Se aplica trim previo y se detectan caracteres peligrosos
+     * al inicio del valor: {@code = + - @ \t \r \n}. Si se detecta
+     * alguno, se prefija con comilla simple para neutralizar la
+     * fórmula en herramientas como Excel.&lt;/p&gt;
+     */
+    private String sanitizeCsvField(String value) {
+<span class="pc bpc" id="L349" title="2 of 4 branches missed.">        if (value == null || value.isBlank()) {</span>
+<span class="nc" id="L350">            return value;</span>
+        }
+
+<span class="fc" id="L353">        String trimmed = value.stripLeading();</span>
+
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">        if (trimmed.isEmpty()) {</span>
+<span class="nc" id="L356">            return value;</span>
+        }
+
+<span class="fc" id="L359">        char first = trimmed.charAt(0);</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">        if (FORMULA_PREFIXES.indexOf(first) &gt;= 0) {</span>
+<span class="fc" id="L361">            return &quot;'&quot; + value;</span>
+        }
+
+<span class="fc" id="L364">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

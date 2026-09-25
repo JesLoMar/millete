@@ -97,7 +97,7 @@ class TransactionControllerTest {
                 USER_ID,
                 UUID.randomUUID(),
                 new BigDecimal("50.00"),
-                LocalDateTime.now(),
+                Instant.now(),
                 TransactionType.EXPENSE,
                 "Groceries"
         );
@@ -194,17 +194,17 @@ class TransactionControllerTest {
                     USER_ID,
                     categoryId,
                     new BigDecimal("50.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Groceries"
             );
             LocalDateTime[] range = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+                    Instant.now().minusDays(30),
+                    Instant.now()
             };
             Category category = Category.reconstitute(
                     categoryId, USER_ID, "Food", "#FF0000", null,
-                    LocalDateTime.now(), LocalDateTime.now(), true
+                    Instant.now(), Instant.now(), true
             );
 
             when(transactionPeriodService.getDateRange("month"))
@@ -243,13 +243,13 @@ class TransactionControllerTest {
                     USER_ID,
                     categoryId,
                     new BigDecimal("50.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Unknown"
             );
             LocalDateTime[] range = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+                    Instant.now().minusDays(30),
+                    Instant.now()
             };
 
             when(transactionPeriodService.getDateRange("month"))
@@ -282,8 +282,8 @@ class TransactionControllerTest {
             mockAuthenticatedUser();
 
             LocalDateTime[] range = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+                    Instant.now().minusDays(30),
+                    Instant.now()
             };
 
             when(transactionPeriodService.getDateRange("month"))
@@ -313,8 +313,8 @@ class TransactionControllerTest {
             mockAuthenticatedUser();
 
             LocalDateTime[] range = {
-                    LocalDateTime.now().minusDays(30),
-                    LocalDateTime.now()
+                    Instant.now().minusDays(30),
+                    Instant.now()
             };
 
             when(transactionPeriodService.getDateRange("month"))
@@ -352,7 +352,7 @@ class TransactionControllerTest {
                     new RegisterTransactionRequestDTO(
                             null,
                             new BigDecimal("100.00"),
-                            LocalDateTime.now(),
+                            Instant.now(),
                             TransactionType.INCOME,
                             "Salary"
                     );
@@ -383,7 +383,7 @@ class TransactionControllerTest {
                     new RegisterTransactionRequestDTO(
                             null,
                             new BigDecimal("100.00"),
-                            LocalDateTime.now(),
+                            Instant.now(),
                             TransactionType.INCOME,
                             "Salary"
                     );
@@ -391,7 +391,7 @@ class TransactionControllerTest {
                     USER_ID,
                     null,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.INCOME,
                     "Salary"
             );
@@ -420,7 +420,7 @@ class TransactionControllerTest {
                     new RegisterTransactionRequestDTO(
                             categoryId,
                             new BigDecimal("100.00"),
-                            LocalDateTime.now(),
+                            Instant.now(),
                             TransactionType.EXPENSE,
                             "Expense"
                     );
@@ -428,7 +428,7 @@ class TransactionControllerTest {
                     USER_ID,
                     categoryId,
                     new BigDecimal("100.00"),
-                    LocalDateTime.now(),
+                    Instant.now(),
                     TransactionType.EXPENSE,
                     "Expense"
             );
@@ -511,7 +511,7 @@ class TransactionControllerTest {
             UpdateTransactionRequestDTO request =
                     new UpdateTransactionRequestDTO(
                             new BigDecimal("200.00"),
-                            LocalDateTime.now(),
+                            Instant.now(),
                             TransactionType.EXPENSE,
                             "Updated",
                             null

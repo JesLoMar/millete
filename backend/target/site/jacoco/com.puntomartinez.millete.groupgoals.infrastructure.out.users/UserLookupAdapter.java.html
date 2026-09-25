@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserLookupAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">millete</a> &gt; <a href="index.source.html" class="el_package">com.puntomartinez.millete.groupgoals.infrastructure.out.users</a> &gt; <span class="el_source">UserLookupAdapter.java</span></div><h1>UserLookupAdapter.java</h1><pre class="source lang-java linenums">package com.puntomartinez.millete.groupgoals.infrastructure.out.users;
+
+import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
+import com.puntomartinez.millete.users.domain.ports.in.UserQueryUseCase;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class UserLookupAdapter implements UserLookupPort {
+
+    private final UserQueryUseCase userQueryUseCase;
+
+<span class="nc" id="L18">    public UserLookupAdapter(UserQueryUseCase userQueryUseCase) {</span>
+<span class="nc" id="L19">        this.userQueryUseCase = userQueryUseCase;</span>
+<span class="nc" id="L20">    }</span>
+
+    @Override
+    public Optional&lt;UserLookupPort.UserInfo&gt; findById(UUID userId) {
+<span class="nc" id="L24">        return userQueryUseCase.findById(userId)</span>
+<span class="nc" id="L25">                .map(this::toDomain);</span>
+    }
+
+    @Override
+    public Optional&lt;UserLookupPort.UserInfo&gt; findByIdentifier(String identifier) {
+<span class="nc" id="L30">        return userQueryUseCase.findByIdentifier(identifier)</span>
+<span class="nc" id="L31">                .map(this::toDomain);</span>
+    }
+
+    @Override
+    public Map&lt;UUID, UserLookupPort.UserInfo&gt; findByIds(Collection&lt;UUID&gt; userIds) {
+<span class="nc" id="L36">        Map&lt;UUID, UserQueryUseCase.UserInfo&gt; external =</span>
+<span class="nc" id="L37">                userQueryUseCase.findByIds(userIds);</span>
+<span class="nc" id="L38">        Map&lt;UUID, UserLookupPort.UserInfo&gt; result =</span>
+<span class="nc" id="L39">                new HashMap&lt;&gt;(external.size());</span>
+<span class="nc" id="L40">        external.forEach((id, info) -&gt; result.put(id, toDomain(info)));</span>
+<span class="nc" id="L41">        return result;</span>
+    }
+
+    private UserLookupPort.UserInfo toDomain(UserQueryUseCase.UserInfo external) {
+<span class="nc" id="L45">        return new UserLookupPort.UserInfo(</span>
+<span class="nc" id="L46">                external.id(),</span>
+<span class="nc" id="L47">                external.username(),</span>
+<span class="nc" id="L48">                external.email()</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

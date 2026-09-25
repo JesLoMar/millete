@@ -3,7 +3,7 @@ package com.puntomartinez.millete.investments.infrastructure.in.controller.dto;
 import com.puntomartinez.millete.investments.domain.model.Investment.InvestmentType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record InvestmentResponseDTO(
@@ -21,6 +21,6 @@ public record InvestmentResponseDTO(
         BigDecimal roiPercentage,
 
         InvestmentType type,
-        LocalDateTime purchaseDate,
+        LocalDate purchaseDate,
         boolean active
 ) {}
