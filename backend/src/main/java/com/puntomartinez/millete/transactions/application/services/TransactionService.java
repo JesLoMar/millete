@@ -50,6 +50,12 @@ public class TransactionService implements
     public RegisterTransactionResult register(
             RegisterTransactionCommand command
     ) {
+        if (command.type() == TransactionType.TRANSFER_IN
+                || command.type() == TransactionType.TRANSFER_OUT) {
+            throw new InvalidInputException(
+                    "Las transferencias vinculadas a inversiones se crean desde el módulo de inversiones."
+            );
+        }
         validateCategoryOwnership(command.categoryId(), command.userId());
 
         Transaction transaction = Transaction.create(
@@ -157,6 +163,17 @@ public class TransactionService implements
             UUID id,
             UpdateTransactionUseCase.UpdateTransactionCommand command
     ) {
+        if (transactionRepository.isInvestmentManaged(id, command.userId())) {
+            throw new InvalidInputException(
+                    "Esta transferencia se gestiona desde el módulo de inversiones."
+            );
+        }
+        if (command.type() == TransactionType.TRANSFER_IN
+                || command.type() == TransactionType.TRANSFER_OUT) {
+            throw new InvalidInputException(
+                    "Las transferencias vinculadas a inversiones se gestionan desde el módulo de inversiones."
+            );
+        }
         Transaction transaction = getByIdAndUserId(
                 id,
                 command.userId()
@@ -185,6 +202,11 @@ public class TransactionService implements
             UUID id,
             UUID userId
     ) {
+        if (transactionRepository.isInvestmentManaged(id, userId)) {
+            throw new InvalidInputException(
+                    "Esta transferencia se gestiona desde el módulo de inversiones."
+            );
+        }
         Transaction transaction = getByIdAndUserId(id, userId);
 
         transaction.deactivate(timeProvider);

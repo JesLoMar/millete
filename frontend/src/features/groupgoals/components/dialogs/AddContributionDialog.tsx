@@ -12,6 +12,7 @@ import {
 } from '@/shared/components/core/dialog'
 import { Input } from '@/shared/components/core/input'
 import { Label } from '@/shared/components/core/label'
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat'
 
 interface AddContributionDialogProps {
   open: boolean
@@ -67,7 +68,7 @@ export function AddContributionDialog({
         <div className="py-4 space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-semibold">
-              {t('groupGoals:amount')} (€)
+              {t('groupGoals:amount')} ({getLocalCurrencyCode()})
             </Label>
 
             <Input

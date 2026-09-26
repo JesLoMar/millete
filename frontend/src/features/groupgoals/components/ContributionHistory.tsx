@@ -6,6 +6,7 @@ import { useGroupGoalContributions } from '../hooks/useGroupGoalQueries'
 import { Button } from '@/shared/components/core/button'
 import { Pagination } from '@/shared/components/Pagination'
 import { formatDate } from '@/shared/utils/date'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface ContributionHistoryProps {
   goalId: string
@@ -92,7 +93,7 @@ export function ContributionHistory({
                   </span>
 
                   <span className="font-bold text-sm sm:text-base text-primary text-right whitespace-nowrap tabular-nums">
-                    +{contribution.amount.toLocaleString()} €
+                    +{formatCurrency(contribution.amount)}
                   </span>
 
                   <span className="text-xs sm:text-sm text-muted-foreground text-right whitespace-nowrap">

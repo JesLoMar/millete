@@ -9,6 +9,7 @@ import { ChangePasswordSection } from '../components/ChangePasswordSection';
 import { DeleteAccountSection } from '../components/DeleteAccountSection';
 import { NotificationsTable } from '../components/NotificationsTable';
 import { PersonalInfoSection } from '../components/PersonalInfoSection';
+import { LocalCurrencySection } from '../components/LocalCurrencySection';
 import { SessionsSection } from '../components/SessionsSection';
 import { TimezoneSection } from '../components/TimezoneSection';
 
@@ -43,6 +44,7 @@ export const ProfilePage = () => {
             </h1>
 
             <PersonalInfoSection />
+            <LocalCurrencySection />
             <TimezoneSection />
             <ChangePasswordSection />
 

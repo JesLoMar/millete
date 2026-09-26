@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/axiosClient';
+import { sessionCache } from '@/shared/utils/sessionCache';
 
 import type {
   ChangePasswordRequest,
@@ -49,6 +50,7 @@ export const profileService = {
         `${BASE}/preferences`,
       );
 
+    sessionCache.setItem('userPreferences', JSON.stringify(data));
     return data;
   },
 
@@ -62,6 +64,7 @@ export const profileService = {
         skipGlobalErrorNotify: true,
       },
     );
+    sessionCache.setItem('userPreferences', JSON.stringify(prefs));
   },
 
   getSessions: async (): Promise<

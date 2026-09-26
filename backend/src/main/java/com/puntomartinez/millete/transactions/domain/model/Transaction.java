@@ -21,13 +21,18 @@ public class Transaction {
     private LocalDate date;
     private TransactionType type;
     private String description;
+    private String currency;
+    private UUID investmentActivityId;
+    private String investmentTimeZone;
     private final Instant createdAt;
     private Instant modifiedAt;
     private boolean active;
 
     public enum TransactionType {
         INCOME,
-        EXPENSE
+        EXPENSE,
+        TRANSFER_IN,
+        TRANSFER_OUT
     }
 
     private Transaction(
@@ -40,7 +45,10 @@ public class Transaction {
             String description,
             Instant createdAt,
             Instant modifiedAt,
-            boolean active
+            boolean active,
+            String currency,
+            UUID investmentActivityId,
+            String investmentTimeZone
     ) {
         validateId(id);
         validateUserId(userId);
@@ -58,6 +66,9 @@ public class Transaction {
         this.date = date;
         this.type = type;
         this.description = description;
+        this.currency = currency;
+        this.investmentActivityId = investmentActivityId;
+        this.investmentTimeZone = investmentTimeZone;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.active = active;
@@ -83,7 +94,10 @@ public class Transaction {
                 description,
                 now,
                 now,
-                true
+                true,
+                null,
+                null,
+                null
         );
     }
 
@@ -99,6 +113,25 @@ public class Transaction {
             Instant modifiedAt,
             boolean active
     ) {
+        return reconstitute(id, userId, categoryId, amount, date, type,
+                description, createdAt, modifiedAt, active, null, null, null);
+    }
+
+    public static Transaction reconstitute(
+            UUID id,
+            UUID userId,
+            UUID categoryId,
+            BigDecimal amount,
+            LocalDate date,
+            TransactionType type,
+            String description,
+            Instant createdAt,
+            Instant modifiedAt,
+            boolean active,
+            String currency,
+            UUID investmentActivityId,
+            String investmentTimeZone
+    ) {
         return new Transaction(
                 id,
                 userId,
@@ -109,7 +142,10 @@ public class Transaction {
                 description,
                 createdAt,
                 modifiedAt,
-                active
+                active,
+                currency,
+                investmentActivityId,
+                investmentTimeZone
         );
     }
 

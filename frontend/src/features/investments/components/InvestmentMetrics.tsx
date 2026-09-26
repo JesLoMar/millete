@@ -9,6 +9,7 @@ import type { InvestmentMetricsData } from '../types'
 
 import { FormattedMetricCard } from '@/shared/components/FormattedMetricCard'
 import type { PeriodFilter } from '@/shared/components/PeriodSelector'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface InvestmentMetricsProps {
   data: InvestmentMetricsData | undefined
@@ -72,7 +73,7 @@ export function InvestmentMetrics({
 
           <div className="flex flex-col gap-1">
             <h2 className="text-3xl font-semibold tracking-tight tabular-nums text-muted-foreground/30">
-              0,00 €
+              {formatCurrency(0)}
             </h2>
 
             <div className="flex items-center gap-1.5 mt-2">

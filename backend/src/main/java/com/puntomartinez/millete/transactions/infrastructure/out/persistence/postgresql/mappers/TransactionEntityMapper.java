@@ -22,6 +22,9 @@ public interface TransactionEntityMapper {
         entity.setDate(domain.getDate());
         entity.setType(domain.getType().name());
         entity.setDescription(domain.getDescription());
+        entity.setCurrency(domain.getCurrency());
+        entity.setInvestmentActivityId(domain.getInvestmentActivityId());
+        entity.setInvestmentTimeZone(domain.getInvestmentTimeZone());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setModifiedAt(domain.getModifiedAt());
         entity.setActive(domain.isActive());
@@ -44,7 +47,10 @@ public interface TransactionEntityMapper {
                 entity.getDescription(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt(),
-                entity.isActive()
+                entity.isActive(),
+                entity.getCurrency(),
+                entity.getInvestmentActivityId(),
+                entity.getInvestmentTimeZone()
         );
     }
 }

@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.2.0] - 2026-xx-xx
 
-- Refactorización y revisión del código hasta la fecha para alinearlo con una arquitectura hexagonal y ddd correcta antes de empezar a añadir cambios.
+- Implementar eleccion de moneda local.
+- Implementación de un nuevo sistema horario con diferenciación entre zona del servidor y zona de cada usuario.
+- Refactorización y revisión del código hasta la fecha para alinearlo con una arquitectura hexagonal y ddd correcta antes de empezar a añadir cambios en backend. Revisión limpieza y corrección de bugs hasta el momento en front.
 
 ---
 

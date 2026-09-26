@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/shared/components/core/card'
 import { ProgressBar } from '@/shared/components/core/progress-bar'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface GroupGoalDetailProps {
   goal: GroupGoalDetail
@@ -136,11 +137,11 @@ export function GroupGoalDetail({
                 </p>
 
                 <p className="text-2xl sm:text-3xl font-serif truncate">
-                  {totalContributed.toLocaleString()} €
+                  {formatCurrency(totalContributed)}
 
                   <span className="text-sm text-muted-foreground">
                     {' '}
-                    / {(goal.monthlyTarget ?? 0).toLocaleString()} €
+                    / {formatCurrency(goal.monthlyTarget ?? 0)}
                   </span>
                 </p>
               </div>
@@ -153,6 +154,7 @@ export function GroupGoalDetail({
             <div className="space-y-1.5">
               <ProgressBar
                 segments={contributions.map((member, index) => ({
+                  id: member.id,
                   value:
                     goal.monthlyTarget > 0
                       ? Math.min(
@@ -164,7 +166,7 @@ export function GroupGoalDetail({
                       : 0,
                   className:
                     MEMBER_COLORS[index % MEMBER_COLORS.length],
-                  label: `${member.name}: ${member.contributed.toLocaleString()} €`,
+                  label: `${member.name}: ${formatCurrency(member.contributed)}`,
                 }))}
                 size="lg"
                 ariaLabel={t('groupGoals:progressBar.label')}
@@ -173,11 +175,11 @@ export function GroupGoalDetail({
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {totalContributed.toLocaleString()} € /{' '}
+                  {formatCurrency(totalContributed)} /{' '}
                   <span className="hidden xs:inline">
                     {t('groupGoals:progressBar.of')}
                   </span>{' '}
-                  {goal.monthlyTarget.toLocaleString()} €
+                  {formatCurrency(goal.monthlyTarget)}
                 </span>
 
                 <span className="font-medium tabular-nums">
@@ -206,8 +208,8 @@ export function GroupGoalDetail({
                     </div>
 
                     <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
-                      {member.contributed.toLocaleString()} € /{' '}
-                      {member.expectedContribution.toLocaleString()} €
+                      {formatCurrency(member.contributed)} /{' '}
+                      {formatCurrency(member.expectedContribution)}
 
                       <span className="text-muted-foreground ml-1">
                         ({member.percentage.toFixed(0)}%)
@@ -237,12 +239,12 @@ export function GroupGoalDetail({
 
                     <div className="text-xs font-medium whitespace-nowrap shrink-0 tabular-nums text-right">
                       <span>
-                        {member.contributed.toLocaleString()} €
+                        {formatCurrency(member.contributed)}
                       </span>
 
                       <span className="text-muted-foreground">
                         {' '}
-                        / {member.expectedContribution.toLocaleString()} €
+                        / {formatCurrency(member.expectedContribution)}
                       </span>
 
                       <span className="text-muted-foreground ml-1">

@@ -16,6 +16,7 @@ import {
 } from '@/shared/components/core/dialog';
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
 
 import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import type { Category } from '../types';
@@ -232,7 +233,7 @@ export function EditCategoryDialog({
                 />
 
                 <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 select-none text-sm font-semibold text-muted-foreground">
-                  EUR
+                  {getLocalCurrencyCode()}
                 </span>
               </div>
             </div>

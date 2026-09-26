@@ -6,6 +6,7 @@ import type { EvolutionResponse } from '../types'
 import { ChartTooltip } from '@/shared/components/core/chart-tooltip'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/core/card'
 import { SimpleBarChart } from '@/shared/components/core/simple-bar-chart'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface EvolutionChartProps {
   data: EvolutionResponse | undefined
@@ -16,7 +17,7 @@ export function EvolutionChart({
   data: response,
   isLoading,
 }: EvolutionChartProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   const [tooltip, setTooltip] = useState<{
     label: string
@@ -66,14 +67,14 @@ export function EvolutionChart({
             showGrid={false}
             showLabels
             formatValue={(v) =>
-              `${v.toLocaleString(i18n.language)} €`
+              formatCurrency(v)
             }
             onBarHover={(item) =>
               setTooltip(
                 item
                   ? {
                       label: item.label,
-                      value: `${item.value.toLocaleString(i18n.language)} €`,
+                      value: formatCurrency(item.value),
                       color:
                         item.color ??
                         'hsl(var(--chart-1))',

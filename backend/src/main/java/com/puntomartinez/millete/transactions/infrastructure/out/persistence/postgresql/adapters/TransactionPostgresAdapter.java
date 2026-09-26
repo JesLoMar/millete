@@ -107,6 +107,11 @@ public class TransactionPostgresAdapter implements TransactionRepository {
     }
 
     @Override
+    public boolean isInvestmentManaged(UUID id, UUID userId) {
+        return repository.existsByIdAndUserIdAndInvestmentActivityIdIsNotNull(id, userId);
+    }
+
+    @Override
     public List<Transaction> findAllByUserId(UUID userId) {
         return repository.findAllByUserIdOrderByDateDesc(userId).stream()
                 .map(mapper::toDomain)
@@ -232,10 +237,15 @@ public class TransactionPostgresAdapter implements TransactionRepository {
                 ? ((Number) result[2]).longValue()
                 : 0L;
 
+        BigDecimal transferIn = toBigDecimal(result[3]);
+        BigDecimal transferOut = toBigDecimal(result[4]);
+
         return new TransactionAggregates(
                 totalIncome,
                 totalExpense,
-                count
+                count,
+                transferIn,
+                transferOut
         );
     }
 

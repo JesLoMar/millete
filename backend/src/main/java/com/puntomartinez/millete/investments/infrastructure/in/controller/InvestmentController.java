@@ -1,325 +1,103 @@
 package com.puntomartinez.millete.investments.infrastructure.in.controller;
 
-import com.puntomartinez.millete.investments.domain.model.Investment;
-import com.puntomartinez.millete.investments.domain.ports.in.DeleteInvestmentUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentDistributionUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentEvolutionUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentMetricsUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.ListInvestmentsUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.RegisterInvestmentUseCase.RegisterInvestmentCommand;
-import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentPriceUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentUseCase;
-import com.puntomartinez.millete.investments.domain.ports.in.UpdateInvestmentUseCase.UpdateInvestmentCommand;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.InvestmentDistributionResponseDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.InvestmentEvolutionResponseDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.InvestmentMetricsResponseDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.InvestmentResponseDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.RegisterInvestmentRequestDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.UpdateInvestmentPriceRequestDTO;
-import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.UpdateInvestmentRequestDTO;
+import com.puntomartinez.millete.investments.domain.model.*;
+import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases;
+import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.*;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
-import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/investments")
 public class InvestmentController {
+    private final InvestmentUseCases useCases;
+    public InvestmentController(InvestmentUseCases useCases) { this.useCases = useCases; }
 
-    private final RegisterInvestmentUseCase registerUseCase;
-    private final ListInvestmentsUseCase listUseCase;
-    private final GetInvestmentUseCase getUseCase;
-    private final UpdateInvestmentPriceUseCase updatePriceUseCase;
-    private final DeleteInvestmentUseCase deleteUseCase;
-    private final UpdateInvestmentUseCase updateUseCase;
-    private final GetInvestmentMetricsUseCase getInvestmentMetricsUseCase;
-    private final GetInvestmentEvolutionUseCase getInvestmentEvolutionUseCase;
-    private final GetInvestmentDistributionUseCase getInvestmentDistributionUseCase;
-
-    public InvestmentController(
-            RegisterInvestmentUseCase registerUseCase,
-            ListInvestmentsUseCase listUseCase,
-            GetInvestmentUseCase getUseCase,
-            UpdateInvestmentPriceUseCase updatePriceUseCase,
-            DeleteInvestmentUseCase deleteUseCase,
-            UpdateInvestmentUseCase updateUseCase,
-            GetInvestmentMetricsUseCase getInvestmentMetricsUseCase,
-            GetInvestmentEvolutionUseCase getInvestmentEvolutionUseCase,
-            GetInvestmentDistributionUseCase getInvestmentDistributionUseCase) {
-
-        this.registerUseCase = registerUseCase;
-        this.listUseCase = listUseCase;
-        this.getUseCase = getUseCase;
-        this.updatePriceUseCase = updatePriceUseCase;
-        this.deleteUseCase = deleteUseCase;
-        this.updateUseCase = updateUseCase;
-        this.getInvestmentMetricsUseCase = getInvestmentMetricsUseCase;
-        this.getInvestmentEvolutionUseCase = getInvestmentEvolutionUseCase;
-        this.getInvestmentDistributionUseCase = getInvestmentDistributionUseCase;
+    @PostMapping("/assets")
+    public ResponseEntity<AssetResponseDTO> createAsset(@Valid @RequestBody CreateAssetRequestDTO r, Authentication a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(asset(useCases.createAsset(user(a), assetCommand(r))));
     }
-
-    @PostMapping
-    public ResponseEntity<InvestmentResponseDTO> registerInvestment(
-            @Valid @RequestBody RegisterInvestmentRequestDTO request,
-            Authentication authentication) {
-
-        UUID userId = getAuthenticatedUserId(authentication);
-
-        RegisterInvestmentCommand command =
-                new RegisterInvestmentCommand(
-                        userId,
-                        request.assetName(),
-                        request.ticker(),
-                        request.quantity(),
-                        request.purchasePrice(),
-                        request.type(),
-                        request.purchaseDate()
-                );
-
-        Investment savedInvestment =
-                registerUseCase.register(command);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(mapToDTO(savedInvestment));
+    @PutMapping("/assets/{id}")
+    public AssetResponseDTO updateAsset(@PathVariable UUID id, @Valid @RequestBody CreateAssetRequestDTO r, Authentication a) {
+        return asset(useCases.updateAsset(user(a), id, assetCommand(r)));
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<InvestmentResponseDTO> updateInvestment(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateInvestmentRequestDTO request,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        UpdateInvestmentCommand command =
-                new UpdateInvestmentCommand(
-                        id,
-                        userId,
-                        request.assetName(),
-                        request.ticker(),
-                        request.quantity(),
-                        request.purchasePrice(),
-                        request.type(),
-                        request.purchaseDate()
-                );
-
-        Investment updatedInvestment =
-                updateUseCase.update(command);
-
-        return ResponseEntity.ok(
-                mapToDTO(updatedInvestment)
-        );
+    @DeleteMapping("/assets/{id}")
+    public ResponseEntity<Void> hideAsset(@PathVariable UUID id, Authentication a) { useCases.hideAsset(user(a),id); return ResponseEntity.noContent().build(); }
+    @GetMapping("/assets")
+    public List<AssetResponseDTO> assets(@RequestParam(defaultValue="false") boolean includeInactive, Authentication a) {
+        return useCases.listAssets(user(a),includeInactive).stream().map(this::asset).toList();
     }
+    @GetMapping("/sectors")
+    public List<AssetSector> sectors() { return useCases.listSectors(); }
 
-    @GetMapping
-    public ResponseEntity<PaginatedResponseDTO<InvestmentResponseDTO>> getAllInvestments(
-            Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String type) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        Investment.InvestmentType investmentType =
-                parseType(type);
-
-        long totalElements =
-                listUseCase.countByUserIdAndFilters(
-                        userId,
-                        search,
-                        investmentType
-                );
-
-        int totalPages =
-                (int) Math.ceil(
-                        (double) totalElements / size
-                );
-
-        int safePage =
-                Math.min(
-                        page,
-                        Math.max(0, totalPages - 1)
-                );
-
-        List<Investment> investments =
-                listUseCase.findAllByUserId(
-                        userId,
-                        safePage,
-                        size,
-                        search,
-                        investmentType
-                );
-
-        List<InvestmentResponseDTO> content =
-                investments.stream()
-                        .map(this::mapToDTO)
-                        .toList();
-
-        PaginatedResponseDTO<InvestmentResponseDTO> response =
-                new PaginatedResponseDTO<>(
-                        content,
-                        safePage,
-                        totalPages,
-                        totalElements,
-                        size,
-                        safePage == 0,
-                        safePage >= totalPages - 1
-                                || totalPages == 0
-                );
-
-        return ResponseEntity.ok(response);
+    @PostMapping("/activities")
+    public ResponseEntity<ActivityResponseDTO> recordActivity(@Valid @RequestBody RecordActivityRequestDTO r, Authentication a) {
+        Activity activity = useCases.recordActivity(user(a), new InvestmentUseCases.RecordActivityCommand(r.type(),r.occurredAt(),r.assetId(),r.quantity(),r.unitPrice(),r.amount(),r.currency(),r.secondaryAmount(),r.secondaryCurrency(),r.ratio(),r.exchangeRate(),r.comment()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(activity(activity));
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<InvestmentResponseDTO> getInvestment(
-            @PathVariable UUID id,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        Investment investment =
-                getUseCase.getById(id, userId);
-
-        return ResponseEntity.ok(
-                mapToDTO(investment)
-        );
+    @GetMapping("/activities")
+    public List<ActivityResponseDTO> activities(@RequestParam(required=false) UUID assetId, Authentication a) {
+        return useCases.listActivities(user(a),assetId).stream().map(this::activity).toList();
     }
-
-    @GetMapping("/metrics")
-    public ResponseEntity<InvestmentMetricsResponseDTO> getInvestmentMetrics(
-            @RequestParam(defaultValue = "month") String period,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        return ResponseEntity.ok(
-                getInvestmentMetricsUseCase.getInvestmentMetrics(
-                        userId,
-                        period
-                )
-        );
+    @PatchMapping("/activities/{id}")
+    public ActivityResponseDTO editActivity(@PathVariable UUID id, @RequestBody EditActivityRequest r, Authentication a) {
+        return activity(useCases.editActivity(user(a),id,new InvestmentUseCases.EditActivityCommand(r.occurredAt(),r.quantity(),r.unitPrice(),r.amount(),r.ratio(),r.comment(),r.reason())));
     }
-
-    @GetMapping("/evolution")
-    public ResponseEntity<InvestmentEvolutionResponseDTO> getInvestmentEvolution(
-            @RequestParam(defaultValue = "month") String period,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        return ResponseEntity.ok(
-                getInvestmentEvolutionUseCase.getInvestmentEvolution(
-                        userId,
-                        period
-                )
-        );
+    @PatchMapping("/activities/{id}/comment")
+    public ActivityResponseDTO editTransferComment(@PathVariable UUID id, @RequestBody CommentRequest r, Authentication a) {
+        return activity(useCases.editTransferComment(user(a),id,r.comment()));
     }
+    @GetMapping("/activities/{id}/audit")
+    public List<ActivityAudit> activityAudit(@PathVariable UUID id, Authentication a) { return useCases.listActivityAudit(user(a),id); }
 
-    @GetMapping("/distribution")
-    public ResponseEntity<InvestmentDistributionResponseDTO> getInvestmentDistribution(
-            @RequestParam(defaultValue = "month") String period,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        return ResponseEntity.ok(
-                getInvestmentDistributionUseCase.getInvestmentDistribution(
-                        userId,
-                        period
-                )
-        );
+    @PostMapping("/holdings")
+    public ResponseEntity<Holding> createHolding(@Valid @RequestBody CreateHoldingRequestDTO r, Authentication a) {
+        Holding holding = useCases.createHolding(user(a),new InvestmentUseCases.CreateHoldingCommand(r.assetId(),r.snapshotAt(),r.quantity(),r.acquisitionCost(),r.currency()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(holding);
     }
-
-    @PatchMapping("/{id}/price")
-    public ResponseEntity<InvestmentResponseDTO> updateInvestmentPrice(
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateInvestmentPriceRequestDTO request,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        Investment updatedInvestment =
-                updatePriceUseCase.updatePrice(
-                        id,
-                        userId,
-                        request.newPrice()
-                );
-
-        return ResponseEntity.ok(
-                mapToDTO(updatedInvestment)
-        );
+    @PostMapping("/holdings/{id}/history")
+    public List<ActivityResponseDTO> replaceHoldingWithHistory(@PathVariable UUID id,
+            @Valid @RequestBody ReplaceHoldingHistoryRequestDTO r, Authentication a) {
+        List<InvestmentUseCases.RecordActivityCommand> commands = r.activities().stream()
+                .map(this::activityCommand).toList();
+        return useCases.replaceHoldingWithHistory(user(a), id, commands).stream()
+                .map(this::activity).toList();
     }
+    @GetMapping("/holdings")
+    public List<Holding> holdings(@RequestParam(required=false) UUID assetId, Authentication a) { return useCases.listHoldings(user(a),assetId); }
+    @GetMapping("/cash")
+    public Map<String,BigDecimal> cash(Authentication a) { return useCases.cashBalances(user(a)); }
+    @GetMapping("/portfolio")
+    public InvestmentUseCases.PortfolioView portfolio(@RequestParam(required=false) Instant at, Authentication a) { return useCases.portfolio(user(a),at); }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInvestment(
-            @PathVariable UUID id,
-            Authentication authentication) {
-
-        UUID userId =
-                getAuthenticatedUserId(authentication);
-
-        deleteUseCase.delete(id, userId);
-
-        return ResponseEntity.noContent().build();
+    @PostMapping("/prices")
+    public ResponseEntity<AssetPrice> addPrice(@Valid @RequestBody AddAssetPriceRequestDTO r, Authentication a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(useCases.addPrice(user(a),new InvestmentUseCases.AddPriceCommand(r.assetId(),r.timestamp(),r.open(),r.high(),r.low(),r.close(),r.adjustedClose(),r.volume(),r.currency(),r.source())));
     }
-
-    private UUID getAuthenticatedUserId(
-            Authentication authentication) {
-
-        return ((JwtUser) authentication.getPrincipal())
-                .getId();
+    @GetMapping("/assets/{assetId}/prices")
+    public List<AssetPrice> prices(@PathVariable UUID assetId, @RequestParam Instant from, @RequestParam Instant to, Authentication a) { return useCases.listPrices(user(a),assetId,from,to); }
+    @PostMapping("/fx-rates")
+    public ResponseEntity<FxRate> addFxRate(@Valid @RequestBody AddFxRateRequestDTO r) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(useCases.addFxRate(new InvestmentUseCases.AddFxRateCommand(r.baseCurrency(),r.quoteCurrency(),r.timestamp(),r.rate(),r.source())));
     }
+    @PostMapping("/market-data/refresh")
+    public InvestmentUseCases.RefreshResult refresh(@RequestParam Instant from, @RequestParam Instant to, Authentication a) { return useCases.refreshFromProvider(user(a),from,to); }
+    @GetMapping("/health")
+    public InvestmentUseCases.HealthReport health(Authentication a) { return useCases.health(user(a)); }
 
-    private Investment.InvestmentType parseType(
-            String type) {
-
-        if (type == null || type.isBlank()) {
-            return null;
-        }
-
-        try {
-            return Investment.InvestmentType.valueOf(
-                    type.toUpperCase()
-            );
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
-    private InvestmentResponseDTO mapToDTO(
-            Investment investment) {
-
-        return new InvestmentResponseDTO(
-                investment.getId(),
-                investment.getAssetName(),
-                investment.getTicker(),
-                investment.getQuantity(),
-                investment.getPurchasePrice(),
-                investment.getCurrentPrice(),
-                investment.getInvestedCapital(),
-                investment.getCurrentValue(),
-                investment.getProfitOrLoss(),
-                investment.getReturnOnInvestmentPercentage(),
-                investment.getType(),
-                investment.getPurchaseDate(),
-                investment.isActive()
-        );
-    }
+    public record EditActivityRequest(Instant occurredAt, BigDecimal quantity, BigDecimal unitPrice, BigDecimal amount, BigDecimal ratio, String comment, String reason) { }
+    public record CommentRequest(String comment) { }
+    private UUID user(Authentication a) { return ((JwtUser)a.getPrincipal()).getId(); }
+    private InvestmentUseCases.CreateAssetCommand assetCommand(CreateAssetRequestDTO r) { return new InvestmentUseCases.CreateAssetCommand(r.name(),r.symbol(),r.type(),r.sectorId(),r.currency()); }
+    private InvestmentUseCases.RecordActivityCommand activityCommand(RecordActivityRequestDTO r) { return new InvestmentUseCases.RecordActivityCommand(r.type(),r.occurredAt(),r.assetId(),r.quantity(),r.unitPrice(),r.amount(),r.currency(),r.secondaryAmount(),r.secondaryCurrency(),r.ratio(),r.exchangeRate(),r.comment()); }
+    private AssetResponseDTO asset(Asset a) { return new AssetResponseDTO(a.getId(),a.getName(),a.getSymbol(),a.getType(),a.getSectorId(),a.getCurrency(),a.isActive(),a.getCreatedAt(),a.getModifiedAt()); }
+    private ActivityResponseDTO activity(Activity a) { return new ActivityResponseDTO(a.getId(),a.getType(),a.getAssetId(),a.getOccurredAt(),a.getOrderingKey(),a.getQuantity(),a.getUnitPrice(),a.getAmount(),a.getCurrency(),a.getSecondaryAmount(),a.getSecondaryCurrency(),a.getRatio(),a.getLocalCurrency(),a.getFxRateToLocal(),a.getFxRateSource(),a.getFxRateTimestamp(),a.getAmountInLocal(),a.getComment(),a.getLinkedTransactionId()); }
 }

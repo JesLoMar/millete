@@ -18,6 +18,8 @@ public interface TransactionRepository {
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
 
+    boolean isInvestmentManaged(UUID id, UUID userId);
+
     List<Transaction> findAllByUserId(UUID userId);
 
     List<Transaction> findByUserIdAndDateBetween(
@@ -64,7 +66,9 @@ public interface TransactionRepository {
     record TransactionAggregates(
             BigDecimal totalIncome,
             BigDecimal totalExpense,
-            long count
+            long count,
+            BigDecimal transferIn,
+            BigDecimal transferOut
     ) {
     }
 }

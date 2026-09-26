@@ -27,6 +27,8 @@ public interface SpringDataTransactionRepository
             UUID userId
     );
 
+    boolean existsByIdAndUserIdAndInvestmentActivityIdIsNotNull(UUID id, UUID userId);
+
     @Query("""
             SELECT t
             FROM TransactionEntity t
@@ -81,7 +83,9 @@ public interface SpringDataTransactionRepository
                 ),
                 0
             ),
-            COUNT(t)
+            COUNT(CASE WHEN t.type IN ('INCOME', 'EXPENSE') THEN 1 ELSE null END),
+            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER_IN' THEN t.amount ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER_OUT' THEN t.amount ELSE 0 END), 0)
         FROM TransactionEntity t
         WHERE t.userId = :userId
           AND t.date >= :start

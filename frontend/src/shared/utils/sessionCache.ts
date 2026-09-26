@@ -88,5 +88,6 @@ export const sessionCache = {
   clear(): void {
     removeStorageItem('user');
     removeStorageItem('sessionId');
+    removeStorageItem('userPreferences');
   },
 };

@@ -1,11 +1,4 @@
-export type CurrencyCode =
-  | 'EUR'
-  | 'USD'
-  | 'GBP'
-  | 'JPY'
-  | 'CHF'
-  | 'CAD'
-  | 'AUD';
+export type CurrencyCode = string;
 
 export interface CurrencyOption {
   readonly code: CurrencyCode;
@@ -35,6 +28,7 @@ export interface ChangePasswordRequest {
 
 export interface UserPreferences {
   readonly timezone?: string;
+  readonly localCurrency?: CurrencyCode;
   readonly theme?: 'light' | 'dark' | 'system';
   readonly language?: string;
   readonly dateFormat?: string;

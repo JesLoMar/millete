@@ -7,336 +7,921 @@
 - [ ] Importar movimientos con csv bancarios, investigar bancos más usados en España.
 - [ ] Llamar a la Yuli para que me ayude a crear paletas de colores, iconos y diseño en general.
 - [ ] Reducir el uso de dependencias en front.
-- [ ] Más tipos de monedas.
 - [ ] Añadir guardián de presupuesto.
 - [ ] Añadir pequeña guía para nuevos usuarios.
-- [ ] Revisar el flujo de confirmación de contraseña en información personal: aclarar por qué se pide en la sección superior y suavizar el cierre de sesión (actualmente si se introduce mal, desloguea agresivamente al usuario por seguridad).
 
 ---
 
-Quiero que revises la documentación del refactor arquitectónico del backend de mi aplicación Millete.
+# Módulo de inversiones — Millete (v1)
 
-Contexto:
+Para una primera versión de las funcionalidades del nuevo módulo de inversiones se definirá el funcionamiento del módulo, los objetos que se necesitarán y las relaciones entre ellos junto a su finalidad.
 
-Millete es una aplicación de finanzas personales desarrollada con Java + Spring. El backend se ha refactorizado buscando principalmente:
+Se tomará de Wealthfolio el concepto de `Activity` y `Asset` como dos de los pilares principales del apartado. `Asset` representará el activo en el que el usuario tiene una posición, ya sea una casa, una acción, una criptomoneda, un fondo indexado, etc. `Activity` representará un hecho ocurrido en un momento determinado sobre el usuario y, cuando corresponda, sobre un `Asset`.
 
-* Arquitectura Hexagonal / Ports & Adapters.
-* DDD.
-* Separación clara entre dominio, aplicación e infraestructura.
-* Dependencias orientadas hacia dentro.
-* Protección de las reglas de negocio dentro del dominio.
-* Evitar que application/domain dependan directamente de JPA, Spring o infraestructura.
-* Reducir acoplamiento innecesario entre módulos/bounded contexts.
+Por lo tanto, en base de datos un usuario podrá tener múltiples `Assets` y múltiples `Activities`, y cada `Asset` podrá tener múltiples `Activities` asociadas. Algunas actividades como `DIVIDEND`, `INTEREST`, `DEPOSIT` y `WITHDRAW` no necesitan tener un `Asset` asociado, pero seguirán formando parte del historial de actividades del usuario.
 
-La primera pasada de refactor se hizo módulo por módulo. El objetivo NO era añadir funcionalidad, sino mejorar la arquitectura existente sin cambiar el comportamiento funcional de la aplicación.
+Cada usuario solo podrá acceder a sus propios assets, actividades, posiciones, holdings y demás información relacionada con sus inversiones.
 
-Módulos revisados:
+## Activities
 
-* users
-* shared
-* categories
-* transactions
-* groupgoals
-* dashboard
-* notifications
-* dataexport
+Para la primera versión se implementarán las siguientes actividades:
 
-Ahora quiero revisar la DOCUMENTACIÓN de ese trabajo.
+```text
+BUY
 
-IMPORTANTE:
+SELL
 
-No quiero que vuelvas a auditar el código como si tuvieras que refactorizarlo otra vez.
+DIVIDEND
 
-Quiero que compruebes si la documentación refleja correctamente:
+INTEREST
 
-1. Qué problemas arquitectónicos se detectaron.
-2. Qué problemas se solucionaron.
-3. Qué problemas se detectaron pero se decidió deliberadamente NO solucionar.
-4. Por qué se decidió no solucionarlos.
-5. Qué decisiones son temporales y cuáles son decisiones conscientes de diseño.
-6. Qué deuda técnica queda pendiente.
-7. Qué cosas NO deben volver a plantearse como problemas en una futura revisión salvo que haya cambiado el contexto.
+DEPOSIT
 
-Quiero evitar especialmente que dentro de unos meses alguien lea la documentación y piense:
+WITHDRAW
 
-"Esto se nos olvidó arreglar"
+SPLIT
+```
 
-cuando en realidad fue una decisión consciente.
+No se implementarán inicialmente tipos adicionales como:
 
-### Problemas/decisiones que quiero que compruebes explícitamente
+```text
+TRANSFER_IN
+TRANSFER_OUT
+FEE
+TAX
+CREDIT
+ADJUSTMENT
+```
 
-#### 1. Naming de puertos
+Estos tipos podrán añadirse en el futuro si las necesidades de la aplicación lo justifican, pero se consideran innecesarios para la primera versión.
 
-En el proyecto existen nombres como:
+No se utilizarán subtipos cerrados de actividad. Cada `Activity` podrá incorporar un comentario libre para que el usuario añada información adicional sobre la operación sin obligar al dominio a crear nuevos tipos para cada caso particular.
 
-* `...Repository`
-* `...Port`
+Las `Activities` históricas no podrán eliminarse físicamente. Se conservarán porque pueden tener consecuencias sobre `Lots`, `Positions`, `Investment Cash` y cálculos históricos.
 
-para diferentes output ports.
+Las actividades podrán editarse bajo las reglas definidas posteriormente para el reprocesamiento y la auditoría.
 
-Se detectó la inconsistencia, pero se decidió deliberadamente NO renombrarlos durante esta pasada porque el beneficio no compensaba el coste y el riesgo de hacer cambios puramente cosméticos.
+## Investment Cash
 
-La documentación debe dejar claro que:
+El módulo de inversiones estará separado conceptualmente del dinero normal de diario. Se distinguirán dos partes del patrimonio del usuario:
 
-* La inconsistencia existe.
-* Fue detectada.
-* No es un problema arquitectónico crítico.
-* Se decidió mantenerla deliberadamente.
-* No debe considerarse un fallo pendiente urgente.
+```text
+Patrimonio diario
+↓
+dinero gestionado por el módulo de transacciones
 
-#### 2. ObjectMapper en dataexport
+Patrimonio de inversión
+↓
+Investment Cash + posiciones en Assets
+```
 
-Se estudió la posibilidad de inyectar `ObjectMapper` como bean de Spring.
+`Investment Cash` representará el dinero disponible dentro del patrimonio de inversión que todavía no está invertido en un asset.
 
-El proyecto no tenía un bean disponible que pudiera utilizarse directamente y añadir configuración global únicamente para resolver este caso no compensaba.
+Las actividades modificarán este saldo de la siguiente manera:
 
-Por ello `DataImportService` mantiene la creación/configuración local del `ObjectMapper`, incluyendo `JavaTimeModule`.
+```text
+DEPOSIT
+→ aumenta Investment Cash
 
-La documentación debe explicar que:
+BUY
+→ disminuye Investment Cash
+→ aumenta la posición del Asset
 
-* Se evaluó la alternativa.
-* No se consideró necesario introducir configuración global solo por esto.
-* La solución actual es deliberada.
-* Podría revisarse en el futuro si el proyecto empieza a centralizar configuración de Jackson.
+SELL
+→ aumenta Investment Cash
+→ disminuye la posición del Asset
 
-No presentarlo como un incumplimiento grave de Hexagonal Architecture.
+DIVIDEND
+→ aumenta Investment Cash
 
-#### 3. Carga completa del export en memoria
+INTEREST
+→ aumenta Investment Cash
 
-El export de datos construye un snapshot completo del usuario.
+WITHDRAW
+→ disminuye Investment Cash
+```
 
-Se detectó que `exportAllUserData` carga todos los datos en memoria.
+`SPLIT` no modifica `Investment Cash`, ya que no existe ningún movimiento real de dinero.
 
-Se decidió NO optimizarlo porque:
+De esta forma, el patrimonio de inversión estará compuesto conceptualmente por:
 
-* El volumen actual de datos por usuario es pequeño.
-* La complejidad adicional no compensa actualmente.
-* No existe evidencia de un problema real de rendimiento.
+```text
+Investment Portfolio
 
-Debe documentarse como una posible optimización futura condicionada al crecimiento del volumen de datos.
+├── Investment Cash
+└── Asset Positions
+```
 
-No como bug actual.
+## DEPOSIT y WITHDRAW
 
-#### 4. Queries secuenciales en dataexport
+`DEPOSIT` y `WITHDRAW` actuarán como puente entre el dinero diario y el dinero invertido.
 
-El proceso de exportación realiza varias consultas independientes para obtener los diferentes tipos de datos.
+Cuando el usuario realice un `DEPOSIT`, el módulo de inversiones registrará la `Activity` correspondiente y se creará automáticamente una transacción en el módulo de transacciones que represente la salida de dinero del patrimonio diario.
 
-Se consideró la posibilidad de optimizar/parallelizar parte de estas consultas.
+El flujo será:
 
-Se decidió no hacerlo porque:
+```text
+Patrimonio diario
+↓
+Transaction
+↓
+DEPOSIT
+↓
+Investment Cash
+```
 
-* No existe actualmente un cuello de botella demostrado.
-* Añadir paralelismo aumenta complejidad.
-* La prioridad era arquitectura y mantenibilidad, no microoptimización.
+Cuando se realice un `WITHDRAW`, se producirá el proceso contrario:
 
-Debe aparecer como posible optimización futura, no como deuda crítica.
+```text
+Investment Cash
+↓
+WITHDRAW
+↓
+Transaction
+↓
+Patrimonio diario
+```
 
-#### 5. `MigrationChain` y logging
+Estas operaciones no se considerarán ingresos ni gastos, sino transferencias internas entre dos partes del patrimonio del usuario.
 
-`MigrationChain` utiliza actualmente `System.out.println` para informar del proceso de migración.
+Cada `DEPOSIT` y `WITHDRAW` mantendrá la relación con la transacción generada en el módulo de transacciones. Esta relación permitirá mantener trazabilidad entre ambos módulos y evitar que una misma operación pueda interpretarse simultáneamente como movimiento de inversión y como ingreso o gasto.
 
-Se detectó.
+### Sincronización con el módulo de transacciones
 
-No se modificó porque es una cuestión menor y no justificaba ampliar el alcance de esta pasada.
+La `Transaction` generada a partir de un `DEPOSIT` o `WITHDRAW` será una transacción gestionada por el módulo de inversiones y no podrá editarse ni borrarse directamente desde el módulo de transacciones normal.
 
-Debe aparecer como mejora menor pendiente.
+Del mismo modo, la edición de un `DEPOSIT` o `WITHDRAW` no modificará automáticamente la `Transaction` asociada. Permitir que una edición se propagase libremente en ambas direcciones podría generar inconsistencias si el dinero correspondiente ya se hubiese utilizado en operaciones posteriores.
 
-No presentarlo como un problema de arquitectura central.
+El `DEPOSIT` o `WITHDRAW` original tampoco podrá eliminarse para sustituirlo por otro con un importe diferente.
 
-#### 6. `ExportVersion.CURRENT`
+Si una operación se registró con un importe incorrecto, el hecho histórico original se conservará y la corrección deberá registrarse mediante una nueva actividad que represente el movimiento compensatorio correspondiente. De esta forma no se reescribe el hecho original, sino que se deja constancia tanto del error como de su corrección.
 
-La versión del formato de exportación es independiente de la versión de la aplicación.
+Por ejemplo, si se registró:
 
-Debe quedar documentado claramente.
+```text
+DEPOSIT 500 €
+```
 
-Durante esta revisión se añadió una migración:
+y posteriormente se determina que deben corregirse 200 €, se registrará la actividad inversa correspondiente:
 
-`0.1.0 → 0.2.0`
+```text
+WITHDRAW 200 €
+```
 
-para normalizar los importes de `PlannedTransaction`, ya que versiones antiguas podían contener gastos como valores negativos mientras que el modelo actual exige importes positivos.
+La actividad de corrección deberá incluir un comentario que permita identificar que se trata de una corrección de la operación anterior.
 
-La cadena actual debe entenderse como:
+Las correcciones estarán sujetas a las mismas validaciones de integridad que cualquier otra actividad. No se permitirá generar mediante una corrección un estado inválido, como un `Investment Cash` negativo, salvo que una regla de dominio específica permita expresamente ese estado.
 
-`0.0.1 → 0.1.0 → 0.2.0`
+Este sistema garantiza que:
 
-La documentación debe explicar esta decisión porque es importante para futuras migraciones.
+```text
+Actividad original
++
+Actividad de corrección
+=
+historial completo y trazable
+```
 
-#### 7. Importación como restore completo
+y evita que una edición retroactiva cambie artificialmente el capital que existió en un momento determinado.
 
-La importación NO está diseñada como sincronización ni como merge de datos.
+## Asset
 
-Es un mecanismo de restauración/importación pensado para cuentas vacías.
+`Asset` representará el activo sobre el que se realizan las operaciones.
 
-Por ello:
+Ejemplos:
 
-* No se implementó detección sofisticada de duplicados.
-* No se implementó una estrategia de merge.
-* Los IDs no necesitan conservarse.
-* La importación puede generar nuevos UUID.
-* La atomicidad mediante una única transacción es intencionada.
+```text
+Acción
+Criptomoneda
+Fondo indexado
+ETF
+Inmueble
+```
 
-Esto es MUY IMPORTANTE:
+El `Asset` contendrá las características propias del activo y no información específica de una operación concreta.
 
-No quiero que la documentación presente la ausencia de detección de duplicados como una deuda técnica.
+Entre sus posibles clasificaciones se encontrarán como mínimo:
 
-Es una consecuencia deliberada del modelo de importación.
+```text
+Tipo de activo
 
-#### 8. Transacción única durante import
+Sector
 
-`DataImportService.importUserData()` utiliza una única transacción para todo el restore.
+Moneda
+```
 
-Se consideró si una transacción tan grande podía ser problemática, pero se decidió mantenerla porque la importación debe ser atómica:
+Estas características pertenecerán al `Asset`, ya que describen el activo independientemente de las actividades realizadas por el usuario.
 
-* O se restaura todo.
-* O no se restaura nada.
+Los assets podrán eliminarse mediante `soft delete`. Los assets eliminados no aparecerán en las consultas habituales de cartera, posiciones o filtros, pero la información histórica relacionada con ellos deberá mantenerse para no romper la trazabilidad de las actividades y cálculos históricos.
 
-No documentarlo como un problema pendiente salvo que en el futuro cambie radicalmente el volumen de datos.
+## Lots
 
-#### 9. GroupGoals no forma parte del export/import
+Se implementará un sistema de `Lots` basado en FIFO (`First In First Out`).
 
-Los group goals son funcionalidad online y no forman parte del dump de datos personales exportable/importable.
+Cada compra generará un `Lot`, que representará una cantidad de unidades adquiridas en una fecha determinada y con un coste de adquisición determinado.
 
-No debe documentarse como funcionalidad olvidada.
+Un ejemplo:
 
-Es una decisión funcional deliberada.
+```text
+BUY 10 acciones @ 100 €
+→ Lot 1
+```
 
-#### 10. PDF export
+Posteriormente:
 
-`HtmlPdfFileExportAdapter` es relativamente grande y contiene bastante lógica relacionada con la generación del PDF.
+```text
+BUY 20 acciones @ 120 €
+→ Lot 2
+```
 
-Se detectó que podría dividirse/refactorizarse más.
+La posición estará formada por los lots abiertos existentes para ese asset.
 
-No se hizo porque:
+Cuando se produzca una venta, se consumirá primero el `Lot` más antiguo.
 
-* No era un problema arquitectónico crítico.
-* El objetivo de esta pasada era principalmente corregir acoplamientos y responsabilidades importantes.
-* Dividirlo ahora habría aumentado el alcance sin un beneficio proporcional.
+Por ejemplo:
 
-Debe aparecer como deuda técnica menor/posible mejora futura.
+```text
+Lot 1 → 10 unidades @ 100 €
+Lot 2 → 20 unidades @ 120 €
 
-#### 11. CSV sanitization
+SELL 12
 
-Existe sanitización para evitar que valores CSV puedan interpretarse como fórmulas.
+→ consume 10 unidades del Lot 1
+→ consume 2 unidades del Lot 2
+```
 
-Debe quedar documentada como una medida de seguridad deliberada.
+Las unidades podrán ser fraccionarias. Por tanto, tanto las cantidades de los `Lots` como las cantidades consumidas por las ventas podrán utilizar valores decimales.
 
-No debe eliminarse o simplificarse en futuras limpiezas sin analizar antes el riesgo de CSV Formula Injection.
+Esto permitirá representar assets y operaciones en los que se admitan fracciones de unidad.
 
-#### 12. UserDataSnapshot como formato de intercambio
+## LotConsumption
 
-Aunque `UserDataSnapshot` representa muchos tipos de datos, se decidió mantenerlo porque es precisamente el modelo de intercambio del sistema de export/import.
+Para mantener la trazabilidad de las ventas se definirá explícitamente el concepto `LotConsumption`.
 
-No debe tratarse como si fuera una violación arquitectónica por el mero hecho de contener múltiples snapshots.
+Una actividad `SELL` podrá consumir unidades de uno o varios lots, y un mismo `Lot` podrá ser consumido por varias ventas a lo largo del tiempo.
 
-La separación importante conseguida durante el refactor fue evitar que los servicios de dataexport dependieran directamente de las entidades/repositorios de otros bounded contexts.
+Por tanto, la relación entre `SELL` y `Lot` será de muchos a muchos, utilizando `LotConsumption` como entidad intermedia.
 
-#### 13. Arquitectura frente a optimización
+El modelo conceptual será:
 
-La prioridad de esta primera pasada fue:
+```text
+LotConsumption
 
-1. Dependencias incorrectas.
-2. Acoplamiento entre bounded contexts.
-3. Violaciones de Hexagonal Architecture.
-4. Lógica de negocio fuera del dominio.
-5. Responsabilidades mal ubicadas.
-6. Problemas que podían producir errores reales.
-7. Después, optimizaciones y limpieza.
+├── sellActivityId
+├── lotId
+└── quantity
+```
 
-La documentación debe respetar esta jerarquía.
+Por ejemplo:
 
-No quiero que una pequeña inconsistencia de naming o una posible optimización aparezca al mismo nivel que una dependencia directa entre application y persistence.
+```text
+Lot 1 → 10 unidades
+Lot 2 → 20 unidades
 
----
+SELL 12
+│
+├── LotConsumption
+│   ├── lotId = Lot 1
+│   └── quantity = 10
+│
+└── LotConsumption
+    ├── lotId = Lot 2
+    └── quantity = 2
+```
 
-### Qué quiero que produzcas
+Posteriormente, el `Lot 2` podría seguir siendo consumido por otras ventas:
 
-Revisa la documentación y dime:
+```text
+Lot 2
+├── SELL 2
+└── SELL 5
+```
 
-### A. Problemas que están correctamente documentados
+La suma de las cantidades consumidas mediante `LotConsumption` nunca podrá superar las unidades disponibles del lot en el momento correspondiente.
 
-Lista los puntos donde la documentación explica bien:
+`LotConsumption` permitirá conocer exactamente qué coste de adquisición corresponde a cada parte de una venta y será una de las bases para calcular el beneficio realizado.
 
-* problema
-* impacto
-* solución
-* motivo de la decisión
+## Position
 
-### B. Problemas solucionados que faltan
+`Position` representará la situación agregada de un usuario respecto a un `Asset`.
 
-Detecta problemas que realmente se solucionaron durante el refactor pero que no aparecen o aparecen demasiado vagamente en la documentación.
+Conceptualmente:
 
-### C. Decisiones deliberadas que faltan
+```text
+Asset
+    ↓
+Lots abiertos
+    ↓
+Position
+```
 
-Comprueba especialmente todos los puntos anteriores.
+Por tanto, una posición no representará una operación individual ni sustituirá a los lots. Será la visión agregada del asset a partir de los datos disponibles.
 
-Para cada uno que falte, indica qué debería añadirse a la documentación.
+El estado de una `Position` se determinará por las unidades resultantes:
 
-### D. Deuda técnica real
+```text
+Cantidad > 0
+→ Open Position
 
-Separa claramente:
+Cantidad = 0
+→ Closed Position
+```
 
-* deuda técnica real
-* mejoras opcionales
-* optimizaciones futuras
-* decisiones conscientes que NO son deuda
+Una posición no necesitará representar necesariamente un estado independiente almacenado de forma permanente. Conceptualmente será un dato derivado del historial de activities y de los lots, pudiendo determinarse si está abierta o cerrada a partir de la cantidad restante.
 
-No mezcles las cuatro categorías.
+Las posiciones abiertas permitirán consultar, entre otros datos:
 
-### E. Riesgos futuros
+```text
+Cantidad actual
 
-Indica qué decisiones podrían convertirse en problemas si cambia alguna condición.
+Coste de adquisición
 
-Ejemplo:
+Coste medio
 
-"cargar todo el export en memoria es aceptable mientras el volumen de datos por usuario sea pequeño; si crece significativamente, habría que estudiar streaming/paginación."
+Precio actual
 
-Quiero este tipo de criterio contextual, no recomendaciones genéricas.
+Valor actual
 
-### F. Auditoría de consistencia
+Beneficio / pérdida no realizado
 
-Comprueba que la documentación no diga cosas contradictorias como:
+Antigüedad
 
-* afirmar que algo está pendiente cuando ya se solucionó
-* afirmar que algo es un bug cuando fue una decisión deliberada
-* afirmar que algo es una violación arquitectónica cuando se decidió conscientemente mantenerlo
-* mezclar versión de aplicación (`appVersion`) con versión del formato de exportación (`ExportVersion`)
-* presentar GroupGoals como parte del sistema de export/import
-* afirmar que la importación es un sistema de sincronización cuando realmente es un restore completo
+Historial de actividades
+```
 
-### G. Segunda pasada futura
+Las posiciones que hayan quedado completamente consumidas mediante ventas permitirán consultar la información histórica disponible, como:
 
-Finalmente, propón una pequeña sección llamada:
+```text
+Coste de adquisición
 
-"Qué revisar en una segunda pasada"
+Fechas de adquisición
 
-pero SOLO incluyendo cosas que realmente merezcan una nueva revisión.
+Fechas de venta
 
-No quiero una lista infinita de mejoras teóricas.
+Beneficio / pérdida realizado
 
-Prioriza por:
+Actividades relacionadas
+```
 
-* impacto
-* probabilidad
-* coste
-* beneficio
+Las posiciones y assets marcados como eliminados mediante `soft delete` no aparecerán en las consultas normales de cartera.
 
-Y distingue claramente entre:
+## SPLIT y REVERSE_SPLIT
 
-`Alta prioridad`
-`Media prioridad`
-`Baja prioridad / solo si aparece un problema real`
+Un `SPLIT` es una actividad que registra un cambio en el número de unidades de un asset sin que exista una compra, venta ni ningún flujo real de dinero.
 
-### Regla importante
+La empresa u otro emisor del activo modifica la cantidad de unidades manteniendo el valor total de la posición.
 
-No propongas refactorizar algo simplemente porque "podría estar más limpio".
+Cada `SPLIT` se definirá mediante un ratio. Por ejemplo:
 
-La pregunta debe ser:
+```text
+10:1
+```
 
-"¿Existe suficiente beneficio arquitectónico, de mantenibilidad, rendimiento o seguridad como para justificar cambiarlo?"
+significará que cada unidad anterior pasa a convertirse en diez unidades nuevas.
 
-Si la respuesta es no, considéralo una decisión válida y documentable.
+El ratio se aplicará sobre todos los lots abiertos del asset en el momento en que se registre el split:
 
-El objetivo de esta documentación es que sirva como memoria técnica del proyecto y permita entender POR QUÉ ciertas cosas están como están, no conseguir una arquitectura teóricamente perfecta.
+```text
+nuevaCantidad = cantidadAnterior × ratio
+
+nuevoCosteUnidad = costeUnidadAnterior ÷ ratio
+```
+
+El coste total del lot:
+
+```text
+nuevaCantidad × nuevoCosteUnidad
+```
+
+se mantendrá invariable.
+
+Por tanto, un split no generará beneficio ni pérdida, ni realizado ni no realizado, y no modificará `Investment Cash`.
+
+No se implementará un tipo independiente `REVERSE_SPLIT`. Un reverse split se representará como un `SPLIT` cuyo ratio sea menor que `1`.
+
+Por ejemplo:
+
+```text
+1:10
+→ ratio = 0.1
+```
+
+Se aplicará exactamente la misma transformación y no será necesario duplicar la lógica para dos tipos de operaciones matemáticamente equivalentes.
+
+Se permitirán cantidades fraccionarias como resultado de un `SPLIT`. Por ejemplo:
+
+```text
+3 unidades
+× 0.5
+=
+1.5 unidades
+```
+
+no se considerará un error de dominio.
+
+Un `SPLIT` no podrá eliminarse físicamente una vez aplicado. Podrá editarse, pero cualquier modificación deberá provocar la reconstrucción de los datos derivados afectados desde ese momento temporal.
+
+## Reprocesamiento de Activities
+
+Las `Activities` históricas no se eliminarán físicamente, ya que una actividad puede afectar directamente a lots, posiciones, `Investment Cash`, rendimiento y otros cálculos históricos.
+
+Las activities podrán editarse, pero las modificaciones deberán conservar un historial de cambios mediante una **tabla de auditoría independiente**, que registrará qué información tenía originalmente una actividad y qué modificaciones se han realizado posteriormente sobre ella.
+
+Cuando una actividad sea modificada, no será suficiente con modificar únicamente los datos derivados directamente relacionados con ella. Deberá poder reconstruirse el estado posterior del asset a partir de esa actividad y de las actividades siguientes.
+
+Como cada `Activity` tendrá una fecha y hora, el reprocesamiento comenzará en la actividad modificada y afectará únicamente a las actividades posteriores que puedan depender de ella.
+
+El orden de procesamiento será determinista:
+
+```text
+1. timestamp de la Activity
+
+2. identificador o secuencia determinista
+   para resolver empates de timestamp
+```
+
+De esta forma, dos actividades con el mismo instante temporal no podrán producir resultados diferentes dependiendo del orden en el que sean devueltas por la base de datos.
+
+Conceptualmente:
+
+```text
+Activity modificada
+        ↓
+reprocesar activities posteriores
+        ↓
+reconstruir Lots
+        ↓
+reconstruir LotConsumptions
+        ↓
+reconstruir Positions
+        ↓
+recalcular resultados derivados
+```
+
+Esto será especialmente importante para operaciones como `BUY`, `SELL` y `SPLIT`, ya que una modificación puede afectar a operaciones posteriores y cambiar qué lots consume una venta o qué cantidad permanece en una posición.
+
+Para evitar inconsistencias si dos ediciones concurrentes disparan reprocesamientos que se solapen, se aplicará un **lock a nivel de asset/usuario** durante el reprocesamiento, como mecanismo simple y suficiente para el volumen de datos esperado en un uso personal.
+
+No se implementará necesariamente un sistema completo de event sourcing, pero la lógica deberá permitir realizar este tipo de reconstrucción.
+
+## AssetPrice
+
+Además de las activities, se almacenará un histórico independiente de precios de los activos.
+
+`AssetPrice` permitirá registrar el valor de un asset en distintos momentos del tiempo sin depender exclusivamente del precio actual.
+
+El modelo será similar a:
+
+```text
+AssetPrice
+
+├── assetId
+├── timestamp
+├── open              nullable
+├── high              nullable
+├── low               nullable
+├── close             nullable
+├── adjustedClose     nullable
+├── volume             nullable
+├── currency
+├── source
+└── fetchedAt
+```
+
+Los valores `open`, `high`, `low`, `close`, `adjustedClose` y `volume` podrán ser nulos, ya que no todos los tipos de assets ni todas las fuentes proporcionarán necesariamente toda esta información.
+
+`adjustedClose` será opcional y permitirá conservar en el futuro precios ajustados cuando la fuente de datos los proporcione.
+
+`currency` representará la moneda en la que está expresado el precio.
+
+Los precios ajustados y no ajustados se tratarán como datos distintos y no se utilizarán indistintamente para los cálculos de costes históricos.
+
+## Monedas y tipos de cambio
+
+El módulo deberá tener en cuenta tanto la moneda del `Asset` como la moneda local del usuario.
+
+Cuando una actividad implique una moneda extranjera, se conservará dentro de la propia actividad el contexto monetario existente en el momento en que se produjo.
+
+Como mínimo se almacenará:
+
+```text
+Moneda de la operación
+
+Moneda local del usuario en ese momento
+
+Tipo de cambio utilizado
+
+Importe original
+
+Importe equivalente en moneda local
+```
+
+De esta forma una actividad histórica no dependerá de la moneda local que el usuario tenga configurada en el futuro.
+
+Por ejemplo:
+
+```text
+Actividad:
+BUY
+Importe: 1.000 USD
+
+Moneda local en ese momento:
+EUR
+
+FX utilizado:
+USD → EUR
+
+Equivalente calculado:
+importe expresado en EUR
+```
+
+Si posteriormente el usuario cambia su moneda local a GBP, la actividad original no se modificará.
+
+### FX histórico vs FX vigente
+
+El FX almacenado dentro de una actividad sirve para conservar el contexto monetario y el equivalente utilizado en el momento de la operación.
+
+No se utilizará ese valor histórico para calcular la valoración actual de una posición.
+
+Para la valoración actual se utilizará el precio actual del asset junto con el tipo de cambio vigente correspondiente:
+
+```text
+Valor actual de la posición
+=
+precio actual del Asset × FX vigente
+```
+
+El mismo histórico `FxRate` podrá utilizarse para localizar tanto el tipo de cambio correspondiente a una fecha histórica como el último tipo de cambio disponible para una valoración actual, pero ambos cálculos tendrán finalidades diferentes.
+
+## Historial de moneda local
+
+Como la moneda local del usuario podrá cambiar, se almacenará un historial de cambios.
+
+Conceptualmente:
+
+```text
+UserLocalCurrencyHistory
+
+├── userId
+├── currency
+├── validFrom
+└── validTo
+```
+
+Este historial no representará una actividad financiera ni un movimiento real de dinero. Será únicamente una configuración histórica del usuario.
+
+Su finalidad será conocer qué moneda local tenía el usuario en cada momento.
+
+De esta forma se diferenciarán claramente dos conceptos:
+
+```text
+Historial de moneda local del usuario
+
+→ Qué moneda tenía configurada el usuario en cada momento.
+
+Histórico de tipos de cambio
+
+→ Qué valor tenía una moneda respecto a otra en una fecha determinada.
+```
+
+El primero permitirá conocer el contexto monetario de una actividad.
+
+El segundo permitirá realizar las conversiones monetarias necesarias.
+
+El cambio de moneda local nunca modificará las activities históricas ni sus importes originales.
+
+Cuando sea necesario mostrar información histórica expresada en una nueva moneda local, se realizará la conversión correspondiente utilizando los tipos de cambio disponibles.
+
+Por tanto, para calcular correctamente el valor y el beneficio de una inversión en moneda extranjera se tendrán en cuenta tanto:
+
+```text
+Variación del precio del Asset
++
+Variación del tipo de cambio
+```
+
+Esto permitirá diferenciar la evolución del activo de la evolución provocada por el mercado de divisas.
+
+## FX Rate
+
+El histórico de tipos de cambio será un concepto independiente del historial de moneda local.
+
+Su modelo será similar a:
+
+```text
+FxRate
+
+├── baseCurrency
+├── quoteCurrency
+├── timestamp
+├── rate
+├── source
+└── fetchedAt
+```
+
+Este histórico será utilizado para realizar las conversiones monetarias necesarias tanto en valoraciones, utilizando el FX vigente, como en consultas históricas, utilizando el FX correspondiente a la fecha necesaria.
+
+## Rendimiento
+
+El rendimiento de las inversiones se calculará a partir de:
+
+```text
+Activities
+
+Lots
+
+LotConsumptions
+
+Positions
+
+AssetPrices
+
+FX Rates
+
+Investment Cash
+```
+
+No se implementarán `TWR` ni `XIRR` en esta primera versión, ya que exceden el nivel de análisis previsto para Millete.
+
+La finalidad será proporcionar una visión clara de la evolución del patrimonio invertido y del resultado de las posiciones, sin convertir el módulo en un sistema avanzado de análisis financiero.
+
+## Performance Attribution
+
+Sí se implementará `Performance Attribution` para explicar de dónde procede la evolución del patrimonio invertido.
+
+Como mínimo se diferenciará entre:
+
+```text
+Aportaciones
+
+Retiros
+
+Beneficios / pérdidas realizados
+
+Beneficios / pérdidas no realizados
+
+Dividendos
+
+Intereses
+```
+
+De esta forma no se mostrará únicamente cuánto ha aumentado o disminuido el patrimonio de inversión, sino también qué parte del cambio procede de movimientos de dinero y qué parte procede de la propia evolución de las inversiones.
+
+Conceptualmente:
+
+```text
+Variación del patrimonio invertido
+
+├── Aportaciones
+├── Retiros
+├── Beneficios / pérdidas realizados
+├── Beneficios / pérdidas no realizados
+├── Dividendos
+└── Intereses
+```
+
+`DEPOSIT` y `WITHDRAW` representarán movimientos entre el patrimonio diario y el patrimonio de inversión, por lo que no se interpretarán como rentabilidad generada por las inversiones.
+
+## Holdings
+
+Además del modo basado en actividades, se implementará un modo de seguimiento mediante `Holdings`.
+
+`Holding` será una entidad independiente destinada a representar una fotografía de la posición del usuario en un momento determinado cuando no se dispone del historial completo de operaciones.
+
+Por ejemplo, un usuario puede conocer actualmente:
+
+```text
+Asset: Apple
+
+Cantidad:
+100 acciones
+
+Coste de adquisición:
+8.000 €
+
+Valor actual:
+12.000 €
+```
+
+pero no conservar ninguna de las operaciones originales con las que adquirió esas acciones.
+
+En este caso podrá registrar el holding sin necesidad de reconstruir artificialmente todas las actividades históricas.
+
+El sistema tratará este holding inicial como un **lote de apertura o synthetic lot**:
+
+```text
+OPENING HOLDING
+
+→ cantidad conocida
+→ coste de adquisición conocido
+→ información histórica disponible
+```
+
+Este lote permitirá aplicar FIFO a las operaciones posteriores.
+
+Por ejemplo:
+
+```text
+Opening Holding
+→ 100 unidades
+
+SELL 20
+
+→ consume 20 unidades del synthetic lot
+→ quedan 80 unidades
+```
+
+Sin embargo, el sistema deberá reconocer que el historial anterior a ese holding es parcial o desconocido.
+
+Por tanto, en `Holdings` podremos calcular correctamente la situación actual desde el momento registrado, pero no necesariamente podremos reconstruir con la misma precisión:
+
+```text
+Beneficio histórico completo
+
+Historial de compras
+
+Coste fiscal histórico detallado
+
+Antigüedad exacta de cada lote
+```
+
+La información disponible será la que haya proporcionado el usuario.
+
+Se diferenciarán claramente los dos modos:
+
+```text
+Transactions
+
+→ Tenemos historial de operaciones.
+→ Podemos reconstruir Lots, LotConsumptions, Positions y evolución.
+
+Holdings
+
+→ Tenemos una fotografía de la posición.
+→ No necesariamente tenemos todo el historial previo.
+→ Las métricas anteriores al snapshot pueden ser incompletas.
+```
+
+### Transición de Holdings a Transactions
+
+No se implementará una migración automática que sustituya el synthetic lot por lots reales conservando trazabilidad.
+
+Si el usuario quiere pasar de seguimiento por `Holdings` a seguimiento por `Transactions`, el holding sintético podrá eliminarse como parte de la migración y se reconstruirá la posición a partir del historial real de actividades que el usuario importe.
+
+Las `Activities` reales posteriores al holding no se eliminarán por el hecho de eliminar el synthetic lot.
+
+La finalidad es sustituir únicamente la representación inicial incompleta por el historial real disponible y permitir que los `Lots`, `LotConsumptions` y `Positions` se reconstruyan a partir de ese nuevo historial.
+
+## Clasificaciones y filtros
+
+Se añadirán clasificaciones y filtros para poder consultar la cartera según diferentes criterios.
+
+Como mínimo:
+
+```text
+Activo
+
+Tipo de activo
+
+Sector
+
+Moneda
+```
+
+Estas clasificaciones pertenecerán al `Asset`, ya que representan características del activo independientemente de las operaciones realizadas por el usuario.
+
+## Rebalancing
+
+`Rebalancing` se descarta completamente para esta primera versión.
+
+Millete mostrará información sobre la situación y distribución actual de la cartera, pero no tendrá como finalidad indicar al usuario qué debería comprar o vender para alcanzar una determinada distribución.
+
+## Benchmark
+
+También se descarta la funcionalidad de `Benchmark`.
+
+La aplicación no comparará la cartera del usuario con índices, mercados ni otras carteras.
+
+El objetivo será mostrar exclusivamente la evolución y situación de las propias inversiones del usuario.
+
+## Health Center
+
+Se implementará un sistema similar a `Health Center` para detectar problemas o inconsistencias en la información de la cartera.
+
+Entre las comprobaciones iniciales se incluirán:
+
+```text
+Precios obsoletos
+
+FX obsoleto
+
+Saldos negativos
+
+Posiciones negativas
+
+Activities huérfanas
+
+Errores de sincronización
+
+Clasificaciones inexistentes
+```
+
+Cuando se detecte algún problema, se informará al usuario mediante notificaciones para que pueda revisar y corregir la información correspondiente.
+
+El objetivo será que el sistema no se limite a calcular datos, sino que también pueda detectar cuándo los datos utilizados para esos cálculos pueden no ser fiables.
+
+## Modelo conceptual
+
+La relación general entre los principales conceptos será:
+
+```text
+                         ┌──────────────┐
+                         │     Asset    │
+                         └──────┬───────┘
+                                │
+                                │
+                         ┌──────▼───────┐
+                         │   Activity   │
+                         └──────┬───────┘
+                                │
+                    ┌───────────┼───────────┐
+                    │           │           │
+                    ▼           ▼           ▼
+                  Lots       Cash Flow     SPLIT
+                    │
+                    ▼
+             LotConsumption
+                    │
+                    ▼
+              SELL Activities
+                    │
+                    ▼
+                Position
+
+Asset ───────────────────► AssetPrice
+
+User ────────────────────► UserLocalCurrencyHistory
+                                      │
+                                      ▼
+                                   FxRate
+
+Investment Portfolio
+├── Investment Cash
+└── Asset Positions
+
+Holdings
+└── Opening / Synthetic Lot
+```
+
+## Objetivo de la primera versión
+
+El objetivo de esta primera versión será disponer de una base sólida para:
+
+```text
+Registrar inversiones
+
+Registrar movimientos de Investment Cash
+
+Registrar operaciones sobre Assets
+
+Reconstruir posiciones mediante Activities
+
+Gestionar Lots mediante FIFO
+
+Mantener la trazabilidad de las ventas y lots consumidos
+
+Registrar y aplicar SPLIT
+
+Permitir unidades fraccionarias
+
+Almacenar precios históricos
+
+Gestionar monedas y tipos de cambio
+
+Mantener el contexto monetario histórico
+
+Registrar Holdings cuando no exista historial completo
+
+Utilizar Opening / Synthetic Lots para representar posiciones iniciales
+
+Calcular beneficio realizado y no realizado
+
+Calcular la evolución del patrimonio invertido
+
+Explicar la evolución mediante Performance Attribution
+
+Detectar problemas e inconsistencias en los datos
+
+Mantener un historial de auditoría de las modificaciones de Activities
+
+Reprocesar de forma determinista los datos derivados afectados
+```
+
+La primera versión priorizará la **integridad del historial, la reconstrucción fiable de posiciones, la trazabilidad de las operaciones y la claridad de la información** frente a la incorporación de funcionalidades avanzadas.
+
+No se incluirán inicialmente análisis de riesgo como `Volatility` o `Maximum Drawdown`, ni `TWR`, `XIRR`, `Benchmark` o `Rebalancing`.
+
+La intención es disponer de un módulo suficientemente completo para representar de forma fiable la situación de las inversiones del usuario, pero manteniendo un alcance razonable y coherente con la finalidad de Millete.
 
 
 ---

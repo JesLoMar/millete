@@ -43,6 +43,8 @@
     "langEn": "English",
     "dateFormat": "Formato data",
     "currency": "Valuta",
+    "localCurrencyTitle": "Valuta locale",
+    "localCurrencyDescription": "Usata per visualizzare gli importi. La modifica non converte i valori già salvati.",
     "success": "Preferenze salvate",
     "error": "Errore durante il salvataggio delle preferenze"
   },

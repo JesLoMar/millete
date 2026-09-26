@@ -28,7 +28,7 @@ public class TransactionEntity {
     @Column(name = "category_id")
     private UUID categoryId;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 18, scale = 8)
     private BigDecimal amount;
 
     @Column(name = "date", nullable = false)
@@ -36,6 +36,15 @@ public class TransactionEntity {
 
     @Column(name = "type", nullable = false)
     private String type;
+
+    @Column(name = "currency", length = 3)
+    private String currency;
+
+    @Column(name = "investment_activity_id")
+    private UUID investmentActivityId;
+
+    @Column(name = "investment_time_zone", length = 100)
+    private String investmentTimeZone;
 
     @Column(name = "description")
     private String description;

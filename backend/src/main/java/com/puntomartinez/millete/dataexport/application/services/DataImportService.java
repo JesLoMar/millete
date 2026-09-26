@@ -107,6 +107,9 @@ public class DataImportService {
 
             snapshot = validateAndMigrate(snapshot);
 
+            int legacyInvestmentsSkipped = snapshot.investments() == null
+                    ? 0 : snapshot.investments().size();
+
             CategoryImportResult categoryImportResult =
                     categoryImportPort.importCategories(
                             snapshot.categories(),
@@ -156,9 +159,13 @@ public class DataImportService {
                     );
 
             String summary = String.format(
-                    "Importación exitosa. %d registros importados. v%s",
+                    "Importación exitosa. %d registros importados. v%s%s",
                     totalImported,
-                    ExportVersion.CURRENT
+                    ExportVersion.CURRENT,
+                    legacyInvestmentsSkipped == 0 ? "" : String.format(
+                            " Se omitieron %d inversiones del formato antiguo porque el módulo actual es nuevo.",
+                            legacyInvestmentsSkipped
+                    )
             );
 
             log.info(summary);

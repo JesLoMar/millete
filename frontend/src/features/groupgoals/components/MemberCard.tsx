@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/core/dropdown-menu'
 import { ProgressBar } from '@/shared/components/core/progress-bar'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface MemberCardProps {
   member: ContributionMember
@@ -129,7 +130,7 @@ export const MemberCard = memo(function MemberCard({
             </span>
 
             <span className="whitespace-nowrap shrink-0 tabular-nums">
-              {member.salary.toLocaleString()} €
+              {formatCurrency(member.salary)}
             </span>
           </div>
 
@@ -139,7 +140,7 @@ export const MemberCard = memo(function MemberCard({
             </span>
 
             <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
-              {member.expectedContribution.toLocaleString()} €
+              {formatCurrency(member.expectedContribution)}
             </span>
           </div>
 
@@ -149,7 +150,7 @@ export const MemberCard = memo(function MemberCard({
             </span>
 
             <span className="font-medium whitespace-nowrap shrink-0 tabular-nums">
-              {member.contributed.toLocaleString()} €
+              {formatCurrency(member.contributed)}
             </span>
           </div>
 

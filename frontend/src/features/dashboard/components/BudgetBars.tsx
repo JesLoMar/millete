@@ -6,6 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import type { PeriodFilter } from '@/shared/components/Header';
+import { formatCurrency } from '@/shared/utils/i18nFormat';
 import {
   Card,
   CardContent,
@@ -136,10 +137,10 @@ export function BudgetBars({
 
                       <span className="shrink-0 text-xs text-muted-foreground">
                         <span className="font-semibold text-foreground">
-                          {budget.spent.toFixed(2)} €
+                          {formatCurrency(budget.spent)}
                         </span>
                         {' / '}
-                        {adjustedLimit.toFixed(2)} €
+                        {formatCurrency(adjustedLimit)}
                       </span>
                     </div>
 

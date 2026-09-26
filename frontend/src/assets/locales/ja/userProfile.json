@@ -43,6 +43,8 @@
     "langEn": "English",
     "dateFormat": "日付形式",
     "currency": "通貨",
+    "localCurrencyTitle": "現地通貨",
+    "localCurrencyDescription": "金額の表示に使用します。変更しても保存済みの値は換算されません。",
     "success": "設定が保存されました",
     "error": "設定の保存に失敗しました"
   },

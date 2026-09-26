@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/core/dropdown-menu'
+import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 interface GroupGoalSelectorProps {
   goals: GoalListItem[]
@@ -151,7 +152,7 @@ export function GroupGoalSelector({
                     />
                     {goal.memberCount} {t('groupGoals:members')} •{' '}
                     {t('groupGoals:goal')}:{' '}
-                    {goal.monthlyTarget.toLocaleString()} €
+                    {formatCurrency(goal.monthlyTarget)}
                   </p>
                 </div>
 

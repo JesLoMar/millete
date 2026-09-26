@@ -15,6 +15,8 @@ public interface GetTransactionMetricsUseCase {
             BigDecimal income,
             BigDecimal expenses,
             BigDecimal balance,
+            BigDecimal transferIn,
+            BigDecimal transferOut,
             long count,
             double incomeTrend,
             double expensesTrend,

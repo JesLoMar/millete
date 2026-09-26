@@ -43,6 +43,8 @@
     "langEn": "English",
     "dateFormat": "Datumsformat",
     "currency": "Währung",
+    "localCurrencyTitle": "Lokale Währung",
+    "localCurrencyDescription": "Wird zur Anzeige von Beträgen verwendet. Bereits gespeicherte Werte werden dadurch nicht umgerechnet.",
     "success": "Einstellungen gespeichert",
     "error": "Fehler beim Speichern der Einstellungen"
   },

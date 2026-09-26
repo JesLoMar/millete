@@ -43,6 +43,8 @@
     "langEn": "English",
     "dateFormat": "Format de date",
     "currency": "Devise",
+    "localCurrencyTitle": "Devise locale",
+    "localCurrencyDescription": "Utilisée pour afficher les montants. La modifier ne convertit pas les valeurs déjà enregistrées.",
     "success": "Préférences enregistrées",
     "error": "Erreur lors de l'enregistrement des préférences"
   },

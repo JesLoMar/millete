@@ -13,6 +13,7 @@ import {
 } from '@/shared/components/core/dialog'
 import { Input } from '@/shared/components/core/input'
 import { Label } from '@/shared/components/core/label'
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat'
 import {
   Select,
   SelectContent,
@@ -97,7 +98,7 @@ export function UpdateGoalDialog({
                 htmlFor="goal"
                 className="text-sm font-semibold text-foreground/80"
               >
-                {t('groupGoals:monthlyGoal')} (€)
+                {t('groupGoals:monthlyGoal')} ({getLocalCurrencyCode()})
               </Label>
 
               <div className="relative">
@@ -115,7 +116,7 @@ export function UpdateGoalDialog({
                 />
 
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground select-none">
-                  EUR
+                  {getLocalCurrencyCode()}
                 </span>
               </div>
             </div>

@@ -68,6 +68,8 @@ public class TransactionMetricsService implements GetTransactionMetricsUseCase {
                 currentIncome,
                 currentExpenses,
                 currentBalance,
+                currentAggregates.transferIn(),
+                currentAggregates.transferOut(),
                 currentCount,
                 incomeTrend,
                 expensesTrend,

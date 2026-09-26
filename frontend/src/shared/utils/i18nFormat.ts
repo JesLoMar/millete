@@ -19,22 +19,25 @@ function getLocale(): string {
   return (lang && LOCALE_MAP[lang]) || DEFAULT_LOCALE
 }
 
-// TODO(moneda preferida): nadie escribe 'userPreferences' en sessionCache,
-// así que esto siempre devuelve EUR. Pendiente decidir si se conecta a
-// updatePreferences del perfil o se elimina (ver revisión, punto 9).
-function getCurrency(): string {
+export function getLocalCurrencyCode(): string {
   try {
     const raw = sessionCache.getItem('userPreferences')
 
     if (raw) {
       const prefs = JSON.parse(raw) as {
+        localCurrency?: string
         currencyFormat?: {
           currency?: string
         }
       }
 
-      if (prefs.currencyFormat?.currency) {
-        return prefs.currencyFormat.currency
+      const currency = prefs.localCurrency || prefs.currencyFormat?.currency
+      if (currency) {
+        new Intl.NumberFormat('en', {
+          style: 'currency',
+          currency,
+        })
+        return currency
       }
     }
   } catch {
@@ -180,7 +183,7 @@ export function formatCurrency(
   const locale = getLocale()
 
   const currencyCode =
-    currency || getCurrency()
+    currency || getLocalCurrencyCode()
 
   if (
     options.compact &&

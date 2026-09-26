@@ -13,6 +13,7 @@ import {
 } from '@/shared/components/core/dialog'
 import { Input } from '@/shared/components/core/input'
 import { Label } from '@/shared/components/core/label'
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat'
 import {
   Select,
   SelectContent,
@@ -86,7 +87,7 @@ export function CreateGroupGoalDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>{t('groupGoals:monthlyGoal')} (€)</Label>
+            <Label>{t('groupGoals:monthlyGoal')} ({getLocalCurrencyCode()})</Label>
 
             <Input
               type="number"

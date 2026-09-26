@@ -8,6 +8,7 @@ import {
 
 import type { PlannedTransaction } from '@/features/transactions/hooks/usePlannedTransactions';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/shared/utils/i18nFormat';
 
 import {
   calculateNextExecution,
@@ -31,12 +32,7 @@ export function RecurringTransactionRow({
 
   const isIncome = transaction.type === 'INCOME';
 
-  const formattedAmount = Math.abs(
-    transaction.amount,
-  ).toLocaleString('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formattedAmount = formatCurrency(Math.abs(transaction.amount));
 
   const frequency = formatFrequency(transaction, t);
   const nextExecution = calculateNextExecution(transaction);
@@ -126,7 +122,7 @@ export function RecurringTransactionRow({
             )}
           >
             {isIncome ? '+' : '-'}
-            {formattedAmount} €
+            {formattedAmount}
           </p>
         </div>
 
@@ -165,7 +161,7 @@ export function RecurringTransactionRow({
               )}
             >
               {isIncome ? '+' : '-'}
-              {formattedAmount} €
+              {formattedAmount}
             </p>
           </div>
 

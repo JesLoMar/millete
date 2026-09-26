@@ -17,6 +17,7 @@ import com.puntomartinez.millete.users.domain.ports.in.UpdateProfileCommand;
 import com.puntomartinez.millete.users.domain.ports.in.UserProfileResult;
 import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
 import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
+import com.puntomartinez.millete.users.domain.ports.out.UserLocalCurrencyHistoryRepository;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
 import com.puntomartinez.millete.users.domain.validation.EmailValidator;
@@ -27,9 +28,11 @@ import java.time.LocalDateTime;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.Instant;
 
 @Service
 public class ProfileService implements ManageProfileUseCase {
@@ -42,6 +45,7 @@ public class ProfileService implements ManageProfileUseCase {
     private final PasswordHasherPort passwordHasher;
     private final ObjectMapper objectMapper;
     private final TimeProvider timeProvider;
+    private final UserLocalCurrencyHistoryRepository currencyHistoryRepository;
 
     public ProfileService(
             UserRepository userRepository,
@@ -49,7 +53,8 @@ public class ProfileService implements ManageProfileUseCase {
             UserPreferencesRepository userPreferencesRepository,
             PasswordHasherPort passwordHasher,
             ObjectMapper objectMapper,
-            TimeProvider timeProvider
+            TimeProvider timeProvider,
+            UserLocalCurrencyHistoryRepository currencyHistoryRepository
     ) {
         this.userRepository = userRepository;
         this.userSessionRepository = userSessionRepository;
@@ -57,6 +62,7 @@ public class ProfileService implements ManageProfileUseCase {
         this.passwordHasher = passwordHasher;
         this.objectMapper = objectMapper;
         this.timeProvider = timeProvider;
+        this.currencyHistoryRepository = currencyHistoryRepository;
     }
 
     @Override
@@ -201,6 +207,7 @@ public class ProfileService implements ManageProfileUseCase {
                 : new HashMap<>();
 
         validateTimezonePreference(safePreferences);
+        validateLocalCurrencyPreference(safePreferences);
 
         String serialized;
         try {
@@ -232,6 +239,33 @@ public class ProfileService implements ManageProfileUseCase {
                             return newPreferences;
                         });
 
+        Object nextCurrency = safePreferences.get("localCurrency");
+        var openPeriod = currencyHistoryRepository.findOpenByUserId(userId);
+        Instant now = timeProvider.now();
+        if (nextCurrency instanceof String currencyCode) {
+            if (openPeriod.isEmpty()) {
+                // Backfill legacy profiles from account creation, without changing stored transaction amounts.
+                Instant createdAt = userRepository.findById(userId)
+                        .map(User::getCreatedAt).orElse(now);
+                currencyHistoryRepository.save(
+                        new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
+                                UUID.randomUUID(), userId, currencyCode,
+                                createdAt, null, true
+                        )
+                );
+            } else if (!openPeriod.get().currency().equals(currencyCode)) {
+                currencyHistoryRepository.closeOpenPeriod(userId, now);
+                currencyHistoryRepository.save(
+                        new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
+                                UUID.randomUUID(), userId, currencyCode, now,
+                                null, false
+                        )
+                );
+            }
+        } else if (openPeriod.isPresent()) {
+            currencyHistoryRepository.closeOpenPeriod(userId, now);
+        }
+
         userPreferences.setPreferences(safePreferences);
         userPreferences.setModifiedAt(timeProvider.now());
 
@@ -259,6 +293,31 @@ public class ProfileService implements ManageProfileUseCase {
         } catch (DateTimeException exception) {
             throw new InvalidInputException(
                     "La zona horaria indicada no es válida."
+            );
+        }
+    }
+
+    private void validateLocalCurrencyPreference(
+            Map<String, Object> preferences
+    ) {
+        if (!preferences.containsKey("localCurrency")) {
+            return;
+        }
+
+        Object value = preferences.get("localCurrency");
+        if (!(value instanceof String currencyCode)
+                || !currencyCode.matches("[A-Z]{3}")) {
+            throw new InvalidInputException(
+                    "La moneda local debe ser un código ISO 4217 válido, "
+                            + "por ejemplo EUR o USD."
+            );
+        }
+
+        try {
+            Currency.getInstance(currencyCode);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidInputException(
+                    "El código de moneda local no es válido."
             );
         }
     }
