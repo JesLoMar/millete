@@ -34,13 +34,15 @@ export interface ChangePasswordRequest {
 }
 
 export interface UserPreferences {
-  readonly theme: 'light' | 'dark' | 'system';
-  readonly language: string;
-  readonly dateFormat: string;
-  readonly currencyFormat: {
+  readonly timezone?: string;
+  readonly theme?: 'light' | 'dark' | 'system';
+  readonly language?: string;
+  readonly dateFormat?: string;
+  readonly currencyFormat?: {
     readonly locale: string;
     readonly currency: string;
   };
+  readonly [key: string]: unknown;
 }
 
 export interface SessionResponse {

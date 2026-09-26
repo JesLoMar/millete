@@ -69,9 +69,9 @@ public class DashboardService implements GetDashboardDataUseCase {
             String period
     ) {
         LocalDate[] currentRange =
-                dashboardPeriodService.getDateRange(period);
+                dashboardPeriodService.getDateRange(period, userId);
         LocalDate[] previousRange =
-                dashboardPeriodService.getPreviousPeriod(period);
+                dashboardPeriodService.getPreviousPeriod(period, userId);
 
         List<TransactionQueryPort.TransactionData> currentTransactions =
                 transactionQueryPort.findByUserIdAndDateBetween(

@@ -3,7 +3,7 @@ package com.puntomartinez.millete.dashboard.application.services;
 import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
 import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardHistoryResponseDTO;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
-import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import com.puntomartinez.millete.users.application.services.UserLocalDateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +41,7 @@ import java.util.List;
 public class DashboardHistoryService {
 
     private final TransactionQueryPort transactionQueryPort;
-    private final TimeProvider timeProvider;
+    private final UserLocalDateService userLocalDateService;
 
     public DashboardHistoryResponseDTO getHistory(
             java.util.UUID userId,
@@ -68,7 +68,7 @@ public class DashboardHistoryService {
                 "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"
         };
 
-        LocalDate today = timeProvider.localDateNow();
+        LocalDate today = userLocalDateService.todayFor(userId);
         LocalDate weekStart = today.with(java.time.DayOfWeek.MONDAY);
 
         List<TransactionQueryPort.TransactionData> transactions =
@@ -106,7 +106,7 @@ public class DashboardHistoryService {
         List<String> labels = new ArrayList<>();
         List<BigDecimal> data = new ArrayList<>();
 
-        LocalDate today = timeProvider.localDateNow();
+        LocalDate today = userLocalDateService.todayFor(userId);
         LocalDate monthStart = today.withDayOfMonth(1);
         LocalDate lastDayOfMonth = monthStart.with(
                 java.time.temporal.TemporalAdjusters.lastDayOfMonth()
@@ -161,7 +161,7 @@ public class DashboardHistoryService {
                 "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
         };
 
-        LocalDate today = timeProvider.localDateNow();
+        LocalDate today = userLocalDateService.todayFor(userId);
         int currentYear = today.getYear();
 
         List<TransactionQueryPort.TransactionData> transactions =

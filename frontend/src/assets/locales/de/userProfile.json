@@ -1,5 +1,13 @@
 {
   "title": "Profil",
+  "timezone": {
+    "title": "Zeitzone",
+    "description": "Wird verwendet, um lokale Daten und Anwendungszeitpläne zu berechnen.",
+    "label": "Zeitzone",
+    "save": "Zeitzone speichern",
+    "success": "Zeitzone gespeichert",
+    "error": "Fehler beim Speichern der Zeitzone"
+  },
   "personalInfo": {
     "title": "Persönliche Informationen",
     "description": "Ihre grundlegenden Kontodaten",

@@ -1,5 +1,13 @@
 {
   "title": "Profile",
+  "timezone": {
+    "title": "Time zone",
+    "description": "Used to calculate your local dates and application schedules.",
+    "label": "Time zone",
+    "save": "Save time zone",
+    "success": "Time zone saved",
+    "error": "Error saving time zone"
+  },
   "personalInfo": {
     "title": "Personal information",
     "description": "Your basic account details",

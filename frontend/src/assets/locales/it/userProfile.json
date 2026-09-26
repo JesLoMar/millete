@@ -1,5 +1,13 @@
 {
   "title": "Profilo",
+  "timezone": {
+    "title": "Fuso orario",
+    "description": "Usato per calcolare le date locali e gli orari dell’applicazione.",
+    "label": "Fuso orario",
+    "save": "Salva fuso orario",
+    "success": "Fuso orario salvato",
+    "error": "Errore durante il salvataggio del fuso orario"
+  },
   "personalInfo": {
     "title": "Informazioni personali",
     "description": "I tuoi dati di base dell'account",

@@ -1,5 +1,13 @@
 {
   "title": "Perfil",
+  "timezone": {
+    "title": "Zona horaria",
+    "description": "Se usará para calcular tus fechas locales y los horarios de la aplicación.",
+    "label": "Zona horaria",
+    "save": "Guardar zona horaria",
+    "success": "Zona horaria guardada",
+    "error": "Error al guardar la zona horaria"
+  },
   "personalInfo": {
     "title": "Información personal",
     "description": "Tus datos básicos de cuenta",

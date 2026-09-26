@@ -1,7 +1,7 @@
 package com.puntomartinez.millete.dashboard.application.services;
 
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
-import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import com.puntomartinez.millete.users.application.services.UserLocalDateService;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -11,14 +11,14 @@ import java.time.temporal.TemporalAdjusters;
 @Service
 public class DashboardPeriodService {
 
-    private final TimeProvider timeProvider;
+    private final UserLocalDateService userLocalDateService;
 
-    public DashboardPeriodService(TimeProvider timeProvider) {
-        this.timeProvider = timeProvider;
+    public DashboardPeriodService(UserLocalDateService userLocalDateService) {
+        this.userLocalDateService = userLocalDateService;
     }
 
-    public LocalDate[] getDateRange(String period) {
-        LocalDate today = timeProvider.localDateNow();
+    public LocalDate[] getDateRange(String period, java.util.UUID userId) {
+        LocalDate today = userLocalDateService.todayFor(userId);
 
         return switch (period.toLowerCase()) {
             case "week" -> {
@@ -47,8 +47,8 @@ public class DashboardPeriodService {
         };
     }
 
-    public LocalDate[] getPreviousPeriod(String period) {
-        LocalDate[] currentRange = getDateRange(period);
+    public LocalDate[] getPreviousPeriod(String period, java.util.UUID userId) {
+        LocalDate[] currentRange = getDateRange(period, userId);
 
         LocalDate previousStart = switch (period.toLowerCase()) {
             case "week" -> currentRange[0].minusWeeks(1);

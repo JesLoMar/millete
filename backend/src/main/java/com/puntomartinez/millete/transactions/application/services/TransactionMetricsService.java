@@ -22,10 +22,12 @@ public class TransactionMetricsService implements GetTransactionMetricsUseCase {
     @Transactional(readOnly = true)
     public MetricsResult getMetrics(MetricsCommand command) {
         LocalDate[] currentRange =
-                transactionPeriodService.getDateRange(command.period());
+                transactionPeriodService.getDateRange(
+                        command.period(), command.userId());
 
         LocalDate[] previousRange =
-                transactionPeriodService.getPreviousPeriod(command.period());
+                transactionPeriodService.getPreviousPeriod(
+                        command.period(), command.userId());
 
         TransactionAggregates currentAggregates =
                 transactionRepository.getAggregatesByUserIdAndDateBetween(

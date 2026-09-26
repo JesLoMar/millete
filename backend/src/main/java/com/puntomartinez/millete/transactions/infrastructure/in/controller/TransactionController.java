@@ -88,7 +88,7 @@ public class TransactionController {
         Transaction.TransactionType transactionType = parseType(type);
 
         LocalDate[] range =
-                transactionPeriodService.getDateRange(period);
+                transactionPeriodService.getDateRange(period, userId);
 
         long totalElements =
                 listTransactionsUseCase.countByUserIdAndFilters(

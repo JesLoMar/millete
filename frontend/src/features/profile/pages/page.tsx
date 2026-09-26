@@ -10,6 +10,7 @@ import { DeleteAccountSection } from '../components/DeleteAccountSection';
 import { NotificationsTable } from '../components/NotificationsTable';
 import { PersonalInfoSection } from '../components/PersonalInfoSection';
 import { SessionsSection } from '../components/SessionsSection';
+import { TimezoneSection } from '../components/TimezoneSection';
 
 export const ProfilePage = () => {
   const { t } = useTranslation('userProfile');
@@ -42,6 +43,7 @@ export const ProfilePage = () => {
             </h1>
 
             <PersonalInfoSection />
+            <TimezoneSection />
             <ChangePasswordSection />
 
             <div

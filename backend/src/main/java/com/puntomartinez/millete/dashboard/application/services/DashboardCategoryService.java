@@ -32,7 +32,7 @@ public class DashboardCategoryService {
             String period
     ) {
         LocalDate[] range =
-                dashboardPeriodService.getDateRange(period);
+                dashboardPeriodService.getDateRange(period, userId);
 
         List<TransactionQueryPort.TransactionData> expenses =
                 transactionQueryPort.findByUserIdAndDateBetween(

@@ -1,5 +1,13 @@
 {
   "title": "Profil",
+  "timezone": {
+    "title": "Fuseau horaire",
+    "description": "Utilisé pour calculer vos dates locales et les horaires de l’application.",
+    "label": "Fuseau horaire",
+    "save": "Enregistrer le fuseau horaire",
+    "success": "Fuseau horaire enregistré",
+    "error": "Erreur lors de l’enregistrement du fuseau horaire"
+  },
   "personalInfo": {
     "title": "Informations personnelles",
     "description": "Les informations de base de votre compte",

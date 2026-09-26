@@ -30,7 +30,7 @@ public class DashboardBudgetService {
             String period
     ) {
         LocalDate[] range =
-                dashboardPeriodService.getDateRange(period);
+                dashboardPeriodService.getDateRange(period, userId);
 
         List<CategoryQueryPort.CategoryData> categoriesWithBudget =
                 categoryQueryPort.findCategoriesWithBudgetByUserId(userId);

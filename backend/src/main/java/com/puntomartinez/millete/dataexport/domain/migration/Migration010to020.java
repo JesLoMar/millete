@@ -21,7 +21,7 @@ public class Migration010to020 implements DataMigration {
 
     @Override
     public String description() {
-        return "Normaliza los importes de las transacciones planificadas a valores positivos";
+        return "Normaliza importes planificados y consolida el contrato temporal LocalDate/Instant";
     }
 
     @Override
