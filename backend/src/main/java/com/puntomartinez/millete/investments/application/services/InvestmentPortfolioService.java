@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.investments.domain.model.*;
 import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases;
 import com.puntomartinez.millete.investments.domain.ports.out.*;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.beans.factory.ObjectProvider;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -94,8 +97,22 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     public List<AssetSector> listSectors() { return assets.findActiveSectors(); }
 
     @Override @Transactional
-    public Activity recordActivity(UUID userId, RecordActivityCommand command) {
+    public Activity recordActivity(UUID userId, RecordActivityCommand command, String idempotencyKey) {
         activities.lockUserPortfolio(userId);
+        String normalizedKey = normalizeIdempotencyKey(idempotencyKey);
+        String requestHash = fingerprint(command);
+        Optional<ActivityRepository.ActivityRequest> previous =
+                activities.findByUserIdAndIdempotencyKey(userId, normalizedKey);
+        if (previous.isPresent()) {
+            ActivityRepository.ActivityRequest request = previous.get();
+            if (!request.requestHash().equals(requestHash)) {
+                throw new InvalidInputException(
+                        "La clave Idempotency-Key ya se usó con otra actividad."
+                );
+            }
+            return request.activity();
+        }
+
         validateActivityAsset(userId, command);
         Instant occurredAt = command.occurredAt() == null ? time.now() : command.occurredAt();
         String localCurrency = localCurrencyAt(userId, occurredAt);
@@ -137,8 +154,30 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
             saved.attachTransaction(transactionId);
             saved = activities.save(saved);
         }
+        activities.saveActivityRequest(userId, normalizedKey, requestHash, saved.getId(), time.now());
         rebuildUser(userId);
         return saved;
+    }
+
+    private String normalizeIdempotencyKey(String value) {
+        if (value == null || value.isBlank()) {
+            throw new InvalidInputException("La cabecera Idempotency-Key es obligatoria.");
+        }
+        String key = value.trim();
+        if (key.length() > 128) {
+            throw new InvalidInputException("La cabecera Idempotency-Key no puede superar 128 caracteres.");
+        }
+        return key;
+    }
+
+    private String fingerprint(RecordActivityCommand command) {
+        Objects.requireNonNull(command, "command");
+        try {
+            byte[] serialized = mapper.writeValueAsBytes(command);
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(serialized));
+        } catch (JsonProcessingException | NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("No se pudo calcular la huella de la actividad", exception);
+        }
     }
 
     @Override @Transactional
@@ -146,7 +185,9 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
         activities.lockUserPortfolio(userId);
         Activity activity = requireActivity(userId, activityId);
         if (activity.getType() == ActivityType.DEPOSIT || activity.getType() == ActivityType.WITHDRAW) {
-            throw new IllegalArgumentException("DEPOSIT and WITHDRAW fields are immutable; only comment can change");
+            throw new InvalidInputException(
+                    "DEPOSIT y WITHDRAW son inmutables. Registra una Activity compensatoria para corregir el importe; solo se puede editar el comentario."
+            );
         }
         Objects.requireNonNull(command.occurredAt(), "occurredAt is required");
         String before = json(activity);
@@ -318,6 +359,14 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     }
 
     @Override @Transactional(readOnly = true)
+    public List<FxRate> listFxRates(Instant from, Instant to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            throw new InvalidInputException("El rango de fechas FX no es válido.");
+        }
+        return marketData.fxRates(from, to);
+    }
+
+    @Override @Transactional(readOnly = true)
     public Map<String, BigDecimal> cashBalances(UUID userId) {
         return PortfolioReplay.replay(userId, activities.findActivitiesByUserId(userId), holdings.findHoldingsByUserId(userId)).cashBalances();
     }
@@ -326,6 +375,50 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     public PortfolioView portfolio(UUID userId, Instant at) {
         Instant asOf = at == null ? time.now() : at;
         return portfolioAt(userId, asOf, localCurrencyAt(userId, asOf), false);
+    }
+
+    @Override @Transactional(readOnly = true)
+    public List<ClosedPositionView> closedPositions(UUID userId, Instant from, Instant to) {
+        Instant end = to == null ? time.now() : to;
+        List<Activity> userActivities = activities.findActivitiesByUserId(userId).stream()
+                .filter(activity -> !activity.getOccurredAt().isAfter(end))
+                .sorted(activityOrder()).toList();
+        List<Holding> userHoldings = holdings.findHoldingsByUserId(userId).stream()
+                .filter(holding -> !holding.snapshotAt().isAfter(end)).toList();
+        PortfolioReplay.Result replay = PortfolioReplay.replay(userId, userActivities, userHoldings);
+        Map<UUID, Activity> byActivityId = userActivities.stream()
+                .collect(Collectors.toMap(Activity::getId, activity -> activity));
+        Map<UUID, List<LotConsumption>> byLot = replay.consumptions().stream()
+                .collect(Collectors.groupingBy(LotConsumption::lotId));
+        Map<UUID, Asset> byAsset = assets.findAssetsByUserId(userId, true).stream()
+                .collect(Collectors.toMap(Asset::getId, asset -> asset));
+        List<ClosedPositionView> result = new ArrayList<>();
+        for (Lot lot : replay.lots()) {
+            if (lot.getRemainingQuantity().signum() != 0) continue;
+            List<LotConsumption> lotSales = byLot.getOrDefault(lot.getId(), List.of());
+            if (lotSales.isEmpty()) continue;
+            Instant closedAt = lotSales.stream().map(consumption -> byActivityId.get(consumption.sellActivityId()))
+                    .filter(Objects::nonNull).map(Activity::getOccurredAt).max(Comparator.naturalOrder()).orElse(null);
+            if (closedAt == null || (from != null && closedAt.isBefore(from))) continue;
+            BigDecimal proceeds = BigDecimal.ZERO;
+            for (LotConsumption consumption : lotSales) {
+                Activity sale = byActivityId.get(consumption.sellActivityId());
+                if (sale != null && sale.getQuantity() != null && sale.getQuantity().signum() > 0) {
+                    proceeds = proceeds.add(sale.getAmount().multiply(consumption.quantity())
+                            .divide(sale.getQuantity(), 16, RoundingMode.HALF_UP));
+                }
+            }
+            BigDecimal costBasis = lotSales.stream().map(LotConsumption::costBasis)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            Asset asset = byAsset.get(lot.getAssetId());
+            if (asset == null) continue;
+            result.add(new ClosedPositionView(asset.getId(), asset.getName(), asset.getSymbol(),
+                    lot.getCurrency(), lot.getOriginalQuantity(), costBasis, proceeds,
+                    proceeds.subtract(costBasis), lot.getAcquiredAt(), closedAt,
+                    lot.isSynthetic(), lot.isSynthetic()));
+        }
+        result.sort(Comparator.comparing(ClosedPositionView::closedAt).reversed());
+        return List.copyOf(result);
     }
 
     private PortfolioView portfolioAt(UUID userId, Instant asOf, String local, boolean includeHiddenAssets) {

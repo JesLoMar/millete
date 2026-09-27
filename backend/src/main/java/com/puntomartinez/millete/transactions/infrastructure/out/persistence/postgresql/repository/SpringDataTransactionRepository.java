@@ -55,6 +55,7 @@ public interface SpringDataTransactionRepository
                 t.modifiedAt = :modifiedAt
             WHERE t.categoryId = :categoryId
               AND t.userId = :userId
+              AND t.investmentActivityId IS NULL
               AND t.active = true
             """)
     void clearCategoryFromActiveTransactions(
@@ -85,7 +86,9 @@ public interface SpringDataTransactionRepository
             ),
             COUNT(CASE WHEN t.type IN ('INCOME', 'EXPENSE') THEN 1 ELSE null END),
             COALESCE(SUM(CASE WHEN t.type = 'TRANSFER_IN' THEN t.amount ELSE 0 END), 0),
-            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER_OUT' THEN t.amount ELSE 0 END), 0)
+            COALESCE(SUM(CASE WHEN t.type = 'TRANSFER_OUT' THEN t.amount ELSE 0 END), 0),
+            COUNT(CASE WHEN t.type = 'TRANSFER_IN' THEN 1 ELSE null END),
+            COUNT(CASE WHEN t.type = 'TRANSFER_OUT' THEN 1 ELSE null END)
         FROM TransactionEntity t
         WHERE t.userId = :userId
           AND t.date >= :start

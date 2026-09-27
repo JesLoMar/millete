@@ -2,6 +2,7 @@ package com.puntomartinez.millete.dataexport.infrastructure.out.transactions;
 
 import com.puntomartinez.millete.dataexport.domain.model.TransactionSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.TransactionImportPort;
+import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.transactions.domain.model.Transaction;
 import com.puntomartinez.millete.transactions.domain.ports.out.TransactionRepository;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,15 @@ public class TransactionImportAdapter implements TransactionImportPort {
         int importedCount = 0;
 
         for (TransactionSnapshot snapshot : transactions) {
+
+            // Investment transfers are derived from Activities and cannot be
+            // restored as independent daily transactions.
+            if (Transaction.TransactionType.TRANSFER_IN.name().equals(snapshot.type())
+                    || Transaction.TransactionType.TRANSFER_OUT.name().equals(snapshot.type())) {
+                throw new InvalidInputException(
+                        "Las transferencias de inversión se regeneran desde sus Activities y no se pueden importar como transacciones independientes."
+                );
+            }
 
             if (!snapshot.active()) {
                 continue;

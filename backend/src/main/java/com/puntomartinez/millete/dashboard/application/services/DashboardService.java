@@ -91,6 +91,10 @@ public class DashboardService implements GetDashboardDataUseCase {
                 sumByType(currentTransactions, "INCOME");
         BigDecimal currentExpenses =
                 sumByType(currentTransactions, "EXPENSE");
+        BigDecimal currentTransferIn =
+                sumByType(currentTransactions, "TRANSFER_IN");
+        BigDecimal currentTransferOut =
+                sumByType(currentTransactions, "TRANSFER_OUT");
         BigDecimal currentBalance =
                 currentIncome.subtract(currentExpenses);
 
@@ -111,11 +115,22 @@ public class DashboardService implements GetDashboardDataUseCase {
                 currentIncome,
                 currentExpenses,
                 currentBalance,
+                currentTransferIn,
+                currentTransferOut,
+                countByType(currentTransactions, "TRANSFER_IN"),
+                countByType(currentTransactions, "TRANSFER_OUT"),
                 balanceTrend,
                 calculateTrend(currentIncome, previousIncome),
                 calculateTrend(currentExpenses, previousExpenses),
                 balanceTrend
         );
+    }
+
+    private long countByType(
+            List<TransactionQueryPort.TransactionData> transactions,
+            String type
+    ) {
+        return transactions.stream().filter(t -> type.equals(t.type())).count();
     }
 
     @Override

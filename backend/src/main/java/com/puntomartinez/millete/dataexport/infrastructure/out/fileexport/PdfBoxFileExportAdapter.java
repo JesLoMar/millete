@@ -140,7 +140,7 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                 );
 
                 if (!data.transactions().isEmpty()) {
-                    drawTransactions(
+                    y = drawTransactions(
                             context,
                             data.transactions(),
                             y - SPACE_DIVIDER_TO_CONTENT
@@ -149,6 +149,32 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                     drawEmptyMessage(
                             context.content(),
                             "No transactions in this period.",
+                            y - SPACE_DIVIDER_TO_CONTENT
+                    );
+                    y -= SPACE_DIVIDER_TO_CONTENT + 30;
+                }
+
+                if (y < 140) {
+                    context.startNewPage();
+                    y = PAGE_SIZE.getHeight() - PAGE_MARGIN;
+                }
+
+                y = drawSectionTitle(
+                        context.content(),
+                        "Transfers in Period",
+                        y - SPACE_BETWEEN_SECTIONS
+                );
+
+                if (!data.transfers().isEmpty()) {
+                    drawTransfers(
+                            context,
+                            data.transfers(),
+                            y - SPACE_DIVIDER_TO_CONTENT
+                    );
+                } else {
+                    drawEmptyMessage(
+                            context.content(),
+                            "No transfers in this period.",
                             y - SPACE_DIVIDER_TO_CONTENT
                     );
                 }
@@ -379,6 +405,34 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                 GREEN_B
         );
 
+        y -= cardHeight + rowGap;
+
+        drawMetricCard(
+                content,
+                PAGE_MARGIN,
+                y,
+                cardWidth,
+                cardHeight,
+                "TRANSFERS IN",
+                "+" + formatEuro(summary.transferIn()) + " (" + summary.transferInCount() + ")",
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
+        drawMetricCard(
+                content,
+                PAGE_MARGIN + cardWidth + gap,
+                y,
+                cardWidth,
+                cardHeight,
+                "TRANSFERS OUT",
+                "-" + formatEuro(summary.transferOut()) + " (" + summary.transferOutCount() + ")",
+                TEXT_COLOR_R,
+                TEXT_COLOR_G,
+                TEXT_COLOR_B
+        );
+
         return y - cardHeight;
     }
 
@@ -537,7 +591,7 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
         return rowY;
     }
 
-    private void drawTransactions(
+    private float drawTransactions(
             PdfPageContext context,
             List<PdfExportData.TransactionRow> transactions,
             float y
@@ -622,6 +676,41 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                     widths
             );
 
+            rowY -= TABLE_ROW_HEIGHT;
+            alternate = !alternate;
+        }
+        return rowY;
+    }
+
+    private void drawTransfers(
+            PdfPageContext context,
+            List<PdfExportData.TransferRow> transfers,
+            float y
+    ) throws IOException {
+        String[] headers = {"Date", "Description", "Direction", "Amount"};
+        float[] widths = {80, 250, 95, 75};
+        drawTableHeader(context.content(), y, headers, widths);
+        float rowY = y - TABLE_HEADER_HEIGHT;
+        boolean alternate = false;
+
+        for (PdfExportData.TransferRow transfer : transfers) {
+            if (rowY < 55) {
+                context.startNewPage();
+                rowY = PAGE_SIZE.getHeight() - PAGE_MARGIN - TABLE_HEADER_HEIGHT;
+                drawTableHeader(context.content(), rowY, headers, widths);
+                rowY -= TABLE_HEADER_HEIGHT;
+            }
+
+            drawTableRowBackground(context.content(), rowY, widths, alternate);
+            boolean incoming = "Transferencia recibida".equals(transfer.type());
+            String date = transfer.date() == null ? "" : transfer.date().toString();
+            String[] values = {
+                    safe(date),
+                    safe(transfer.description()),
+                    safe(transfer.type()),
+                    (incoming ? "+" : "-") + formatEuro(transfer.amount())
+            };
+            drawTableRow(context.content(), rowY, values, widths);
             rowY -= TABLE_ROW_HEIGHT;
             alternate = !alternate;
         }

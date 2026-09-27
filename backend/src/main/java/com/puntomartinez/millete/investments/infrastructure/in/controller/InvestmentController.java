@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/v1/investments")
+// Superseded by the operation-specific InvestmentApiController contract.
 public class InvestmentController {
     private final InvestmentUseCases useCases;
     public InvestmentController(InvestmentUseCases useCases) { this.useCases = useCases; }
@@ -42,8 +41,9 @@ public class InvestmentController {
     public List<AssetSector> sectors() { return useCases.listSectors(); }
 
     @PostMapping("/activities")
-    public ResponseEntity<ActivityResponseDTO> recordActivity(@Valid @RequestBody RecordActivityRequestDTO r, Authentication a) {
-        Activity activity = useCases.recordActivity(user(a), new InvestmentUseCases.RecordActivityCommand(r.type(),r.occurredAt(),r.assetId(),r.quantity(),r.unitPrice(),r.amount(),r.currency(),r.secondaryAmount(),r.secondaryCurrency(),r.ratio(),r.exchangeRate(),r.comment()));
+    public ResponseEntity<ActivityResponseDTO> recordActivity(@Valid @RequestBody RecordActivityRequestDTO r,
+            @RequestHeader("Idempotency-Key") String idempotencyKey, Authentication a) {
+        Activity activity = useCases.recordActivity(user(a), new InvestmentUseCases.RecordActivityCommand(r.type(),r.occurredAt(),r.assetId(),r.quantity(),r.unitPrice(),r.amount(),r.currency(),r.secondaryAmount(),r.secondaryCurrency(),r.ratio(),r.exchangeRate(),r.comment()), idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(activity(activity));
     }
     @GetMapping("/activities")

@@ -14,7 +14,11 @@ public interface InvestmentUseCases {
     void hideAsset(UUID userId, UUID assetId);
     List<Asset> listAssets(UUID userId, boolean includeInactive);
     List<AssetSector> listSectors();
-    Activity recordActivity(UUID userId, RecordActivityCommand command);
+    Activity recordActivity(UUID userId, RecordActivityCommand command, String idempotencyKey);
+
+    default Activity recordActivity(UUID userId, RecordActivityCommand command) {
+        return recordActivity(userId, command, null);
+    }
     Activity editActivity(UUID userId, UUID activityId, EditActivityCommand command);
     Activity editTransferComment(UUID userId, UUID activityId, String comment);
     List<Activity> listActivities(UUID userId, UUID assetId);
@@ -24,10 +28,12 @@ public interface InvestmentUseCases {
                                              List<RecordActivityCommand> history);
     List<Holding> listHoldings(UUID userId, UUID assetId);
     List<AssetPrice> listPrices(UUID userId, UUID assetId, Instant from, Instant to);
+    List<FxRate> listFxRates(Instant from, Instant to);
     AssetPrice addPrice(UUID userId, AddPriceCommand command);
     FxRate addFxRate(AddFxRateCommand command);
     Map<String, BigDecimal> cashBalances(UUID userId);
     PortfolioView portfolio(UUID userId, Instant at);
+    List<ClosedPositionView> closedPositions(UUID userId, Instant from, Instant to);
     PerformanceAttribution performance(UUID userId, Instant from, Instant to);
     RefreshResult refreshFromProvider(UUID userId, Instant from, Instant to);
     HealthReport health(UUID userId);
@@ -66,6 +72,12 @@ public interface InvestmentUseCases {
                              BigDecimal fxRateToLocal, BigDecimal amountInLocalCurrency,
                              Instant fxTimestamp, String fxSource,
                              ValuationStatus valuationStatus) { }
+    record ClosedPositionView(UUID assetId, String assetName, String symbol,
+                              String currency, BigDecimal quantity,
+                              BigDecimal costBasis, BigDecimal proceeds,
+                              BigDecimal realizedGain, Instant openedAt,
+                              Instant closedAt, boolean estimated,
+                              boolean historyIncomplete) { }
     record PortfolioView(Instant asOf, Map<String, BigDecimal> cashBalances,
                          List<PositionView> positions, BigDecimal totalInLocalCurrency,
                          String localCurrency, boolean estimated,

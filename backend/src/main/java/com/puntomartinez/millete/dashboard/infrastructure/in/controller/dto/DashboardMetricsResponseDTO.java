@@ -20,9 +20,19 @@ public record DashboardMetricsResponseDTO(
         BigDecimal income,
         BigDecimal expenses,
         BigDecimal savings,
+        BigDecimal transferIn,
+        BigDecimal transferOut,
+        long transferInCount,
+        long transferOutCount,
         double balanceTrend,
         double incomeTrend,
         double expensesTrend,
         double savingsTrend
 ) {
+    public DashboardMetricsResponseDTO(BigDecimal balance, BigDecimal income, BigDecimal expenses,
+            BigDecimal savings, double balanceTrend, double incomeTrend,
+            double expensesTrend, double savingsTrend) {
+        this(balance, income, expenses, savings, BigDecimal.ZERO, BigDecimal.ZERO, 0L, 0L,
+                balanceTrend, incomeTrend, expensesTrend, savingsTrend);
+    }
 }

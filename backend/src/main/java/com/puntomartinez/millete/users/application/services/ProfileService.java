@@ -226,6 +226,8 @@ public class ProfileService implements ManageProfileUseCase {
             );
         }
 
+        currencyHistoryRepository.lockForUpdate(userId);
+
         UserPreferences userPreferences =
                 userPreferencesRepository.findByUserId(userId)
                         .orElseGet(() -> {
@@ -244,26 +246,39 @@ public class ProfileService implements ManageProfileUseCase {
         Instant now = timeProvider.now();
         if (nextCurrency instanceof String currencyCode) {
             if (openPeriod.isEmpty()) {
-                // Backfill legacy profiles from account creation, without changing stored transaction amounts.
-                Instant createdAt = userRepository.findById(userId)
-                        .map(User::getCreatedAt).orElse(now);
-                currencyHistoryRepository.save(
-                        new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
-                                UUID.randomUUID(), userId, currencyCode,
-                                createdAt, null, true
-                        )
-                );
+                var latestPeriod = currencyHistoryRepository.findLatestByUserId(userId);
+                if (latestPeriod.isEmpty()) {
+                    // Backfill only the first recorded preference from account creation.
+                    Instant createdAt = userRepository.findById(userId)
+                            .map(User::getCreatedAt).orElse(now);
+                    currencyHistoryRepository.save(
+                            new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
+                                    UUID.randomUUID(), userId, currencyCode,
+                                    createdAt, null, true
+                            )
+                    );
+                } else {
+                    Instant start = currencyPeriodStart(now, latestPeriod.get());
+                    currencyHistoryRepository.save(
+                            new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
+                                    UUID.randomUUID(), userId, currencyCode,
+                                    start, null, false
+                            )
+                    );
+                }
             } else if (!openPeriod.get().currency().equals(currencyCode)) {
-                currencyHistoryRepository.closeOpenPeriod(userId, now);
+                Instant boundary = currencyPeriodBoundary(now, openPeriod.get().validFrom());
+                currencyHistoryRepository.closeOpenPeriod(userId, boundary);
                 currencyHistoryRepository.save(
                         new UserLocalCurrencyHistoryRepository.CurrencyPeriod(
-                                UUID.randomUUID(), userId, currencyCode, now,
+                                UUID.randomUUID(), userId, currencyCode, boundary,
                                 null, false
                         )
                 );
             }
         } else if (openPeriod.isPresent()) {
-            currencyHistoryRepository.closeOpenPeriod(userId, now);
+            currencyHistoryRepository.closeOpenPeriod(
+                    userId, currencyPeriodBoundary(now, openPeriod.get().validFrom()));
         }
 
         userPreferences.setPreferences(safePreferences);
@@ -396,5 +411,23 @@ public class ProfileService implements ManageProfileUseCase {
         }
 
         return value.trim();
+    }
+
+    private Instant currencyPeriodBoundary(Instant requested, Instant currentValidFrom) {
+        return requested.isAfter(currentValidFrom)
+                ? requested
+                : currentValidFrom.plusMillis(1);
+    }
+
+    private Instant currencyPeriodStart(
+            Instant requested,
+            UserLocalCurrencyHistoryRepository.CurrencyPeriod previousPeriod
+    ) {
+        if (previousPeriod.validTo() == null) {
+            return currencyPeriodBoundary(requested, previousPeriod.validFrom());
+        }
+        return requested.isBefore(previousPeriod.validTo())
+                ? previousPeriod.validTo()
+                : requested;
     }
 }

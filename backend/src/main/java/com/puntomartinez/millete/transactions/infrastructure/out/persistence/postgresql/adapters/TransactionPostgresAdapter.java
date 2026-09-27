@@ -239,13 +239,17 @@ public class TransactionPostgresAdapter implements TransactionRepository {
 
         BigDecimal transferIn = toBigDecimal(result[3]);
         BigDecimal transferOut = toBigDecimal(result[4]);
+        long transferInCount = result[5] != null ? ((Number) result[5]).longValue() : 0L;
+        long transferOutCount = result[6] != null ? ((Number) result[6]).longValue() : 0L;
 
         return new TransactionAggregates(
                 totalIncome,
                 totalExpense,
                 count,
                 transferIn,
-                transferOut
+                transferOut,
+                transferInCount,
+                transferOutCount
         );
     }
 

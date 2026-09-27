@@ -248,6 +248,23 @@
     </tr>
 </table>
 
+<table class="metrics-grid">
+    <tr>
+        <td style="padding-right: 6px;">
+            <div class="metric-card">
+                <div class="label">Transfers In</div>
+                <div class="value" th:text="'+' + ${#numbers.formatDecimal(summary.transferIn, 0, 'COMMA', 2, 'POINT')} + '€ (' + ${summary.transferInCount} + ')' "></div>
+            </div>
+        </td>
+        <td style="padding-left: 6px;">
+            <div class="metric-card">
+                <div class="label">Transfers Out</div>
+                <div class="value" th:text="'-' + ${#numbers.formatDecimal(summary.transferOut, 0, 'COMMA', 2, 'POINT')} + '€ (' + ${summary.transferOutCount} + ')' "></div>
+            </div>
+        </td>
+    </tr>
+</table>
+
 <div class="investments-section">
     <h2 class="section-title">Active Investments</h2>
 
@@ -362,6 +379,32 @@
     <p class="empty-message" th:if="${!hasTransactions}">
         No transactions in this period.
     </p>
+</div>
+
+<div class="transactions-section">
+    <h2 class="section-title">Transfers in Period</h2>
+
+    <div class="table-container" th:if="${hasTransfers}">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Direction</th>
+                <th>Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tx : ${transfers}">
+                <td style="color:#3D2B1F;" th:text="${#temporals.format(tx.date, 'dd/MM/yyyy')}"></td>
+                <td th:text="${tx.description}"></td>
+                <td th:text="${tx.type}"></td>
+                <td th:text="${tx.type == 'Transferencia recibida' ? '+' : '-'} + ${#numbers.formatDecimal(tx.amount, 0, 'COMMA', 2, 'POINT')} + '€'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="empty-message" th:if="${!hasTransfers}">No transfers in this period.</p>
 </div>
 
 </body>

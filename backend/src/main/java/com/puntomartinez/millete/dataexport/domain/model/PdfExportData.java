@@ -11,15 +11,25 @@ public record PdfExportData(
         LocalDate endDate,
         Summary summary,
         List<TransactionRow> transactions,
+        List<TransferRow> transfers,
         List<InvestmentRow> investments,
         List<SavingsGoalRow> savingsGoals
 ) {
+    public PdfExportData(String periodDisplayName, LocalDate startDate, LocalDate endDate,
+            Summary summary, List<TransactionRow> transactions, List<InvestmentRow> investments,
+            List<SavingsGoalRow> savingsGoals) {
+        this(periodDisplayName, startDate, endDate, summary, transactions, List.of(), investments, savingsGoals);
+    }
 
     public record Summary(
             BigDecimal balance,
             BigDecimal totalIncome,
             BigDecimal totalExpenses,
             int transactionCount,
+            BigDecimal transferIn,
+            BigDecimal transferOut,
+            int transferInCount,
+            int transferOutCount,
             String topCategoryName,
             BigDecimal topCategoryAmount,
             double topCategoryPercentage,
@@ -27,6 +37,23 @@ public record PdfExportData(
             int activeInvestmentsCount,
             int activeSavingsGoalsCount,
             BigDecimal totalSavedAmount
+    ) {
+        public Summary(BigDecimal balance, BigDecimal totalIncome, BigDecimal totalExpenses,
+                int transactionCount, String topCategoryName, BigDecimal topCategoryAmount,
+                double topCategoryPercentage, BigDecimal investmentsTotalValue,
+                int activeInvestmentsCount, int activeSavingsGoalsCount, BigDecimal totalSavedAmount) {
+            this(balance, totalIncome, totalExpenses, transactionCount, BigDecimal.ZERO,
+                    BigDecimal.ZERO, 0, 0, topCategoryName, topCategoryAmount,
+                    topCategoryPercentage, investmentsTotalValue, activeInvestmentsCount,
+                    activeSavingsGoalsCount, totalSavedAmount);
+        }
+    }
+
+    public record TransferRow(
+            LocalDate date,
+            String description,
+            String type,
+            BigDecimal amount
     ) {}
 
     public record TransactionRow(

@@ -75,6 +75,21 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
         return a;
     }
 
+    @Override public Optional<ActivityRequest> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey) {
+        return one("SELECT r.request_hash,a.*,t.id AS linked_tx FROM investment_activity_requests r "
+                        + "JOIN activities a ON a.id=r.activity_id AND a.user_id=r.user_id "
+                        + "LEFT JOIN transactions t ON t.investment_activity_id=a.id "
+                        + "WHERE r.user_id=? AND r.idempotency_key=?",
+                (rs, n) -> new ActivityRequest(activityMapper().mapRow(rs, n), rs.getString("request_hash")),
+                userId, idempotencyKey);
+    }
+
+    @Override public void saveActivityRequest(UUID userId, String idempotencyKey, String requestHash,
+                                              UUID activityId, Instant createdAt) {
+        jdbc.update("INSERT INTO investment_activity_requests(user_id,idempotency_key,request_hash,activity_id,created_at) VALUES(?,?,?,?,?)",
+                userId, idempotencyKey, requestHash, activityId, ts(createdAt));
+    }
+
     @Override public Optional<Activity> findActivityByIdAndUserId(UUID id, UUID userId) {
         return one("SELECT a.*,t.id AS linked_tx FROM activities a LEFT JOIN transactions t ON t.investment_activity_id=a.id WHERE a.id=? AND a.user_id=? AND a.active=true", activityMapper(), id, userId);
     }
@@ -85,6 +100,37 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
 
     @Override public List<Activity> findActivitiesByUserId(UUID userId) {
         return jdbc.query("SELECT a.*,t.id AS linked_tx FROM activities a LEFT JOIN transactions t ON t.investment_activity_id=a.id WHERE a.user_id=? AND a.active=true ORDER BY occurred_at,ordering_key,id", activityMapper(), userId);
+    }
+
+    @Override public ActivityPage findActiveActivitiesPageByUserId(UUID userId, int offset, int limit) {
+        return activityPage(userId, null, offset, limit);
+    }
+
+    @Override public ActivityPage findActiveActivitiesPageByUserIdAndAssetId(
+            UUID userId, UUID assetId, int offset, int limit) {
+        if (assetId == null) throw new IllegalArgumentException("assetId is required");
+        return activityPage(userId, assetId, offset, limit);
+    }
+
+    @Override public List<HistoricalActivity> findActivityHistoryByUserId(UUID userId) {
+        RowMapper<Activity> mapper = activityMapper();
+        return jdbc.query("SELECT a.*,t.id AS linked_tx FROM activities a LEFT JOIN transactions t ON t.investment_activity_id=a.id WHERE a.user_id=? ORDER BY a.occurred_at,a.ordering_key,a.id",
+                (rs, n) -> new HistoricalActivity(mapper.mapRow(rs, n), rs.getBoolean("active")), userId);
+    }
+
+    private ActivityPage activityPage(UUID userId, UUID assetId, int offset, int limit) {
+        if (offset < 0) throw new IllegalArgumentException("offset must not be negative");
+        if (limit <= 0 || limit > 500) throw new IllegalArgumentException("limit must be between 1 and 500");
+        String filter = assetId == null ? "a.user_id=? AND a.active=true" : "a.user_id=? AND a.asset_id=? AND a.active=true";
+        Object[] filterArgs = assetId == null ? new Object[]{userId} : new Object[]{userId, assetId};
+        List<Object> pageArgs = new ArrayList<>(Arrays.asList(filterArgs));
+        pageArgs.add(limit);
+        pageArgs.add(offset);
+        List<Activity> page = jdbc.query("SELECT a.*,t.id AS linked_tx FROM activities a LEFT JOIN transactions t ON t.investment_activity_id=a.id WHERE " + filter
+                        + " ORDER BY a.occurred_at,a.ordering_key,a.id LIMIT ? OFFSET ?",
+                activityMapper(), pageArgs.toArray());
+        Long total = jdbc.queryForObject("SELECT COUNT(*) FROM activities a WHERE " + filter, Long.class, filterArgs);
+        return new ActivityPage(page, offset, limit, total == null ? 0 : total);
     }
 
     @Override public void saveAudit(ActivityAudit a) {

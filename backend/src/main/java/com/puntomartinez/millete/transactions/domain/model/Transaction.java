@@ -7,6 +7,8 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Currency;
+import java.util.Locale;
 import java.util.UUID;
 
 @Getter
@@ -55,6 +57,7 @@ public class Transaction {
         validateAmount(amount);
         validateDate(date);
         validateType(type);
+        validateInvestmentLink(type, currency, investmentActivityId, investmentTimeZone);
         validateDescription(description);
         validateCreatedAt(createdAt);
         validateModifiedAt(modifiedAt);
@@ -157,9 +160,11 @@ public class Transaction {
             String description,
             UUID categoryId
     ) {
+        ensureDailyMutable();
         validateAmount(amount);
         validateDate(date);
         validateType(type);
+        validateInvestmentLink(type, currency, investmentActivityId, investmentTimeZone);
         validateDescription(description);
 
         this.amount = amount;
@@ -171,6 +176,7 @@ public class Transaction {
     }
 
     public void unassignCategory(TimeProvider timeProvider) {
+        ensureDailyMutable();
         if (this.categoryId == null) {
             return;
         }
@@ -179,6 +185,7 @@ public class Transaction {
     }
 
     public void deactivate(TimeProvider timeProvider) {
+        ensureDailyMutable();
         if (!this.active) {
             return;
         }
@@ -253,6 +260,43 @@ public class Transaction {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"
             );
+        }
+    }
+
+    private void ensureDailyMutable() {
+        if (investmentActivityId != null) {
+            throw new InvalidInputException(
+                    "Las transacciones vinculadas a inversiones son de solo lectura."
+            );
+        }
+    }
+
+    private static void validateInvestmentLink(
+            TransactionType type,
+            String currency,
+            UUID investmentActivityId,
+            String investmentTimeZone
+    ) {
+        boolean transfer = type == TransactionType.TRANSFER_IN
+                || type == TransactionType.TRANSFER_OUT;
+        if (!transfer && (investmentActivityId != null || investmentTimeZone != null)) {
+            throw new InvalidInputException(
+                    "Solo las transferencias pueden vincularse a una actividad de inversión."
+            );
+        }
+        if (transfer) {
+            if (investmentActivityId == null || investmentTimeZone == null
+                    || investmentTimeZone.isBlank() || currency == null
+                    || !currency.matches("[A-Za-z]{3}")) {
+                throw new InvalidInputException(
+                        "Una transferencia requiere Activity, moneda local y zona horaria."
+                );
+            }
+            try {
+                Currency.getInstance(currency.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException exception) {
+                throw new InvalidInputException("La moneda de transferencia no es válida.");
+            }
         }
     }
 }

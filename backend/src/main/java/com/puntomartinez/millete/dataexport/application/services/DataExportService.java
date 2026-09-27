@@ -261,6 +261,10 @@ public class DataExportService {
 
         BigDecimal totalIncome = BigDecimal.ZERO;
         BigDecimal totalExpenses = BigDecimal.ZERO;
+        BigDecimal totalTransferIn = BigDecimal.ZERO;
+        BigDecimal totalTransferOut = BigDecimal.ZERO;
+        int transferInCount = 0;
+        int transferOutCount = 0;
 
         Map<String, BigDecimal> expensesByCategory =
                 new HashMap<>();
@@ -272,7 +276,7 @@ public class DataExportService {
                         totalIncome.add(
                                 transaction.amount().abs()
                         );
-            } else {
+            } else if ("EXPENSE".equals(transaction.type())) {
                 totalExpenses =
                         totalExpenses.add(
                                 transaction.amount().abs()
@@ -289,6 +293,12 @@ public class DataExportService {
                         transaction.amount().abs(),
                         BigDecimal::add
                 );
+            } else if ("TRANSFER_IN".equals(transaction.type())) {
+                totalTransferIn = totalTransferIn.add(transaction.amount().abs());
+                transferInCount++;
+            } else if ("TRANSFER_OUT".equals(transaction.type())) {
+                totalTransferOut = totalTransferOut.add(transaction.amount().abs());
+                transferOutCount++;
             }
         }
 
@@ -336,6 +346,8 @@ public class DataExportService {
 
         List<PdfExportData.TransactionRow> txRows =
                 periodTransactions.stream()
+                        .filter(transaction -> "INCOME".equals(transaction.type())
+                                || "EXPENSE".equals(transaction.type()))
                         .map(transaction ->
                                 new PdfExportData.TransactionRow(
                                         transaction.date(),
@@ -344,14 +356,24 @@ public class DataExportService {
                                                 "Sin categoría"
                                         ),
                                         transaction.description(),
-                                        transaction.type()
-                                                .equals("INCOME")
-                                                ? "Ingreso"
-                                                : "Gasto",
+                                        "INCOME".equals(transaction.type())
+                                                ? "Ingreso" : "Gasto",
                                         transaction.amount().abs()
                                 )
                         )
                         .toList();
+
+        List<PdfExportData.TransferRow> transferRows = periodTransactions.stream()
+                .filter(transaction -> "TRANSFER_IN".equals(transaction.type())
+                        || "TRANSFER_OUT".equals(transaction.type()))
+                .map(transaction -> new PdfExportData.TransferRow(
+                        transaction.date(),
+                        transaction.description(),
+                        "TRANSFER_IN".equals(transaction.type())
+                                ? "Transferencia recibida" : "Transferencia enviada",
+                        transaction.amount().abs()
+                ))
+                .toList();
 
         List<PdfExportData.InvestmentRow> invRows =
                 activeInvestments.stream()
@@ -413,7 +435,11 @@ public class DataExportService {
                         balance,
                         totalIncome,
                         totalExpenses,
-                        periodTransactions.size(),
+                        txRows.size(),
+                        totalTransferIn,
+                        totalTransferOut,
+                        transferInCount,
+                        transferOutCount,
                         topCategoryName,
                         topCategoryAmount,
                         topCategoryPercentage,
@@ -429,6 +455,7 @@ public class DataExportService {
                 endDate,
                 summary,
                 txRows,
+                transferRows,
                 invRows,
                 sgRows
         );

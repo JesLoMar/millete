@@ -64,6 +64,8 @@ public class TransactionController {
                         result.balance(),
                         result.transferIn(),
                         result.transferOut(),
+                        result.transferInCount(),
+                        result.transferOutCount(),
                         result.count(),
                         result.incomeTrend(),
                         result.expensesTrend(),

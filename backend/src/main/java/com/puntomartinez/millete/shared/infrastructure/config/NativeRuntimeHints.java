@@ -43,5 +43,10 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
                 PdfExportData.TransactionRow.class,
                 MemberCategory.INVOKE_PUBLIC_METHODS
         );
+
+        hints.reflection().registerType(
+                PdfExportData.TransferRow.class,
+                MemberCategory.INVOKE_PUBLIC_METHODS
+        );
     }
 }

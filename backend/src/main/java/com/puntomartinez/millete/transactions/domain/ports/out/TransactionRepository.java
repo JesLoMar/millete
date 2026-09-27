@@ -68,7 +68,16 @@ public interface TransactionRepository {
             BigDecimal totalExpense,
             long count,
             BigDecimal transferIn,
-            BigDecimal transferOut
+            BigDecimal transferOut,
+            long transferInCount,
+            long transferOutCount
     ) {
+        public TransactionAggregates(BigDecimal totalIncome, BigDecimal totalExpense, long count,
+                                     BigDecimal transferIn, BigDecimal transferOut) {
+            this(totalIncome, totalExpense, count, transferIn, transferOut, 0L, 0L);
+        }
+        public TransactionAggregates(BigDecimal totalIncome, BigDecimal totalExpense, long count) {
+            this(totalIncome, totalExpense, count, BigDecimal.ZERO, BigDecimal.ZERO, 0L, 0L);
+        }
     }
 }
