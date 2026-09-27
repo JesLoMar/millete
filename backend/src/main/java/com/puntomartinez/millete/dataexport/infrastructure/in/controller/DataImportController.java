@@ -68,10 +68,13 @@ public class DataImportController {
         }
 
         try {
-            String summary = dataImportService.importUserData(file, userId);
+            DataImportService.ImportResult result = dataImportService.importUserData(file, userId);
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", summary
+                    "message", result.message(),
+                    "importedCount", result.importedCount(),
+                    "omittedLegacyInvestmentCount", result.omittedLegacyInvestmentCount(),
+                    "warnings", result.warning() == null ? java.util.List.of() : java.util.List.of(result.warning())
             ));
         } catch (RuntimeException e) {
             log.error("Error en importación: {}", e.getMessage(), e);

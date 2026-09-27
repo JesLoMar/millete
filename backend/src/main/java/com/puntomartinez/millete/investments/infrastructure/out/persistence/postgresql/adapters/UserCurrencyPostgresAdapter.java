@@ -28,4 +28,13 @@ public class UserCurrencyPostgresAdapter implements UserCurrencyPort {
         return p;
     }
     @Override public void closeCurrentPeriod(UUID userId, Instant validTo) { history.closeOpenPeriod(userId, validTo); }
+    @Override public java.util.List<UserLocalCurrencyPeriod> periods(UUID userId) {
+        return history.findAllByUserId(userId).stream().map(p -> new UserLocalCurrencyPeriod(
+                p.id(), p.userId(), p.currency(), p.validFrom(), p.validTo(), p.inferred())).toList();
+    }
+    @Override public void replacePeriods(UUID userId, java.util.List<UserLocalCurrencyPeriod> periods) {
+        history.lockForUpdate(userId);
+        history.deleteAllByUserId(userId);
+        periods.stream().sorted(java.util.Comparator.comparing(UserLocalCurrencyPeriod::validFrom)).forEach(this::savePeriod);
+    }
 }

@@ -46,4 +46,14 @@ public class UserLocalCurrencyHistoryPostgresAdapter implements UserLocalCurrenc
         jdbc.update("INSERT INTO user_local_currency_history(id,user_id,currency,valid_from,valid_to,inferred) VALUES(?,?,?,?,?,?)",
                 p.id(),p.userId(),p.currency(),Timestamp.from(p.validFrom()),p.validTo()==null?null:Timestamp.from(p.validTo()),p.inferred());
     }
+
+    @Override public List<CurrencyPeriod> findAllByUserId(UUID userId) {
+        return jdbc.query("SELECT * FROM user_local_currency_history WHERE user_id=? ORDER BY valid_from,id",
+                (rs,n) -> new CurrencyPeriod((UUID)rs.getObject("id"),(UUID)rs.getObject("user_id"),rs.getString("currency"),
+                        rs.getTimestamp("valid_from").toInstant(),rs.getTimestamp("valid_to") == null ? null : rs.getTimestamp("valid_to").toInstant(),rs.getBoolean("inferred")),userId);
+    }
+
+    @Override public void deleteAllByUserId(UUID userId) {
+        jdbc.update("DELETE FROM user_local_currency_history WHERE user_id=?", userId);
+    }
 }

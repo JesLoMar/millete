@@ -39,7 +39,12 @@ public record TransactionSnapshot(
         @JsonDeserialize(using = LegacyCompatibleInstantDeserializer.class)
         Instant modifiedAt,
 
-        @JsonProperty("active")
-        boolean active
+        @JsonProperty("active") boolean active,
+        @JsonProperty("currency") String currency,
+        @JsonProperty("investmentActivityId") UUID investmentActivityId
 ) {
+    public TransactionSnapshot(UUID id, UUID userId, UUID categoryId, BigDecimal amount, LocalDate date,
+                               String type, String description, Instant createdAt, Instant modifiedAt, boolean active) {
+        this(id, userId, categoryId, amount, date, type, description, createdAt, modifiedAt, active, null, null);
+    }
 }

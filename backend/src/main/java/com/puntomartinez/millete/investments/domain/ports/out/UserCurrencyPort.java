@@ -10,4 +10,6 @@ public interface UserCurrencyPort {
     Optional<UserLocalCurrencyPeriod> currencyAt(UUID userId, Instant at);
     UserLocalCurrencyPeriod savePeriod(UserLocalCurrencyPeriod period);
     void closeCurrentPeriod(UUID userId, Instant validTo);
+    java.util.List<UserLocalCurrencyPeriod> periods(UUID userId);
+    void replacePeriods(UUID userId, java.util.List<UserLocalCurrencyPeriod> periods);
 }

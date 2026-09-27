@@ -75,6 +75,12 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
         return a;
     }
 
+    @Override public Activity saveImported(Activity activity, boolean active) {
+        save(activity);
+        if (!active) jdbc.update("UPDATE activities SET active=false WHERE id=? AND user_id=?", activity.getId(), activity.getUserId());
+        return activity;
+    }
+
     @Override public Optional<ActivityRequest> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey) {
         return one("SELECT r.request_hash,a.*,t.id AS linked_tx FROM investment_activity_requests r "
                         + "JOIN activities a ON a.id=r.activity_id AND a.user_id=r.user_id "
@@ -160,6 +166,13 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     @Override public Holding save(Holding h) {
         jdbc.update("INSERT INTO holdings(id,user_id,asset_id,snapshot_at,quantity,acquisition_cost,currency,history_incomplete,superseded,created_at) VALUES(?,?,?,?,?,?,?,?,false,?) ON CONFLICT(id) DO UPDATE SET snapshot_at=excluded.snapshot_at,quantity=excluded.quantity,acquisition_cost=excluded.acquisition_cost,currency=excluded.currency,history_incomplete=excluded.history_incomplete",
                 h.id(), h.userId(), h.assetId(), ts(h.snapshotAt()), h.quantity(), h.acquisitionCost(), h.currency(), h.historyIncomplete(), ts(h.createdAt()));
+        return h;
+    }
+
+    @Override public Holding saveImported(Holding h) {
+        jdbc.update("INSERT INTO holdings(id,user_id,asset_id,snapshot_at,quantity,acquisition_cost,currency,history_incomplete,superseded,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                h.id(), h.userId(), h.assetId(), ts(h.snapshotAt()), h.quantity(), h.acquisitionCost(), h.currency(),
+                h.historyIncomplete(), h.superseded(), ts(h.createdAt()));
         return h;
     }
 

@@ -69,7 +69,7 @@ public class DataImportService {
     }
 
     @Transactional
-    public String importUserData(
+    public ImportResult importUserData(
             MultipartFile file,
             UUID loggedInUserId
     ) {
@@ -108,7 +108,7 @@ public class DataImportService {
             snapshot = validateAndMigrate(snapshot);
 
             int legacyInvestmentsSkipped = snapshot.investments() == null
-                    ? 0 : snapshot.investments().size();
+                    ? 0 : snapshot.investments().legacyRecordsSkipped();
 
             CategoryImportResult categoryImportResult =
                     categoryImportPort.importCategories(
@@ -136,40 +136,31 @@ public class DataImportService {
                             categoryIdMap
                     );
 
-            totalImported +=
-                    investmentImportPort.importInvestments(
-                            snapshot.investments(),
-                            loggedInUserId
-                    );
-
-            totalImported +=
-                    savingsGoalImportPort.importSavingsGoals(
-                            snapshot.savingsGoals(),
-                            loggedInUserId
-                    );
-
             totalImported += importUserPreferences(
                     snapshot,
                     loggedInUserId
             );
+
+            // Preferences establish timezone/currency context before transfer Activities are rebuilt.
+            totalImported += investmentImportPort.importInvestments(
+                    snapshot.investments(), loggedInUserId);
+
+            totalImported += savingsGoalImportPort.importSavingsGoals(
+                    snapshot.savingsGoals(), loggedInUserId);
 
             transactionImportVerificationPort
                     .verifyImportedTransactions(
                             loggedInUserId
                     );
 
-            String summary = String.format(
-                    "Importación exitosa. %d registros importados. v%s%s",
-                    totalImported,
-                    ExportVersion.CURRENT,
-                    legacyInvestmentsSkipped == 0 ? "" : String.format(
-                            " Se omitieron %d inversiones del formato antiguo porque el módulo actual es nuevo.",
-                            legacyInvestmentsSkipped
-                    )
-            );
+            String warning = legacyInvestmentsSkipped == 0 ? null : String.format(
+                    "Se omitieron %d inversiones del formato antiguo; no se crearon Holdings con esos datos.",
+                    legacyInvestmentsSkipped);
+            String summary = String.format("Importación exitosa. %d registros importados. v%s%s",
+                    totalImported, ExportVersion.CURRENT, warning == null ? "" : " " + warning);
 
             log.info(summary);
-            return summary;
+            return new ImportResult(totalImported, legacyInvestmentsSkipped, warning, summary);
 
         } catch (InvalidInputException e) {
             throw e;
@@ -186,6 +177,9 @@ public class DataImportService {
             );
         }
     }
+
+    public record ImportResult(int importedCount, int omittedLegacyInvestmentCount,
+                               String warning, String message) { }
 
     private void validateFileSize(MultipartFile file) {
         if (file.getSize() > MAX_FILE_SIZE_BYTES) {

@@ -11,6 +11,8 @@ public interface UserLocalCurrencyHistoryRepository {
     Optional<CurrencyPeriod> findLatestByUserId(UUID userId);
     void closeOpenPeriod(UUID userId, Instant validTo);
     void save(CurrencyPeriod period);
+    java.util.List<CurrencyPeriod> findAllByUserId(UUID userId);
+    void deleteAllByUserId(UUID userId);
 
     record CurrencyPeriod(UUID id, UUID userId, String currency,
                           Instant validFrom, Instant validTo, boolean inferred) { }

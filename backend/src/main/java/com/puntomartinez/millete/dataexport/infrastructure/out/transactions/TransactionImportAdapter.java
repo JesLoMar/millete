@@ -41,9 +41,8 @@ public class TransactionImportAdapter implements TransactionImportPort {
             // restored as independent daily transactions.
             if (Transaction.TransactionType.TRANSFER_IN.name().equals(snapshot.type())
                     || Transaction.TransactionType.TRANSFER_OUT.name().equals(snapshot.type())) {
-                throw new InvalidInputException(
-                        "Las transferencias de inversión se regeneran desde sus Activities y no se pueden importar como transacciones independientes."
-                );
+                // Transfers are derived from investment Activities and legacy records may not carry a reliable link.
+                continue;
             }
 
             if (!snapshot.active()) {

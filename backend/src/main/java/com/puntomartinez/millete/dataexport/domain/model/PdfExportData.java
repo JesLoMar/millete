@@ -13,13 +13,23 @@ public record PdfExportData(
         List<TransactionRow> transactions,
         List<TransferRow> transfers,
         List<InvestmentRow> investments,
-        List<SavingsGoalRow> savingsGoals
+        List<SavingsGoalRow> savingsGoals,
+        List<CashRow> cashBalances
 ) {
+    public PdfExportData(String periodDisplayName, LocalDate startDate, LocalDate endDate,
+                         Summary summary, List<TransactionRow> transactions, List<TransferRow> transfers,
+                         List<InvestmentRow> investments, List<SavingsGoalRow> savingsGoals) {
+        this(periodDisplayName, startDate, endDate, summary, transactions, transfers, investments,
+                savingsGoals, List.of());
+    }
     public PdfExportData(String periodDisplayName, LocalDate startDate, LocalDate endDate,
             Summary summary, List<TransactionRow> transactions, List<InvestmentRow> investments,
             List<SavingsGoalRow> savingsGoals) {
-        this(periodDisplayName, startDate, endDate, summary, transactions, List.of(), investments, savingsGoals);
+        this(periodDisplayName, startDate, endDate, summary, transactions, List.of(), investments,
+                savingsGoals, List.of());
     }
+
+    public record CashRow(String currency, BigDecimal balance) { }
 
     public record Summary(
             BigDecimal balance,
@@ -36,8 +46,20 @@ public record PdfExportData(
             BigDecimal investmentsTotalValue,
             int activeInvestmentsCount,
             int activeSavingsGoalsCount,
-            BigDecimal totalSavedAmount
+            BigDecimal totalSavedAmount,
+            String investmentCurrency
     ) {
+        public Summary(BigDecimal balance, BigDecimal totalIncome, BigDecimal totalExpenses,
+                int transactionCount, BigDecimal transferIn, BigDecimal transferOut,
+                int transferInCount, int transferOutCount, String topCategoryName,
+                BigDecimal topCategoryAmount, double topCategoryPercentage,
+                BigDecimal investmentsTotalValue, int activeInvestmentsCount,
+                int activeSavingsGoalsCount, BigDecimal totalSavedAmount) {
+            this(balance, totalIncome, totalExpenses, transactionCount, transferIn, transferOut,
+                    transferInCount, transferOutCount, topCategoryName, topCategoryAmount,
+                    topCategoryPercentage, investmentsTotalValue, activeInvestmentsCount,
+                    activeSavingsGoalsCount, totalSavedAmount, "EUR");
+        }
         public Summary(BigDecimal balance, BigDecimal totalIncome, BigDecimal totalExpenses,
                 int transactionCount, String topCategoryName, BigDecimal topCategoryAmount,
                 double topCategoryPercentage, BigDecimal investmentsTotalValue,
@@ -45,7 +67,7 @@ public record PdfExportData(
             this(balance, totalIncome, totalExpenses, transactionCount, BigDecimal.ZERO,
                     BigDecimal.ZERO, 0, 0, topCategoryName, topCategoryAmount,
                     topCategoryPercentage, investmentsTotalValue, activeInvestmentsCount,
-                    activeSavingsGoalsCount, totalSavedAmount);
+                    activeSavingsGoalsCount, totalSavedAmount, "EUR");
         }
     }
 
@@ -53,7 +75,9 @@ public record PdfExportData(
             LocalDate date,
             String description,
             String type,
-            BigDecimal amount
+            BigDecimal amount,
+            String currency,
+            boolean investmentGenerated
     ) {}
 
     public record TransactionRow(
@@ -61,7 +85,8 @@ public record PdfExportData(
             String categoryName,
             String description,
             String type,
-            BigDecimal amount
+            BigDecimal amount,
+            String currency
     ) {}
 
     public record InvestmentRow(
@@ -73,7 +98,11 @@ public record PdfExportData(
             BigDecimal currentPrice,
             BigDecimal currentValue,
             BigDecimal profitLoss,
-            double returnPercentage
+            double returnPercentage,
+            String quoteCurrency,
+            String valueCurrency,
+            String resultCurrency,
+            String recordType
     ) {}
 
     public record SavingsGoalRow(

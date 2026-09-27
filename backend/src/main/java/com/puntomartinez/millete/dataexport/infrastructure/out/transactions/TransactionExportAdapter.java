@@ -24,6 +24,7 @@ public class TransactionExportAdapter implements TransactionExportPort {
     public List<TransactionSnapshot> findAllByUserId(UUID userId) {
         return transactionRepository.findAllByUserId(userId)
                 .stream()
+                .filter(transaction -> transaction.getInvestmentActivityId() == null)
                 .map(transaction ->
                         new TransactionSnapshot(
                                 transaction.getId(),
@@ -35,7 +36,9 @@ public class TransactionExportAdapter implements TransactionExportPort {
                                 transaction.getDescription(),
                                 transaction.getCreatedAt(),
                                 transaction.getModifiedAt(),
-                                transaction.isActive()
+                                transaction.isActive(),
+                                transaction.getCurrency(),
+                                transaction.getInvestmentActivityId()
                         )
                 )
                 .toList();
@@ -61,7 +64,9 @@ public class TransactionExportAdapter implements TransactionExportPort {
                                 transaction.getDescription(),
                                 transaction.getCreatedAt(),
                                 transaction.getModifiedAt(),
-                                transaction.isActive()
+                                transaction.isActive(),
+                                transaction.getCurrency(),
+                                transaction.getInvestmentActivityId()
                         )
                 )
                 .toList();

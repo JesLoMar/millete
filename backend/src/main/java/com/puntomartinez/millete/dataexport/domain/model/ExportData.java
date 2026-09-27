@@ -23,7 +23,8 @@ public record ExportData(
             BigDecimal amount,
             LocalDate date,
             String type,
-            String description
+            String description,
+            String currency
     ) {}
 
     public record PlannedTransactionExportRow(
@@ -39,14 +40,18 @@ public record ExportData(
     ) {}
 
     public record InvestmentExportRow(
+            String recordType,
             String assetName,
             String ticker,
             BigDecimal quantity,
-            BigDecimal purchasePrice,
-            BigDecimal currentPrice,
-            String type,
-            LocalDateTime purchaseDate
-    ) {}
+            BigDecimal acquisitionCost,
+            String costCurrency,
+            BigDecimal value,
+            String valueCurrency,
+            BigDecimal result,
+            String resultCurrency,
+            String type
+    ) { }
 
     public record SavingsGoalExportRow(
             String name,

@@ -3,7 +3,7 @@ package com.puntomartinez.millete.dataexport.application.services;
 import com.puntomartinez.millete.dataexport.domain.model.CategorySnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.ExportData;
 import com.puntomartinez.millete.dataexport.domain.model.ExportVersion;
-import com.puntomartinez.millete.dataexport.domain.model.InvestmentSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentLedgerSnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.PeriodType;
 import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
 import com.puntomartinez.millete.dataexport.domain.model.PlannedTransactionSnapshot;
@@ -13,6 +13,7 @@ import com.puntomartinez.millete.dataexport.domain.model.UserDataSnapshot;
 import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.*;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ public class DataExportService {
     private final TransactionExportPort transactionExportPort;
     private final PlannedTransactionExportPort plannedTransactionExportPort;
     private final InvestmentExportPort investmentExportPort;
+    private final InvestmentUseCases investmentUseCases;
     private final SavingsGoalExportPort savingsGoalExportPort;
     private final UserPreferencesExportPort userPreferencesExportPort;
     private final FileZipExportPort fileZipExportPort;
@@ -50,6 +53,7 @@ public class DataExportService {
             TransactionExportPort transactionExportPort,
             PlannedTransactionExportPort plannedTransactionExportPort,
             InvestmentExportPort investmentExportPort,
+            InvestmentUseCases investmentUseCases,
             SavingsGoalExportPort savingsGoalExportPort,
             UserPreferencesExportPort userPreferencesExportPort,
             FileZipExportPort fileZipExportPort,
@@ -62,6 +66,7 @@ public class DataExportService {
         this.transactionExportPort = transactionExportPort;
         this.plannedTransactionExportPort = plannedTransactionExportPort;
         this.investmentExportPort = investmentExportPort;
+        this.investmentUseCases = investmentUseCases;
         this.savingsGoalExportPort = savingsGoalExportPort;
         this.userPreferencesExportPort = userPreferencesExportPort;
         this.fileZipExportPort = fileZipExportPort;
@@ -83,7 +88,7 @@ public class DataExportService {
         List<PlannedTransactionSnapshot> plannedTransactions =
                 plannedTransactionExportPort.findAllByUserId(userId);
 
-        List<InvestmentSnapshot> investments =
+        InvestmentLedgerSnapshot investments =
                 investmentExportPort.findAllByUserId(userId);
 
         List<SavingsGoalSnapshot> savingsGoals =
@@ -154,7 +159,8 @@ public class DataExportService {
                                         transaction.amount(),
                                         transaction.date(),
                                         transaction.type(),
-                                        transaction.description()
+                                        transaction.description(),
+                                        transaction.currency()
                                 )
                         )
                         .toList();
@@ -180,21 +186,8 @@ public class DataExportService {
                         )
                         .toList();
 
-        List<ExportData.InvestmentExportRow> investments =
-                snapshot.investments().stream()
-                        .filter(InvestmentSnapshot::active)
-                        .map(investment ->
-                                new ExportData.InvestmentExportRow(
-                                        investment.assetName(),
-                                        investment.ticker(),
-                                        investment.quantity(),
-                                        investment.purchasePrice(),
-                                        investment.currentPrice(),
-                                        investment.type(),
-                                        investment.purchaseDate().atStartOfDay()
-                                )
-                        )
-                        .toList();
+        List<ExportData.InvestmentExportRow> investments = investmentRows(
+                snapshot.investments(), investmentUseCases.portfolio(userId, timeProvider.now()), userId);
 
         List<ExportData.SavingsGoalExportRow> savingsGoals =
                 snapshot.savingsGoals().stream()
@@ -329,20 +322,17 @@ public class DataExportService {
             }
         }
 
-        List<InvestmentSnapshot> activeInvestments =
-                investmentExportPort
-                        .findAllByUserId(userId)
-                        .stream()
-                        .filter(InvestmentSnapshot::active)
-                        .toList();
+        Instant reportAt = timeProvider.now();
+        InvestmentLedgerSnapshot ledger = investmentExportPort.findAllByUserId(userId);
+        InvestmentUseCases.PortfolioView portfolio = investmentUseCases.portfolio(userId, reportAt);
+        List<ExportData.InvestmentExportRow> investmentRows = investmentRows(ledger, portfolio, userId);
+        List<ExportData.InvestmentExportRow> activeInvestments = investmentRows.stream()
+                .filter(row -> "POSITION".equals(row.recordType()) || "REALIZED_RESULT".equals(row.recordType())).toList();
 
-        BigDecimal investmentsTotalValue =
-                activeInvestments.stream()
-                        .map(InvestmentSnapshot::currentValue)
-                        .reduce(
-                                BigDecimal.ZERO,
-                                BigDecimal::add
-                        );
+        BigDecimal investmentsTotalValue = investmentRows.stream()
+                .filter(row -> "POSITION".equals(row.recordType()))
+                .map(ExportData.InvestmentExportRow::value).filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<PdfExportData.TransactionRow> txRows =
                 periodTransactions.stream()
@@ -358,7 +348,8 @@ public class DataExportService {
                                         transaction.description(),
                                         "INCOME".equals(transaction.type())
                                                 ? "Ingreso" : "Gasto",
-                                        transaction.amount().abs()
+                                        transaction.amount().abs(),
+                                        transaction.currency()
                                 )
                         )
                         .toList();
@@ -369,31 +360,26 @@ public class DataExportService {
                 .map(transaction -> new PdfExportData.TransferRow(
                         transaction.date(),
                         transaction.description(),
-                        "TRANSFER_IN".equals(transaction.type())
-                                ? "Transferencia recibida" : "Transferencia enviada",
-                        transaction.amount().abs()
+                        transaction.investmentActivityId() != null
+                                ? ("TRANSFER_IN".equals(transaction.type())
+                                    ? "Transferencia de inversión recibida" : "Transferencia de inversión enviada")
+                                : ("TRANSFER_IN".equals(transaction.type())
+                                    ? "Transferencia recibida" : "Transferencia enviada"),
+                        transaction.amount().abs(),
+                        transaction.currency(),
+                        transaction.investmentActivityId() != null
                 ))
                 .toList();
 
-        List<PdfExportData.InvestmentRow> invRows =
-                activeInvestments.stream()
-                        .map(investment ->
-                                new PdfExportData.InvestmentRow(
-                                        investment.assetName(),
-                                        investment.ticker(),
-                                        investment.type() != null
-                                                ? investment.type()
-                                                : "",
-                                        investment.quantity(),
-                                        investment.purchasePrice(),
-                                        investment.currentPrice(),
-                                        investment.currentValue(),
-                                        investment.profitOrLoss(),
-                                        investment.returnOnInvestmentPercentage()
-                                                .doubleValue()
-                                )
-                        )
-                        .toList();
+        List<PdfExportData.InvestmentRow> invRows = activeInvestments.stream().map(row -> {
+            String type = row.type() == null ? "" : row.type();
+            BigDecimal basis = row.acquisitionCost() == null ? BigDecimal.ZERO : row.acquisitionCost();
+            double pct = basis.signum() == 0 || row.result() == null ? 0.0
+                    : row.result().multiply(new BigDecimal("100")).divide(basis, 4, RoundingMode.HALF_UP).doubleValue();
+            return new PdfExportData.InvestmentRow(row.assetName(), row.ticker(), type, row.quantity(), basis,
+                    row.value(), row.value(), row.result(), pct, row.costCurrency(), row.valueCurrency(),
+                    row.resultCurrency(), row.recordType());
+        }).toList();
 
         List<SavingsGoalSnapshot> activeSavingsGoals =
                 savingsGoalExportPort
@@ -444,9 +430,10 @@ public class DataExportService {
                         topCategoryAmount,
                         topCategoryPercentage,
                         investmentsTotalValue,
-                        activeInvestments.size(),
+                        (int) activeInvestments.stream().filter(row -> "POSITION".equals(row.recordType())).count(),
                         sgRows.size(),
-                        totalSavedAmount
+                        totalSavedAmount,
+                        portfolio.localCurrency()
                 );
 
         return new PdfExportData(
@@ -457,9 +444,35 @@ public class DataExportService {
                 txRows,
                 transferRows,
                 invRows,
-                sgRows
+                sgRows,
+                portfolio.cashBalances().entrySet().stream()
+                        .map(e -> new PdfExportData.CashRow(e.getKey(), e.getValue())).toList()
         );
     }
+
+    private List<ExportData.InvestmentExportRow> investmentRows(InvestmentLedgerSnapshot ledger,
+            InvestmentUseCases.PortfolioView portfolio, UUID userId) {
+        Map<UUID, InvestmentLedgerSnapshot.AssetSnapshot> assets = safe(ledger.assets()).stream()
+                .collect(java.util.stream.Collectors.toMap(InvestmentLedgerSnapshot.AssetSnapshot::id, a -> a));
+        List<ExportData.InvestmentExportRow> rows = new java.util.ArrayList<>();
+        for (InvestmentUseCases.PositionView position : portfolio.positions()) {
+            InvestmentLedgerSnapshot.AssetSnapshot asset = assets.get(position.assetId());
+            rows.add(new ExportData.InvestmentExportRow("POSITION", position.assetName(), position.symbol(),
+                    position.quantity(), position.costBasis(), position.assetCurrency(), position.marketValue(),
+                    position.valuationCurrency(), position.unrealizedGain(), position.valuationCurrency(),
+                    asset == null || asset.type() == null ? "" : asset.type().name()));
+        }
+        portfolio.cashBalances().forEach((currency, balance) -> rows.add(new ExportData.InvestmentExportRow(
+                "CASH", "", "", null, null, currency, balance, currency, null, currency, "")));
+        for (InvestmentUseCases.ClosedPositionView closed : investmentUseCases.closedPositions(userId, null, portfolio.asOf())) {
+            rows.add(new ExportData.InvestmentExportRow("REALIZED_RESULT", closed.assetName(), closed.symbol(),
+                    closed.quantity(), closed.costBasis(), closed.currency(), closed.proceeds(), closed.currency(),
+                    closed.realizedGain(), closed.currency(), "Realized"));
+        }
+        return List.copyOf(rows);
+    }
+
+    private static <T> List<T> safe(List<T> values) { return values == null ? List.of() : values; }
 
     private double calculatePercentage(
             BigDecimal currentAmount,

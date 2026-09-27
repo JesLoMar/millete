@@ -22,7 +22,7 @@ public record UserDataSnapshot(
         List<PlannedTransactionSnapshot> plannedTransactions,
 
         @JsonProperty("investments")
-        List<InvestmentSnapshot> investments,
+        InvestmentLedgerSnapshot investments,
 
         @JsonProperty("savingsGoals")
         List<SavingsGoalSnapshot> savingsGoals,

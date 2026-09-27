@@ -54,7 +54,8 @@ public class ZipFileExportAdapter
                             "amount",
                             "date",
                             "type",
-                            "description"
+                            "description",
+                            "currency"
                     },
                     data.transactions(),
                     (csv, row) -> csv.printRecord(
@@ -62,7 +63,8 @@ public class ZipFileExportAdapter
                             row.amount(),
                             row.date(),
                             sanitizeCsvField(row.type()),
-                            sanitizeCsvField(row.description())
+                            sanitizeCsvField(row.description()),
+                            sanitizeCsvField(row.currency())
                     )
             );
 
@@ -99,22 +101,30 @@ public class ZipFileExportAdapter
                     "investments.csv",
                     new String[]{
                             "asset_name",
+                            "record_type",
                             "ticker",
                             "quantity",
-                            "purchase_price",
-                            "current_price",
-                            "type",
-                            "purchase_date"
+                            "acquisition_cost",
+                            "cost_currency",
+                            "value_or_balance",
+                            "value_currency",
+                            "result",
+                            "result_currency",
+                            "type"
                     },
                     data.investments(),
                     (csv, row) -> csv.printRecord(
                             sanitizeCsvField(row.assetName()),
+                            sanitizeCsvField(row.recordType()),
                             sanitizeCsvField(row.ticker()),
                             row.quantity(),
-                            row.purchasePrice(),
-                            row.currentPrice(),
-                            sanitizeCsvField(row.type()),
-                            row.purchaseDate()
+                            row.acquisitionCost(),
+                            sanitizeCsvField(row.costCurrency()),
+                            row.value(),
+                            sanitizeCsvField(row.valueCurrency()),
+                            row.result(),
+                            sanitizeCsvField(row.resultCurrency()),
+                            sanitizeCsvField(row.type())
                     )
             );
 
@@ -190,7 +200,8 @@ public class ZipFileExportAdapter
                             "amount",
                             "date",
                             "type",
-                            "description"
+                            "description",
+                            "currency"
                     );
                     if (data.transactions() != null) {
                         for (var row : data.transactions()) {
@@ -199,7 +210,8 @@ public class ZipFileExportAdapter
                                     row.amount(),
                                     row.date(),
                                     sanitizeCsvField(row.type()),
-                                    sanitizeCsvField(row.description())
+                                    sanitizeCsvField(row.description()),
+                                    sanitizeCsvField(row.currency())
                             );
                         }
                     }
@@ -235,23 +247,31 @@ public class ZipFileExportAdapter
                 case "investments" -> {
                     csv.printRecord(
                             "asset_name",
+                            "record_type",
                             "ticker",
                             "quantity",
-                            "purchase_price",
-                            "current_price",
-                            "type",
-                            "purchase_date"
+                            "acquisition_cost",
+                            "cost_currency",
+                            "value_or_balance",
+                            "value_currency",
+                            "result",
+                            "result_currency",
+                            "type"
                     );
                     if (data.investments() != null) {
                         for (var row : data.investments()) {
                             csv.printRecord(
                                     sanitizeCsvField(row.assetName()),
+                                    sanitizeCsvField(row.recordType()),
                                     sanitizeCsvField(row.ticker()),
                                     row.quantity(),
-                                    row.purchasePrice(),
-                                    row.currentPrice(),
-                                    sanitizeCsvField(row.type()),
-                                    row.purchaseDate()
+                                    row.acquisitionCost(),
+                                    sanitizeCsvField(row.costCurrency()),
+                                    row.value(),
+                                    sanitizeCsvField(row.valueCurrency()),
+                                    row.result(),
+                                    sanitizeCsvField(row.resultCurrency()),
+                                    sanitizeCsvField(row.type())
                             );
                         }
                     }

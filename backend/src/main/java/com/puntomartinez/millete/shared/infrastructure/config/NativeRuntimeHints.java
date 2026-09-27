@@ -1,6 +1,8 @@
 package com.puntomartinez.millete.shared.infrastructure.config;
 
 import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentLedgerSnapshot;
+import com.puntomartinez.millete.dataexport.domain.model.InvestmentLedgerSnapshotDeserializer;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -48,5 +50,21 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
                 PdfExportData.TransferRow.class,
                 MemberCategory.INVOKE_PUBLIC_METHODS
         );
+
+        hints.reflection().registerType(InvestmentLedgerSnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshot.AssetSnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshot.HoldingSnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshot.ActivitySnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshot.ActivityAuditSnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshot.CurrencyPeriodSnapshot.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(InvestmentLedgerSnapshotDeserializer.class,
+                MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS);
+        hints.reflection().registerType(PdfExportData.CashRow.class, MemberCategory.INVOKE_PUBLIC_METHODS);
     }
 }
