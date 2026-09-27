@@ -3,6 +3,8 @@ package com.puntomartinez.millete.investments.infrastructure.in.controller;
 import com.puntomartinez.millete.investments.domain.model.*;
 import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases;
 import com.puntomartinez.millete.investments.infrastructure.in.controller.dto.*;
+import com.puntomartinez.millete.investments.infrastructure.out.marketdata.MarketDataProviderException;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.ErrorResponseDTO;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,6 +93,12 @@ public class InvestmentController {
     }
     @PostMapping("/market-data/refresh")
     public InvestmentUseCases.RefreshResult refresh(@RequestParam Instant from, @RequestParam Instant to, Authentication a) { return useCases.refreshFromProvider(user(a),from,to); }
+    @ExceptionHandler(MarketDataProviderException.class)
+    public ResponseEntity<ErrorResponseDTO> marketDataProviderFailure(MarketDataProviderException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new ErrorResponseDTO(
+                LocalDateTime.now(), HttpStatus.BAD_GATEWAY.value(), HttpStatus.BAD_GATEWAY.getReasonPhrase(),
+                exception.getMessage(), "/api/v1/investments/market-data/refresh"));
+    }
     @GetMapping("/health")
     public InvestmentUseCases.HealthReport health(Authentication a) { return useCases.health(user(a)); }
 

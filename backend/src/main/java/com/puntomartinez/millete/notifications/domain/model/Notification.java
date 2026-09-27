@@ -12,9 +12,9 @@ public class Notification {
     private final UUID id;
     private final UUID userId;
     private final NotificationType type;
-    private final String title;
-    private final String message;
-    private final Map<String, Object> metadata;
+    private String title;
+    private String message;
+    private Map<String, Object> metadata;
     private boolean read;
     private final boolean actionRequired;
     private Instant actionedAt;
@@ -119,6 +119,20 @@ public class Notification {
             return false;
         }
         this.read = true;
+        return true;
+    }
+
+    public boolean updateDetails(String title, String message, Map<String, Object> metadata) {
+        validateTitle(title);
+        Map<String, Object> safeMetadata = metadata == null ? null : Map.copyOf(metadata);
+        if (java.util.Objects.equals(this.title, title)
+                && java.util.Objects.equals(this.message, message)
+                && java.util.Objects.equals(this.metadata, safeMetadata)) {
+            return false;
+        }
+        this.title = title;
+        this.message = message;
+        this.metadata = safeMetadata;
         return true;
     }
 

@@ -4,9 +4,6 @@ import com.puntomartinez.millete.investments.domain.model.*;
 import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases.HealthIssue;
 import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases.HealthReport;
 import com.puntomartinez.millete.investments.domain.ports.out.*;
-import com.puntomartinez.millete.notifications.domain.model.Notification;
-import com.puntomartinez.millete.notifications.domain.model.NotificationType;
-import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,22 +17,20 @@ import java.util.stream.Collectors;
 /** Reconciles actionable portfolio integrity and market-data warnings. */
 @Service
 public class InvestmentHealthService {
-    private static final String NOTIFICATION_SOURCE = "investments-health";
-
     private final AssetRepository assets;
     private final ActivityRepository activities;
     private final HoldingRepository holdings;
     private final MarketDataRepository marketData;
     private final UserCurrencyPort currencies;
     private final DailyTransferPort transfers;
-    private final NotificationRepository notifications;
+    private final InvestmentHealthNotificationPort healthNotifications;
     private final TimeProvider time;
     private final Duration maximumMarketDataAge;
 
     public InvestmentHealthService(AssetRepository assets, ActivityRepository activities,
                                    HoldingRepository holdings, MarketDataRepository marketData,
                                    UserCurrencyPort currencies, DailyTransferPort transfers,
-                                   NotificationRepository notifications, TimeProvider time,
+                                   InvestmentHealthNotificationPort healthNotifications, TimeProvider time,
                                    @Value("${app.investments.market-data.max-age:PT72H}") Duration maximumMarketDataAge) {
         this.assets = assets;
         this.activities = activities;
@@ -43,7 +38,7 @@ public class InvestmentHealthService {
         this.marketData = marketData;
         this.currencies = currencies;
         this.transfers = transfers;
-        this.notifications = notifications;
+        this.healthNotifications = healthNotifications;
         this.time = time;
         this.maximumMarketDataAge = maximumMarketDataAge;
     }
@@ -51,12 +46,28 @@ public class InvestmentHealthService {
     @Transactional
     public HealthReport check(UUID userId) {
         Instant now = time.now();
+        activities.lockUserPortfolio(userId);
         List<HealthIssue> issues = new ArrayList<>();
         List<Asset> userAssets = assets.findAssetsByUserId(userId, true);
         List<Activity> userActivities = activities.findActivitiesByUserId(userId);
         List<Holding> userHoldings = holdings.findHoldingsByUserId(userId);
         String localCurrency = currencies.currencyAt(userId, now).map(UserLocalCurrencyPeriod::currency)
                 .or(() -> currencies.currentCurrency(userId)).orElse(null);
+
+        Map<UUID, Asset> assetById = userAssets.stream()
+                .collect(Collectors.toMap(Asset::getId, asset -> asset));
+        for (Activity activity : userActivities) {
+            if (activity.getAssetId() != null && !assetById.containsKey(activity.getAssetId())) {
+                add(issues, "ASSET_REFERENCE_MISSING", activity.getAssetId().toString(), "error",
+                        "La operación " + activity.getId() + " apunta a un activo que no existe en la cartera.");
+            }
+        }
+        for (Holding holding : userHoldings) {
+            if (!assetById.containsKey(holding.assetId())) {
+                add(issues, "ASSET_REFERENCE_MISSING", holding.assetId().toString(), "error",
+                        "La posición inicial " + holding.id() + " apunta a un activo que no existe en la cartera.");
+            }
+        }
 
         if (localCurrency == null) {
             add(issues, "LOCAL_CURRENCY_MISSING", userId.toString(), "warning",
@@ -76,32 +87,29 @@ public class InvestmentHealthService {
         PortfolioReplay.Result replay = null;
         try {
             replay = PortfolioReplay.replay(userId, userActivities, userHoldings);
+        } catch (PortfolioReplay.LedgerIntegrityException exception) {
+            add(issues, exception.code(), exception.resourceId(), "error", exception.getMessage());
+            if ("CASH_NEGATIVE".equals(exception.code())) {
+                checkFx(issues, exception.resourceId(), localCurrency, now, exception.resourceId());
+            } else if ("POSITION_NEGATIVE".equals(exception.code())) {
+                Asset asset = assetById.get(UUID.fromString(exception.resourceId()));
+                if (asset != null && asset.isActive()) checkMarketData(issues, userId, asset, localCurrency, now);
+            }
         } catch (RuntimeException exception) {
             add(issues, "LEDGER_INVALID", userId.toString(), "error",
                     "El libro de inversiones no se puede reconstruir: " + safeMessage(exception));
         }
 
-        Map<UUID, Asset> assetById = userAssets.stream().collect(Collectors.toMap(Asset::getId, asset -> asset));
         Set<UUID> openAssets = replay == null ? Set.of() : replay.lots().stream()
                 .filter(lot -> lot.getRemainingQuantity().signum() > 0)
                 .map(Lot::getAssetId).collect(Collectors.toSet());
         for (UUID assetId : openAssets) {
             Asset asset = assetById.get(assetId);
             if (asset == null) {
-                add(issues, "ASSET_REFERENCE_MISSING", assetId.toString(), "error",
-                        "Hay operaciones que hacen referencia a un activo inexistente.");
                 continue;
             }
             if (!asset.isActive()) continue;
-            Optional<AssetPrice> quote = marketData.latestPriceAt(userId, assetId, now);
-            if (quote.isEmpty()) {
-                add(issues, "PRICE_MISSING", assetId.toString(), "warning",
-                        "El activo «" + asset.getName() + "» no tiene un precio de cierre disponible.");
-            } else if (isStale(quote.get().timestamp(), now)) {
-                add(issues, "PRICE_STALE", assetId.toString(), "warning",
-                        "El último precio de «" + asset.getName() + "» supera la antigüedad configurada.");
-            }
-            checkFx(issues, asset.getCurrency(), localCurrency, now, assetId.toString());
+            checkMarketData(issues, userId, asset, localCurrency, now);
         }
 
         if (replay != null) {
@@ -128,9 +136,25 @@ public class InvestmentHealthService {
             }
         }
 
-        issues.sort(Comparator.comparing(HealthIssue::code).thenComparing(HealthIssue::resourceId));
-        reconcileNotifications(userId, issues, now);
-        return new HealthReport(now, List.copyOf(issues));
+        Map<String, HealthIssue> unique = new LinkedHashMap<>();
+        issues.forEach(issue -> unique.put(issue.key(), issue));
+        List<HealthIssue> reportIssues = new ArrayList<>(unique.values());
+        reportIssues.sort(Comparator.comparing(HealthIssue::code).thenComparing(HealthIssue::resourceId));
+        healthNotifications.reconcile(userId, reportIssues);
+        return new HealthReport(now, List.copyOf(reportIssues));
+    }
+
+    private void checkMarketData(List<HealthIssue> issues, UUID userId, Asset asset,
+                                 String localCurrency, Instant now) {
+        Optional<AssetPrice> quote = marketData.latestPriceAt(userId, asset.getId(), now);
+        if (quote.isEmpty()) {
+            add(issues, "PRICE_MISSING", asset.getId().toString(), "warning",
+                    "El activo «" + asset.getName() + "» no tiene un precio de cierre disponible.");
+        } else if (isStale(quote.get().timestamp(), now)) {
+            add(issues, "PRICE_STALE", asset.getId().toString(), "warning",
+                    "El último precio de «" + asset.getName() + "» supera la antigüedad configurada.");
+        }
+        checkFx(issues, asset.getCurrency(), localCurrency, now, asset.getId().toString());
     }
 
     private void checkFx(List<HealthIssue> issues, String currency, String localCurrency,
@@ -149,29 +173,6 @@ public class InvestmentHealthService {
 
     private boolean isStale(Instant timestamp, Instant now) {
         return timestamp.plus(maximumMarketDataAge).isBefore(now);
-    }
-
-    private void reconcileNotifications(UUID userId, List<HealthIssue> issues, Instant now) {
-        Map<String, HealthIssue> current = issues.stream().collect(Collectors.toMap(HealthIssue::key, issue -> issue));
-        List<Notification> active = notifications.findActiveAndNotExpiredByUserIdOrderByCreatedAtDesc(userId, 500, now);
-        for (Notification notification : active) {
-            Map<String, Object> metadata = notification.getMetadata();
-            if (metadata == null || !NOTIFICATION_SOURCE.equals(metadata.get("source"))) continue;
-            String key = Objects.toString(metadata.get("issueKey"), "");
-            if (!current.containsKey(key)) {
-                notification.softDelete();
-                notifications.save(notification);
-            }
-        }
-        for (HealthIssue issue : issues) {
-            if (notifications.findActiveByUserIdAndTypeAndMetadataValue(
-                    userId, NotificationType.SYSTEM, "issueKey", issue.key()).isPresent()) continue;
-            notifications.save(Notification.create(time, userId, NotificationType.SYSTEM,
-                    "Aviso de salud de inversiones", issue.message(),
-                    Map.of("source", NOTIFICATION_SOURCE, "issueKey", issue.key(),
-                            "code", issue.code(), "resourceId", issue.resourceId()),
-                    false, null));
-        }
     }
 
     private void add(List<HealthIssue> issues, String code, String resourceId,

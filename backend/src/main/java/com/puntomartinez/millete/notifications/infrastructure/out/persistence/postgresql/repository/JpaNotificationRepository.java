@@ -88,4 +88,23 @@ public interface JpaNotificationRepository
             @Param("metadataKey") String metadataKey,
             @Param("metadataValue") String metadataValue
     );
+
+    @Query(
+            value = """
+                    SELECT *
+                    FROM notifications
+                    WHERE user_id = :userId
+                      AND active = true
+                      AND type = :type
+                      AND metadata ->> :metadataKey = :metadataValue
+                    ORDER BY created_at DESC, id
+                    """,
+            nativeQuery = true
+    )
+    List<NotificationEntity> findAllByUserIdAndActiveTrueAndTypeAndMetadataValue(
+            @Param("userId") UUID userId,
+            @Param("type") String type,
+            @Param("metadataKey") String metadataKey,
+            @Param("metadataValue") String metadataValue
+    );
 }

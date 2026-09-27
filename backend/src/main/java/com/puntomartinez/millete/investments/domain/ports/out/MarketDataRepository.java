@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MarketDataRepository {
+    void saveMarketData(List<AssetPrice> prices, List<FxRate> rates);
     AssetPrice savePrice(AssetPrice price);
     FxRate saveFxRate(FxRate rate);
     Optional<AssetPrice> latestPriceAt(UUID userId, UUID assetId, Instant at);

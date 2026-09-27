@@ -5,6 +5,7 @@ import com.puntomartinez.millete.investments.domain.ports.out.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -38,6 +39,11 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
 
     @Override public List<Asset> findAssetsByUserId(UUID userId, boolean includeInactive) {
         return jdbc.query("SELECT * FROM assets WHERE user_id=? AND (? OR active=true) ORDER BY name", assetMapper(), userId, includeInactive);
+    }
+
+    @Override public List<UUID> findUserIdsWithActiveAssets() {
+        return jdbc.query("SELECT DISTINCT user_id FROM assets WHERE active=true ORDER BY user_id",
+                (rs, n) -> uuid(rs, "user_id"));
     }
 
     @Override public boolean sectorExists(UUID sectorId) {
@@ -178,6 +184,12 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
         return p;
     }
 
+    @Override @Transactional
+    public void saveMarketData(List<AssetPrice> prices, List<FxRate> rates) {
+        prices.forEach(this::savePrice);
+        rates.forEach(this::saveFxRate);
+    }
+
     @Override public FxRate saveFxRate(FxRate f) {
         jdbc.update("INSERT INTO fx_rates(id,base_currency,quote_currency,rate_timestamp,rate,source,fetched_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(base_currency,quote_currency,rate_timestamp,source) DO UPDATE SET rate=excluded.rate,fetched_at=excluded.fetched_at",
                 f.id(), f.baseCurrency(), f.quoteCurrency(), ts(f.timestamp()), f.rate(), f.source(), ts(f.fetchedAt()));
@@ -185,7 +197,7 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     }
 
     @Override public Optional<AssetPrice> latestPriceAt(UUID userId, UUID assetId, Instant at) {
-        return one("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp<=? AND close IS NOT NULL ORDER BY price_timestamp DESC,fetched_at DESC LIMIT 1", priceMapper(), userId, assetId, ts(at));
+        return one("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp<=? AND (close IS NOT NULL OR adjusted_close IS NOT NULL) ORDER BY price_timestamp DESC,fetched_at DESC LIMIT 1", priceMapper(), userId, assetId, ts(at));
     }
 
     @Override public Optional<FxRate> latestFxAt(String base, String quote, Instant at) {

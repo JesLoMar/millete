@@ -325,84 +325,283 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     @Override @Transactional(readOnly = true)
     public PortfolioView portfolio(UUID userId, Instant at) {
         Instant asOf = at == null ? time.now() : at;
+        return portfolioAt(userId, asOf, localCurrencyAt(userId, asOf), false);
+    }
+
+    private PortfolioView portfolioAt(UUID userId, Instant asOf, String local, boolean includeHiddenAssets) {
         List<Activity> activityList = activities.findActivitiesByUserId(userId).stream().filter(a -> !a.getOccurredAt().isAfter(asOf)).toList();
         List<Holding> holdingList = holdings.findHoldingsByUserId(userId).stream().filter(h -> !h.snapshotAt().isAfter(asOf)).toList();
         List<Holding> allHoldingHistory = holdings.findHoldingsIncludingSupersededByUserId(userId);
         PortfolioReplay.Result replay = PortfolioReplay.replay(userId, activityList, holdingList);
-        String local = localCurrencyAt(userId, asOf);
         Map<UUID, Asset> byId = assets.findAssetsByUserId(userId, true).stream().collect(Collectors.toMap(Asset::getId, a -> a));
         Map<UUID, List<Lot>> byAsset = replay.lots().stream().collect(Collectors.groupingBy(Lot::getAssetId));
         List<PositionView> positions = new ArrayList<>();
+        List<CashValuationView> cashValuations = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         boolean estimated = false;
         boolean complete = true;
+        boolean historyIncomplete = allHoldingHistory.stream()
+                .anyMatch(holding -> holding.historyIncomplete() && asOf.isBefore(holding.snapshotAt()));
+        if (historyIncomplete) complete = false;
         for (Map.Entry<UUID, List<Lot>> entry : byAsset.entrySet()) {
             Asset asset = byId.get(entry.getKey());
-            if (asset == null || !asset.isActive()) continue;
+            if (asset == null) {
+                complete = false;
+                continue;
+            }
+            if (!includeHiddenAssets && !isVisibleAt(asset, asOf)) continue;
             BigDecimal units = entry.getValue().stream().map(Lot::getRemainingQuantity).reduce(BigDecimal.ZERO, BigDecimal::add);
             if (units.signum() == 0) continue;
             BigDecimal cost = entry.getValue().stream().filter(l -> l.getRemainingQuantity().signum() > 0)
                     .map(l -> l.getUnitCost().multiply(l.getRemainingQuantity())).reduce(BigDecimal.ZERO, BigDecimal::add);
             Optional<AssetPrice> quote = marketData.latestPriceAt(userId, asset.getId(), asOf);
-            BigDecimal price = quote.map(AssetPrice::close).orElse(null);
+            BigDecimal price = quote.map(AssetPrice::valuationPrice).orElse(null);
             Instant priceAt = quote.map(AssetPrice::timestamp).orElse(null);
             String priceSource = quote.map(AssetPrice::source).orElse(null);
             BigDecimal marketValue = null;
             BigDecimal gain = null;
-            boolean posEstimated = quote.isPresent() && !quote.get().timestamp().equals(asOf);
+            boolean priceEstimated = quote.isPresent() && !quote.get().timestamp().equals(asOf);
             Instant fxAt = null;
             String fxSource = null;
+            BigDecimal fxRate = null;
             String valuationCurrency = local;
-            if (price == null) complete = false;
-            else {
+            Optional<FxQuote> conversion = fxQuote(asset.getCurrency(), local, asOf);
+            if (conversion.isPresent()) {
+                fxRate = conversion.get().rate();
+                fxAt = conversion.get().timestamp();
+                fxSource = conversion.get().source();
+            }
+            boolean fxEstimated = conversion.isPresent() && !conversion.get().timestamp().equals(asOf);
+            boolean posEstimated = priceEstimated || fxEstimated;
+            String unavailableReason = null;
+            ValuationStatus positionStatus;
+            if (price == null || conversion.isEmpty()) {
+                complete = false;
+                if (price == null && conversion.isEmpty()) unavailableReason = "PRICE_AND_FX_UNAVAILABLE";
+                else if (price == null) unavailableReason = "PRICE_UNAVAILABLE";
+                else unavailableReason = "FX_UNAVAILABLE";
+                positionStatus = ValuationStatus.NOT_CALCULABLE;
+            } else {
+                FxQuote fx = conversion.get();
                 BigDecimal nativeValue = units.multiply(price);
-                Optional<FxQuote> conversion = fxQuote(asset.getCurrency(), local, asOf);
-                if (conversion.isEmpty()) complete = false;
-                else {
-                    FxQuote fx = conversion.get();
-                    fxAt = fx.timestamp();
-                    fxSource = fx.source();
-                    marketValue = nativeValue.multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
-                    BigDecimal localCost = cost.multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
-                    gain = marketValue.subtract(localCost);
-                    total = total.add(marketValue);
-                    posEstimated |= !fx.timestamp().equals(asOf);
-                }
+                marketValue = nativeValue.multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+                BigDecimal localCost = cost.multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+                gain = marketValue.subtract(localCost);
+                total = total.add(marketValue);
+                positionStatus = posEstimated ? ValuationStatus.ESTIMATED : ValuationStatus.CALCULABLE;
             }
             estimated |= posEstimated;
             boolean incomplete = allHoldingHistory.stream().anyMatch(h -> h.assetId().equals(asset.getId())
                     && h.historyIncomplete()
                     && (h.superseded() ? asOf.isBefore(h.snapshotAt()) : !h.snapshotAt().isAfter(asOf)));
             positions.add(new PositionView(asset.getId(), asset.getName(), asset.getSymbol(), asset.getCurrency(),
-                    units, cost, price, marketValue, gain, valuationCurrency, priceAt,
-                    priceSource, fxAt, fxSource, posEstimated, incomplete));
+                    units, cost, price, marketValue, gain, valuationCurrency, fxRate, priceAt,
+                    priceSource, fxAt, fxSource, posEstimated, incomplete, positionStatus, unavailableReason));
         }
         for (Map.Entry<String, BigDecimal> balance : replay.cashBalances().entrySet()) {
+            if (balance.getValue().signum() == 0) {
+                cashValuations.add(new CashValuationView(balance.getKey(), balance.getValue(), null,
+                        BigDecimal.ZERO, null, null, ValuationStatus.CALCULABLE));
+                continue;
+            }
             Optional<FxQuote> conversion = fxQuote(balance.getKey(), local, asOf);
             if (conversion.isEmpty()) complete = false;
             else {
                 FxQuote fx = conversion.get();
-                total = total.add(balance.getValue().multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP));
-                if (!fx.timestamp().equals(asOf)) estimated = true;
+                BigDecimal amountInLocal = balance.getValue().multiply(fx.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+                total = total.add(amountInLocal);
+                boolean cashEstimated = !fx.timestamp().equals(asOf);
+                estimated |= cashEstimated;
+                cashValuations.add(new CashValuationView(balance.getKey(), balance.getValue(), fx.rate(),
+                        amountInLocal, fx.timestamp(), fx.source(),
+                        cashEstimated ? ValuationStatus.ESTIMATED : ValuationStatus.CALCULABLE));
+                continue;
             }
+            cashValuations.add(new CashValuationView(balance.getKey(), balance.getValue(), null,
+                    null, null, null, ValuationStatus.NOT_CALCULABLE));
         }
         positions.sort(Comparator.comparing(PositionView::assetName, String.CASE_INSENSITIVE_ORDER));
-        return new PortfolioView(asOf, replay.cashBalances(), List.copyOf(positions), complete ? total : null, local, estimated);
+        cashValuations.sort(Comparator.comparing(CashValuationView::currency, String.CASE_INSENSITIVE_ORDER));
+        return new PortfolioView(asOf, replay.cashBalances(), List.copyOf(positions), complete ? total : null,
+                local, estimated, overallStatus(complete, estimated), historyIncomplete, List.copyOf(cashValuations));
     }
 
-    @Override @Transactional
+    @Override @Transactional(readOnly = true)
+    public PerformanceAttribution performance(UUID userId, Instant from, Instant to) {
+        if (from == null || to == null || !from.isBefore(to)) {
+            throw new IllegalArgumentException("The performance start must be before its end");
+        }
+
+        String reportingCurrency = localCurrencyAt(userId, to);
+        // Hidden Assets remain part of the user's wealth even though normal portfolio queries omit them.
+        PortfolioView opening = portfolioAt(userId, from, reportingCurrency, true);
+        PortfolioView ending = portfolioAt(userId, to, reportingCurrency, true);
+        if (opening.valuationStatus() == ValuationStatus.NOT_CALCULABLE
+                || ending.valuationStatus() == ValuationStatus.NOT_CALCULABLE) {
+            String reason = opening.valuationStatus() == ValuationStatus.NOT_CALCULABLE
+                    ? "OPENING_VALUE_NOT_CALCULABLE" : "ENDING_VALUE_NOT_CALCULABLE";
+            return PerformanceAttribution.notCalculable(from, to, reportingCurrency,
+                    opening.totalInLocalCurrency(), ending.totalInLocalCurrency(), reason);
+        }
+
+        List<Activity> throughEnd = activities.findActivitiesByUserId(userId).stream()
+                .filter(activity -> !activity.getOccurredAt().isAfter(to))
+                .sorted(activityOrder()).toList();
+        List<Holding> holdingsThroughEnd = holdings.findHoldingsByUserId(userId).stream()
+                .filter(holding -> !holding.snapshotAt().isAfter(to)).toList();
+        PortfolioReplay.Result replay = PortfolioReplay.replay(userId, throughEnd, holdingsThroughEnd);
+        Map<UUID, BigDecimal> consumedCostBySale = replay.consumptions().stream()
+                .collect(Collectors.groupingBy(LotConsumption::sellActivityId,
+                        Collectors.mapping(LotConsumption::costBasis,
+                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
+
+        BigDecimal contributions = BigDecimal.ZERO;
+        BigDecimal withdrawals = BigDecimal.ZERO;
+        BigDecimal realized = BigDecimal.ZERO;
+        BigDecimal dividends = BigDecimal.ZERO;
+        BigDecimal interest = BigDecimal.ZERO;
+        BigDecimal openingCash = BigDecimal.ZERO;
+        BigDecimal exchange = BigDecimal.ZERO;
+        boolean estimated = opening.estimated() || ending.estimated();
+        List<String> missing = new ArrayList<>();
+
+        for (Activity activity : throughEnd) {
+            if (!activity.getOccurredAt().isAfter(from)) continue;
+            switch (activity.getType()) {
+                case DEPOSIT -> {
+                    ConvertedAmount amount = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    if (amount == null) missing.add("DEPOSIT_FX:" + activity.getId());
+                    else { contributions = contributions.add(amount.amount()); estimated |= amount.estimated(); }
+                }
+                case WITHDRAW -> {
+                    ConvertedAmount amount = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    if (amount == null) missing.add("WITHDRAW_FX:" + activity.getId());
+                    else { withdrawals = withdrawals.add(amount.amount()); estimated |= amount.estimated(); }
+                }
+                case SELL -> {
+                    BigDecimal consumedCost = consumedCostBySale.get(activity.getId());
+                    if (consumedCost == null) {
+                        missing.add("SELL_COST_BASIS:" + activity.getId());
+                        continue;
+                    }
+                    ConvertedAmount gain = convertActivityAmount(activity,
+                            activity.getAmount().subtract(consumedCost), activity.getCurrency(), reportingCurrency);
+                    if (gain == null) missing.add("SELL_FX:" + activity.getId());
+                    else { realized = realized.add(gain.amount()); estimated |= gain.estimated(); }
+                }
+                case DIVIDEND -> {
+                    ConvertedAmount amount = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    if (amount == null) missing.add("DIVIDEND_FX:" + activity.getId());
+                    else { dividends = dividends.add(amount.amount()); estimated |= amount.estimated(); }
+                }
+                case INTEREST -> {
+                    ConvertedAmount amount = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    if (amount == null) missing.add("INTEREST_FX:" + activity.getId());
+                    else { interest = interest.add(amount.amount()); estimated |= amount.estimated(); }
+                }
+                case OPENING_CASH -> {
+                    ConvertedAmount amount = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    if (amount == null) missing.add("OPENING_CASH_FX:" + activity.getId());
+                    else { openingCash = openingCash.add(amount.amount()); estimated |= amount.estimated(); }
+                }
+                case EXCHANGE -> {
+                    ConvertedAmount source = convertActivityAmount(activity, activity.getAmount(),
+                            activity.getCurrency(), reportingCurrency);
+                    ConvertedAmount target = convertActivityAmount(activity, activity.getSecondaryAmount(),
+                            activity.getSecondaryCurrency(), reportingCurrency);
+                    if (source == null || target == null) missing.add("EXCHANGE_FX:" + activity.getId());
+                    else {
+                        exchange = exchange.add(target.amount().subtract(source.amount()));
+                        estimated |= source.estimated() || target.estimated();
+                    }
+                }
+                case BUY, SPLIT -> { /* Cost movements are represented by open lots and the FX residual. */ }
+            }
+        }
+
+        BigDecimal openingUnrealized = unrealizedGain(opening);
+        BigDecimal endingUnrealized = unrealizedGain(ending);
+        if (openingUnrealized == null || endingUnrealized == null) missing.add("UNREALIZED_GAIN_NOT_CALCULABLE");
+        if (!missing.isEmpty()) {
+            return PerformanceAttribution.notCalculable(from, to, reportingCurrency,
+                    opening.totalInLocalCurrency(), ending.totalInLocalCurrency(),
+                    String.join(",", missing.stream().distinct().toList()));
+        }
+
+        BigDecimal unrealizedChange = endingUnrealized.subtract(openingUnrealized);
+        return PerformanceAttribution.reconcile(from, to, reportingCurrency,
+                opening.totalInLocalCurrency(), ending.totalInLocalCurrency(),
+                contributions, withdrawals, realized, unrealizedChange, dividends, interest,
+                openingCash, exchange, estimated);
+    }
+
+    private BigDecimal unrealizedGain(PortfolioView view) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (PositionView position : view.positions()) {
+            if (position.valuationStatus() == ValuationStatus.NOT_CALCULABLE || position.unrealizedGain() == null) return null;
+            sum = sum.add(position.unrealizedGain());
+        }
+        return sum;
+    }
+
+    private ConvertedAmount convertActivityAmount(Activity activity, BigDecimal amount,
+                                                   String fromCurrency, String toCurrency) {
+        if (amount == null || fromCurrency == null) return null;
+        if (fromCurrency.equalsIgnoreCase(toCurrency)) return new ConvertedAmount(amount, false);
+        if (toCurrency.equalsIgnoreCase(activity.getLocalCurrency())
+                && fromCurrency.equalsIgnoreCase(activity.getCurrency())
+                && activity.getAmountInLocal() != null) {
+            boolean estimated = activity.getFxRateTimestamp() != null
+                    && !activity.getFxRateTimestamp().equals(activity.getOccurredAt());
+            BigDecimal converted = activity.getAmount().signum() == 0 ? BigDecimal.ZERO
+                    : amount.multiply(activity.getAmountInLocal()).divide(activity.getAmount(), 16, RoundingMode.HALF_UP);
+            return new ConvertedAmount(converted, estimated);
+        }
+        Optional<FxQuote> quote = fxQuote(fromCurrency, toCurrency, activity.getOccurredAt());
+        if (quote.isEmpty()) return null;
+        return new ConvertedAmount(amount.multiply(quote.get().rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP),
+                !quote.get().timestamp().equals(activity.getOccurredAt()));
+    }
+
+    private record ConvertedAmount(BigDecimal amount, boolean estimated) { }
+
+    @Override
     public RefreshResult refreshFromProvider(UUID userId, Instant from, Instant to) {
+        if (from == null || to == null || !from.isBefore(to)) {
+            throw new IllegalArgumentException("The refresh start must be before its end");
+        }
         MarketDataProviderPort provider = providers.getIfAvailable();
         if (provider == null) throw new IllegalStateException("No external market data provider is configured");
         List<Asset> userAssets = assets.findAssetsByUserId(userId, false);
         List<AssetPrice> quotes = provider.fetchPrices(userAssets, from, to);
-        quotes.forEach(q -> {
-            if (!userAssets.stream().anyMatch(a -> a.getId().equals(q.assetId()))) throw new IllegalArgumentException("Provider returned a price for an asset outside the user portfolio");
-            marketData.savePrice(q);
+        Set<UUID> ownedAssetIds = userAssets.stream().map(Asset::getId).collect(Collectors.toSet());
+        if (quotes.stream().anyMatch(q -> !ownedAssetIds.contains(q.assetId()))) {
+            throw new IllegalArgumentException("Provider returned a price for an asset outside the user portfolio");
+        }
+        Set<String> marketCurrencies = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Set<String> localCurrencies = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        userAssets.stream().map(Asset::getCurrency).forEach(marketCurrencies::add);
+        activities.findActivitiesByUserId(userId).forEach(activity -> {
+            if (activity.getCurrency() != null) marketCurrencies.add(activity.getCurrency());
+            if (activity.getSecondaryCurrency() != null) marketCurrencies.add(activity.getSecondaryCurrency());
+            if (activity.getLocalCurrency() != null) localCurrencies.add(activity.getLocalCurrency());
         });
-        List<FxRate> rates = provider.fetchFxRates(List.of(), from, to);
-        rates.forEach(marketData::saveFxRate);
-        return new RefreshResult(quotes.size(), rates.size(), provider.getClass().getSimpleName());
+        String localCurrency = localCurrencyAt(userId, to);
+        localCurrencies.add(localCurrency);
+        List<String> currencyPairs = marketCurrencies.stream()
+                .flatMap(currency -> localCurrencies.stream()
+                        .filter(target -> !currency.equalsIgnoreCase(target))
+                        .map(target -> currency.toUpperCase(Locale.ROOT) + "/" + target.toUpperCase(Locale.ROOT)))
+                .distinct()
+                .toList();
+        List<FxRate> rates = provider.fetchFxRates(currencyPairs, from, to);
+        marketData.saveMarketData(quotes, rates);
+        return new RefreshResult(quotes.size(), rates.size(), provider.providerName());
     }
 
     @Override
@@ -462,14 +661,25 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                 .or(() -> userCurrencies.currentCurrency(userId)).orElseThrow(() -> new IllegalStateException("Set a local currency in profile before using investments"));
     }
 
+    private boolean isVisibleAt(Asset asset, Instant at) {
+        return !at.isBefore(asset.getCreatedAt()) && (asset.isActive() || at.isBefore(asset.getModifiedAt()));
+    }
+
+    private ValuationStatus overallStatus(boolean complete, boolean estimated) {
+        if (!complete) return ValuationStatus.NOT_CALCULABLE;
+        return estimated ? ValuationStatus.ESTIMATED : ValuationStatus.CALCULABLE;
+    }
+
     private Optional<FxQuote> fxQuote(String from, String to, Instant at) {
         if (from.equalsIgnoreCase(to)) return Optional.of(new FxQuote(BigDecimal.ONE, at, "IDENTITY"));
         Optional<FxRate> direct = marketData.latestFxAt(from, to, at);
-        if (direct.isPresent()) {
+        Optional<FxRate> inverse = marketData.latestFxAt(to, from, at);
+        if (direct.isPresent() && (inverse.isEmpty()
+                || !inverse.get().timestamp().isAfter(direct.get().timestamp()))) {
             FxRate rate = direct.get();
             return Optional.of(new FxQuote(rate.rate(), rate.timestamp(), rate.source()));
         }
-        return marketData.latestFxAt(to, from, at).map(rate -> new FxQuote(
+        return inverse.map(rate -> new FxQuote(
                 BigDecimal.ONE.divide(rate.rate(), 16, RoundingMode.HALF_UP),
                 rate.timestamp(), "INVERSE:" + rate.source()));
     }

@@ -11,6 +11,20 @@ import java.util.UUID;
 
 /** Pure deterministic replay of the investment ledger. */
 public final class PortfolioReplay {
+    public static final class LedgerIntegrityException extends IllegalArgumentException {
+        private final String code;
+        private final String resourceId;
+
+        public LedgerIntegrityException(String code, String resourceId, String message) {
+            super(message);
+            this.code = code;
+            this.resourceId = resourceId;
+        }
+
+        public String code() { return code; }
+        public String resourceId() { return resourceId; }
+    }
+
     public record Result(List<Lot> lots, List<LotConsumption> consumptions,
                          Map<String, BigDecimal> cashBalances) { }
 
@@ -86,7 +100,10 @@ public final class PortfolioReplay {
                     sell.getId(), lot.getId(), used, cost, lot.getCurrency()));
             remaining = remaining.subtract(used);
         }
-        if (remaining.signum() > 0) throw new IllegalArgumentException("SELL exceeds available units for asset " + sell.getAssetId());
+        if (remaining.signum() > 0) {
+            throw new LedgerIntegrityException("POSITION_NEGATIVE", sell.getAssetId().toString(),
+                    "La venta " + sell.getId() + " excede las unidades disponibles del activo " + sell.getAssetId() + ".");
+        }
     }
 
     private static void addCash(Map<String, BigDecimal> cash, String currency, BigDecimal amount) {
@@ -96,7 +113,10 @@ public final class PortfolioReplay {
     private static void subtractCash(Map<String, BigDecimal> cash, String currency,
                                      BigDecimal amount, Activity activity) {
         BigDecimal next = cash.getOrDefault(currency, BigDecimal.ZERO).subtract(amount);
-        if (next.signum() < 0) throw new IllegalArgumentException("Investment Cash would become negative in " + currency + " at activity " + activity.getId());
+        if (next.signum() < 0) {
+            throw new LedgerIntegrityException("CASH_NEGATIVE", currency,
+                    "El saldo de efectivo " + currency + " sería negativo en la operación " + activity.getId() + ".");
+        }
         cash.put(currency, next);
     }
 

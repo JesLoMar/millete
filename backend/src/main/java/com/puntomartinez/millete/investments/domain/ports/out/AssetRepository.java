@@ -10,6 +10,7 @@ public interface AssetRepository {
     Asset save(Asset asset);
     Optional<Asset> findAssetByIdAndUserId(UUID id, UUID userId);
     List<Asset> findAssetsByUserId(UUID userId, boolean includeInactive);
+    List<UUID> findUserIdsWithActiveAssets();
     boolean sectorExists(UUID sectorId);
     List<AssetSector> findActiveSectors();
 }

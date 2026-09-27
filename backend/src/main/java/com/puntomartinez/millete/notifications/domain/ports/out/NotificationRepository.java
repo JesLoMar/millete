@@ -41,4 +41,11 @@ public interface NotificationRepository {
             String metadataKey,
             String metadataValue
     );
+
+    List<Notification> findActiveByUserIdAndTypeAndMetadataValueOrderByCreatedAtDesc(
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue
+    );
 }

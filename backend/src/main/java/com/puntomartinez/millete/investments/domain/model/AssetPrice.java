@@ -18,4 +18,9 @@ public record AssetPrice(UUID id, UUID userId, UUID assetId, Instant timestamp,
         currency = currency.trim().toUpperCase();
         source = source.trim();
     }
+
+    /** Value used for valuation; ordinary close takes precedence when the provider supplies both series. */
+    public BigDecimal valuationPrice() {
+        return close != null ? close : adjustedClose;
+    }
 }

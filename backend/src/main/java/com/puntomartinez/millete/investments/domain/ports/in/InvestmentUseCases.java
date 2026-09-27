@@ -28,6 +28,7 @@ public interface InvestmentUseCases {
     FxRate addFxRate(AddFxRateCommand command);
     Map<String, BigDecimal> cashBalances(UUID userId);
     PortfolioView portfolio(UUID userId, Instant at);
+    PerformanceAttribution performance(UUID userId, Instant from, Instant to);
     RefreshResult refreshFromProvider(UUID userId, Instant from, Instant to);
     HealthReport health(UUID userId);
 
@@ -56,12 +57,21 @@ public interface InvestmentUseCases {
                         String assetCurrency, BigDecimal quantity,
                         BigDecimal costBasis, BigDecimal price,
                         BigDecimal marketValue, BigDecimal unrealizedGain,
-                        String valuationCurrency, Instant priceTimestamp,
+                        String valuationCurrency, BigDecimal fxRateToLocal,
+                        Instant priceTimestamp,
                         String priceSource, Instant fxTimestamp, String fxSource,
-                        boolean estimated, boolean historyIncomplete) { }
+                        boolean estimated, boolean historyIncomplete,
+                        ValuationStatus valuationStatus, String unavailableReason) { }
+    record CashValuationView(String currency, BigDecimal balance,
+                             BigDecimal fxRateToLocal, BigDecimal amountInLocalCurrency,
+                             Instant fxTimestamp, String fxSource,
+                             ValuationStatus valuationStatus) { }
     record PortfolioView(Instant asOf, Map<String, BigDecimal> cashBalances,
                          List<PositionView> positions, BigDecimal totalInLocalCurrency,
-                         String localCurrency, boolean estimated) { }
+                         String localCurrency, boolean estimated,
+                         ValuationStatus valuationStatus, boolean historyIncomplete,
+                         List<CashValuationView> cashValuations) { }
+    enum ValuationStatus { CALCULABLE, ESTIMATED, NOT_CALCULABLE }
     record RefreshResult(int pricesStored, int fxRatesStored, String provider) { }
     record HealthIssue(String key, String code, String resourceId,
                        String severity, String message) { }

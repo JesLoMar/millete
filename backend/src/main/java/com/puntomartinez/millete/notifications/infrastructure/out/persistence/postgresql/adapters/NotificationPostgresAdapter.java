@@ -132,4 +132,23 @@ public class NotificationPostgresAdapter
                 )
                 .map(mapper::toDomain);
     }
+
+    @Override
+    public List<Notification> findActiveByUserIdAndTypeAndMetadataValueOrderByCreatedAtDesc(
+            UUID userId,
+            NotificationType type,
+            String metadataKey,
+            String metadataValue
+    ) {
+        return jpaRepository
+                .findAllByUserIdAndActiveTrueAndTypeAndMetadataValue(
+                        userId,
+                        type.name(),
+                        metadataKey,
+                        metadataValue
+                )
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }
