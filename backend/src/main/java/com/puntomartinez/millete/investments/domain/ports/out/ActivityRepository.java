@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public interface ActivityRepository {
     Activity save(Activity activity);
-    default Activity saveImported(Activity activity, boolean active) { return save(activity); }
     Optional<ActivityRequest> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey);
     void saveActivityRequest(UUID userId, String idempotencyKey, String requestHash,
                              UUID activityId, Instant createdAt);

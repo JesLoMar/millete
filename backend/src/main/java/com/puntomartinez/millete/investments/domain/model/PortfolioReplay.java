@@ -43,13 +43,15 @@ public final class PortfolioReplay {
         List<LotConsumption> consumptions = new ArrayList<>();
         Map<String, BigDecimal> cash = new HashMap<>();
 
+        long eventSequence = 0;
         for (LedgerEvent event : events) {
+            long acquisitionOrder = eventSequence++;
             if (event.holding() != null) {
                 Holding h = event.holding();
                 UUID lotId = stableId("holding-lot", h.id());
                 lotsByAsset.computeIfAbsent(h.assetId(), ignored -> new ArrayList<>())
                         .add(new Lot(lotId, userId, h.assetId(), null, h.id(), h.snapshotAt(),
-                                h.quantity(), h.quantity(), h.acquisitionCost(), h.currency(), true));
+                                acquisitionOrder, h.quantity(), h.quantity(), h.acquisitionCost(), h.currency(), true));
                 continue;
             }
             Activity a = event.activity();
@@ -60,7 +62,7 @@ public final class PortfolioReplay {
                     subtractCash(cash, a.getCurrency(), a.getAmount(), a);
                     lotsByAsset.computeIfAbsent(a.getAssetId(), ignored -> new ArrayList<>())
                             .add(new Lot(stableId("buy-lot", a.getId()), userId, a.getAssetId(), a.getId(), null,
-                                    a.getOccurredAt(), a.getQuantity(), a.getQuantity(),
+                                    a.getOccurredAt(), acquisitionOrder, a.getQuantity(), a.getQuantity(),
                                     a.getAmount(), a.getCurrency(), false));
                 }
                 case SELL -> {
@@ -90,7 +92,9 @@ public final class PortfolioReplay {
         BigDecimal remaining = sell.getQuantity();
         List<Lot> ordered = lots.stream()
                 .filter(l -> l.getRemainingQuantity().signum() > 0)
-                .sorted(Comparator.comparing(Lot::getAcquiredAt).thenComparing(l -> l.getId().toString()))
+                .sorted(Comparator.comparing(Lot::getAcquiredAt)
+                        .thenComparingLong(Lot::getAcquisitionOrder)
+                        .thenComparing(l -> l.getId().toString()))
                 .toList();
         for (Lot lot : ordered) {
             if (remaining.signum() == 0) break;

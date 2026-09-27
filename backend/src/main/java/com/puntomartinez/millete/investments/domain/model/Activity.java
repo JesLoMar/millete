@@ -1,12 +1,14 @@
 package com.puntomartinez.millete.investments.domain.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.UUID;
 
 public final class Activity {
+    private static final int EXCHANGE_AMOUNT_SCALE = 12;
     private final UUID id;
     private final UUID userId;
     private final ActivityType type;
@@ -172,6 +174,13 @@ public final class Activity {
                 positive(secondaryAmount, "target amount"); required(secondaryCurrency, "target currency");
                 positive(ratio, "exchange rate");
                 if (currency.equals(secondaryCurrency)) throw new IllegalArgumentException("Exchange currencies must differ");
+                BigDecimal expectedSecondaryAmount = amount.multiply(ratio)
+                        .setScale(EXCHANGE_AMOUNT_SCALE, RoundingMode.HALF_UP);
+                BigDecimal recordedSecondaryAmount = secondaryAmount
+                        .setScale(EXCHANGE_AMOUNT_SCALE, RoundingMode.HALF_UP);
+                if (expectedSecondaryAmount.compareTo(recordedSecondaryAmount) != 0) {
+                    throw new IllegalArgumentException("EXCHANGE target amount must match source amount times exchange rate rounded to 12 decimal places");
+                }
             }
         }
         if (comment != null && comment.length() > 500) throw new IllegalArgumentException("comment exceeds 500 characters");

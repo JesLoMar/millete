@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 
-/** Reconciled performance bridge for the interval (from, to], in one reporting currency. */
+/** Performance bridge for the interval (from, to], with an independent FX effect and measured remainder. */
 public record PerformanceAttribution(
         Instant from,
         Instant to,
@@ -49,12 +49,13 @@ public record PerformanceAttribution(
             BigDecimal realizedGains, BigDecimal unrealizedGainChange,
             BigDecimal dividends, BigDecimal interest,
             BigDecimal openingCashAdjustments, BigDecimal exchangeAdjustments,
-            boolean estimated) {
+            BigDecimal fxEffect, boolean estimated) {
+        if (fxEffect == null) throw new IllegalArgumentException("An independently calculated FX effect is required");
         BigDecimal change = endingValue.subtract(openingValue).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
         BigDecimal netFlows = contributions.subtract(withdrawals).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
         BigDecimal knownComponents = netFlows.add(realizedGains).add(unrealizedGainChange)
                 .add(dividends).add(interest).add(openingCashAdjustments).add(exchangeAdjustments);
-        BigDecimal fx = change.subtract(knownComponents).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+        BigDecimal fx = fxEffect.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
         BigDecimal reconciliation = change.subtract(knownComponents.add(fx)).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
         Status status = estimated ? Status.ESTIMATED : Status.CALCULABLE;
         return new PerformanceAttribution(from, to, currency, openingValue, endingValue, change,

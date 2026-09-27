@@ -464,7 +464,7 @@ public class DataExportService {
         }
         portfolio.cashBalances().forEach((currency, balance) -> rows.add(new ExportData.InvestmentExportRow(
                 "CASH", "", "", null, null, currency, balance, currency, null, currency, "")));
-        for (InvestmentUseCases.ClosedPositionView closed : investmentUseCases.closedPositions(userId, null, portfolio.asOf())) {
+        for (InvestmentUseCases.ClosedLotView closed : investmentUseCases.closedLots(userId, null, portfolio.asOf())) {
             rows.add(new ExportData.InvestmentExportRow("REALIZED_RESULT", closed.assetName(), closed.symbol(),
                     closed.quantity(), closed.costBasis(), closed.currency(), closed.proceeds(), closed.currency(),
                     closed.realizedGain(), closed.currency(), "Realized"));

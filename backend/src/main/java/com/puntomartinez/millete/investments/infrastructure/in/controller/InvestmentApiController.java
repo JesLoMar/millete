@@ -242,8 +242,9 @@ public class InvestmentApiController {
         return page(filtered, page, size);
     }
 
-    @GetMapping("/positions/closed")
-    public PaginatedResponseDTO<ClosedPositionResponseDTO> closedPositions(
+    /** Each page item is one fully consumed FIFO lot, not an aggregate by asset. */
+    @GetMapping("/lots/closed")
+    public PaginatedResponseDTO<ClosedLotResponseDTO> closedLots(
             @RequestParam(required=false) UUID assetId, @RequestParam(required=false) AssetType assetType,
             @RequestParam(required=false) UUID sectorId, @RequestParam(required=false) String currency,
             @RequestParam(required=false) Instant from, @RequestParam(required=false) Instant to,
@@ -253,12 +254,12 @@ public class InvestmentApiController {
         if (from != null && to != null && from.isAfter(to)) throw new InvalidInputException("El rango de fechas no es válido.");
         UUID userId = user(a);
         Map<UUID, Asset> assets = useCases.listAssets(userId, true).stream().collect(Collectors.toMap(Asset::getId, Function.identity()));
-        List<ClosedPositionResponseDTO> filtered = useCases.closedPositions(userId, from, to).stream()
+        List<ClosedLotResponseDTO> filtered = useCases.closedLots(userId, from, to).stream()
                 .filter(p -> assetId == null || assetId.equals(p.assetId()))
                 .filter(p -> currency == null || p.currency().equalsIgnoreCase(currency))
                 .filter(p -> assetType == null || (assets.containsKey(p.assetId()) && assets.get(p.assetId()).getType() == assetType))
                 .filter(p -> sectorId == null || (assets.containsKey(p.assetId()) && sectorId.equals(assets.get(p.assetId()).getSectorId())))
-                .map(p -> new ClosedPositionResponseDTO(p.assetId(), p.assetName(), p.symbol(), p.currency(),
+                .map(p -> new ClosedLotResponseDTO(p.lotId(), p.assetId(), p.assetName(), p.symbol(), p.currency(),
                         p.quantity(), p.costBasis(), p.proceeds(), p.realizedGain(), p.openedAt(), p.closedAt(),
                         p.estimated(), p.historyIncomplete())).toList();
         return page(filtered, page, size);
@@ -285,8 +286,7 @@ public class InvestmentApiController {
     @PostMapping("/fx-rates")
     public ResponseEntity<FxRateResponseDTO> addFxRate(@Valid @RequestBody AddFxRateRequestDTO r,
             Authentication a) {
-        user(a); // FX quotes are shared market data; only authenticated users can contribute them.
-        FxRate rate = useCases.addFxRate(new InvestmentUseCases.AddFxRateCommand(r.baseCurrency(), r.quoteCurrency(),
+        FxRate rate = useCases.addFxRate(user(a), new InvestmentUseCases.AddFxRateCommand(r.baseCurrency(), r.quoteCurrency(),
                 r.timestamp(), r.rate(), r.source()));
         return ResponseEntity.status(HttpStatus.CREATED).body(fxRate(rate));
     }
@@ -294,9 +294,10 @@ public class InvestmentApiController {
     @GetMapping("/fx-rates")
     public PaginatedResponseDTO<FxRateResponseDTO> fxRates(@RequestParam Instant from, @RequestParam Instant to,
             @RequestParam(required=false) String baseCurrency, @RequestParam(required=false) String quoteCurrency,
-            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="50") int size) {
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="50") int size,
+            Authentication a) {
         validatePage(page, size);
-        return page(useCases.listFxRates(from, to).stream()
+        return page(useCases.listFxRates(user(a), from, to).stream()
                 .filter(rate -> baseCurrency == null || rate.baseCurrency().equalsIgnoreCase(baseCurrency))
                 .filter(rate -> quoteCurrency == null || rate.quoteCurrency().equalsIgnoreCase(quoteCurrency))
                 .map(this::fxRate).toList(), page, size);

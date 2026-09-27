@@ -90,7 +90,7 @@ public class InvestmentHealthService {
         } catch (PortfolioReplay.LedgerIntegrityException exception) {
             add(issues, exception.code(), exception.resourceId(), "error", exception.getMessage());
             if ("CASH_NEGATIVE".equals(exception.code())) {
-                checkFx(issues, exception.resourceId(), localCurrency, now, exception.resourceId());
+                checkFx(issues, userId, exception.resourceId(), localCurrency, now, exception.resourceId());
             } else if ("POSITION_NEGATIVE".equals(exception.code())) {
                 Asset asset = assetById.get(UUID.fromString(exception.resourceId()));
                 if (asset != null && asset.isActive()) checkMarketData(issues, userId, asset, localCurrency, now);
@@ -117,7 +117,7 @@ public class InvestmentHealthService {
                 if (amount.signum() < 0) {
                     add(issues, "CASH_NEGATIVE", currency, "error", "El saldo de efectivo " + currency + " es negativo.");
                 }
-                checkFx(issues, currency, localCurrency, now, currency);
+                checkFx(issues, userId, currency, localCurrency, now, currency);
             });
         }
 
@@ -154,14 +154,14 @@ public class InvestmentHealthService {
             add(issues, "PRICE_STALE", asset.getId().toString(), "warning",
                     "El último precio de «" + asset.getName() + "» supera la antigüedad configurada.");
         }
-        checkFx(issues, asset.getCurrency(), localCurrency, now, asset.getId().toString());
+        checkFx(issues, userId, asset.getCurrency(), localCurrency, now, asset.getId().toString());
     }
 
-    private void checkFx(List<HealthIssue> issues, String currency, String localCurrency,
+    private void checkFx(List<HealthIssue> issues, UUID userId, String currency, String localCurrency,
                          Instant now, String resourceId) {
         if (currency == null || localCurrency == null || currency.equalsIgnoreCase(localCurrency)) return;
-        Optional<FxRate> rate = marketData.latestFxAt(currency, localCurrency, now)
-                .or(() -> marketData.latestFxAt(localCurrency, currency, now));
+        Optional<FxRate> rate = marketData.latestFxAt(userId, currency, localCurrency, now)
+                .or(() -> marketData.latestFxAt(userId, localCurrency, currency, now));
         if (rate.isEmpty()) {
             add(issues, "FX_MISSING", resourceId, "warning",
                     "Falta un tipo de cambio para convertir " + currency + " a " + localCurrency + ".");

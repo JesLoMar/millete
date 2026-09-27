@@ -11,6 +11,7 @@ public final class Lot {
     private final UUID sourceActivityId;
     private final UUID sourceHoldingId;
     private final Instant acquiredAt;
+    private final long acquisitionOrder;
     private BigDecimal originalQuantity;
     private BigDecimal remainingQuantity;
     private BigDecimal totalCost;
@@ -18,17 +19,18 @@ public final class Lot {
     private final boolean synthetic;
 
     public Lot(UUID id, UUID userId, UUID assetId, UUID sourceActivityId, UUID sourceHoldingId,
-               Instant acquiredAt, BigDecimal originalQuantity,
+               Instant acquiredAt, long acquisitionOrder, BigDecimal originalQuantity,
                BigDecimal remainingQuantity, BigDecimal totalCost,
                String currency, boolean synthetic) {
         if (id == null || userId == null || assetId == null || acquiredAt == null) throw new IllegalArgumentException("Lot identity and acquiredAt are required");
+        if (acquisitionOrder < 0) throw new IllegalArgumentException("acquisitionOrder cannot be negative");
         positive(originalQuantity, "originalQuantity");
         if (remainingQuantity == null || remainingQuantity.signum() < 0 || remainingQuantity.compareTo(originalQuantity) > 0) throw new IllegalArgumentException("remainingQuantity is outside lot bounds");
         if (totalCost == null || totalCost.signum() < 0) throw new IllegalArgumentException("totalCost cannot be negative");
         if (currency == null || currency.isBlank()) throw new IllegalArgumentException("currency is required");
         this.id = id; this.userId = userId; this.assetId = assetId;
         this.sourceActivityId = sourceActivityId; this.acquiredAt = acquiredAt;
-        this.sourceHoldingId = sourceHoldingId;
+        this.sourceHoldingId = sourceHoldingId; this.acquisitionOrder = acquisitionOrder;
         this.originalQuantity = originalQuantity; this.remainingQuantity = remainingQuantity;
         this.totalCost = totalCost; this.currency = currency.trim().toUpperCase();
         this.synthetic = synthetic;
@@ -59,6 +61,7 @@ public final class Lot {
     public UUID getSourceActivityId() { return sourceActivityId; }
     public UUID getSourceHoldingId() { return sourceHoldingId; }
     public Instant getAcquiredAt() { return acquiredAt; }
+    public long getAcquisitionOrder() { return acquisitionOrder; }
     public BigDecimal getOriginalQuantity() { return originalQuantity; }
     public BigDecimal getRemainingQuantity() { return remainingQuantity; }
     public BigDecimal getTotalCost() { return totalCost; }

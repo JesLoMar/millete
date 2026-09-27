@@ -75,12 +75,6 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
         return a;
     }
 
-    @Override public Activity saveImported(Activity activity, boolean active) {
-        save(activity);
-        if (!active) jdbc.update("UPDATE activities SET active=false WHERE id=? AND user_id=?", activity.getId(), activity.getUserId());
-        return activity;
-    }
-
     @Override public Optional<ActivityRequest> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey) {
         return one("SELECT r.request_hash,a.*,t.id AS linked_tx FROM investment_activity_requests r "
                         + "JOIN activities a ON a.id=r.activity_id AND a.user_id=r.user_id "
@@ -197,21 +191,21 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     }
 
     @Override public List<Lot> findLots(UUID userId, UUID assetId) {
-        return jdbc.query("SELECT * FROM lots WHERE user_id=? AND asset_id=? ORDER BY acquired_at,id", lotMapper(), userId, assetId);
+        return jdbc.query("SELECT * FROM lots WHERE user_id=? AND asset_id=? ORDER BY acquired_at,acquisition_order,id", lotMapper(), userId, assetId);
     }
 
     @Override public void replaceDerivedLots(UUID userId, UUID assetId, List<Lot> lots, List<LotConsumption> consumptions) {
         jdbc.update("DELETE FROM lot_consumptions WHERE user_id=? AND sell_activity_id IN (SELECT id FROM activities WHERE user_id=? AND asset_id=? AND type='SELL')", userId, userId, assetId);
         jdbc.update("DELETE FROM lots WHERE user_id=? AND asset_id=?", userId, assetId);
         if (!lots.isEmpty()) {
-            jdbc.batchUpdate("INSERT INTO lots(id,user_id,asset_id,source_activity_id,source_holding_id,acquired_at,original_quantity,remaining_quantity,total_cost,currency,synthetic) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            jdbc.batchUpdate("INSERT INTO lots(id,user_id,asset_id,source_activity_id,source_holding_id,acquired_at,acquisition_order,original_quantity,remaining_quantity,total_cost,currency,synthetic) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                     lots, 250, (ps, l) -> {
                         ps.setObject(1,l.getId()); ps.setObject(2,l.getUserId()); ps.setObject(3,l.getAssetId());
                         ps.setObject(4,l.getSourceActivityId());
                         ps.setObject(5,l.getSourceHoldingId());
-                        ps.setTimestamp(6, ts(l.getAcquiredAt())); ps.setBigDecimal(7,l.getOriginalQuantity());
-                        ps.setBigDecimal(8,l.getRemainingQuantity()); ps.setBigDecimal(9,l.getTotalCost());
-                        ps.setString(10,l.getCurrency()); ps.setBoolean(11,l.isSynthetic());
+                        ps.setTimestamp(6, ts(l.getAcquiredAt())); ps.setLong(7,l.getAcquisitionOrder());
+                        ps.setBigDecimal(8,l.getOriginalQuantity()); ps.setBigDecimal(9,l.getRemainingQuantity());
+                        ps.setBigDecimal(10,l.getTotalCost()); ps.setString(11,l.getCurrency()); ps.setBoolean(12,l.isSynthetic());
                     });
         }
         if (!consumptions.isEmpty()) {
@@ -234,7 +228,7 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     }
 
     @Override public List<Lot> findAllOpenLots(UUID userId) {
-        return jdbc.query("SELECT * FROM lots WHERE user_id=? AND remaining_quantity>0 ORDER BY acquired_at,id", lotMapper(), userId);
+        return jdbc.query("SELECT * FROM lots WHERE user_id=? AND remaining_quantity>0 ORDER BY acquired_at,acquisition_order,id", lotMapper(), userId);
     }
 
     @Override public AssetPrice savePrice(AssetPrice p) {
@@ -250,27 +244,32 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     }
 
     @Override public FxRate saveFxRate(FxRate f) {
-        jdbc.update("INSERT INTO fx_rates(id,base_currency,quote_currency,rate_timestamp,rate,source,fetched_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(base_currency,quote_currency,rate_timestamp,source) DO UPDATE SET rate=excluded.rate,fetched_at=excluded.fetched_at",
-                f.id(), f.baseCurrency(), f.quoteCurrency(), ts(f.timestamp()), f.rate(), f.source(), ts(f.fetchedAt()));
+        if (f.userId() == null) {
+            jdbc.update("INSERT INTO fx_rates(id,user_id,base_currency,quote_currency,rate_timestamp,rate,source,fetched_at) VALUES(?,NULL,?,?,?,?,?,?) ON CONFLICT(base_currency,quote_currency,rate_timestamp,source) WHERE user_id IS NULL DO UPDATE SET rate=excluded.rate,fetched_at=excluded.fetched_at",
+                    f.id(), f.baseCurrency(), f.quoteCurrency(), ts(f.timestamp()), f.rate(), f.source(), ts(f.fetchedAt()));
+        } else {
+            jdbc.update("INSERT INTO fx_rates(id,user_id,base_currency,quote_currency,rate_timestamp,rate,source,fetched_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(base_currency,quote_currency,rate_timestamp,source,user_id) WHERE user_id IS NOT NULL DO UPDATE SET rate=excluded.rate,fetched_at=excluded.fetched_at",
+                    f.id(), f.userId(), f.baseCurrency(), f.quoteCurrency(), ts(f.timestamp()), f.rate(), f.source(), ts(f.fetchedAt()));
+        }
         return f;
     }
 
     @Override public Optional<AssetPrice> latestPriceAt(UUID userId, UUID assetId, Instant at) {
-        return one("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp<=? AND (close IS NOT NULL OR adjusted_close IS NOT NULL) ORDER BY price_timestamp DESC,fetched_at DESC LIMIT 1", priceMapper(), userId, assetId, ts(at));
+        return one("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp<=? AND (close IS NOT NULL OR adjusted_close IS NOT NULL) ORDER BY price_timestamp DESC,fetched_at DESC,id DESC LIMIT 1", priceMapper(), userId, assetId, ts(at));
     }
 
-    @Override public Optional<FxRate> latestFxAt(String base, String quote, Instant at) {
-        return one("SELECT * FROM fx_rates WHERE base_currency=? AND quote_currency=? AND rate_timestamp<=? ORDER BY rate_timestamp DESC,fetched_at DESC LIMIT 1", fxMapper(), base.toUpperCase(Locale.ROOT), quote.toUpperCase(Locale.ROOT), ts(at));
+    @Override public Optional<FxRate> latestFxAt(UUID userId, String base, String quote, Instant at) {
+        return one("SELECT * FROM fx_rates WHERE (user_id IS NULL OR user_id=?) AND base_currency=? AND quote_currency=? AND rate_timestamp<=? ORDER BY rate_timestamp DESC,(user_id IS NOT NULL) DESC,fetched_at DESC,id DESC LIMIT 1", fxMapper(), userId, base.toUpperCase(Locale.ROOT), quote.toUpperCase(Locale.ROOT), ts(at));
     }
 
     @Override public List<AssetPrice> pricesForAsset(UUID userId, UUID assetId, Instant from, Instant to) {
-        return jdbc.query("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp>=? AND price_timestamp<=? ORDER BY price_timestamp",
+        return jdbc.query("SELECT * FROM asset_prices WHERE user_id=? AND asset_id=? AND price_timestamp>=? AND price_timestamp<=? ORDER BY price_timestamp,fetched_at,id",
                 priceMapper(), userId, assetId, ts(from), ts(to));
     }
 
-    @Override public List<FxRate> fxRates(Instant from, Instant to) {
-        return jdbc.query("SELECT * FROM fx_rates WHERE rate_timestamp>=? AND rate_timestamp<=? ORDER BY rate_timestamp",
-                fxMapper(), ts(from), ts(to));
+    @Override public List<FxRate> fxRates(UUID userId, Instant from, Instant to) {
+        return jdbc.query("SELECT * FROM fx_rates WHERE (user_id IS NULL OR user_id=?) AND rate_timestamp>=? AND rate_timestamp<=? ORDER BY rate_timestamp,fetched_at,base_currency,quote_currency,source,user_id,id",
+                fxMapper(), userId, ts(from), ts(to));
     }
 
     private <T> Optional<T> one(String sql, RowMapper<T> mapper, Object... args) {
@@ -296,14 +295,14 @@ public class InvestmentPostgresAdapter implements AssetRepository, ActivityRepos
     }
     private RowMapper<Lot> lotMapper() {
         return (rs,n) -> new Lot(uuid(rs,"id"),uuid(rs,"user_id"),uuid(rs,"asset_id"),uuid(rs,"source_activity_id"),uuid(rs,"source_holding_id"),
-                instant(rs,"acquired_at"),rs.getBigDecimal("original_quantity"),rs.getBigDecimal("remaining_quantity"),rs.getBigDecimal("total_cost"),rs.getString("currency"),rs.getBoolean("synthetic"));
+                instant(rs,"acquired_at"),rs.getLong("acquisition_order"),rs.getBigDecimal("original_quantity"),rs.getBigDecimal("remaining_quantity"),rs.getBigDecimal("total_cost"),rs.getString("currency"),rs.getBoolean("synthetic"));
     }
     private RowMapper<AssetPrice> priceMapper() {
         return (rs,n) -> new AssetPrice(uuid(rs,"id"),uuid(rs,"user_id"),uuid(rs,"asset_id"),instant(rs,"price_timestamp"),
                 rs.getBigDecimal("open"),rs.getBigDecimal("high"),rs.getBigDecimal("low"),rs.getBigDecimal("close"),rs.getBigDecimal("adjusted_close"),rs.getBigDecimal("volume"),rs.getString("currency"),rs.getString("source"),instant(rs,"fetched_at"));
     }
     private RowMapper<FxRate> fxMapper() {
-        return (rs,n) -> new FxRate(uuid(rs,"id"),rs.getString("base_currency"),rs.getString("quote_currency"),instant(rs,"rate_timestamp"),rs.getBigDecimal("rate"),rs.getString("source"),instant(rs,"fetched_at"));
+        return (rs,n) -> new FxRate(uuid(rs,"id"),uuid(rs,"user_id"),rs.getString("base_currency"),rs.getString("quote_currency"),instant(rs,"rate_timestamp"),rs.getBigDecimal("rate"),rs.getString("source"),instant(rs,"fetched_at"));
     }
     private static Timestamp ts(Instant value) { return value == null ? null : Timestamp.from(value); }
     private static Instant instant(ResultSet rs, String col) throws SQLException { Timestamp v = rs.getTimestamp(col); return v == null ? null : v.toInstant(); }

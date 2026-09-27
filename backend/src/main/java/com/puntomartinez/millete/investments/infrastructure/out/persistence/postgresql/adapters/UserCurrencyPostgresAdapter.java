@@ -32,6 +32,7 @@ public class UserCurrencyPostgresAdapter implements UserCurrencyPort {
         return history.findAllByUserId(userId).stream().map(p -> new UserLocalCurrencyPeriod(
                 p.id(), p.userId(), p.currency(), p.validFrom(), p.validTo(), p.inferred())).toList();
     }
+    @Override public void lockForUpdate(UUID userId) { history.lockForUpdate(userId); }
     @Override public void replacePeriods(UUID userId, java.util.List<UserLocalCurrencyPeriod> periods) {
         history.lockForUpdate(userId);
         history.deleteAllByUserId(userId);

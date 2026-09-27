@@ -5,10 +5,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.dataexport.domain.model.UserPreferencesSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.UserPreferencesImportPort;
-import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import com.puntomartinez.millete.users.domain.ports.in.ManageProfileUseCase;
 import com.puntomartinez.millete.users.domain.model.UserPreferences;
 import com.puntomartinez.millete.users.domain.ports.out.UserPreferencesRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,16 +21,16 @@ public class UserPreferencesImportAdapter
         implements UserPreferencesImportPort {
 
     private final UserPreferencesRepository userPreferencesRepository;
+    private final ManageProfileUseCase manageProfileUseCase;
     private final ObjectMapper objectMapper;
-    private final TimeProvider timeProvider;
 
     public UserPreferencesImportAdapter(
             UserPreferencesRepository userPreferencesRepository,
-            TimeProvider timeProvider
+            ManageProfileUseCase manageProfileUseCase
     ) {
         this.userPreferencesRepository = userPreferencesRepository;
+        this.manageProfileUseCase = manageProfileUseCase;
         this.objectMapper = new ObjectMapper();
-        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -47,6 +48,7 @@ public class UserPreferencesImportAdapter
     }
 
     @Override
+    @Transactional
     public void save(
             UserPreferencesSnapshot preferences,
             UUID userId
@@ -54,27 +56,17 @@ public class UserPreferencesImportAdapter
         Map<String, Object> preferencesMap =
                 fromJson(preferences.preferencesJson());
 
-        UserPreferences existing =
-                userPreferencesRepository
-                        .findByUserId(userId)
-                        .orElse(null);
+        boolean hadPreferences = userPreferencesRepository.findByUserId(userId).isPresent();
+        // Apply the profile rule that keeps localCurrency and its open history period in sync.
+        manageProfileUseCase.updatePreferences(userId, preferencesMap);
 
-        if (existing != null) {
-            existing.setPreferences(preferencesMap);
-            existing.setModifiedAt(timeProvider.now());
-            userPreferencesRepository.save(existing);
-            return;
+        if (!hadPreferences) {
+            UserPreferences imported = userPreferencesRepository.findByUserId(userId)
+                    .orElseThrow(() -> new IllegalStateException("No se pudieron guardar las preferencias importadas."));
+            imported.setCreatedAt(preferences.createdAt());
+            imported.setModifiedAt(preferences.modifiedAt());
+            userPreferencesRepository.save(imported);
         }
-
-        UserPreferences newPreferences =
-                new UserPreferences(
-                        UUID.randomUUID(),
-                        userId,
-                        preferencesMap
-                );
-        newPreferences.setCreatedAt(preferences.createdAt());
-        newPreferences.setModifiedAt(preferences.modifiedAt());
-        userPreferencesRepository.save(newPreferences);
     }
 
     private String toJson(Object value) {

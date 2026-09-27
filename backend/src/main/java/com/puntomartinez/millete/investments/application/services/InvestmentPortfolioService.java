@@ -126,7 +126,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
         Instant localFxTimestamp = null;
         BigDecimal amountInLocal = null;
         if (command.type() != ActivityType.SPLIT && command.type() != ActivityType.EXCHANGE) {
-            FxQuote quote = fxQuote(command.currency(), localCurrency, occurredAt)
+            FxQuote quote = fxQuote(userId, command.currency(), localCurrency, occurredAt)
                     .orElseThrow(() -> new IllegalStateException("No historical FX rate is available for the selected date"));
             localFx = quote.rate();
             localFxSource = quote.source();
@@ -205,7 +205,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
         if (activity.getType() != ActivityType.SPLIT) {
             if (editedAmount == null) throw new IllegalArgumentException("amount must be positive");
             localCurrency = localCurrencyAt(userId, command.occurredAt());
-            FxQuote quote = fxQuote(activity.getCurrency(), localCurrency, command.occurredAt())
+            FxQuote quote = fxQuote(userId, activity.getCurrency(), localCurrency, command.occurredAt())
                     .orElseThrow(() -> new IllegalStateException("No historical FX rate is available for the selected date"));
             localFx = quote.rate();
             localFxSource = quote.source();
@@ -296,7 +296,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
             }
             if (amount == null || amount.signum() <= 0) throw new IllegalArgumentException("Historical trade amount must be positive");
             String localCurrency = localCurrencyAt(userId, occurredAt);
-            FxQuote quote = fxQuote(command.currency(), localCurrency, occurredAt)
+            FxQuote quote = fxQuote(userId, command.currency(), localCurrency, occurredAt)
                     .orElseThrow(() -> new IllegalStateException("No historical FX rate is available for the selected date"));
             BigDecimal localAmount = amount.multiply(quote.rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
             Activity activity = Activity.create(userId, command.type(), occurredAt, asset.getId(),
@@ -347,8 +347,9 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     }
 
     @Override @Transactional
-    public FxRate addFxRate(AddFxRateCommand command) {
-        return marketData.saveFxRate(new FxRate(UUID.randomUUID(), command.baseCurrency(),
+    public FxRate addFxRate(UUID userId, AddFxRateCommand command) {
+        if (userId == null) throw new IllegalArgumentException("A manually added FX rate must belong to a user");
+        return marketData.saveFxRate(new FxRate(UUID.randomUUID(), userId, command.baseCurrency(),
                 command.quoteCurrency(), command.timestamp(), command.rate(), command.source(), time.now()));
     }
 
@@ -359,11 +360,11 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     }
 
     @Override @Transactional(readOnly = true)
-    public List<FxRate> listFxRates(Instant from, Instant to) {
+    public List<FxRate> listFxRates(UUID userId, Instant from, Instant to) {
         if (from == null || to == null || from.isAfter(to)) {
             throw new InvalidInputException("El rango de fechas FX no es válido.");
         }
-        return marketData.fxRates(from, to);
+        return marketData.fxRates(userId, from, to);
     }
 
     @Override @Transactional(readOnly = true)
@@ -378,7 +379,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     }
 
     @Override @Transactional(readOnly = true)
-    public List<ClosedPositionView> closedPositions(UUID userId, Instant from, Instant to) {
+    public List<ClosedLotView> closedLots(UUID userId, Instant from, Instant to) {
         Instant end = to == null ? time.now() : to;
         List<Activity> userActivities = activities.findActivitiesByUserId(userId).stream()
                 .filter(activity -> !activity.getOccurredAt().isAfter(end))
@@ -392,7 +393,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                 .collect(Collectors.groupingBy(LotConsumption::lotId));
         Map<UUID, Asset> byAsset = assets.findAssetsByUserId(userId, true).stream()
                 .collect(Collectors.toMap(Asset::getId, asset -> asset));
-        List<ClosedPositionView> result = new ArrayList<>();
+        List<ClosedLotView> result = new ArrayList<>();
         for (Lot lot : replay.lots()) {
             if (lot.getRemainingQuantity().signum() != 0) continue;
             List<LotConsumption> lotSales = byLot.getOrDefault(lot.getId(), List.of());
@@ -412,12 +413,12 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             Asset asset = byAsset.get(lot.getAssetId());
             if (asset == null) continue;
-            result.add(new ClosedPositionView(asset.getId(), asset.getName(), asset.getSymbol(),
+            result.add(new ClosedLotView(lot.getId(), asset.getId(), asset.getName(), asset.getSymbol(),
                     lot.getCurrency(), lot.getOriginalQuantity(), costBasis, proceeds,
                     proceeds.subtract(costBasis), lot.getAcquiredAt(), closedAt,
                     lot.isSynthetic(), lot.isSynthetic()));
         }
-        result.sort(Comparator.comparing(ClosedPositionView::closedAt).reversed());
+        result.sort(Comparator.comparing(ClosedLotView::closedAt).reversed());
         return List.copyOf(result);
     }
 
@@ -458,7 +459,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
             String fxSource = null;
             BigDecimal fxRate = null;
             String valuationCurrency = local;
-            Optional<FxQuote> conversion = fxQuote(asset.getCurrency(), local, asOf);
+            Optional<FxQuote> conversion = fxQuote(userId, asset.getCurrency(), local, asOf);
             if (conversion.isPresent()) {
                 fxRate = conversion.get().rate();
                 fxAt = conversion.get().timestamp();
@@ -497,7 +498,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                         BigDecimal.ZERO, null, null, ValuationStatus.CALCULABLE));
                 continue;
             }
-            Optional<FxQuote> conversion = fxQuote(balance.getKey(), local, asOf);
+            Optional<FxQuote> conversion = fxQuote(userId, balance.getKey(), local, asOf);
             if (conversion.isEmpty()) complete = false;
             else {
                 FxQuote fx = conversion.get();
@@ -613,13 +614,15 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                         estimated |= source.estimated() || target.estimated();
                     }
                 }
-                case BUY, SPLIT -> { /* Cost movements are represented by open lots and the FX residual. */ }
+                case BUY, SPLIT -> { /* In-period cost-basis movements remain visible in the reconciliation difference. */ }
             }
         }
 
         BigDecimal openingUnrealized = unrealizedGain(opening);
         BigDecimal endingUnrealized = unrealizedGain(ending);
         if (openingUnrealized == null || endingUnrealized == null) missing.add("UNREALIZED_GAIN_NOT_CALCULABLE");
+        FxEffect fxEffect = openingExposureFxEffect(userId, reportingCurrency, to, opening);
+        if (fxEffect == null) missing.add("OPENING_EXPOSURE_FX_NOT_CALCULABLE");
         if (!missing.isEmpty()) {
             return PerformanceAttribution.notCalculable(from, to, reportingCurrency,
                     opening.totalInLocalCurrency(), ending.totalInLocalCurrency(),
@@ -627,10 +630,36 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
         }
 
         BigDecimal unrealizedChange = endingUnrealized.subtract(openingUnrealized);
+        estimated |= fxEffect.estimated();
         return PerformanceAttribution.reconcile(from, to, reportingCurrency,
                 opening.totalInLocalCurrency(), ending.totalInLocalCurrency(),
                 contributions, withdrawals, realized, unrealizedChange, dividends, interest,
-                openingCash, exchange, estimated);
+                openingCash, exchange, fxEffect.amount(), estimated);
+    }
+
+    private FxEffect openingExposureFxEffect(UUID userId, String reportingCurrency,
+                                             Instant to, PortfolioView opening) {
+        BigDecimal effect = BigDecimal.ZERO;
+        boolean estimated = false;
+        for (PositionView position : opening.positions()) {
+            if (position.costBasis() == null || position.fxRateToLocal() == null) return null;
+            if (position.costBasis().signum() == 0) continue;
+            Optional<FxQuote> closingRate = fxQuote(userId, position.assetCurrency(), reportingCurrency, to);
+            if (closingRate.isEmpty()) return null;
+            effect = effect.add(position.costBasis()
+                    .multiply(closingRate.get().rate().subtract(position.fxRateToLocal())));
+            estimated |= !closingRate.get().timestamp().equals(to);
+        }
+        for (CashValuationView cash : opening.cashValuations()) {
+            if (cash.balance().signum() == 0) continue;
+            if (cash.fxRateToLocal() == null) return null;
+            Optional<FxQuote> closingRate = fxQuote(userId, cash.currency(), reportingCurrency, to);
+            if (closingRate.isEmpty()) return null;
+            effect = effect.add(cash.balance()
+                    .multiply(closingRate.get().rate().subtract(cash.fxRateToLocal())));
+            estimated |= !closingRate.get().timestamp().equals(to);
+        }
+        return new FxEffect(effect.setScale(MONEY_SCALE, RoundingMode.HALF_UP), estimated);
     }
 
     private BigDecimal unrealizedGain(PortfolioView view) {
@@ -655,7 +684,7 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
                     : amount.multiply(activity.getAmountInLocal()).divide(activity.getAmount(), 16, RoundingMode.HALF_UP);
             return new ConvertedAmount(converted, estimated);
         }
-        Optional<FxQuote> quote = fxQuote(fromCurrency, toCurrency, activity.getOccurredAt());
+        Optional<FxQuote> quote = fxQuote(activity.getUserId(), fromCurrency, toCurrency, activity.getOccurredAt());
         if (quote.isEmpty()) return null;
         return new ConvertedAmount(amount.multiply(quote.get().rate()).setScale(MONEY_SCALE, RoundingMode.HALF_UP),
                 !quote.get().timestamp().equals(activity.getOccurredAt()));
@@ -763,10 +792,10 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
         return estimated ? ValuationStatus.ESTIMATED : ValuationStatus.CALCULABLE;
     }
 
-    private Optional<FxQuote> fxQuote(String from, String to, Instant at) {
+    private Optional<FxQuote> fxQuote(UUID userId, String from, String to, Instant at) {
         if (from.equalsIgnoreCase(to)) return Optional.of(new FxQuote(BigDecimal.ONE, at, "IDENTITY"));
-        Optional<FxRate> direct = marketData.latestFxAt(from, to, at);
-        Optional<FxRate> inverse = marketData.latestFxAt(to, from, at);
+        Optional<FxRate> direct = marketData.latestFxAt(userId, from, to, at);
+        Optional<FxRate> inverse = marketData.latestFxAt(userId, to, from, at);
         if (direct.isPresent() && (inverse.isEmpty()
                 || !inverse.get().timestamp().isAfter(direct.get().timestamp()))) {
             FxRate rate = direct.get();
@@ -798,4 +827,5 @@ public class InvestmentPortfolioService implements InvestmentUseCases {
     }
 
     private record FxQuote(BigDecimal rate, Instant timestamp, String source) { }
+    private record FxEffect(BigDecimal amount, boolean estimated) { }
 }

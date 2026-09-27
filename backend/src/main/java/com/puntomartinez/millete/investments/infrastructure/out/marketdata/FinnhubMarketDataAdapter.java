@@ -59,7 +59,7 @@ final class FinnhubMarketDataAdapter implements MarketDataSourcePort {
                 if (close == null) continue;
                 result.add(new AssetPrice(UUID.randomUUID(), asset.getUserId(), asset.getId(), timestamp,
                         decimalAt(candles.path("o"), index), decimalAt(candles.path("h"), index),
-                        decimalAt(candles.path("l"), index), null, close,
+                        decimalAt(candles.path("l"), index), close, null,
                         decimalAt(candles.path("v"), index), asset.getCurrency(), PROVIDER, fetchedAt));
             }
         }
@@ -88,7 +88,7 @@ final class FinnhubMarketDataAdapter implements MarketDataSourcePort {
                 if (timestamp.isBefore(from) || timestamp.isAfter(to)) continue;
                 BigDecimal rate = decimalAt(candles.path("c"), index);
                 if (rate != null && rate.signum() > 0) {
-                    result.add(new FxRate(UUID.randomUUID(), base, quote, timestamp, rate, PROVIDER, fetchedAt));
+                    result.add(new FxRate(UUID.randomUUID(), null, base, quote, timestamp, rate, PROVIDER, fetchedAt));
                 }
             }
         }

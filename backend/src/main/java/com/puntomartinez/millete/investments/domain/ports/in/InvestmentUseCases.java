@@ -28,12 +28,13 @@ public interface InvestmentUseCases {
                                              List<RecordActivityCommand> history);
     List<Holding> listHoldings(UUID userId, UUID assetId);
     List<AssetPrice> listPrices(UUID userId, UUID assetId, Instant from, Instant to);
-    List<FxRate> listFxRates(Instant from, Instant to);
+    List<FxRate> listFxRates(UUID userId, Instant from, Instant to);
     AssetPrice addPrice(UUID userId, AddPriceCommand command);
-    FxRate addFxRate(AddFxRateCommand command);
+    FxRate addFxRate(UUID userId, AddFxRateCommand command);
     Map<String, BigDecimal> cashBalances(UUID userId);
     PortfolioView portfolio(UUID userId, Instant at);
-    List<ClosedPositionView> closedPositions(UUID userId, Instant from, Instant to);
+    /** Returns one realized result for each fully consumed FIFO lot. */
+    List<ClosedLotView> closedLots(UUID userId, Instant from, Instant to);
     PerformanceAttribution performance(UUID userId, Instant from, Instant to);
     RefreshResult refreshFromProvider(UUID userId, Instant from, Instant to);
     HealthReport health(UUID userId);
@@ -72,7 +73,8 @@ public interface InvestmentUseCases {
                              BigDecimal fxRateToLocal, BigDecimal amountInLocalCurrency,
                              Instant fxTimestamp, String fxSource,
                              ValuationStatus valuationStatus) { }
-    record ClosedPositionView(UUID assetId, String assetName, String symbol,
+    /** Realized result attributed to a single investment lot. */
+    record ClosedLotView(UUID lotId, UUID assetId, String assetName, String symbol,
                               String currency, BigDecimal quantity,
                               BigDecimal costBasis, BigDecimal proceeds,
                               BigDecimal realizedGain, Instant openedAt,

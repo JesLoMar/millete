@@ -68,6 +68,7 @@ public class DataImportService {
         this.objectMapper.registerModule(new JavaTimeModule());
     }
 
+    /** Keeps imported preferences and investment currency history atomic as one snapshot restore. */
     @Transactional
     public ImportResult importUserData(
             MultipartFile file,

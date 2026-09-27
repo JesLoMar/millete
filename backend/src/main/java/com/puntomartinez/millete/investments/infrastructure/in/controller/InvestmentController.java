@@ -88,8 +88,8 @@ public class InvestmentController {
     @GetMapping("/assets/{assetId}/prices")
     public List<AssetPrice> prices(@PathVariable UUID assetId, @RequestParam Instant from, @RequestParam Instant to, Authentication a) { return useCases.listPrices(user(a),assetId,from,to); }
     @PostMapping("/fx-rates")
-    public ResponseEntity<FxRate> addFxRate(@Valid @RequestBody AddFxRateRequestDTO r) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(useCases.addFxRate(new InvestmentUseCases.AddFxRateCommand(r.baseCurrency(),r.quoteCurrency(),r.timestamp(),r.rate(),r.source())));
+    public ResponseEntity<FxRate> addFxRate(@Valid @RequestBody AddFxRateRequestDTO r, Authentication a) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(useCases.addFxRate(user(a), new InvestmentUseCases.AddFxRateCommand(r.baseCurrency(),r.quoteCurrency(),r.timestamp(),r.rate(),r.source())));
     }
     @PostMapping("/market-data/refresh")
     public InvestmentUseCases.RefreshResult refresh(@RequestParam Instant from, @RequestParam Instant to, Authentication a) { return useCases.refreshFromProvider(user(a),from,to); }

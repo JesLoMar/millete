@@ -79,7 +79,8 @@ public final class InvestmentApiDTOs {
             List<PositionResponseDTO> positions, BigDecimal totalInLocalCurrency, String localCurrency,
             boolean estimated, InvestmentUseCases.ValuationStatus valuationStatus,
             boolean historyIncomplete, List<CashValuationResponseDTO> cashValuations) { }
-    public record ClosedPositionResponseDTO(UUID assetId, String assetName, String symbol, String currency,
+    /** Response item for one fully consumed FIFO lot. */
+    public record ClosedLotResponseDTO(UUID lotId, UUID assetId, String assetName, String symbol, String currency,
             BigDecimal quantity, BigDecimal costBasis, BigDecimal proceeds, BigDecimal realizedGain,
             Instant openedAt, Instant closedAt, boolean estimated, boolean historyIncomplete) { }
     public record AssetPriceResponseDTO(UUID id, UUID assetId, Instant timestamp, BigDecimal open,

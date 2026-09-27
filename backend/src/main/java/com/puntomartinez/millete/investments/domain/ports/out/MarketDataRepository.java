@@ -12,7 +12,7 @@ public interface MarketDataRepository {
     AssetPrice savePrice(AssetPrice price);
     FxRate saveFxRate(FxRate rate);
     Optional<AssetPrice> latestPriceAt(UUID userId, UUID assetId, Instant at);
-    Optional<FxRate> latestFxAt(String baseCurrency, String quoteCurrency, Instant at);
+    Optional<FxRate> latestFxAt(UUID userId, String baseCurrency, String quoteCurrency, Instant at);
     List<AssetPrice> pricesForAsset(UUID userId, UUID assetId, Instant from, Instant to);
-    List<FxRate> fxRates(Instant from, Instant to);
+    List<FxRate> fxRates(UUID userId, Instant from, Instant to);
 }

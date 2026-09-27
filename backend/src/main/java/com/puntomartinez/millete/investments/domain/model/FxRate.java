@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record FxRate(UUID id, String baseCurrency, String quoteCurrency,
+public record FxRate(UUID id, UUID userId, String baseCurrency, String quoteCurrency,
                      Instant timestamp, BigDecimal rate, String source,
                      Instant fetchedAt) {
     public FxRate {
