@@ -1,0 +1,1507 @@
+# Módulo Investments — Resumen concentrado e integrado con decisiones finales
+
+## 0. Alcance
+
+Documento funcional y arquitectónico.
+
+**No se propone tocar código todavía.**  
+El objetivo es cerrar semántica de negocio, límites entre contextos, responsabilidades de casos de uso y reglas de restauración/importación.
+
+Conclusión principal:
+
+> El dominio está razonablemente bien.  
+> El mayor problema está en las fronteras: casos de uso, adaptadores, restauración/importación y acceso entre contextos.
+
+---
+
+## 1. Ledger: Activities como fuente de verdad
+
+### 1.1 Principio central
+
+`Activities` son la fuente de verdad del ledger.
+
+`PortfolioReplay` reconstruye el estado a partir de ellas.
+
+`Lots`, `LotConsumptions`, `Cash` y `Positions` son estado derivado.
+
+    Activities
+       ↓
+    PortfolioReplay
+       ↓
+    Lots / LotConsumptions / Cash
+       ↓
+    Positions / Closed Lots
+
+### 1.2 Ciclo de vida de `Activity`
+
+Una `Activity` representa un hecho histórico.
+
+Decisiones cerradas:
+
+- Una `Activity` no se elimina física ni lógicamente.
+- No existe un estado `active` para `Activity`.
+- Una `Activity` puede ser editada.
+- Toda edición debe quedar registrada en `ActivityAudit`.
+- La corrección modifica la representación actual del hecho, pero no borra el historial.
+
+Ciclo de vida:
+
+    Crear Activity
+        ↓
+    Hecho histórico persistente
+        ↓
+    Puede ser editada
+        ↓
+    Cada modificación queda auditada
+
+Las Activities siguen participando en:
+
+- reconstrucción del ledger;
+- cálculo de `Investment Cash`;
+- reconstrucción de `Lots` y `LotConsumptions`;
+- cálculo de posiciones;
+- performance attribution;
+- consultas históricas;
+- auditoría.
+
+### 1.3 Orden del ledger
+
+El orden determinista del ledger es:
+
+    1. occurredAt
+    2. orderingKey
+    3. id
+
+Reglas:
+
+- `occurredAt` determina el instante de la operación.
+- `orderingKey` desempata actividades dentro del mismo `occurredAt`.
+- `orderingKey` se asigna automáticamente.
+- El usuario no gestiona `orderingKey` manualmente.
+- `id` solo es último criterio de desempate técnico.
+
+`Lot.acquisitionOrder` no es un orden independiente:
+
+    Activity
+        ↓
+    occurredAt + orderingKey + id
+        ↓
+    PortfolioReplay
+        ↓
+    Lot.acquisitionOrder
+
+### 1.4 Edición de Activities
+
+Una `Activity` puede editarse, pero su identidad histórica permanece.
+
+No se permite modificar:
+
+    id
+    userId
+    type
+    assetId / assetReference
+    createdAt
+
+El tipo de actividad es inmutable.
+
+Si se registró un tipo incorrecto, debe corregirse mediante una nueva actividad y, si procede, una actividad compensatoria.
+
+La referencia al Asset también es inmutable.
+
+Datos editables, cuando apliquen al tipo:
+
+    occurredAt
+    quantity
+    unitPrice
+    currency
+    comment
+
+`amount` no se edita directamente.
+
+Para `BUY` y `SELL`:
+
+    amount = quantity × unitPrice
+
+con un máximo de 12 decimales.
+
+La edición debe mantener las mismas invariantes que la creación.
+
+Si la edición afecta estado derivado, debe reprocesarse lo necesario para reconstruir:
+
+- `Lots`;
+- `LotConsumptions`;
+- `Positions`;
+- `Investment Cash`;
+- demás datos derivados afectados.
+
+Regla de `orderingKey`:
+
+- si `occurredAt` no cambia, `orderingKey` se conserva;
+- si `occurredAt` cambia, debe asignarse un nuevo `orderingKey` correspondiente al nuevo instante.
+
+### 1.5 `amount` en `BUY` y `SELL`
+
+Para `BUY` y `SELL`:
+
+    amount = quantity × unitPrice
+
+`amount` no es un dato independiente.
+
+Si la API recibe un `amount` explícito, debe coincidir con el valor calculado según la precisión definida.
+
+Si no coincide, la operación debe rechazarse.
+
+Las comisiones, impuestos u otros costes no se incorporan artificialmente a `amount`. Si se necesitan, se modelarán con funcionalidad específica.
+
+### 1.6 Inmutabilidad de `DEPOSIT` y `WITHDRAW` vinculados
+
+Cuando una `Activity` `DEPOSIT` o `WITHDRAW` esté vinculada a una `Transaction` generada en el módulo de transacciones, esa Activity se considera completamente inmutable.
+
+No podrán modificarse sus datos operativos, por ejemplo:
+
+    occurredAt
+    amount
+    currency
+    comment
+
+La `Transaction` asociada tampoco podrá modificarse ni eliminarse directamente desde el módulo de transacciones.
+
+Si hay error, la corrección se hace mediante una nueva Activity complementaria.
+
+Ejemplo conceptual:
+
+    Original:
+    DEPOSIT 500 EUR
+
+    Corrección de 200 EUR:
+    WITHDRAW 200 EUR
+
+La actividad original y la complementaria forman el historial real y trazable del movimiento de capital.
+
+Esto evita modificar retroactivamente el capital existente y preserva la correspondencia exacta entre `Activity` y `Transaction`.
+
+### 1.7 Semántica de `EXCHANGE`
+
+`EXCHANGE` representa una conversión efectiva de `Investment Cash` desde una divisa origen a una divisa destino.
+
+Debe conservar:
+
+- importe en divisa origen;
+- importe en divisa destino;
+- tipo de cambio utilizado.
+
+Conceptualmente:
+
+    EXCHANGE
+    → conversión de Investment Cash
+    → conserva divisa origen, divisa destino, importes y tipo de cambio
+
+### 1.8 `DIVIDEND` como concepto general de rendimiento
+
+No existirá un tipo de Activity independiente `INTEREST`.
+
+Los ingresos generados por Assets se representarán mediante `DIVIDEND`, utilizando este tipo como concepto general para cualquier rendimiento obtenido por la posesión, participación o explotación de un Asset.
+
+`DIVIDEND` podrá representar, entre otros:
+
+    Dividendos de acciones
+    Distribuciones de fondos o ETFs
+    Ingresos por alquiler de inmuebles
+    Recompensas de staking de criptomonedas
+    Otros rendimientos generados por Assets
+
+Eliminar `INTEREST` evita duplicar conceptos que funcionalmente representan el mismo resultado dentro del patrimonio de inversión: un rendimiento generado por un Asset.
+
+#### Formas de recepción
+
+Un `DIVIDEND` podrá recibirse de dos formas.
+
+##### 1.8.1 Dividendo monetario
+
+El ingreso se recibe directamente en una moneda.
+
+    DIVIDEND
+    assetReference = opcional
+    amount = 100 EUR
+
+En este caso la Activity aumentará `Investment Cash` en la moneda correspondiente.
+
+Un `DIVIDEND` monetario podrá registrarse aunque no exista un Asset asociado. Cuando se conozca el Asset que generó el rendimiento, podrá asociarse mediante `assetReference` para aportar trazabilidad.
+
+##### 1.8.2 Dividendo en unidades del Asset
+
+El ingreso se recibe en unidades del propio Asset.
+
+    DIVIDEND
+    assetReference = requerido
+    quantity = 0,05 ETH
+
+En este caso la Activity aumentará la posición del Asset y generará el lote correspondiente para que esas unidades puedan participar posteriormente en FIFO y en operaciones de venta.
+
+La recepción de unidades del Asset no se considerará automáticamente una entrada de `Investment Cash`.
+
+Un `DIVIDEND` recibido en unidades deberá estar asociado a un Asset, ya que las unidades recibidas pasan a formar parte de su posición.
+
+Las recompensas recibidas en unidades de un Asset formarán parte posteriormente del sistema FIFO como un nuevo `Lot` independiente del resto de lotes existentes.
+
+#### Regla de modelo
+
+El tipo `DIVIDEND` se utilizará como concepto genérico de rendimiento generado por un Asset, evitando crear un `ActivityType` independiente para cada forma concreta de ingreso.
+
+La estructura exacta de los datos necesarios para diferenciar ingresos monetarios de ingresos en unidades se definirá en el modelo de `Activity`, manteniendo una única semántica de `DIVIDEND`.
+
+---
+
+## 2. Holdings, synthetic lots y valoración
+
+### 2.1 `Holding` como snapshot
+
+`Holding` no es un CRUD normal.
+
+Es un mecanismo de:
+
+- snapshot;
+- restauración;
+- arranque de historial incompleto.
+
+Representa una posición conocida del usuario en un momento dado cuando no hay historial completo hasta ese momento.
+
+### 2.2 Coexistencia con Activities
+
+Regla cerrada:
+
+> No puede existir un `Holding` activo para un `Asset` cuando ya existan `Activities` de ese mismo Asset anteriores o iguales a `snapshotAt`.
+
+Para un mismo Asset se usa uno de estos modos:
+
+Modo basado en Activities:
+
+    Activities históricas → PortfolioReplay → Lots → Position
+
+Modo basado en Holding:
+
+    Holding en snapshotAt → Synthetic Lot → Activities posteriores → PortfolioReplay → Position
+
+Si aparece historial real anterior o igual al `snapshotAt`, el `Holding` debe quedar `superseded` y dejar de participar.
+
+Un `Holding` superseded:
+
+- no se usa como estado inicial en el replay;
+- no genera nuevos synthetic lots;
+- puede conservarse por trazabilidad;
+- no implica necesariamente que fuera incorrecto en su momento.
+
+### 2.3 `synthetic`
+
+Un `Lot` es `synthetic` cuando procede de un `Holding`, no de una `Activity` real.
+
+    Holding
+       ↓
+    Synthetic Lot
+
+`synthetic` indica origen. No es un estado de error.
+
+### 2.4 `historyIncomplete`
+
+Mientras un synthetic lot participe en una posición abierta:
+
+    historyIncomplete = true
+    estimated = true
+
+Una posición mixta con lots reales y synthetic lots también se considera incompleta y estimada mientras participe algún synthetic lot.
+
+    Real Lot + Synthetic Lot
+            ↓
+         Position
+            ↓
+    historyIncomplete = true
+    estimated = true
+
+Cuando un synthetic lot se consume completamente y la posición se cierra, la marca histórica se conserva en el closed lot.
+
+Una posición futura construida solo con Activities reales no queda contaminada por synthetic lots pasados.
+
+### 2.5 `estimated`
+
+`estimated` significa que el sistema pudo calcular el resultado, pero existe una limitación conocida que impide considerarlo completamente preciso.
+
+Reglas:
+
+    historyIncomplete = true
+        ⇒ estimated = true
+
+    estimated = true
+        ⇏ historyIncomplete = true
+
+`estimated` no es un error.
+
+No debe usarse como estado de fallo ni como sustituto de no calculable.
+
+### 2.6 `ValuationStatus`
+
+`ValuationStatus` indica si hay información suficiente para calcular una valoración.
+
+Solo existen dos estados:
+
+    CALCULABLE
+    NOT_CALCULABLE
+
+No existe un estado `ESTIMATED` dentro de `ValuationStatus`.
+
+La condición de estimado se representa con el atributo independiente `estimated`.
+
+Combinaciones válidas:
+
+    CALCULABLE + estimated = false
+    → cálculo completo y sin limitaciones conocidas
+
+    CALCULABLE + estimated = true
+    → cálculo posible, pero con limitaciones conocidas
+
+    NOT_CALCULABLE
+    → información insuficiente para calcular
+
+### 2.7 `unavailableReason`
+
+Las posiciones `NOT_CALCULABLE` deben incluir un `unavailableReason`.
+
+Debe permitir saber qué falta para poder valorar la posición.
+
+Ejemplos:
+
+- falta precio del activo;
+- falta tipo de cambio;
+- falta información histórica mínima;
+- no se puede determinar el estado inicial;
+- datos pendientes de restauración/importación.
+
+### 2.8 Efecto en Portfolio
+
+`NOT_CALCULABLE` se aplica a posiciones individuales.
+
+Una posición `NOT_CALCULABLE` no invalida automáticamente el Portfolio completo.
+
+El Portfolio:
+
+- usa todas las posiciones `CALCULABLE`;
+- incluye posiciones `CALCULABLE + estimated`;
+- excluye posiciones `NOT_CALCULABLE` de agregados que dependan de valoración;
+- conserva las posiciones `NOT_CALCULABLE` en la respuesta para informar al usuario.
+
+Por tanto:
+
+    NOT_CALCULABLE en una posición
+        ≠
+    NOT_CALCULABLE en el Portfolio
+
+### 2.9 Relación con adquisición histórica de UserAsset
+
+Cuando un `UserAsset` sea `PRE_EXISTING`, es decir, cuando ya pertenecía al patrimonio del usuario antes de comenzar a utilizar Millete, podrá existir información histórica de adquisición.
+
+Si se desea que esa adquisición histórica participe en FIFO y en el coste de ventas posteriores, será necesario representar ese coste dentro del ledger.
+
+El mecanismo probable será:
+
+    Holding / synthetic lot
+    o una variante equivalente
+
+Esta decisión no está cerrada todavía, pero deberá resolverse antes de implementar completamente `UserAsset`.
+
+---
+
+## 3. Performance Attribution
+
+### 3.1 Objetivo
+
+Explicar de dónde procede la variación del patrimonio de inversión entre dos momentos.
+
+La variación total se divide en:
+
+- Capital;
+- Resultado de inversión.
+
+Estructura conceptual:
+
+    Portfolio Change
+    │
+    ├── Capital
+    │   ├── Opening Capital
+    │   ├── Contributions
+    │   └── Withdrawals
+    │
+    └── Investment Result
+        ├── Realized Gains
+        ├── Unrealized Price Effect
+        ├── FX Effect
+        ├── Dividends
+        └── Exchange Adjustments
+
+No existirá un componente separado `Interest`.
+
+El componente `Dividends` representa el rendimiento generado por Assets mediante el tipo de actividad `DIVIDEND`, entendido como concepto general de rendimiento.
+
+### 3.2 Opening Capital
+
+`OPENING_CASH` representa el capital inicial con el que el usuario comienza a gestionar su patrimonio de inversión.
+
+No es rentabilidad.
+
+No forma parte de:
+
+    Realized Gains
+    Unrealized Price Effect
+    FX Effect
+    Dividends
+
+Se trata como capital inicial.
+
+### 3.3 Contributions y Withdrawals
+
+`DEPOSIT` se trata como `Contributions`.
+
+`WITHDRAW` se trata como `Withdrawals`.
+
+No son beneficio ni pérdida de inversión.
+
+    DEPOSIT
+    → aumenta Investment Cash
+    → aumenta patrimonio
+    → no es beneficio
+
+    WITHDRAW
+    → disminuye Investment Cash
+    → disminuye patrimonio
+    → no es pérdida de inversión
+
+### 3.4 Realized Gains
+
+`realizedGains` representa el resultado realizado por ventas de posiciones.
+
+Expresa el resultado completo de la operación cerrada en moneda local.
+
+Si el activo está en divisa distinta de la moneda local, `realizedGains` incluye:
+
+    efecto precio
+    +
+    efecto tipo de cambio
+
+Por tanto, el FX de posiciones cerradas no va en `fxEffect`.
+
+### 3.5 Unrealized Price Effect
+
+`unrealizedPriceEffect` representa solo la variación por cambio de precio de posiciones abiertas.
+
+No incluye FX.
+
+Para una posición abierta:
+
+    Unrealized Value Change
+    =
+    Unrealized Price Effect
+    +
+    FX Effect
+
+### 3.6 FX Effect
+
+`fxEffect` representa solo la variación por tipo de cambio en posiciones abiertas.
+
+No incluye FX de posiciones cerradas.
+
+Ejemplo conceptual:
+
+    Activo = 1.000 USD
+
+    Inicio:
+    1 USD = 0,90 EUR
+
+    Final:
+    1 USD = 0,80 EUR
+
+Si el valor en USD no cambia pero baja su valor en EUR, esa diferencia corresponde a `fxEffect`.
+
+### 3.7 Dividends
+
+`dividends` representa el rendimiento generado por Assets mediante actividades `DIVIDEND`.
+
+Incluye conceptualmente:
+
+- dividendos de acciones;
+- distribuciones de fondos o ETFs;
+- ingresos por alquiler;
+- recompensas de staking;
+- otros rendimientos de Assets.
+
+`DIVIDEND` puede recibirse:
+
+- en moneda, aumentando `Investment Cash`;
+- en unidades del Asset, aumentando la posición y generando un `Lot`.
+
+El tratamiento exacto de valoración en performance para dividendos recibidos en unidades deberá cerrarse junto con el modelo de `Activity` y `PortfolioReplay`.
+
+### 3.8 Exchange Adjustments
+
+`exchangeAdjustments` recoge desajustes de efectivo producidos por conversiones de moneda necesarias para operar con activos en otra divisa.
+
+No es:
+
+- FX de posiciones abiertas;
+- FX de posiciones cerradas.
+
+Solo recoge diferencias de efectivo por conversiones.
+
+### 3.9 Reconciliation Difference
+
+`reconciliationDifference` es la diferencia residual tras aplicar todos los componentes conocidos.
+
+Conceptualmente:
+
+    Portfolio Change
+    -
+    Capital
+    -
+    Investment Result
+    =
+    Reconciliation Difference
+
+Debe ser cero o mínima por redondeos.
+
+Si es significativa, indica datos incompletos, información no contemplada o problema de cálculo.
+
+### 3.10 Regla global
+
+    Portfolio Change
+    =
+    Opening Capital
+    + Contributions
+    - Withdrawals
+    + Realized Gains
+    + Unrealized Price Effect
+    + FX Effect
+    + Dividends
+    + Exchange Adjustments
+    + Reconciliation Difference
+
+Reglas anti doble conteo:
+
+- FX de posiciones cerradas va en `realizedGains`.
+- FX de posiciones abiertas va en `fxEffect`.
+- Capital no es rentabilidad.
+- `exchangeAdjustments` solo recoge desajustes de conversión de efectivo.
+- No existe `Interest` separado; todo rendimiento de Asset se canaliza mediante `DIVIDEND`.
+
+### 3.11 Datos incompletos en Performance
+
+Las reglas son las mismas que en valoración:
+
+    NOT_CALCULABLE
+    → se excluye del cálculo
+
+    CALCULABLE + estimated
+    → participa en el cálculo
+    → Performance podrá quedar estimated
+
+    CALCULABLE + estimated = false
+    → participa como información completa
+
+---
+
+## 4. Assets, catálogo, referencias, moneda y sector
+
+### 4.1 Catálogo global: SharedAsset
+
+Los `SharedAsset` pertenecen al catálogo global de Millete.
+
+Pertenecen al catálogo global los instrumentos para los que Millete puede obtener datos de mercado mediante proveedores de MarketData.
+
+Ejemplos:
+
+    Acciones
+    Criptomonedas
+    Fondos
+    ETFs
+    Índices
+    Otros instrumentos con datos de mercado disponibles
+
+El criterio de pertenencia no es una lista cerrada de tipos, sino la disponibilidad de una fuente de precios compatible.
+
+La información identificativa del instrumento es compartida entre usuarios.
+
+Por ejemplo, `Bitcoin (BTC)` debería ser un único `SharedAsset`, independientemente de cuántos usuarios tengan posición.
+
+Los datos de mercado, como `AssetPrice`, pueden almacenarse de forma global y reutilizarse entre usuarios.
+
+### 4.2 Moneda de SharedAsset
+
+La moneda de un `SharedAsset` será una propiedad fija del instrumento y no podrá modificarse durante su vida.
+
+La moneda representa la divisa en la que está denominado el instrumento dentro del mercado o proveedor de datos correspondiente.
+
+Ejemplo:
+
+    SharedAsset
+    Apple Inc. - NASDAQ
+    currency = USD
+
+El cambio de la moneda local del usuario no modificará la moneda del `SharedAsset`.
+
+Cuando sea necesario mostrar su valoración en la moneda local del usuario, se realizará la conversión mediante los `FxRate` correspondientes.
+
+La moneda del `SharedAsset` será inmutable porque forma parte de la definición del instrumento y condiciona la interpretación de sus precios y operaciones.
+
+Cuando una misma empresa o instrumento se negocie en otro mercado y dicha negociación tenga un identificador diferente dentro de los proveedores de MarketData, se representará como un `SharedAsset` independiente en el catálogo.
+
+Por tanto, no se modificará retroactivamente la moneda de un `SharedAsset` para representar una cotización diferente del mismo emisor.
+
+Conceptualmente:
+
+    Empresa X — Mercado A
+        ↓
+    SharedAsset A
+    currency = USD
+    identifier = X_A
+
+    Empresa X — Mercado B
+        ↓
+    SharedAsset B
+    currency = EUR
+    identifier = X_B
+
+Cada `SharedAsset` mantendrá de forma estable su propia identidad, mercado, moneda y demás características estructurales.
+
+### 4.3 Assets personalizados: UserAsset
+
+Los `UserAsset` representan activos específicos de un usuario.
+
+Pueden representar, por ejemplo:
+
+    Viviendas
+    Inmuebles
+    Negocios
+    Otros activos personales
+
+Su valoración no depende del histórico global de MarketData.
+
+La valoración procede directamente del usuario.
+
+Un usuario puede crear un `UserAsset` incluso si existe un `SharedAsset` equivalente, si desea gestionar manualmente su valoración.
+
+Ejemplo:
+
+- existe `Bitcoin (BTC)` como `SharedAsset`;
+- el usuario puede crear un `UserAsset` BTC para usar su propia valoración.
+
+### 4.4 Campos funcionales de `UserAsset`
+
+Campos mínimos funcionales:
+
+    id
+    userId
+    name
+    type
+    sector
+    createdAt
+    modifiedAt
+    active
+
+El significado operativo de `active` en `UserAsset` puede requerir matiz posterior, pero no debe confundirse con `Activity`, que no tiene estado `active`.
+
+Sobre moneda:
+
+- La moneda de valoración de un `UserAsset` es la moneda local histórica del usuario.
+- No se utiliza una moneda libre del activo para determinar su valoración interna.
+- Cada `UserAssetPrice` conserva la moneda local vigente en el momento de la valoración.
+- Si el modelo mantiene un campo `currency` en `UserAsset`, debe interpretarse de forma consistente con esta regla o revisarse.
+
+### 4.5 Histórico de precio de UserAsset
+
+El precio actual de un `UserAsset` puede ser modificado por el usuario.
+
+Cada modificación debe conservar el valor anterior mediante histórico.
+
+    UserAsset
+        ↓
+    precio actual
+
+    UserAssetPrice
+        ↓
+    histórico de valoraciones
+
+Ejemplo:
+
+    300.000 EUR
+        ↓
+    305.000 EUR
+
+No se sobrescribe el histórico: se conserva la valoración anterior y se registra la nueva.
+
+`UserAssetPrice` representa valoraciones introducidas por el usuario, no datos de mercado externos.
+
+Esto permite usar `UserAsset` para:
+
+- valoración actual;
+- valoración histórica;
+- portfolio `asOf`;
+- performance attribution;
+- evolución histórica del patrimonio.
+
+### 4.6 Naturaleza no retroactiva de UserAssetPrice
+
+El precio de un `UserAsset` se gestionará de forma no retroactiva.
+
+El usuario únicamente podrá modificar el valor del `UserAsset` en el momento actual.
+
+Cada modificación generará una nueva captura histórica del precio.
+
+El `timestamp` de `UserAssetPrice` representará el momento en el que el usuario realiza la modificación del precio.
+
+El usuario no podrá introducir mediante este mecanismo valoraciones correspondientes a fechas anteriores a la modificación.
+
+Por tanto, el histórico de precios de un `UserAsset` comenzará a construirse desde el momento en que el usuario empiece a gestionar sus valoraciones en Millete.
+
+Ejemplo:
+
+    01/01/2026
+    UserAsset creado
+    Precio actual = 250.000 EUR
+
+    15/03/2026
+    Precio actualizado = 260.000 EUR
+
+    01/09/2026
+    Precio actualizado = 275.000 EUR
+
+El sistema conservará las modificaciones realizadas y podrá reconstruir la evolución del valor del `UserAsset` a partir de las capturas disponibles desde su incorporación a Millete.
+
+No se asumirá que existe información histórica anterior a la primera valoración registrada.
+
+Por tanto, un `UserAsset` podrá disponer de un historial de valoración parcial respecto a su vida real, pero dicho historial reflejará exclusivamente las valoraciones que el usuario haya registrado desde que comenzó a utilizar el Asset en la aplicación.
+
+Las valoraciones manuales de `UserAsset` serán independientes de `SharedAssetPrice`, ya que no proceden de proveedores externos de MarketData.
+
+### 4.7 Moneda de UserAsset
+
+Los `UserAsset` utilizarán siempre la moneda local del usuario como moneda de valoración.
+
+A diferencia de los `SharedAsset`, los `UserAsset` no utilizarán conversiones de moneda para determinar su valoración dentro de la aplicación.
+
+El precio introducido por el usuario estará expresado directamente en su moneda local.
+
+Ejemplo:
+
+    UserAsset
+    Casa
+
+    Moneda local del usuario
+    EUR
+
+    Precio
+    250.000 EUR
+
+Los `UserAssetPrice` conservarán la moneda en la que se registró cada valoración, que corresponderá a la moneda local que tenía el usuario en ese momento.
+
+Un cambio posterior de moneda local no modificará los `UserAsset` ni sus precios históricos.
+
+Ejemplo:
+
+    2025
+    Moneda local = EUR
+    Casa = 250.000 EUR
+
+    2026
+    Moneda local = USD
+
+La valoración histórica de 250.000 EUR seguirá siendo EUR.
+
+Cuando sea necesario mostrarla en USD, se realizará la conversión utilizando los tipos de cambio disponibles para la fecha correspondiente.
+
+El valor de un `UserAsset` no dependerá directamente de `AssetPrice` ni de `FxRate` de los proveedores de MarketData.
+
+### 4.8 Sector
+
+`sector` representa la clasificación temática o económica a la que pertenece un Asset.
+
+El `type` indica qué clase de activo es.
+
+El `sector` indica el ámbito económico o temático al que pertenece.
+
+Ejemplos:
+
+    type   = STOCK
+    sector = LOGISTICS
+
+    type   = CRYPTO
+    sector = CRYPTOCURRENCIES
+
+    type   = REAL_ESTATE
+    sector = REAL_ESTATE
+
+#### SharedAsset
+
+Los `SharedAsset` utilizarán sectores definidos en el catálogo común de Millete.
+
+El sector formará parte de la información global del instrumento y será el mismo para todos los usuarios que utilicen ese `SharedAsset`.
+
+#### UserAsset
+
+Los `UserAsset` podrán utilizar un sector del catálogo común o definir un sector personalizado cuando la clasificación predefinida no sea adecuada.
+
+Ejemplos:
+
+    type   = REAL_ESTATE
+    sector = REAL_ESTATE
+
+o:
+
+    type   = OTHER
+    sector = ART
+
+El sector es una clasificación.
+
+No determina la identidad del Asset ni modifica el comportamiento fundamental que viene determinado por su `type`.
+
+### 4.9 Inmutabilidad del tipo de Asset
+
+El `type` de un Asset es inmutable una vez creado.
+
+No es solo una etiqueta descriptiva; puede determinar comportamiento y reglas del módulo.
+
+Ejemplo:
+
+    BTC
+    type = CRYPTO
+
+no puede convertirse después en:
+
+    type = STOCK
+
+Si la clasificación es incorrecta, debe corregirse mediante el mecanismo correspondiente del catálogo o mediante un nuevo Asset, preservando el historial del Asset original.
+
+### 4.10 Referencia de Activity a Asset
+
+Una `Activity` puede estar asociada como máximo a un Asset.
+
+La referencia puede ser:
+
+    SHARED
+    → SharedAsset global del catálogo
+
+    USER
+    → UserAsset perteneciente al usuario
+
+Conceptualmente se representa mediante:
+
+    AssetReference
+    ├── kind
+    └── id
+
+La persistencia puede usar columnas separadas:
+
+    activities
+    ├── shared_asset_id
+    └── user_asset_id
+
+Reglas:
+
+- una Activity tiene como máximo una referencia de Asset;
+- para actividades que requieren Asset: `shared_asset_id XOR user_asset_id`;
+- para actividades sin Asset: ambas referencias nulas;
+- la referencia es inmutable;
+- una Activity no puede cambiar de Asset;
+- una Activity no puede cambiar de `SharedAsset` a `UserAsset` o viceversa;
+- la identidad se resuelve por ID, no por nombre o símbolo.
+
+Reglas específicas por tipo:
+
+- `BUY` y `SELL` requieren Asset.
+- `DIVIDEND` monetario puede tener Asset opcional.
+- `DIVIDEND` en unidades requiere Asset.
+- `DEPOSIT`, `WITHDRAW`, `OPENING_CASH` y `EXCHANGE` no requieren Asset.
+
+### 4.11 Uso de SharedAsset
+
+Un usuario puede registrar Activities sobre cualquier `SharedAsset` disponible en el catálogo sin necesidad de crear previamente un `UserAsset`.
+
+Ejemplo conceptual:
+
+    BUY
+    assetReference = SHARED / bitcoin-id
+
+No hace falta crear un `UserAsset` para operar sobre un `SharedAsset`.
+
+### 4.12 Uso de UserAsset
+
+Una Activity puede referenciar un `UserAsset` solo si ese `UserAsset` pertenece al mismo usuario que la Activity.
+
+La aplicación debe validar esta relación antes de registrar la Activity.
+
+### 4.13 Adquisición histórica de UserAsset
+
+Un `UserAsset` que ya pertenecía al patrimonio del usuario antes de comenzar a utilizar Millete podrá incorporar información sobre su adquisición histórica.
+
+El usuario podrá indicar, cuando disponga de ella, la fecha y el coste de adquisición original del activo.
+
+Ejemplo:
+
+    UserAsset
+    origin = PRE_EXISTING
+
+    Adquisición histórica:
+    fecha = 15/03/2024
+    coste = 10.000 EUR
+
+    Valoración inicial en Millete:
+    01/09/2026
+    precio = 14.000 EUR
+
+La adquisición histórica tendrá únicamente finalidad informativa y de cálculo del coste de la posición.
+
+Al haber ocurrido antes del inicio del seguimiento en Millete:
+
+- no modificará `Investment Cash`;
+- no se considerará una aportación realizada durante el período gestionado por la aplicación.
+
+La valoración inicial será obligatoria al crear el `UserAsset` y constituirá el primer `UserAssetPrice` del activo.
+
+El histórico de precios del `UserAsset` comenzará a partir de ese momento y no será retroactivo.
+
+Cuando la adquisición histórica no se conozca, el `UserAsset` podrá crearse igualmente utilizando únicamente su valoración inicial.
+
+En ese caso, la información disponible sobre el origen de la inversión será limitada.
+
+Los `UserAsset` adquiridos después del inicio del seguimiento utilizarán una `BUY Activity` para representar su adquisición.
+
+Esta Activity sí afectará a `Investment Cash` y generará los datos derivados correspondientes, como el `Lot`.
+
+Por tanto, se diferenciarán:
+
+    PRE_EXISTING
+    → el activo ya existía antes de Millete
+    → puede conservarse su adquisición histórica
+    → no afecta al Investment Cash inicial
+
+    ACQUIRED
+    → el activo se adquiere durante el seguimiento
+    → la adquisición se registra mediante BUY
+    → afecta al Investment Cash
+
+Matiz pendiente:
+
+Si se quiere que la adquisición histórica de un `UserAsset` `PRE_EXISTING` participe en FIFO y en el coste de ventas posteriores, será necesario representar ese coste dentro del ledger, probablemente mediante `Holding` / synthetic lot o una variante equivalente.
+
+No hace falta decidirlo ahora, pero deberá resolverse antes de implementar completamente `UserAsset`.
+
+---
+
+## 5. Moneda local del usuario
+
+La moneda local pertenece al contexto de `Users`, no a `Investments`.
+
+El usuario define su moneda local.
+
+`Investments` solo puede consultarla para:
+
+- valoraciones;
+- conversiones;
+- cálculos de rendimiento;
+- performance attribution.
+
+No debe modificarla en operaciones normales.
+
+Consulta histórica:
+
+    currencyAt(timestamp)
+
+Reglas del historial:
+
+- los períodos de moneda local no pueden solaparse;
+- en cada momento hay como máximo un período aplicable;
+- el historial permite consultar la moneda vigente en una fecha;
+- los períodos pueden ser explícitos o inferidos.
+
+Un período tiene:
+
+    inferred = false
+    → creado por configuración o cambio explícito del usuario
+
+    inferred = true
+    → deducido por el sistema por falta de información histórica explícita
+
+El cambio de moneda local no modifica:
+
+- `Activities`;
+- `Assets`;
+- `Holdings`;
+- `Lots`;
+- `UserAssetPrice`;
+- otros datos históricos de Investments.
+
+Cuando sea necesario mostrar información histórica en una moneda local distinta a la original, se usarán los tipos de cambio disponibles para la fecha correspondiente.
+
+---
+
+## 6. Restauración e importación
+
+### 6.1 Frontera correcta
+
+DataExport puede conocer un snapshot de Investments.
+
+DataExport no debe decidir cómo reconstruir el ledger.
+
+DataExport debe:
+
+1. leer snapshot;
+2. validar/migrar snapshot;
+3. delegar en Investments.
+
+### 6.2 Caso de uso objetivo
+
+Debe existir un caso de uso propio de Investments:
+
+    RestoreInvestmentLedger
+
+Responsabilidades esperadas:
+
+- validar snapshot;
+- validar ownership y referencias;
+- restaurar Assets;
+- restaurar Activities;
+- restaurar Holdings/snapshots;
+- restaurar audit;
+- restaurar contexto de moneda si corresponde;
+- restaurar `UserAsset` y `UserAssetPrice` si procede;
+- reconstruir mediante PortfolioReplay;
+- persistir estado derivado;
+- reconciliar relaciones con Transactions.
+
+### 6.3 Reglas que debe respetar
+
+`RestoreInvestmentLedger` debe:
+
+- adquirir lock de portfolio del usuario;
+- respetar que `Holding` no es CRUD normal;
+- validar coexistencia entre Holdings y Activities;
+- decidir si holdings restaurados quedan activos, superseded o históricos;
+- tratar correctamente synthetic lots;
+- reconstruir o validar `orderingKey` de forma coherente con `occurredAt`;
+- tratar `OPENING_CASH` como capital inicial, no como rendimiento;
+- respetar que `DIVIDEND` puede ser monetario o en unidades;
+- respetar que no existe `INTEREST` como tipo independiente;
+- respetar la inmutabilidad de moneda de `SharedAsset`;
+- respetar la naturaleza no retroactiva de `UserAssetPrice`;
+- no modificar la moneda local mediante puertos ordinarios de consulta;
+- no convertir la importación en una segunda ruta de escritura incontrolada.
+
+Puntos críticos pendientes:
+
+- `ActivitySnapshot.active` existe en export pero no debe existir en Activity actual;
+- `linkedTransactionId` necesita estrategia de remapeo/reconexión;
+- `currencyHistory` debe restaurarse por mecanismo específico;
+- decidir si al restaurar Investments se restauran también Transactions o se crean nuevas;
+- formalizar la dependencia entre Preferences y restauración de Investments;
+- definir cómo se representa en el ledger la adquisición histórica de `UserAsset` `PRE_EXISTING` si debe participar en FIFO/coste.
+
+---
+
+## 7. Arquitectura y problemas confirmados
+
+### 7.1 Lo que se mantiene
+
+- Dominio puro sin imports de Spring/JPA/infraestructura.
+- Entidades con comportamiento real:
+  - `Activity`;
+  - `Asset`;
+  - `Lot`;
+  - `PortfolioReplay`.
+- Comportamientos de dominio:
+  - `Lot.consume()`;
+  - `Lot.split()`.
+- `PortfolioReplay` como replay puro.
+- `Position` como resultado.
+- Separación `create` / `reconstitute`.
+- Locking en aplicación.
+- Puertos y adaptadores de mercado, notificaciones y proveedores externos.
+
+### 7.2 Problemas arquitectónicos principales
+
+- `InvestmentUseCases` demasiado grande.
+- `InvestmentPortfolioService` fachada monolítica.
+- `InvestmentPostgresAdapter` con demasiadas responsabilidades.
+- `ActivityRepository` mezcla persistencia, audit, idempotencia, locking y ordering.
+- `HoldingRepository` mezcla operaciones normales y restauración.
+- `PortfolioRepository.calculateCashBalances()` debería desaparecer o reubicarse.
+- Schedulers colocados en application.
+- Excepciones de infraestructura entrando en application/controller.
+- DTOs acoplados a `InvestmentUseCases`.
+- `InvestmentImportAdapter` como segunda ruta de escritura del bounded context.
+- `InvestmentPostgresAdapter` leyendo directamente transactions.
+- `DailyTransferPostgresAdapter` escribiendo directamente transactions.
+- `UserCurrencyPort` mezclando consulta ordinaria y restauración/escritura.
+
+### 7.3 Dirección objetivo
+
+Separar por intención y frontera:
+
+    Input Adapters
+        ↓
+    Input Ports
+        ↓
+    Application Services específicos
+        ↓
+    Domain
+        ↓
+    Out Ports
+
+La aplicación debería hacer:
+
+    load data
+        ↓
+    replay
+        ↓
+    valuation / performance
+        ↓
+    map to view
+
+La coordinación con repositorios, FX, Users, Transactions, Market Data, idempotencia y locking permanece en aplicación.
+
+---
+
+## 8. Cuestiones pendientes
+
+Quedan pendientes de cierre fino:
+
+- estructura exacta de `Activity` para distinguir `DIVIDEND` monetario y `DIVIDEND` en unidades;
+- tratamiento de coste/base del `Lot` generado por `DIVIDEND` en unidades;
+- representación en ledger de adquisición histórica de `UserAsset` `PRE_EXISTING` si debe participar en FIFO y coste de ventas;
+- mecanismo concreto de Holding/synthetic lot o variante para adquisición histórica;
+- separación formal entre `ratio` para SPLIT y tipo de cambio para EXCHANGE;
+- semántica de `estimated` aplicada a Market Data;
+- frescura, `timestamp`, `source` y `fetchedAt` en Market Data;
+- tratamiento de redondeos en performance;
+- casos límite de `exchangeAdjustments`;
+- comportamiento de performance con períodos parciales y posiciones `NOT_CALCULABLE`;
+- tratamiento en performance de `DIVIDEND` en unidades;
+- tratamiento temporal fino en `portfolioAt()`;
+- fallback de moneda local histórica cuando falta información explícita;
+- casuística de períodos inferidos en restauración;
+- semántica operativa de `active` en `UserAsset`;
+- papel definitivo del campo `currency` en `UserAsset`, si se mantiene;
+- gestión de sectores comunes y sectores personalizados de `UserAsset`;
+- estrategia de persistencia concreta para `AssetReference`;
+- paginación y contrato de páginas inexistentes;
+- importador de Transactions y remapeo de IDs;
+- limpieza de DTOs y controllers.
+
+---
+
+## 9. Prioridades
+
+### 9.1 Muy importante
+
+1. Diseñar formalmente el ciclo de vida de `Holding`.
+2. Diseñar `createHolding` y `replaceHoldingWithHistory`.
+3. Diseñar `RestoreInvestmentLedger` como caso de uso propio de Investments.
+4. Resolver cómo se representa la adquisición histórica de `UserAsset` `PRE_EXISTING` en el ledger, si debe participar en FIFO/coste.
+5. Definir el modelo de `DIVIDEND` monetario y `DIVIDEND` en unidades.
+6. Validar implementación de performance contra la semántica cerrada.
+7. Validar `amount = quantity × unitPrice` para `BUY` y `SELL`.
+8. Validar orden del ledger y derivación de `Lot.acquisitionOrder`.
+9. Formalizar consulta de moneda local histórica hacia `Users`.
+10. Formalizar referencias `SharedAsset` / `UserAsset` en Activities.
+11. Formalizar moneda inmutable de `SharedAsset` y moneda local histórica en `UserAsset`.
+12. Formalizar `sector` como clasificación separada de `type`.
+
+### 9.2 Arquitectura
+
+- Separar input ports.
+- Separar `InvestmentPortfolioService`.
+- Separar `InvestmentPostgresAdapter`.
+- Mover schedulers a input adapters.
+- Evitar excepciones de infraestructura en application/controller.
+- Desacoplar DTOs de `InvestmentUseCases`.
+- Rediseñar puertos hacia Users y Transactions.
+
+### 9.3 Después
+
+- Revisar controllers/DTOs.
+- Revisar DB.
+- Revisar importador de Transactions.
+- Limpiar `InvestmentApiDTOs`.
+- Revisar enums/string states en DTOs públicos.
+
+---
+
+## 10. Clasificación final
+
+### 10.1 🟢 Decisiones cerradas
+
+- `Activities` son hechos históricos y fuente de verdad.
+- Una `Activity` no se elimina.
+- `Activity` no tiene estado `active`.
+- Toda edición de `Activity` queda auditada.
+- `id`, `userId`, `type`, asset reference y `createdAt` son inmutables en `Activity`.
+- `type` de Activity es inmutable.
+- La referencia de Activity a Asset es inmutable.
+- Para `BUY` y `SELL`: `amount = quantity × unitPrice`.
+- `amount` en `BUY`/`SELL` no se edita directamente.
+- El orden del ledger es `occurredAt`, `orderingKey`, `id`.
+- `orderingKey` es automático.
+- `Lot.acquisitionOrder` deriva del replay.
+- `Holding` es snapshot/restauración, no CRUD normal.
+- No puede haber Holding activo incompatible con Activities anteriores o iguales a `snapshotAt`.
+- Un Holding puede originar synthetic lots.
+- Posición abierta con synthetic lot:
+  - `historyIncomplete = true`;
+  - `estimated = true`.
+- Closed lot sintético conserva esas marcas.
+- `historyIncomplete ⇒ estimated`.
+- `estimated ⇏ historyIncomplete`.
+- `estimated` no es error.
+- `ValuationStatus` solo tiene:
+  - `CALCULABLE`;
+  - `NOT_CALCULABLE`.
+- No existe `ESTIMATED` dentro de `ValuationStatus`.
+- Posición `NOT_CALCULABLE` no invalida el Portfolio completo.
+- Posición `NOT_CALCULABLE` debe incluir `unavailableReason`.
+- Performance separa Capital e Investment Result.
+- `Opening Capital` no es rentabilidad.
+- `Contributions` no son beneficio.
+- `Withdrawals` no son pérdida.
+- `realizedGains` incluye FX de posiciones cerradas.
+- `fxEffect` solo recoge FX de posiciones abiertas.
+- `exchangeAdjustments` solo recoge desajustes de efectivo por conversiones.
+- `reconciliationDifference` debe ser residual.
+- No existirá un tipo de Activity independiente `INTEREST`.
+- `DIVIDEND` es el concepto general de rendimiento generado por un Asset.
+- `DIVIDEND` monetario aumenta `Investment Cash`.
+- `DIVIDEND` monetario puede tener Asset opcional.
+- `DIVIDEND` en unidades aumenta la posición del Asset.
+- `DIVIDEND` en unidades requiere Asset.
+- `DIVIDEND` en unidades genera un nuevo `Lot`.
+- `DIVIDEND` en unidades no es automáticamente una entrada de `Investment Cash`.
+- `DEPOSIT`/`WITHDRAW` vinculados a Transaction son inmutables.
+- Correcciones de capital vinculado se hacen mediante actividades complementarias.
+- `EXCHANGE` representa conversión de Investment Cash y conserva tipo de cambio.
+- El `type` de un Asset es inmutable.
+- `sector` es clasificación temática y no determina identidad ni comportamiento fundamental.
+- `SharedAsset` usa sectores del catálogo común.
+- `UserAsset` puede usar sector común o sector personalizado.
+- Existen `SharedAsset` globales y `UserAsset` específicos de usuario.
+- La valoración de `UserAsset` procede del usuario mediante `UserAssetPrice`.
+- `UserAssetPrice` no es retroactivo.
+- El `timestamp` de `UserAssetPrice` representa el momento de modificación del precio por el usuario.
+- La primera valoración de un `UserAsset` es obligatoria y constituye el primer `UserAssetPrice`.
+- El histórico de valoración de `UserAsset` comienza en Millete, no en la vida real completa del activo.
+- La moneda de `SharedAsset` es fija e inmutable.
+- La moneda de `SharedAsset` forma parte de la definición del instrumento.
+- El mismo emisor negociado en mercados distintos puede dar lugar a `SharedAsset` distintos.
+- `UserAsset` se valora en la moneda local histórica del usuario.
+- Cada `UserAssetPrice` conserva la moneda local vigente en su momento.
+- Un cambio de moneda local no modifica precios históricos de `UserAsset`.
+- Una Activity referencia como máximo un Asset mediante `AssetReference`.
+- La referencia puede ser `SHARED` o `USER`.
+- La moneda local pertenece a `Users`.
+- `Investments` solo consulta moneda local histórica.
+- Los períodos de moneda local no se solapan.
+- `inferred = true` solo para períodos deducidos por el sistema.
+- Un `UserAsset` puede ser `PRE_EXISTING`.
+- Un `UserAsset` adquirido durante el seguimiento se registra mediante `BUY`.
+- La adquisición histórica de un `UserAsset` `PRE_EXISTING` no afecta a `Investment Cash`.
+- La adquisición histórica tiene finalidad informativa y de cálculo de coste, salvo decisión posterior sobre representación en ledger.
+
+### 10.2 🟡 Investigar / diseñar
+
+- Ciclo de vida operativo completo de `Holding`.
+- Representación de adquisición histórica `PRE_EXISTING` en ledger si debe participar en FIFO/coste.
+- Estructura exacta de `DIVIDEND` monetario y en unidades.
+- Coste/base del `Lot` generado por `DIVIDEND` en unidades.
+- Tratamiento en performance de `DIVIDEND` en unidades.
+- Casos límite de `exchangeAdjustments`.
+- Implementación matemática exacta de performance.
+- Semántica de Market Data.
+- Semántica de `active` en `UserAsset`.
+- Papel del campo `currency` en `UserAsset`.
+- Gestión de sectores comunes y personalizados.
+- Persistencia concreta de `AssetReference`.
+- Restauración específica de moneda local.
+- Valoración histórica de `UserAsset` en portfolio `asOf`.
+
+### 10.3 🔴 Problemas fuertes
+
+- Importador actual con lógica de negocio de Investments.
+- Frontera Investments ↔ Transactions.
+- Frontera Investments ↔ Users.
+- Servicios y adaptadores gigantes.
+- Schedulers en application.
+- Excepciones de infraestructura en capas altas.
+- DTOs acoplados.
+- Acceso directo a esquemas de otros contextos.
+
+---
+
+## 11. Conclusión concentrada
+
+El módulo tiene un núcleo de dominio sólido:
+
+- `Activities` son hechos históricos y fuente de verdad.
+- `PortfolioReplay` deriva `Lots`, `LotConsumptions`, `Cash` y `Positions`.
+- `Holding` es un snapshot para historial incompleto.
+- Los synthetic lots permiten arrancar posiciones desde Holdings.
+- La valoración distingue claramente entre calculable, estimado y no calculable.
+- Performance separa capital y resultado de inversión, evitando doble conteo de FX.
+- No existe `INTEREST` como tipo independiente.
+- `DIVIDEND` se convierte en el concepto general de rendimiento de Assets.
+- `DIVIDEND` puede ser monetario o en unidades.
+- `DIVIDEND` monetario aumenta `Investment Cash` y puede no tener Asset.
+- `DIVIDEND` en unidades requiere Asset, aumenta la posición y genera un `Lot`.
+- `BUY` y `SELL` tienen `amount` derivado.
+- El orden del ledger es determinista y goberna FIFO.
+- Las Activities son inmutables en identidad y tipo, editables en datos operativos, auditadas y no eliminables.
+- `DEPOSIT`/`WITHDRAW` vinculados a Transactions son inmutables y se corrigen con actividades complementarias.
+- El modelo de Assets distingue catálogo global y activos personalizados del usuario.
+- `SharedAsset` tiene moneda fija e inmutable.
+- `UserAsset` se valora en moneda local histórica mediante `UserAssetPrice`.
+- `UserAssetPrice` no es retroactivo y comienza desde la gestión en Millete.
+- La adquisición histórica de un `UserAsset` `PRE_EXISTING` no afecta a `Investment Cash`, pero puede requerir representación en ledger si debe participar en FIFO/coste.
+- Las Activities referencian Assets mediante una referencia única, inmutable y resuelta por ID.
+- La moneda local histórica pertenece a `Users`.
+
+El siguiente paso no es añadir estructura DDD superficial.
+
+El siguiente paso es:
+
+1. diseñar el ciclo de vida de `Holding`;
+2. diseñar `createHolding` y `replaceHoldingWithHistory`;
+3. mover restauración/importación a `RestoreInvestmentLedger`;
+4. resolver la representación ledger de adquisición histórica de `UserAsset` `PRE_EXISTING`;
+5. cerrar el modelo de `DIVIDEND` monetario y en unidades;
+6. separar casos de uso y adaptadores;
+7. cerrar fronteras con Users, Transactions y Market Data;
+8. validar performance, amount, orden del ledger, moneda y referencias de Assets contra estas decisiones.
+
+**### DIVIDEND recibido en unidades**
+
+Cuando un `DIVIDEND` se reciba en unidades del propio `Asset`, la Activity no generará ningún movimiento de `Investment Cash` ni realizará un reconocimiento monetario del rendimiento en el momento de recepción.
+
+La operación tendrá como único efecto inmediato aumentar la cantidad mantenida del Asset.
+
+Por ejemplo:
+
+```text id="6b2x8m"
+Posición anterior:
+1,00 ETH
+
+DIVIDEND:
+0,05 ETH
+
+Posición posterior:
+1,05 ETH
+```
+
+Las unidades recibidas generarán un nuevo `Lot` independiente con:
+
+```text id="2w7n4p"
+originalQuantity = 0,05
+remainingQuantity = 0,05
+totalCost = 0
+```
+
+El coste cero refleja que el usuario no realizó ningún desembolso para obtener dichas unidades.
+
+El rendimiento económico de estas unidades no se reconocerá como un importe monetario en el momento de recepción. Cuando las unidades sean posteriormente vendidas, el importe obtenido constituirá el resultado realizado correspondiente, teniendo en cuenta que el coste del Lot era cero.
+
+Por tanto:
+
+```text id="9m1c7v"
+DIVIDEND en unidades
+→ aumenta la posición
+→ crea Lot con coste 0
+→ no aumenta Investment Cash
+→ no genera reconocimiento monetario inmediato
+```
+
+Este comportamiento permitirá representar recompensas como staking u otros rendimientos recibidos directamente en unidades del Asset sin convertirlos artificialmente en efectivo.
+
+Esto deja una consecuencia matemática para Performance Attribution que tendremos que respetar cuando lleguemos a la implementación: la recepción de unidades aumenta el valor de la cartera sin ser un DEPOSIT ni un beneficio monetario reconocido en ese instante. Tendremos que hacer que la reconciliación conozca esta situación en vez de esconderla como reconciliationDifference. Es importante, pero no cambia la decisión funcional que acabamos de tomar.
+
+**## `DIVIDEND` y compatibilidad entre AssetType y ActivityType**
+
+### Variantes de `DIVIDEND`
+
+`DIVIDEND` tendrá dos variantes mutuamente excluyentes según la forma en la que se recibe el rendimiento.
+
+#### DIVIDEND monetario
+
+Representa un rendimiento recibido en una moneda.
+
+```text id="5w8q2n"
+DIVIDEND
+    amount
+    currency
+    assetId → opcional
+```
+
+Su efecto será aumentar `Investment Cash`.
+
+El `assetId` podrá omitirse cuando no se conozca el Asset que generó el ingreso.
+
+#### DIVIDEND en unidades
+
+Representa un rendimiento recibido directamente en unidades del propio Asset.
+
+```text id="7m3c9p"
+DIVIDEND
+    assetId → obligatorio
+    quantity
+```
+
+No tendrá `amount` ni `currency`.
+
+Su efecto será aumentar la cantidad del Asset y generar un nuevo `Lot` con coste de adquisición cero.
+
+```text id="2x6v8k"
+DIVIDEND en unidades
+    ↓
+cantidad del Asset +
+    ↓
+nuevo Lot
+    totalCost = 0
+```
+
+No se generará `Investment Cash` ni se realizará un reconocimiento monetario del rendimiento en el momento de recepción. El resultado económico de esas unidades se reconocerá posteriormente cuando sean vendidas.
+
+No se permitirá mezclar ambas variantes en una misma Activity.
+
+---
+
+### Compatibilidad entre AssetType y ActivityType
+
+El `AssetType` condicionará qué tipos de `Activity` pueden realizarse sobre un Asset.
+
+Esta compatibilidad será una regla del dominio y no dependerá únicamente de la validación del API.
+
+El objetivo será impedir combinaciones claramente incompatibles entre la naturaleza del Asset y la operación que se pretende registrar.
+
+Sin embargo, no se establecerá una matriz completamente rígida que determine exhaustivamente todas las combinaciones posibles.
+
+`SPLIT` y `DIVIDEND` se permitirán cuando tengan sentido para el Asset concreto.
+
+Por ejemplo:
+
+```text id="0x9r4m"
+CRYPTO
+→ DIVIDEND puede representar recompensas de staking.
+
+REAL_ESTATE
+→ DIVIDEND puede representar ingresos por alquiler.
+
+ETF / STOCK / FUND
+→ DIVIDEND puede representar distribuciones.
+
+SPLIT
+→ podrá utilizarse cuando el instrumento pueda experimentar un cambio
+   en el número de unidades manteniendo el valor económico de la posición.
+```
+
+El dominio será responsable de determinar si una operación concreta es compatible con el `AssetType`, evitando tanto operaciones claramente inválidas como restricciones artificiales que impidan representar casos legítimos.
+
+La validación deberá utilizar el Asset real al que hace referencia la Activity y no depender de nombres, símbolos u otros datos descriptivos.
