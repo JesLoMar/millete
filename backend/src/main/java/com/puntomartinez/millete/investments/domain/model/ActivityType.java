@@ -4,10 +4,10 @@ public enum ActivityType {
     BUY,
     SELL,
     DIVIDEND,
-    INTEREST,
     DEPOSIT,
     WITHDRAW,
     SPLIT,
     EXCHANGE,
-    OPENING_CASH
+    OPENING_CASH,
+    OPENING_POSITION
 }

@@ -2,42 +2,31 @@ package com.puntomartinez.millete.investments.domain.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
-public record FxRate(
-        UUID id,
+public record AppliedFxRate(
         CurrencyCode baseCurrency,
         CurrencyCode quoteCurrency,
-        Instant timestamp,
         BigDecimal rate,
         String source,
-        Instant fetchedAt
+        Instant timestamp
 ) {
 
-    public FxRate {
-        if (id == null) {
+    public AppliedFxRate {
+        if (baseCurrency == null) {
             throw new IllegalArgumentException(
-                    "El identificador del FX es obligatorio"
+                    "La moneda origen es obligatoria"
             );
         }
 
-        if (baseCurrency == null
-                || quoteCurrency == null) {
-
+        if (quoteCurrency == null) {
             throw new IllegalArgumentException(
-                    "Las monedas del FX son obligatorias"
+                    "La moneda destino es obligatoria"
             );
         }
 
         if (baseCurrency.equals(quoteCurrency)) {
             throw new IllegalArgumentException(
-                    "Las monedas del FX deben ser distintas"
-            );
-        }
-
-        if (timestamp == null || fetchedAt == null) {
-            throw new IllegalArgumentException(
-                    "Las fechas del FX son obligatorias"
+                    "Las monedas del tipo de cambio deben ser distintas"
             );
         }
 
@@ -49,7 +38,13 @@ public record FxRate(
 
         if (source == null || source.isBlank()) {
             throw new IllegalArgumentException(
-                    "La fuente del FX es obligatoria"
+                    "La fuente del tipo de cambio es obligatoria"
+            );
+        }
+
+        if (timestamp == null) {
+            throw new IllegalArgumentException(
+                    "El instante del tipo de cambio es obligatorio"
             );
         }
 

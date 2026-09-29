@@ -1,238 +1,427 @@
 package com.puntomartinez.millete.investments.domain.model;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+
 import java.time.Instant;
-import java.util.Currency;
-import java.util.Locale;
 import java.util.UUID;
 
 public final class Activity {
-    private static final int EXCHANGE_AMOUNT_SCALE = 12;
+
     private final UUID id;
     private final UUID userId;
     private final ActivityType type;
+    private final AssetReference assetReference;
     private Instant occurredAt;
     private final Instant createdAt;
     private Instant modifiedAt;
     private long orderingKey;
-    private UUID assetId;
-    private BigDecimal quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal amount;
-    private String currency;
-    private BigDecimal secondaryAmount;
-    private String secondaryCurrency;
-    private BigDecimal ratio;
-    private String localCurrency;
-    private BigDecimal fxRateToLocal;
-    private String fxRateSource;
-    private Instant fxRateTimestamp;
-    private BigDecimal amountInLocal;
+    private ActivityDetails details;
     private String comment;
     private UUID linkedTransactionId;
 
-    private Activity(UUID id, UUID userId, ActivityType type, Instant occurredAt,
-                     Instant createdAt, Instant modifiedAt, long orderingKey,
-                     UUID assetId, BigDecimal quantity, BigDecimal unitPrice,
-                     BigDecimal amount, String currency, BigDecimal secondaryAmount,
-                     String secondaryCurrency, BigDecimal ratio, String localCurrency,
-                     BigDecimal fxRateToLocal, String fxRateSource,
-                     Instant fxRateTimestamp, BigDecimal amountInLocal,
-                     String comment, UUID linkedTransactionId) {
-        this.id = required(id, "id");
-        this.userId = required(userId, "userId");
-        this.type = required(type, "type");
-        this.occurredAt = required(occurredAt, "occurredAt");
-        this.createdAt = required(createdAt, "createdAt");
-        this.modifiedAt = required(modifiedAt, "modifiedAt");
-        if (orderingKey < 0) throw new IllegalArgumentException("orderingKey cannot be negative");
-        this.orderingKey = orderingKey;
-        this.assetId = assetId;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
-        this.amount = amount;
-        this.currency = currency == null ? null : currency(currency);
-        this.secondaryAmount = secondaryAmount;
-        this.secondaryCurrency = secondaryCurrency == null ? null : currency(secondaryCurrency);
-        this.ratio = ratio;
-        this.localCurrency = localCurrency == null ? null : currency(localCurrency);
-        this.fxRateToLocal = fxRateToLocal;
-        this.fxRateSource = fxRateSource;
-        this.fxRateTimestamp = fxRateTimestamp;
-        this.amountInLocal = amountInLocal;
-        this.comment = comment == null ? null : comment.trim();
-        this.linkedTransactionId = linkedTransactionId;
-        validateShape();
-    }
+    private Activity(
+            UUID id,
+            UUID userId,
+            ActivityType type,
+            AssetReference assetReference,
+            Instant occurredAt,
+            Instant createdAt,
+            Instant modifiedAt,
+            long orderingKey,
+            ActivityDetails details,
+            String comment,
+            UUID linkedTransactionId
+    ) {
+        validateId(id);
+        validateUserId(userId);
+        validateType(type);
+        validateOccurredAt(occurredAt);
+        validateCreatedAt(createdAt);
+        validateModifiedAt(modifiedAt);
+        validateOrderingKey(orderingKey);
+        validateDetails(details);
 
-    public static Activity create(UUID userId, ActivityType type, Instant occurredAt,
-                                  UUID assetId, BigDecimal quantity, BigDecimal unitPrice,
-                                  BigDecimal amount, String currency,
-                                  BigDecimal secondaryAmount, String secondaryCurrency,
-                                  BigDecimal ratio, String localCurrency,
-                                  BigDecimal fxRateToLocal, String fxRateSource,
-                                  Instant fxRateTimestamp, BigDecimal amountInLocal,
-                                  String comment, Instant now) {
-        return new Activity(UUID.randomUUID(), userId, type, occurredAt, now, now,
-                0, assetId, quantity, unitPrice, amount, currency, secondaryAmount,
-                secondaryCurrency, ratio, localCurrency, fxRateToLocal,
-                fxRateSource, fxRateTimestamp,
-                amountInLocal, comment, null);
-    }
-
-    public static Activity reconstitute(UUID id, UUID userId, ActivityType type,
-                                        Instant occurredAt, Instant createdAt,
-                                        Instant modifiedAt, long orderingKey,
-                                        UUID assetId, BigDecimal quantity,
-                                        BigDecimal unitPrice, BigDecimal amount,
-                                        String currency, BigDecimal secondaryAmount,
-                                        String secondaryCurrency, BigDecimal ratio,
-                                        String localCurrency, BigDecimal fxRateToLocal,
-                                        String fxRateSource, Instant fxRateTimestamp,
-                                        BigDecimal amountInLocal, String comment,
-                                        UUID linkedTransactionId) {
-        return new Activity(id, userId, type, occurredAt, createdAt, modifiedAt,
-                orderingKey, assetId, quantity, unitPrice, amount, currency,
-                secondaryAmount, secondaryCurrency, ratio, localCurrency,
-                fxRateToLocal, fxRateSource, fxRateTimestamp,
-                amountInLocal, comment, linkedTransactionId);
-    }
-
-    public void editComment(String value, Instant now) {
-        if (type == ActivityType.DEPOSIT || type == ActivityType.WITHDRAW) {
-            this.comment = value == null ? null : value.trim();
-            this.modifiedAt = required(now, "now");
-            return;
-        }
-        throw new IllegalStateException("Comment-only edit applies to DEPOSIT and WITHDRAW");
-    }
-
-    public void editInvestmentDetails(Instant occurredAt, BigDecimal quantity,
-                                      BigDecimal unitPrice, BigDecimal amount,
-                                      BigDecimal ratio, String comment,
-                                      long orderingKey, String localCurrency,
-                                      BigDecimal fxRateToLocal, BigDecimal amountInLocal,
-                                      String fxRateSource, Instant fxRateTimestamp,
-                                      Instant now) {
-        if (type != ActivityType.BUY && type != ActivityType.SELL && type != ActivityType.SPLIT) {
-            throw new IllegalStateException("This activity type cannot be edited with investment details");
-        }
-        this.validateEditableShape(occurredAt, quantity, unitPrice, amount, ratio);
-        this.modifiedAt = required(now, "now");
-        this.comment = comment == null ? null : comment.trim();
+        this.id = id;
+        this.userId = userId;
+        this.type = type;
+        this.assetReference = assetReference;
         this.occurredAt = occurredAt;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
-        this.amount = amount;
-        this.ratio = ratio;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
         this.orderingKey = orderingKey;
-        this.localCurrency = localCurrency;
-        this.fxRateToLocal = fxRateToLocal;
-        this.fxRateSource = fxRateSource;
-        this.fxRateTimestamp = fxRateTimestamp;
-        this.amountInLocal = amountInLocal;
-        validateShape();
+        this.details = details;
+        this.comment = normalizeComment(comment);
+        this.linkedTransactionId = linkedTransactionId;
+
+        validateAssetReference();
+        validateLinkedTransaction();
+    }
+
+    public static Activity create(
+            TimeProvider timeProvider,
+            UUID userId,
+            ActivityType type,
+            AssetReference assetReference,
+            Instant occurredAt,
+            long orderingKey,
+            ActivityDetails details,
+            String comment
+    ) {
+        Instant now = timeProvider.now();
+
+        return new Activity(
+                UUID.randomUUID(),
+                userId,
+                type,
+                assetReference,
+                occurredAt,
+                now,
+                now,
+                orderingKey,
+                details,
+                comment,
+                null
+        );
+    }
+
+    public static Activity reconstitute(
+            UUID id,
+            UUID userId,
+            ActivityType type,
+            AssetReference assetReference,
+            Instant occurredAt,
+            Instant createdAt,
+            Instant modifiedAt,
+            long orderingKey,
+            ActivityDetails details,
+            String comment,
+            UUID linkedTransactionId
+    ) {
+        return new Activity(
+                id,
+                userId,
+                type,
+                assetReference,
+                occurredAt,
+                createdAt,
+                modifiedAt,
+                orderingKey,
+                details,
+                comment,
+                linkedTransactionId
+        );
+    }
+
+    public void edit(
+            TimeProvider timeProvider,
+            Instant newOccurredAt,
+            long newOrderingKey,
+            ActivityDetails newDetails,
+            String newComment
+    ) {
+        if (isLinkedCapitalMovement()) {
+            throw new IllegalStateException(
+                    "Una DEPOSIT o WITHDRAW vinculada a una Transaction no puede editarse"
+            );
+        }
+
+        validateOccurredAt(newOccurredAt);
+        validateOrderingKey(newOrderingKey);
+        validateDetails(newDetails);
+
+        if (newOccurredAt.equals(this.occurredAt)) {
+            if (newOrderingKey != this.orderingKey) {
+                throw new IllegalArgumentException(
+                        "Si occurredAt no cambia, orderingKey debe conservarse"
+                );
+            }
+        } else {
+            if (newOrderingKey == this.orderingKey) {
+                throw new IllegalArgumentException(
+                        "Si occurredAt cambia, debe asignarse un nuevo orderingKey"
+                );
+            }
+        }
+
+        validateDetailsForCurrentType(newDetails);
+
+        this.occurredAt = newOccurredAt;
+        this.orderingKey = newOrderingKey;
+        this.details = newDetails;
+        this.comment = normalizeComment(newComment);
+        this.modifiedAt = timeProvider.now();
+
+        validateAssetReference();
+        validateLinkedTransaction();
     }
 
     public void attachTransaction(UUID transactionId) {
-        if (type != ActivityType.DEPOSIT && type != ActivityType.WITHDRAW) {
-            throw new IllegalStateException("Only DEPOSIT and WITHDRAW link to daily transactions");
+        if (type != ActivityType.DEPOSIT
+                && type != ActivityType.WITHDRAW) {
+
+            throw new IllegalStateException(
+                    "Solo DEPOSIT y WITHDRAW pueden vincular una Transaction"
+            );
         }
-        if (linkedTransactionId != null || transactionId == null) {
-            throw new IllegalStateException("A valid transaction can be linked exactly once");
+
+        if (linkedTransactionId != null) {
+            throw new IllegalStateException(
+                    "La Activity ya tiene una Transaction vinculada"
+            );
         }
+
+        if (transactionId == null) {
+            throw new IllegalArgumentException(
+                    "El identificador de la Transaction es obligatorio"
+            );
+        }
+
         linkedTransactionId = transactionId;
     }
 
-    private void validateEditableShape(Instant at, BigDecimal units, BigDecimal price,
-                                       BigDecimal cashAmount, BigDecimal splitRatio) {
-        required(at, "occurredAt");
-        if (type == ActivityType.SPLIT) positive(splitRatio, "ratio");
-        else {
-            positive(units, "quantity");
-            positive(price, "unitPrice");
-            positive(cashAmount, "amount");
-        }
+    public boolean isLinkedCapitalMovement() {
+        return linkedTransactionId != null
+                && (
+                type == ActivityType.DEPOSIT
+                        || type == ActivityType.WITHDRAW
+        );
     }
 
-    private void validateShape() {
+    public boolean isTrade() {
+        return type == ActivityType.BUY
+                || type == ActivityType.SELL;
+    }
+
+    public boolean isCashDividend() {
+        return type == ActivityType.DIVIDEND
+                && details instanceof CashActivityDetails;
+    }
+
+    public boolean isUnitsDividend() {
+        return type == ActivityType.DIVIDEND
+                && details instanceof DividendUnitsDetails;
+    }
+
+    private void validateDetails(
+            ActivityDetails details
+    ) {
+        if (details == null) {
+            throw new IllegalArgumentException(
+                    "Los datos de la Activity son obligatorios"
+            );
+        }
+
+        validateDetailsForCurrentType(details);
+    }
+
+    private void validateDetailsForCurrentType(
+            ActivityDetails details
+    ) {
+        boolean valid;
+
         switch (type) {
-            case BUY, SELL -> {
-                required(assetId, "assetId"); positive(quantity, "quantity");
-                positive(unitPrice, "unitPrice"); positive(amount, "amount");
-                required(currency, "currency");
-                requireLocalFx();
-            }
-            case DIVIDEND, INTEREST, DEPOSIT, WITHDRAW, OPENING_CASH -> {
-                positive(amount, "amount"); required(currency, "currency");
-                requireLocalFx();
-            }
-            case SPLIT -> { required(assetId, "assetId"); positive(ratio, "ratio"); }
-            case EXCHANGE -> {
-                positive(amount, "source amount"); required(currency, "source currency");
-                positive(secondaryAmount, "target amount"); required(secondaryCurrency, "target currency");
-                positive(ratio, "exchange rate");
-                if (currency.equals(secondaryCurrency)) throw new IllegalArgumentException("Exchange currencies must differ");
-                BigDecimal expectedSecondaryAmount = amount.multiply(ratio)
-                        .setScale(EXCHANGE_AMOUNT_SCALE, RoundingMode.HALF_UP);
-                BigDecimal recordedSecondaryAmount = secondaryAmount
-                        .setScale(EXCHANGE_AMOUNT_SCALE, RoundingMode.HALF_UP);
-                if (expectedSecondaryAmount.compareTo(recordedSecondaryAmount) != 0) {
-                    throw new IllegalArgumentException("EXCHANGE target amount must match source amount times exchange rate rounded to 12 decimal places");
-                }
+            case BUY:
+            case SELL:
+                valid = details instanceof TradeActivityDetails;
+                break;
+
+            case DIVIDEND:
+                valid = details instanceof CashActivityDetails
+                        || details instanceof DividendUnitsDetails;
+                break;
+
+            case DEPOSIT:
+            case WITHDRAW:
+            case OPENING_CASH:
+                valid = details instanceof CashActivityDetails;
+                break;
+
+            case SPLIT:
+                valid = details instanceof SplitActivityDetails;
+                break;
+
+            case EXCHANGE:
+                valid = details instanceof ExchangeActivityDetails;
+                break;
+
+            case OPENING_POSITION:
+                valid = details instanceof OpeningPositionDetails;
+                break;
+
+            default:
+                valid = false;
+        }
+
+        if (!valid) {
+            throw new IllegalArgumentException(
+                    "Los datos no son compatibles con el tipo de Activity "
+                            + type
+            );
+        }
+    }
+
+    private void validateAssetReference() {
+        boolean requiresAsset =
+                type == ActivityType.BUY
+                        || type == ActivityType.SELL
+                        || type == ActivityType.SPLIT
+                        || type == ActivityType.OPENING_POSITION;
+
+        boolean forbidsAsset =
+                type == ActivityType.DEPOSIT
+                        || type == ActivityType.WITHDRAW
+                        || type == ActivityType.OPENING_CASH
+                        || type == ActivityType.EXCHANGE;
+
+        if (requiresAsset && assetReference == null) {
+            throw new IllegalArgumentException(
+                    type + " requiere un AssetReference"
+            );
+        }
+
+        if (forbidsAsset && assetReference != null) {
+            throw new IllegalArgumentException(
+                    type + " no puede tener AssetReference"
+            );
+        }
+
+        if (type == ActivityType.DIVIDEND) {
+            if (details instanceof DividendUnitsDetails
+                    && assetReference == null) {
+
+                throw new IllegalArgumentException(
+                        "Un DIVIDEND en unidades requiere AssetReference"
+                );
             }
         }
-        if (comment != null && comment.length() > 500) throw new IllegalArgumentException("comment exceeds 500 characters");
-        if (linkedTransactionId != null && type != ActivityType.DEPOSIT && type != ActivityType.WITHDRAW) {
-            throw new IllegalArgumentException("Only DEPOSIT and WITHDRAW may link a daily transaction");
+    }
+
+    private void validateLinkedTransaction() {
+        if (linkedTransactionId != null
+                && type != ActivityType.DEPOSIT
+                && type != ActivityType.WITHDRAW) {
+
+            throw new IllegalArgumentException(
+                    "Solo DEPOSIT y WITHDRAW pueden vincular una Transaction"
+            );
         }
     }
 
-    private void requireLocalFx() {
-        required(localCurrency, "localCurrency");
-        positive(fxRateToLocal, "fxRateToLocal");
-        required(fxRateSource, "fxRateSource");
-        required(fxRateTimestamp, "fxRateTimestamp");
-        positive(amountInLocal, "amountInLocal");
+    private static String normalizeComment(
+            String comment
+    ) {
+        if (comment == null) {
+            return null;
+        }
+
+        String normalized = comment.trim();
+
+        if (normalized.length() > 500) {
+            throw new IllegalArgumentException(
+                    "El comentario no puede superar los 500 caracteres"
+            );
+        }
+
+        return normalized;
     }
 
-    private static String currency(String value) {
-        if (value == null || !value.matches("[A-Za-z]{3}")) throw new IllegalArgumentException("Currency must be ISO 4217");
-        String code = value.toUpperCase(Locale.ROOT);
-        Currency.getInstance(code);
-        return code;
+    private static void validateId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "El identificador de la Activity es obligatorio"
+            );
+        }
     }
 
-    private static void positive(BigDecimal value, String name) {
-        if (value == null || value.signum() <= 0) throw new IllegalArgumentException(name + " must be positive");
+    private static void validateUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException(
+                    "El identificador del usuario es obligatorio"
+            );
+        }
     }
 
-    private static <T> T required(T value, String name) {
-        if (value == null) throw new IllegalArgumentException(name + " is required");
-        return value;
+    private static void validateType(ActivityType type) {
+        if (type == null) {
+            throw new IllegalArgumentException(
+                    "El tipo de Activity es obligatorio"
+            );
+        }
     }
 
-    public UUID getId() { return id; }
-    public UUID getUserId() { return userId; }
-    public ActivityType getType() { return type; }
-    public Instant getOccurredAt() { return occurredAt; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getModifiedAt() { return modifiedAt; }
-    public long getOrderingKey() { return orderingKey; }
-    public UUID getAssetId() { return assetId; }
-    public BigDecimal getQuantity() { return quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public BigDecimal getAmount() { return amount; }
-    public String getCurrency() { return currency; }
-    public BigDecimal getSecondaryAmount() { return secondaryAmount; }
-    public String getSecondaryCurrency() { return secondaryCurrency; }
-    public BigDecimal getRatio() { return ratio; }
-    public String getLocalCurrency() { return localCurrency; }
-    public BigDecimal getFxRateToLocal() { return fxRateToLocal; }
-    public String getFxRateSource() { return fxRateSource; }
-    public Instant getFxRateTimestamp() { return fxRateTimestamp; }
-    public BigDecimal getAmountInLocal() { return amountInLocal; }
-    public String getComment() { return comment; }
-    public UUID getLinkedTransactionId() { return linkedTransactionId; }
+    private static void validateOccurredAt(Instant occurredAt) {
+        if (occurredAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de la Activity es obligatoria"
+            );
+        }
+    }
+
+    private static void validateCreatedAt(Instant createdAt) {
+        if (createdAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de creación es obligatoria"
+            );
+        }
+    }
+
+    private static void validateModifiedAt(Instant modifiedAt) {
+        if (modifiedAt == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de modificación es obligatoria"
+            );
+        }
+    }
+
+    private static void validateOrderingKey(long orderingKey) {
+        if (orderingKey < 0) {
+            throw new IllegalArgumentException(
+                    "orderingKey no puede ser negativo"
+            );
+        }
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public ActivityType getType() {
+        return type;
+    }
+
+    public AssetReference getAssetReference() {
+        return assetReference;
+    }
+
+    public Instant getOccurredAt() {
+        return occurredAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public long getOrderingKey() {
+        return orderingKey;
+    }
+
+    public ActivityDetails getDetails() {
+        return details;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public UUID getLinkedTransactionId() {
+        return linkedTransactionId;
+    }
 }

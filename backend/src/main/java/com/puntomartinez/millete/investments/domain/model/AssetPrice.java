@@ -4,23 +4,76 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record AssetPrice(UUID id, UUID userId, UUID assetId, Instant timestamp,
-                         BigDecimal open, BigDecimal high, BigDecimal low,
-                         BigDecimal close, BigDecimal adjustedClose,
-                         BigDecimal volume, String currency, String source,
-                         Instant fetchedAt) {
+public record AssetPrice(
+        UUID id,
+        UUID sharedAssetId,
+        Instant timestamp,
+        BigDecimal open,
+        BigDecimal high,
+        BigDecimal low,
+        BigDecimal close,
+        BigDecimal adjustedClose,
+        BigDecimal volume,
+        CurrencyCode currency,
+        String source,
+        Instant fetchedAt
+) {
+
     public AssetPrice {
-        if (id == null || userId == null || assetId == null || timestamp == null || fetchedAt == null) throw new IllegalArgumentException("Price identifiers and timestamps are required");
-        if (currency == null || currency.isBlank() || source == null || source.isBlank()) throw new IllegalArgumentException("Price currency and source are required");
-        for (BigDecimal value : new BigDecimal[]{open, high, low, close, adjustedClose, volume}) {
-            if (value != null && value.signum() < 0) throw new IllegalArgumentException("Price and volume values cannot be negative");
+        if (id == null) {
+            throw new IllegalArgumentException(
+                    "El identificador del precio es obligatorio"
+            );
         }
-        currency = currency.trim().toUpperCase();
+
+        if (sharedAssetId == null) {
+            throw new IllegalArgumentException(
+                    "El SharedAsset es obligatorio"
+            );
+        }
+
+        if (timestamp == null || fetchedAt == null) {
+            throw new IllegalArgumentException(
+                    "Las fechas del precio son obligatorias"
+            );
+        }
+
+        if (currency == null) {
+            throw new IllegalArgumentException(
+                    "La moneda del precio es obligatoria"
+            );
+        }
+
+        if (source == null || source.isBlank()) {
+            throw new IllegalArgumentException(
+                    "La fuente del precio es obligatoria"
+            );
+        }
+
+        validateNonNegative(open, "open");
+        validateNonNegative(high, "high");
+        validateNonNegative(low, "low");
+        validateNonNegative(close, "close");
+        validateNonNegative(adjustedClose, "adjustedClose");
+        validateNonNegative(volume, "volume");
+
         source = source.trim();
     }
 
-    /** Value used for valuation; ordinary close takes precedence when the provider supplies both series. */
     public BigDecimal valuationPrice() {
-        return close != null ? close : adjustedClose;
+        return close != null
+                ? close
+                : adjustedClose;
+    }
+
+    private static void validateNonNegative(
+            BigDecimal value,
+            String name
+    ) {
+        if (value != null && value.signum() < 0) {
+            throw new IllegalArgumentException(
+                    name + " no puede ser negativo"
+            );
+        }
     }
 }

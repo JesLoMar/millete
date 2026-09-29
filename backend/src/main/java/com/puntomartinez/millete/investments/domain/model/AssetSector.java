@@ -1,13 +1,57 @@
 package com.puntomartinez.millete.investments.domain.model;
 
-import java.util.UUID;
+public record AssetSector(
+        String code,
+        String displayName,
+        boolean custom
+) {
 
-public record AssetSector(UUID id, String code, String displayName, boolean active) {
     public AssetSector {
-        if (id == null || code == null || code.isBlank() || displayName == null || displayName.isBlank()) {
-            throw new IllegalArgumentException("Sector id, code and displayName are required");
+        if (displayName == null || displayName.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El nombre del sector es obligatorio"
+            );
         }
-        code = code.trim().toUpperCase();
+
         displayName = displayName.trim();
+
+        if (custom) {
+            if (code != null && !code.isBlank()) {
+                throw new IllegalArgumentException(
+                        "Un sector personalizado no puede tener código de catálogo"
+                );
+            }
+
+            code = null;
+        } else {
+            if (code == null || code.isBlank()) {
+                throw new IllegalArgumentException(
+                        "Un sector del catálogo requiere código"
+                );
+            }
+
+            code = code.trim().toUpperCase();
+        }
+    }
+
+    public static AssetSector common(
+            String code,
+            String displayName
+    ) {
+        return new AssetSector(
+                code,
+                displayName,
+                false
+        );
+    }
+
+    public static AssetSector custom(
+            String displayName
+    ) {
+        return new AssetSector(
+                null,
+                displayName,
+                true
+        );
     }
 }
