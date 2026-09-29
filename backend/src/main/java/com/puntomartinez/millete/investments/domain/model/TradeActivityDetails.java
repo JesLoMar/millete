@@ -1,11 +1,11 @@
 package com.puntomartinez.millete.investments.domain.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public record TradeActivityDetails(
         BigDecimal quantity,
-        Money unitPrice
+        Money unitPrice,
+        TradeSettlement settlement
 ) implements ActivityDetails {
 
     public static final int AMOUNT_SCALE = 12;
@@ -13,6 +13,7 @@ public record TradeActivityDetails(
     public TradeActivityDetails {
         validateQuantity(quantity);
         validateUnitPrice(unitPrice);
+        validateSettlement(settlement);
     }
 
     public Money amount() {
@@ -44,6 +45,16 @@ public record TradeActivityDetails(
         if (unitPrice.amount().signum() <= 0) {
             throw new IllegalArgumentException(
                     "El precio unitario debe ser positivo"
+            );
+        }
+    }
+
+    private static void validateSettlement(
+            TradeSettlement settlement
+    ) {
+        if (settlement == null) {
+            throw new IllegalArgumentException(
+                    "La liquidación de la operación es obligatoria"
             );
         }
     }

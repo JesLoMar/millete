@@ -226,11 +226,15 @@ public final class PortfolioReplay {
                 if (cashTracked) {
                     subtractCash(
                             cashBalances,
-                            details.amount(),
+                            details.settlement().amount(),
                             activity
                     );
                 }
 
+                /*
+                 * El coste del Lot se expresa siempre en la moneda
+                 * propia del Asset.
+                 */
                 addLot(
                         lotsByAsset,
                         Lot.fromActivity(
@@ -267,7 +271,7 @@ public final class PortfolioReplay {
                 if (cashTracked) {
                     addCash(
                             cashBalances,
-                            details.amount()
+                            details.settlement().amount()
                     );
                 }
             }

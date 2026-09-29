@@ -1,0 +1,14 @@
+package com.puntomartinez.millete.investments.domain.ports.out;
+
+import com.puntomartinez.millete.investments.domain.model.SharedAsset;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface SharedAssetRepository {
+
+    Optional<SharedAsset> findById(UUID sharedAssetId);
+
+    List<SharedAsset> search(String search);
+}
