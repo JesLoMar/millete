@@ -7,5 +7,7 @@ import java.util.UUID;
 
 public interface HoldingRepository {
 
+    Holding save(Holding holding);
+
     List<Holding> findAllByUserId(UUID userId);
 }

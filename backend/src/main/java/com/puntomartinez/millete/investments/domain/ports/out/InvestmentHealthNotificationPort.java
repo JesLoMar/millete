@@ -1,10 +1,19 @@
 package com.puntomartinez.millete.investments.domain.ports.out;
 
-import com.puntomartinez.millete.investments.domain.ports.in.InvestmentUseCases.HealthIssue;
+import com.puntomartinez.millete.investments.domain.model.Holding;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-/** Synchronizes the current portfolio health issues with user-visible notifications. */
-public interface InvestmentHealthNotificationPort {
-    void reconcile(UUID userId, List<HealthIssue> issues);
+public interface HoldingRepository {
+
+    Holding save(Holding holding);
+
+    Optional<Holding> findByIdAndUserId(
+            UUID holdingId,
+            UUID userId
+    );
+
+    List<Holding> findAllByUserId(UUID userId);
 }

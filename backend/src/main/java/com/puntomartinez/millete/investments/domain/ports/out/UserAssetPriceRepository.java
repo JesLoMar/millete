@@ -14,4 +14,6 @@ public interface UserAssetPriceRepository {
             UUID userAssetId,
             Instant at
     );
+
+    List<UserAssetPrice> findAllByUserId(UUID userId);
 }

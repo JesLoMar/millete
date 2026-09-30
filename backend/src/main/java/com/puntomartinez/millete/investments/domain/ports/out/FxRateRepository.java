@@ -4,6 +4,7 @@ import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
 import com.puntomartinez.millete.investments.domain.model.FxRate;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface FxRateRepository {
@@ -12,5 +13,12 @@ public interface FxRateRepository {
             CurrencyCode baseCurrency,
             CurrencyCode quoteCurrency,
             Instant at
+    );
+
+    List<FxRate> findByCurrenciesAndTimestampBetween(
+            CurrencyCode baseCurrency,
+            CurrencyCode quoteCurrency,
+            Instant from,
+            Instant to
     );
 }

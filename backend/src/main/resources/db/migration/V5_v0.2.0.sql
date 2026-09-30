@@ -843,3 +843,20 @@ CREATE CONSTRAINT TRIGGER trg_require_cash_activity_transfer
     AFTER INSERT OR UPDATE ON activities
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE FUNCTION require_cash_activity_transfer();
+
+-- ============================================================================
+-- 15. INVESTMENT TRACKING SETTINGS
+-- ============================================================================
+
+CREATE TABLE investment_tracking_settings (
+    user_id UUID PRIMARY KEY
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    tracking_start_at TIMESTAMPTZ NOT NULL
+);
+
+COMMENT ON TABLE investment_tracking_settings IS
+    'Configuración del inicio del período en el que Investments gestiona el Investment Cash del usuario.';
+
+COMMENT ON COLUMN investment_tracking_settings.tracking_start_at IS
+    'Instante desde el que las Activities comienzan a afectar al Investment Cash gestionado por Millete.';

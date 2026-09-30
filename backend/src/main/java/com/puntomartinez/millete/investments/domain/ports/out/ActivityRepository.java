@@ -2,6 +2,7 @@ package com.puntomartinez.millete.investments.domain.ports.out;
 
 import com.puntomartinez.millete.investments.domain.model.Activity;
 import com.puntomartinez.millete.investments.domain.model.ActivityType;
+import com.puntomartinez.millete.investments.domain.model.AssetReference;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,8 +20,10 @@ public interface ActivityRepository {
 
     List<Activity> findAllByUserId(UUID userId);
 
-    Optional<Instant> findFirstOccurredAtByUserIdAndType(
+    List<Activity> findByUserIdAndFilters(
             UUID userId,
-            ActivityType type
+            AssetReference assetReference,
+            Instant from,
+            Instant to
     );
 }

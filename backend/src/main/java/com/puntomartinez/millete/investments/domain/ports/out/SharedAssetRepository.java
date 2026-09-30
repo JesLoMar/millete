@@ -10,5 +10,9 @@ public interface SharedAssetRepository {
 
     Optional<SharedAsset> findById(UUID sharedAssetId);
 
+    Optional<SharedAsset> findByStableCatalogId(
+            String stableCatalogId
+    );
+
     List<SharedAsset> search(String search);
 }
