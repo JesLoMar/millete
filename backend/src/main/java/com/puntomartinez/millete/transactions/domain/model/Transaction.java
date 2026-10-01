@@ -57,7 +57,12 @@ public class Transaction {
         validateAmount(amount);
         validateDate(date);
         validateType(type);
-        validateInvestmentLink(type, currency, investmentActivityId, investmentTimeZone);
+        validateInvestmentLink(
+                type,
+                currency,
+                investmentActivityId,
+                investmentTimeZone
+        );
         validateDescription(description);
         validateCreatedAt(createdAt);
         validateModifiedAt(modifiedAt);
@@ -87,6 +92,7 @@ public class Transaction {
             String description
     ) {
         Instant now = timeProvider.now();
+
         return new Transaction(
                 UUID.randomUUID(),
                 userId,
@@ -104,6 +110,36 @@ public class Transaction {
         );
     }
 
+    public static Transaction createInvestmentTransfer(
+            TimeProvider timeProvider,
+            UUID userId,
+            BigDecimal localAmount,
+            LocalDate date,
+            TransactionType type,
+            String description,
+            String currency,
+            UUID investmentActivityId,
+            String investmentTimeZone
+    ) {
+        Instant now = timeProvider.now();
+
+        return new Transaction(
+                UUID.randomUUID(),
+                userId,
+                null,
+                localAmount,
+                date,
+                type,
+                description,
+                now,
+                now,
+                true,
+                currency,
+                investmentActivityId,
+                investmentTimeZone
+        );
+    }
+
     public static Transaction reconstitute(
             UUID id,
             UUID userId,
@@ -116,8 +152,21 @@ public class Transaction {
             Instant modifiedAt,
             boolean active
     ) {
-        return reconstitute(id, userId, categoryId, amount, date, type,
-                description, createdAt, modifiedAt, active, null, null, null);
+        return reconstitute(
+                id,
+                userId,
+                categoryId,
+                amount,
+                date,
+                type,
+                description,
+                createdAt,
+                modifiedAt,
+                active,
+                null,
+                null,
+                null
+        );
     }
 
     public static Transaction reconstitute(
@@ -161,10 +210,16 @@ public class Transaction {
             UUID categoryId
     ) {
         ensureDailyMutable();
+
         validateAmount(amount);
         validateDate(date);
         validateType(type);
-        validateInvestmentLink(type, currency, investmentActivityId, investmentTimeZone);
+        validateInvestmentLink(
+                type,
+                currency,
+                investmentActivityId,
+                investmentTimeZone
+        );
         validateDescription(description);
 
         this.amount = amount;
@@ -175,25 +230,35 @@ public class Transaction {
         this.modifiedAt = timeProvider.now();
     }
 
-    public void unassignCategory(TimeProvider timeProvider) {
+    public void unassignCategory(
+            TimeProvider timeProvider
+    ) {
         ensureDailyMutable();
+
         if (this.categoryId == null) {
             return;
         }
+
         this.categoryId = null;
         this.modifiedAt = timeProvider.now();
     }
 
-    public void deactivate(TimeProvider timeProvider) {
+    public void deactivate(
+            TimeProvider timeProvider
+    ) {
         ensureDailyMutable();
+
         if (!this.active) {
             return;
         }
+
         this.active = false;
         this.modifiedAt = timeProvider.now();
     }
 
-    private static void validateId(UUID id) {
+    private static void validateId(
+            UUID id
+    ) {
         if (id == null) {
             throw new InvalidInputException(
                     "El identificador de la transacción es obligatorio"
@@ -201,7 +266,9 @@ public class Transaction {
         }
     }
 
-    private static void validateUserId(UUID userId) {
+    private static void validateUserId(
+            UUID userId
+    ) {
         if (userId == null) {
             throw new InvalidInputException(
                     "El identificador del usuario es obligatorio"
@@ -209,15 +276,21 @@ public class Transaction {
         }
     }
 
-    private static void validateAmount(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+    private static void validateAmount(
+            BigDecimal amount
+    ) {
+        if (amount == null
+                || amount.compareTo(BigDecimal.ZERO) <= 0) {
+
             throw new InvalidInputException(
                     "La cantidad debe ser mayor que cero."
             );
         }
     }
 
-    private static void validateDate(LocalDate date) {
+    private static void validateDate(
+            LocalDate date
+    ) {
         if (date == null) {
             throw new InvalidInputException(
                     "La fecha de la transacción es obligatoria"
@@ -225,7 +298,9 @@ public class Transaction {
         }
     }
 
-    private static void validateType(TransactionType type) {
+    private static void validateType(
+            TransactionType type
+    ) {
         if (type == null) {
             throw new InvalidInputException(
                     "El tipo de transacción es obligatorio"
@@ -233,21 +308,29 @@ public class Transaction {
         }
     }
 
-    private static void validateDescription(String description) {
-        if (description == null || description.isBlank()) {
+    private static void validateDescription(
+            String description
+    ) {
+        if (description == null
+                || description.isBlank()) {
+
             throw new InvalidInputException(
                     "La descripción de la transacción es obligatoria"
             );
         }
+
         if (description.length() > MAX_DESCRIPTION_LENGTH) {
             throw new InvalidInputException(
                     "La descripción no puede superar los "
-                            + MAX_DESCRIPTION_LENGTH + " caracteres"
+                            + MAX_DESCRIPTION_LENGTH
+                            + " caracteres"
             );
         }
     }
 
-    private static void validateCreatedAt(Instant createdAt) {
+    private static void validateCreatedAt(
+            Instant createdAt
+    ) {
         if (createdAt == null) {
             throw new InvalidInputException(
                     "La fecha de creación es obligatoria"
@@ -255,7 +338,9 @@ public class Transaction {
         }
     }
 
-    private static void validateModifiedAt(Instant modifiedAt) {
+    private static void validateModifiedAt(
+            Instant modifiedAt
+    ) {
         if (modifiedAt == null) {
             throw new InvalidInputException(
                     "La fecha de modificación es obligatoria"
@@ -266,7 +351,8 @@ public class Transaction {
     private void ensureDailyMutable() {
         if (investmentActivityId != null) {
             throw new InvalidInputException(
-                    "Las transacciones vinculadas a inversiones son de solo lectura."
+                    "Las transacciones vinculadas a inversiones "
+                            + "son de solo lectura."
             );
         }
     }
@@ -277,25 +363,42 @@ public class Transaction {
             UUID investmentActivityId,
             String investmentTimeZone
     ) {
-        boolean transfer = type == TransactionType.TRANSFER_IN
-                || type == TransactionType.TRANSFER_OUT;
-        if (!transfer && (investmentActivityId != null || investmentTimeZone != null)) {
+        boolean transfer =
+                type == TransactionType.TRANSFER_IN
+                        || type == TransactionType.TRANSFER_OUT;
+
+        if (!transfer
+                && (
+                investmentActivityId != null
+                        || investmentTimeZone != null
+        )) {
             throw new InvalidInputException(
-                    "Solo las transferencias pueden vincularse a una actividad de inversión."
+                    "Solo las transferencias pueden vincularse "
+                            + "a una actividad de inversión."
             );
         }
+
         if (transfer) {
-            if (investmentActivityId == null || investmentTimeZone == null
-                    || investmentTimeZone.isBlank() || currency == null
+            if (investmentActivityId == null
+                    || investmentTimeZone == null
+                    || investmentTimeZone.isBlank()
+                    || currency == null
                     || !currency.matches("[A-Za-z]{3}")) {
+
                 throw new InvalidInputException(
-                        "Una transferencia requiere Activity, moneda local y zona horaria."
+                        "Una transferencia requiere Activity, "
+                                + "moneda local y zona horaria."
                 );
             }
+
             try {
-                Currency.getInstance(currency.toUpperCase(Locale.ROOT));
+                Currency.getInstance(
+                        currency.toUpperCase(Locale.ROOT)
+                );
             } catch (IllegalArgumentException exception) {
-                throw new InvalidInputException("La moneda de transferencia no es válida.");
+                throw new InvalidInputException(
+                        "La moneda de transferencia no es válida."
+                );
             }
         }
     }

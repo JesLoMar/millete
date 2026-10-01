@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public interface AssetPriceRepository {
 
+    void saveAll(List<AssetPrice> prices);
+
     Optional<AssetPrice> findLatestAt(
             UUID sharedAssetId,
             Instant at

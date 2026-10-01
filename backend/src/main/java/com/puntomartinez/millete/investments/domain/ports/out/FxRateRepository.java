@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public interface FxRateRepository {
 
+    void saveAll(
+            List<FxRate> rates
+    );
+
     Optional<FxRate> findLatestAt(
             CurrencyCode baseCurrency,
             CurrencyCode quoteCurrency,

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface SharedAssetRepository {
 
+    List<SharedAsset> findAll();
+
     Optional<SharedAsset> findById(UUID sharedAssetId);
 
     Optional<SharedAsset> findByStableCatalogId(
