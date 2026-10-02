@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.investments.domain.ports.in;
 
 import com.puntomartinez.millete.investments.domain.model.Activity;
+import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 
 import java.math.BigDecimal;
 import java.time.Instant;

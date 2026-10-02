@@ -86,7 +86,7 @@ public class PortfolioQueryService implements
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, BigDecimal> get(
+    public Map<String, BigDecimal> getCash(
             UUID userId,
             Instant asOf
     ) {

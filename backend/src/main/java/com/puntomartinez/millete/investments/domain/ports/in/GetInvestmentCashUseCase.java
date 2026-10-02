@@ -7,5 +7,8 @@ import java.util.UUID;
 
 public interface GetInvestmentCashUseCase {
 
-    Map<String, BigDecimal> get(UUID userId, Instant asOf);
+    Map<String, BigDecimal> getCash(
+            UUID userId,
+            Instant asOf
+    );
 }

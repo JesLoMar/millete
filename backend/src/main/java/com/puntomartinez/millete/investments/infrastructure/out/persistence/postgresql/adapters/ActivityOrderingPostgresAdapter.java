@@ -47,7 +47,7 @@ public final class ActivityOrderingPostgresAdapter
                                     MAX(ordering_key),
                                     0
                                 ) + 1
-                            FROM activities
+                            FROM investment_activities
                             WHERE user_id = ?
                               AND occurred_at = ?
                             """,
