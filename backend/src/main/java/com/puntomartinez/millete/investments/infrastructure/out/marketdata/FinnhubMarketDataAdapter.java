@@ -21,8 +21,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * Finnhub daily candles for non-crypto assets and
- * historical foreign-exchange pairs.
+ * Finnhub daily candles for stocks and ETFs,
+ * and historical foreign-exchange pairs.
  */
 @Component
 final class FinnhubMarketDataAdapter
@@ -61,7 +61,10 @@ final class FinnhubMarketDataAdapter
     public boolean supports(
             SharedAsset asset
     ) {
-        return asset.getType() != AssetType.CRYPTO;
+        return switch (asset.getType()) {
+            case STOCK, ETF -> true;
+            case CRYPTO, FUND, REAL_ESTATE, OTHER -> false;
+        };
     }
 
     @Override
@@ -114,10 +117,11 @@ final class FinnhubMarketDataAdapter
             JsonNode timestamps =
                     candles.path("t");
 
-            for (int index = 0;
-                 index < timestamps.size();
-                 index++) {
-
+            for (
+                    int index = 0;
+                    index < timestamps.size();
+                    index++
+            ) {
                 Instant timestamp =
                         Instant.ofEpochSecond(
                                 timestamps
@@ -196,7 +200,6 @@ final class FinnhubMarketDataAdapter
 
             if (currencies.length != 2
                     || currencies[0].equals(currencies[1])) {
-
                 throw new IllegalArgumentException(
                         "FX pair must use "
                                 + "BASE/QUOTE currency codes"
@@ -238,10 +241,11 @@ final class FinnhubMarketDataAdapter
             JsonNode timestamps =
                     candles.path("t");
 
-            for (int index = 0;
-                 index < timestamps.size();
-                 index++) {
-
+            for (
+                    int index = 0;
+                    index < timestamps.size();
+                    index++
+            ) {
                 Instant timestamp =
                         Instant.ofEpochSecond(
                                 timestamps
@@ -352,7 +356,7 @@ final class FinnhubMarketDataAdapter
         if (apiKey.isBlank()) {
             throw new MarketDataProviderException(
                     "FINNHUB_API_KEY is required to refresh "
-                            + "non-crypto prices and FX rates"
+                            + "stock and ETF prices and FX rates"
             );
         }
     }

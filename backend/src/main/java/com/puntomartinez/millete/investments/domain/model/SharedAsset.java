@@ -3,6 +3,7 @@ package com.puntomartinez.millete.investments.domain.model;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.UUID;
 
 public final class SharedAsset {
@@ -31,6 +32,7 @@ public final class SharedAsset {
         validateId(id);
         validateStableCatalogId(stableCatalogId);
         validateName(name);
+        validateSymbol(symbol);
         validateType(type);
         validateSector(sector);
         validateCurrency(currency);
@@ -103,6 +105,7 @@ public final class SharedAsset {
             AssetSector sector
     ) {
         validateName(name);
+        validateSymbol(symbol);
         validateSector(sector);
 
         this.name = name;
@@ -142,10 +145,27 @@ public final class SharedAsset {
         }
     }
 
+    private static void validateSymbol(String symbol) {
+        if (symbol == null || symbol.isBlank()) {
+            throw new IllegalArgumentException(
+                    "El símbolo del SharedAsset es obligatorio"
+            );
+        }
+    }
+
     private static void validateType(AssetType type) {
         if (type == null) {
             throw new IllegalArgumentException(
                     "El tipo de Asset es obligatorio"
+            );
+        }
+
+        if (type != AssetType.STOCK
+                && type != AssetType.ETF
+                && type != AssetType.CRYPTO) {
+
+            throw new IllegalArgumentException(
+                    "Un SharedAsset solo puede ser de tipo STOCK, ETF o CRYPTO"
             );
         }
     }
@@ -197,11 +217,7 @@ public final class SharedAsset {
     private static String normalizeSymbol(
             String symbol
     ) {
-        if (symbol == null || symbol.isBlank()) {
-            return null;
-        }
-
-        return symbol.trim().toUpperCase();
+        return symbol.trim().toUpperCase(Locale.ROOT);
     }
 
     public UUID getId() {

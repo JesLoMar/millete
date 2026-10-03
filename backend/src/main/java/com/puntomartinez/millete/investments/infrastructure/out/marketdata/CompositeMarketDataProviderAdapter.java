@@ -10,10 +10,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Routes crypto assets to CoinGecko and all other assets
- * and FX pairs to Finnhub.
- */
 @Component
 public final class CompositeMarketDataProviderAdapter
         implements MarketDataProviderPort {
@@ -23,13 +19,7 @@ public final class CompositeMarketDataProviderAdapter
     public CompositeMarketDataProviderAdapter(
             List<MarketDataSourcePort> sources
     ) {
-        this.sources =
-                List.copyOf(sources);
-    }
-
-    @Override
-    public String providerName() {
-        return "Finnhub + CoinGecko";
+        this.sources = List.copyOf(sources);
     }
 
     @Override
@@ -38,16 +28,12 @@ public final class CompositeMarketDataProviderAdapter
             Instant from,
             Instant to
     ) {
-        List<AssetPrice> result =
-                new ArrayList<>();
+        List<AssetPrice> result = new ArrayList<>();
 
         for (SharedAsset asset : assets) {
             List<MarketDataSourcePort> matching =
                     sources.stream()
-                            .filter(
-                                    source ->
-                                            source.supports(asset)
-                            )
+                            .filter(source -> source.supports(asset))
                             .toList();
 
             if (matching.size() != 1) {
@@ -83,9 +69,7 @@ public final class CompositeMarketDataProviderAdapter
 
         List<MarketDataSourcePort> fxSources =
                 sources.stream()
-                        .filter(
-                                MarketDataSourcePort::supportsFxRates
-                        )
+                        .filter(MarketDataSourcePort::supportsFxRates)
                         .toList();
 
         if (fxSources.size() != 1) {

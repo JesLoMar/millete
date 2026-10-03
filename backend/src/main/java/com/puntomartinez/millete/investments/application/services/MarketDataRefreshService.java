@@ -1,4 +1,4 @@
-package com.puntomartinez.millete.investments.application.service;
+package com.puntomartinez.millete.investments.application.services;
 
 import com.puntomartinez.millete.investments.domain.model.AssetPrice;
 import com.puntomartinez.millete.investments.domain.model.FxRate;

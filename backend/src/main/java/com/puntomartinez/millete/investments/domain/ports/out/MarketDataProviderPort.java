@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface MarketDataProviderPort {
 
-    String providerName();
-
     List<AssetPrice> fetchPrices(
             List<SharedAsset> assets,
             Instant from,
