@@ -25,7 +25,7 @@ public final class ActivityAuditPostgresAdapter
     }
 
     @Override
-    public void save(
+    public ActivityAudit save(
             ActivityAudit audit
     ) {
         if (audit == null) {
@@ -65,6 +65,8 @@ public final class ActivityAuditPostgresAdapter
                         audit.changedAt()
                 )
         );
+
+        return audit;
     }
 
     @Override

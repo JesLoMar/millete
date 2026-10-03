@@ -183,7 +183,7 @@ public class InvestmentLedgerRestoreService
 
         persistAudits(
                 userId,
-                snapshot.audit(),
+                snapshot.audits(),
                 context.activityIdMap()
         );
 
@@ -216,7 +216,7 @@ public class InvestmentLedgerRestoreService
         );
 
         validateUniqueAuditIds(
-                snapshot.audit()
+                snapshot.audits()
         );
 
         Map<UUID, UUID> userAssetIdMap =
@@ -897,7 +897,7 @@ public class InvestmentLedgerRestoreService
 
         if (!settlementCurrency.equals(localCurrency)) {
             throw new InvalidInputException(
-                    "La moneda de liquidación del Trade debe ser "
+                    "La moneda de liquidaciÃ³n del Trade debe ser "
                             + "la moneda del Asset o la moneda local."
             );
         }
@@ -938,7 +938,7 @@ public class InvestmentLedgerRestoreService
 
             throw new InvalidInputException(
                     "El AppliedFxRate del Trade no corresponde "
-                            + "a la dirección esperada."
+                            + "a la direcciÃ³n esperada."
             );
         }
     }
@@ -1005,7 +1005,7 @@ public class InvestmentLedgerRestoreService
                 .findCommonByReference(reference)
                 .orElseThrow(() ->
                         new InvalidInputException(
-                                "No existe el sector común "
+                                "No existe el sector comÃºn "
                                         + reference
                         )
                 );
@@ -1022,7 +1022,7 @@ public class InvestmentLedgerRestoreService
                     );
         } catch (RuntimeException exception) {
             throw new InvalidInputException(
-                    "Origen de UserAsset no válido: "
+                    "Origen de UserAsset no vÃ¡lido: "
                             + value
             );
         }
@@ -1276,7 +1276,7 @@ public class InvestmentLedgerRestoreService
             Map<UUID, UUID> activityIdMap
     ) {
         for (InvestmentLedgerSnapshot.ActivityAuditSnapshot audit
-                : snapshot.audit()) {
+                : snapshot.audits()) {
 
             if (!activityIdMap.containsKey(
                     audit.activityId()
@@ -1298,7 +1298,7 @@ public class InvestmentLedgerRestoreService
                 != InvestmentLedgerSnapshot.CURRENT_VERSION) {
 
             throw new InvalidInputException(
-                    "Versión de InvestmentLedgerSnapshot no soportada: "
+                    "VersiÃ³n de InvestmentLedgerSnapshot no soportada: "
                             + snapshot.version()
             );
         }
@@ -1428,7 +1428,7 @@ public class InvestmentLedgerRestoreService
         }
     }
 
-    private IllegalArgumentException invalidDetails(
+    private InvalidInputException invalidDetails(
             ActivityType type
     ) {
         return new InvalidInputException(

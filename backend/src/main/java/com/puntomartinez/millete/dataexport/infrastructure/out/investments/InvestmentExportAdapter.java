@@ -1,49 +1,198 @@
 package com.puntomartinez.millete.dataexport.infrastructure.out.investments;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.dataexport.domain.model.InvestmentLedgerSnapshot;
 import com.puntomartinez.millete.dataexport.domain.ports.out.InvestmentExportPort;
-import com.puntomartinez.millete.investments.domain.model.*;
-import com.puntomartinez.millete.investments.domain.ports.out.*;
+import com.puntomartinez.millete.investments.domain.model.Activity;
+import com.puntomartinez.millete.investments.domain.model.ActivityDetails;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.AssetReferenceSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.AssetSectorSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.UserAssetSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.UserAssetPriceSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.HoldingSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.ActivityAuditSnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.ActivitySnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.MoneySnapshot;
+import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot.AppliedFxRateSnapshot;
+import com.puntomartinez.millete.investments.domain.ports.in.GetInvestmentLedgerSnapshotUseCase;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
-public class InvestmentExportAdapter implements InvestmentExportPort {
-    private final AssetRepository assets;
-    private final HoldingRepository holdings;
-    private final ActivityRepository activities;
-    private final UserCurrencyPort currencies;
+public class InvestmentExportAdapter
+        implements InvestmentExportPort {
 
-    public InvestmentExportAdapter(AssetRepository assets, HoldingRepository holdings,
-                                   ActivityRepository activities, UserCurrencyPort currencies) {
-        this.assets = assets; this.holdings = holdings; this.activities = activities; this.currencies = currencies;
+    private final GetInvestmentLedgerSnapshotUseCase getSnapshot;
+    private final ObjectMapper objectMapper;
+
+    public InvestmentExportAdapter(
+            GetInvestmentLedgerSnapshotUseCase getSnapshot,
+            ObjectMapper objectMapper
+    ) {
+        this.getSnapshot = getSnapshot;
+        this.objectMapper = objectMapper;
     }
 
-    @Override public InvestmentLedgerSnapshot findAllByUserId(UUID userId) {
-        List<InvestmentLedgerSnapshot.AssetSnapshot> assetSnapshots = assets.findAssetsByUserId(userId, true).stream()
-                .map(a -> new InvestmentLedgerSnapshot.AssetSnapshot(a.getId(), a.getName(), a.getSymbol(), a.getType(),
-                        a.getSectorId(), a.getCurrency(), a.getCreatedAt(), a.getModifiedAt(), a.isActive())).toList();
-        List<InvestmentLedgerSnapshot.HoldingSnapshot> holdingSnapshots = holdings.findHoldingsIncludingSupersededByUserId(userId).stream()
-                .map(h -> new InvestmentLedgerSnapshot.HoldingSnapshot(h.id(), h.assetId(), h.snapshotAt(), h.quantity(),
-                        h.acquisitionCost(), h.currency(), h.historyIncomplete(), h.superseded(), h.createdAt())).toList();
-        List<ActivityRepository.HistoricalActivity> history = activities.findActivityHistoryByUserId(userId);
-        List<InvestmentLedgerSnapshot.ActivitySnapshot> activitySnapshots = history.stream()
-                .map(h -> activitySnapshot(h.activity(), h.active())).toList();
-        List<InvestmentLedgerSnapshot.ActivityAuditSnapshot> audits = history.stream()
-                .flatMap(h -> activities.findAuditByActivityId(h.activity().getId(), userId).stream())
-                .map(a -> new InvestmentLedgerSnapshot.ActivityAuditSnapshot(a.id(), a.activityId(), a.beforeJson(),
-                        a.afterJson(), a.reason(), a.changedAt())).toList();
-        List<InvestmentLedgerSnapshot.CurrencyPeriodSnapshot> currencyHistory = currencies.periods(userId).stream()
-                .map(p -> new InvestmentLedgerSnapshot.CurrencyPeriodSnapshot(p.id(), p.currency(), p.validFrom(), p.validTo(), p.inferred())).toList();
-        return new InvestmentLedgerSnapshot(assetSnapshots, holdingSnapshots, activitySnapshots, audits, currencyHistory);
+    @Override
+    public InvestmentLedgerSnapshot findAllByUserId(
+            java.util.UUID userId
+    ) {
+        com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot
+                snapshot =
+                getSnapshot.get(userId);
+
+        return new InvestmentLedgerSnapshot(
+                snapshot.version(),
+                snapshot.trackingStartAt(),
+                snapshot.userAssets()
+                        .stream()
+                        .map(this::toUserAssetSnapshot)
+                        .toList(),
+                snapshot.userAssetPrices()
+                        .stream()
+                        .map(this::toUserAssetPriceSnapshot)
+                        .toList(),
+                snapshot.holdings()
+                        .stream()
+                        .map(this::toHoldingSnapshot)
+                        .toList(),
+                snapshot.activities()
+                        .stream()
+                        .map(this::toActivitySnapshot)
+                        .toList(),
+                snapshot.audits()
+                        .stream()
+                        .map(this::toAuditSnapshot)
+                        .toList()
+        );
     }
 
-    private InvestmentLedgerSnapshot.ActivitySnapshot activitySnapshot(Activity a, boolean active) {
-        return new InvestmentLedgerSnapshot.ActivitySnapshot(a.getId(), a.getType(), a.getOccurredAt(), a.getOrderingKey(),
-                a.getAssetId(), a.getQuantity(), a.getUnitPrice(), a.getAmount(), a.getCurrency(), a.getSecondaryAmount(),
-                a.getSecondaryCurrency(), a.getRatio(), a.getLocalCurrency(), a.getFxRateToLocal(), a.getFxRateSource(),
-                a.getFxRateTimestamp(), a.getAmountInLocal(), a.getComment(), a.getLinkedTransactionId(),
-                a.getCreatedAt(), a.getModifiedAt(), active);
+    private InvestmentLedgerSnapshot.UserAssetSnapshot
+    toUserAssetSnapshot(
+            UserAssetSnapshot snapshot
+    ) {
+        return new InvestmentLedgerSnapshot.UserAssetSnapshot(
+                snapshot.id(),
+                snapshot.name(),
+                snapshot.type(),
+                toSectorSnapshot(snapshot.sector()),
+                snapshot.origin(),
+                snapshot.currency(),
+                snapshot.createdAt(),
+                snapshot.modifiedAt()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.AssetSectorSnapshot
+    toSectorSnapshot(
+            AssetSectorSnapshot snapshot
+    ) {
+        return new InvestmentLedgerSnapshot.AssetSectorSnapshot(
+                snapshot.code(),
+                snapshot.displayName(),
+                snapshot.custom()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.UserAssetPriceSnapshot
+    toUserAssetPriceSnapshot(
+            UserAssetPriceSnapshot snapshot
+    ) {
+        return new InvestmentLedgerSnapshot.UserAssetPriceSnapshot(
+                snapshot.id(),
+                snapshot.userAssetId(),
+                toMoneySnapshot(snapshot.unitPrice()),
+                snapshot.timestamp()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.HoldingSnapshot
+    toHoldingSnapshot(
+            HoldingSnapshot snapshot
+    ) {
+        return new InvestmentLedgerSnapshot.HoldingSnapshot(
+                snapshot.id(),
+                toAssetReferenceSnapshot(
+                        snapshot.assetReference()
+                ),
+                snapshot.snapshotAt(),
+                snapshot.quantity(),
+                toMoneySnapshot(
+                        snapshot.acquisitionCost()
+                ),
+                snapshot.status(),
+                snapshot.createdAt(),
+                snapshot.supersededAt()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.ActivitySnapshot
+    toActivitySnapshot(
+            ActivitySnapshot snapshot
+    ) {
+        JsonNode details =
+                objectMapper.valueToTree(
+                        snapshot.details()
+                );
+
+        return new InvestmentLedgerSnapshot.ActivitySnapshot(
+                snapshot.id(),
+                snapshot.type(),
+                toAssetReferenceSnapshot(
+                        snapshot.assetReference()
+                ),
+                snapshot.occurredAt(),
+                snapshot.sequence(),
+                details,
+                snapshot.comment(),
+                snapshot.createdAt(),
+                snapshot.modifiedAt()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.ActivityAuditSnapshot
+    toAuditSnapshot(
+            ActivityAuditSnapshot snapshot
+    ) {
+        return new InvestmentLedgerSnapshot.ActivityAuditSnapshot(
+                snapshot.id(),
+                snapshot.activityId(),
+                snapshot.beforeJson(),
+                snapshot.afterJson(),
+                snapshot.reason(),
+                snapshot.changedAt()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.AssetReferenceSnapshot
+    toAssetReferenceSnapshot(
+            AssetReferenceSnapshot snapshot
+    ) {
+        if (snapshot == null) {
+            return null;
+        }
+
+        return new InvestmentLedgerSnapshot.AssetReferenceSnapshot(
+                snapshot.kind(),
+                snapshot.userAssetId(),
+                snapshot.sharedAssetStableCatalogId()
+        );
+    }
+
+    private InvestmentLedgerSnapshot.MoneySnapshot
+    toMoneySnapshot(
+            MoneySnapshot snapshot
+    ) {
+        if (snapshot == null) {
+            return null;
+        }
+
+        return new InvestmentLedgerSnapshot.MoneySnapshot(
+                snapshot.amount(),
+                snapshot.currency()
+        );
     }
 }

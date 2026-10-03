@@ -21,13 +21,17 @@ public class Migration010to020 implements DataMigration {
 
     @Override
     public String description() {
-        return "Normaliza importes planificados y consolida el contrato temporal LocalDate/Instant";
+        return "Normaliza importes planificados, consolida el contrato temporal "
+                + "LocalDate/Instant y adopta el historial de inversiones "
+                + "por eventos y relaciones";
     }
 
     @Override
-    public UserDataSnapshot migrate(UserDataSnapshot snapshot) {
-
-        List<PlannedTransactionSnapshot> migratedPlannedTransactions =
+    public UserDataSnapshot migrate(
+            UserDataSnapshot snapshot
+    ) {
+        List<PlannedTransactionSnapshot>
+                migratedPlannedTransactions =
                 snapshot.plannedTransactions() == null
                         ? null
                         : snapshot.plannedTransactions()
@@ -56,9 +60,12 @@ public class Migration010to020 implements DataMigration {
     private PlannedTransactionSnapshot migratePlannedTransaction(
             PlannedTransactionSnapshot plannedTransaction
     ) {
-        BigDecimal amount = plannedTransaction.amount();
+        BigDecimal amount =
+                plannedTransaction.amount();
 
-        if (amount == null || amount.signum() >= 0) {
+        if (amount == null
+                || amount.signum() >= 0) {
+
             return plannedTransaction;
         }
 

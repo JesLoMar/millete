@@ -137,7 +137,7 @@ public class CashActivityService implements
                 command.assetReference(),
                 command.amount(),
                 command.currency(),
-                command.comment
+                command.comment()
         );
 
         Activity previous = findPreviousActivity(

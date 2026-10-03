@@ -204,14 +204,18 @@ public class HoldingService implements
         portfolioLock.lock(userId);
 
         Holding holding =
-                holdings.findByIdAndUserId(
-                        holdingId,
-                        userId
-                ).orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Holding no encontrado"
+                holdings.findAllByUserId(userId)
+                        .stream()
+                        .filter(candidate ->
+                                candidate.getId()
+                                        .equals(holdingId)
                         )
-                );
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Holding no encontrado"
+                                )
+                        );
 
         if (holding.getStatus()
                 != HoldingStatus.ACTIVE) {
@@ -403,6 +407,12 @@ public class HoldingService implements
                             ),
                             details.comment()
                     );
+
+            default ->
+                    throw new InvalidInputException(
+                            "Tipo de historial no soportado: "
+                                    + historical.details().getClass().getName()
+                    );
         };
     }
 
@@ -515,13 +525,13 @@ public class HoldingService implements
             assetUnitPrice =
                     type == ActivityType.BUY
                             ? inputUnitPriceMoney.multiply(
-                                    fxRate.rate(),
-                                    AMOUNT_SCALE
-                            )
+                            fxRate.rate(),
+                            AMOUNT_SCALE
+                    )
                             : inputUnitPriceMoney.divide(
-                                    fxRate.rate(),
-                                    AMOUNT_SCALE
-                            );
+                            fxRate.rate(),
+                            AMOUNT_SCALE
+                    );
         }
 
         TradeSettlement settlement =
@@ -626,7 +636,8 @@ public class HoldingService implements
                                 !activity.getOccurredAt()
                                         .isAfter(
                                                 holding.getSnapshotAt()
-                                        ))
+                                        )
+                        )
                         .sorted(
                                 java.util.Comparator
                                         .comparing(

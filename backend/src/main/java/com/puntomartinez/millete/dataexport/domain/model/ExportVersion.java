@@ -20,7 +20,7 @@ public record ExportVersion(
             Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$");
 
     public static final ExportVersion CURRENT =
-            new ExportVersion(0, 3, 0);
+            new ExportVersion(0, 2, 0);
 
     public static ExportVersion fromString(String version) {
         if (version == null || version.isBlank()) {

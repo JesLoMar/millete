@@ -9,6 +9,8 @@ import com.puntomartinez.millete.notifications.domain.ports.in.DeleteNotificatio
 import com.puntomartinez.millete.notifications.domain.ports.in.GetNotificationsUseCase;
 import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsActionedUseCase;
 import com.puntomartinez.millete.notifications.domain.ports.in.MarkNotificationAsReadUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.ReconcileSystemNotificationsUseCase;
+import com.puntomartinez.millete.notifications.domain.ports.in.ReconcileSystemNotificationsUseCase.SystemNotificationIssue;
 import com.puntomartinez.millete.notifications.domain.ports.out.NotificationRepository;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
@@ -16,9 +18,16 @@ import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.TreeMap;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +37,8 @@ public class NotificationService implements
         GetNotificationsUseCase,
         MarkNotificationAsReadUseCase,
         MarkNotificationAsActionedUseCase,
-        DeleteNotificationUseCase {
+        DeleteNotificationUseCase,
+        ReconcileSystemNotificationsUseCase {
 
     private static final int DEFAULT_NOTIFICATION_LIMIT = 25;
     private static final int MAX_NOTIFICATION_LIMIT = 100;
@@ -157,7 +167,10 @@ public class NotificationService implements
             return false;
         }
 
-        boolean changed = notification.markAsActioned(timeProvider);
+        boolean changed =
+                notification.markAsActioned(
+                        timeProvider
+                );
 
         if (changed) {
             notificationRepository.save(notification);
@@ -188,7 +201,193 @@ public class NotificationService implements
         notificationRepository.save(notification);
     }
 
-    private void validatePaginationParams(int page, int size) {
+    @Override
+    public void reconcile(
+            UUID userId,
+            String source,
+            String title,
+            List<SystemNotificationIssue> issues
+    ) {
+        validateReconciliationInput(
+                userId,
+                source,
+                issues
+        );
+
+        Map<String, SystemNotificationIssue> current =
+                new TreeMap<>();
+
+        for (SystemNotificationIssue issue : issues) {
+            if (issue == null) {
+                throw new InvalidInputException(
+                        "Una incidencia de notificación no puede ser nula."
+                );
+            }
+
+            current.put(
+                    issue.key(),
+                    issue
+            );
+        }
+
+        List<Notification> active =
+                notificationRepository
+                        .findActiveByUserIdAndTypeAndMetadataValueOrderByCreatedAtDesc(
+                                userId,
+                                NotificationType.SYSTEM,
+                                "source",
+                                source
+                        );
+
+        Map<String, Notification> canonical =
+                new HashMap<>();
+
+        for (Notification notification : active) {
+            Map<String, Object> metadata =
+                    notification.getMetadata();
+
+            String key =
+                    metadata == null
+                            ? null
+                            : Objects.toString(
+                                    metadata.get("issueKey"),
+                                    null
+                            );
+
+            if (key == null
+                    || !current.containsKey(key)) {
+
+                notification.softDelete();
+                notificationRepository.save(notification);
+                continue;
+            }
+
+            Notification existing =
+                    canonical.putIfAbsent(
+                            key,
+                            notification
+                    );
+
+            if (existing != null) {
+                notification.softDelete();
+                notificationRepository.save(notification);
+            }
+        }
+
+        for (SystemNotificationIssue issue :
+                current.values()) {
+
+            String key =
+                    issue.key();
+
+            Map<String, Object> metadata =
+                    metadata(
+                            source,
+                            issue
+                    );
+
+            Notification existing =
+                    canonical.get(key);
+
+            if (existing == null) {
+                notificationRepository.save(
+                        Notification.create(
+                                timeProvider,
+                                userId,
+                                NotificationType.SYSTEM,
+                                title,
+                                issue.message(),
+                                metadata,
+                                false,
+                                null
+                        )
+                );
+
+                continue;
+            }
+
+            if (existing.updateDetails(
+                    title,
+                    issue.message(),
+                    metadata
+            )) {
+                notificationRepository.save(
+                        existing
+                );
+            }
+        }
+    }
+
+    private Map<String, Object> metadata(
+            String source,
+            SystemNotificationIssue issue
+    ) {
+        Map<String, Object> metadata =
+                new LinkedHashMap<>();
+
+        metadata.put(
+                "source",
+                source
+        );
+
+        metadata.put(
+                "issueKey",
+                issue.key()
+        );
+
+        if (issue.code() != null) {
+            metadata.put(
+                    "code",
+                    issue.code()
+            );
+        }
+
+        if (issue.resourceId() != null) {
+            metadata.put(
+                    "resourceId",
+                    issue.resourceId()
+            );
+        }
+
+        if (issue.severity() != null) {
+            metadata.put(
+                    "severity",
+                    issue.severity()
+            );
+        }
+
+        return metadata;
+    }
+
+    private void validateReconciliationInput(
+            UUID userId,
+            String source,
+            List<SystemNotificationIssue> issues
+    ) {
+        if (userId == null) {
+            throw new InvalidInputException(
+                    "El userId es obligatorio."
+            );
+        }
+
+        if (source == null
+                || source.isBlank()) {
+            throw new InvalidInputException(
+                    "El source de la reconciliación es obligatorio."
+            );
+        }
+
+        if (issues == null) {
+            throw new InvalidInputException(
+                    "La lista de incidencias es obligatoria."
+            );
+        }
+    }
+
+    private void validatePaginationParams(
+            int page,
+            int size
+    ) {
         if (page < 0) {
             throw new InvalidInputException(
                     "La página debe ser mayor o igual que 0."
@@ -204,7 +403,8 @@ public class NotificationService implements
         if (size > MAX_PAGE_SIZE) {
             throw new InvalidInputException(
                     "El tamaño de página no puede superar "
-                            + MAX_PAGE_SIZE + "."
+                            + MAX_PAGE_SIZE
+                            + "."
             );
         }
     }

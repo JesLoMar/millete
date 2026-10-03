@@ -251,13 +251,13 @@ public class InvestmentHealthService
 
         } catch (PortfolioReplay.LedgerIntegrityException exception) {
 
-            add(
-                    issues,
-                    exception.code(),
-                    exception.resourceId(),
-                    "error",
-                    exception.getMessage()
-            );
+        add(
+                issues,
+                exception.getCode(),
+                exception.getResourceId(),
+                "error",
+                exception.getMessage()
+        );
 
             return null;
 
