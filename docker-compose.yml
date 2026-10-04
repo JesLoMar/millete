@@ -52,6 +52,16 @@ services:
       JAVA_OPTS: "-Xmx512m -Xms256m"
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
+
+      # =========================================
+      # OPTIONAL AI / VERDICT
+      # =========================================
+      MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-off}
+      VERDICT_BASE_URL: ${VERDICT_BASE_URL:-http://verdict:8002}
+      VERDICT_DECIDER: ${VERDICT_DECIDER:-millete}
+      VERDICT_CONNECT_TIMEOUT: ${VERDICT_CONNECT_TIMEOUT:-2s}
+      VERDICT_READ_TIMEOUT: ${VERDICT_READ_TIMEOUT:-5s}
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -164,13 +174,65 @@ services:
         max-size: "5m"
         max-file: "2"
 
+  # =============================================
+  # 5. OPTIONAL AI / VERDICT
+  # =============================================
+  verdict:
+    profiles:
+      - ai
+
+    build:
+      context: ./verdict
+      dockerfile: Dockerfile
+
+    container_name: millete-verdict
+    restart: unless-stopped
+
+    expose:
+      - "8002"
+
+    volumes:
+      - verdict_hf:/data/huggingface
+      - ./verdict:/workspace
+
+    environment:
+      HF_HOME: /data/huggingface
+      HF_HUB_DISABLE_TELEMETRY: "1"
+
+    entrypoint:
+      ["verdict", "serve"]
+
+    command:
+      [
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8002",
+        "--decider",
+        "/workspace/millete.verdict"
+      ]
+
+    networks:
+      - millete-network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
 # =============================================
-# EXTERNAL PERSISTENT VOLUME
+# PERSISTENT VOLUMES
 # =============================================
 volumes:
   postgres_data:
     name: millete_postgres_data
     external: true
+
+  verdict_hf:
+    name: millete_verdict_hf
+
 
 # =============================================
 # INTERNAL NETWORK
