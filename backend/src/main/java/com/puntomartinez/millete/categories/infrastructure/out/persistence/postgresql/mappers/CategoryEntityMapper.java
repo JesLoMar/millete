@@ -19,6 +19,7 @@ public interface CategoryEntityMapper {
                 entity.getId(),
                 entity.getUserId(),
                 entity.getName(),
+                entity.getDescription(),
                 entity.getColor(),
                 entity.getBudgetLimit(),
                 entity.getCreatedAt(),

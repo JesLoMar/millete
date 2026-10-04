@@ -13,6 +13,7 @@ public class Category {
     private final UUID id;
     private final UUID userId;
     private String name;
+    private String description;
     private String color;
     private BigDecimal budgetLimit;
     private final Instant createdAt;
@@ -23,6 +24,7 @@ public class Category {
             UUID id,
             UUID userId,
             String name,
+            String description,
             String color,
             BigDecimal budgetLimit,
             Instant createdAt,
@@ -32,6 +34,7 @@ public class Category {
         validateId(id);
         validateUserId(userId);
         validateName(name);
+        validateDescription(description);
         validateColor(color);
         validateBudgetLimit(budgetLimit);
         validateCreatedAt(createdAt);
@@ -40,6 +43,7 @@ public class Category {
         this.id = id;
         this.userId = userId;
         this.name = name;
+        this.description = description;
         this.color = color;
         this.budgetLimit = budgetLimit;
         this.createdAt = createdAt;
@@ -51,6 +55,7 @@ public class Category {
             TimeProvider timeProvider,
             UUID userId,
             String name,
+            String description,
             String color,
             BigDecimal budgetLimit
     ) {
@@ -60,6 +65,7 @@ public class Category {
                 UUID.randomUUID(),
                 userId,
                 name,
+                description,
                 color,
                 budgetLimit,
                 now,
@@ -72,6 +78,7 @@ public class Category {
             UUID id,
             UUID userId,
             String name,
+            String description,
             String color,
             BigDecimal budgetLimit,
             Instant createdAt,
@@ -82,6 +89,7 @@ public class Category {
                 id,
                 userId,
                 name,
+                description,
                 color,
                 budgetLimit,
                 createdAt,
@@ -93,14 +101,17 @@ public class Category {
     public void updateDetails(
             TimeProvider timeProvider,
             String name,
+            String description,
             String color,
             BigDecimal budgetLimit
     ) {
         validateName(name);
+        validateDescription(description);
         validateColor(color);
         validateBudgetLimit(budgetLimit);
 
         this.name = name;
+        this.description = description;
         this.color = color;
         this.budgetLimit = budgetLimit;
         this.modifiedAt = timeProvider.now();
@@ -141,6 +152,14 @@ public class Category {
         if (name.length() > 20) {
             throw new IllegalArgumentException(
                     "El nombre de la categoría no puede superar los 20 caracteres"
+            );
+        }
+    }
+
+    private static void validateDescription(String description) {
+        if (description != null && description.length() > 500) {
+            throw new IllegalArgumentException(
+                    "La descripción de la categoría no puede superar los 500 caracteres"
             );
         }
     }

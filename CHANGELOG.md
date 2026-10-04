@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.2.0] - 2026-xx-xx
 
+- 
 - Construcción desde 0 de un nuevo módulo de inversiones serio y con precios historicos.
 - Implementar eleccion de moneda local.
 - Implementación de un nuevo sistema horario con diferenciación entre zona del servidor y zona de cada usuario.

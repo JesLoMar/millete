@@ -16,6 +16,12 @@ public record RegisterCategoryRequestDTO(
         )
         String name,
 
+        @Size(
+                max = 500,
+                message = "La descripción no puede superar los 500 caracteres"
+        )
+        String description,
+
         @NotBlank(message = "El color es obligatorio")
         @Pattern(
                 regexp = "^#[0-9A-Fa-f]{6}$",

@@ -57,6 +57,7 @@ public class CategoryController {
         RegisterCategoryCommand command = new RegisterCategoryCommand(
                 userId,
                 request.name(),
+                request.description(),
                 request.color(),
                 request.budgetLimit()
         );
@@ -90,6 +91,7 @@ public class CategoryController {
         );
 
         int maxValidPage = Math.max(0, totalPages - 1);
+
         if (page > maxValidPage) {
             throw new InvalidInputException(
                     "La página solicitada (" + page
@@ -133,6 +135,7 @@ public class CategoryController {
 
         UpdateCategoryCommand command = new UpdateCategoryCommand(
                 request.name(),
+                request.description(),
                 request.color(),
                 request.budgetLimit()
         );
@@ -170,6 +173,7 @@ public class CategoryController {
                 category.getId(),
                 category.getUserId(),
                 category.getName(),
+                category.getDescription(),
                 category.getColor(),
                 category.getBudgetLimit(),
                 category.getCreatedAt(),
@@ -183,11 +187,13 @@ public class CategoryController {
                     "La página debe ser mayor o igual que 0."
             );
         }
+
         if (size <= 0) {
             throw new InvalidInputException(
                     "El tamaño de página debe ser mayor que 0."
             );
         }
+
         if (size > MAX_PAGE_SIZE) {
             throw new InvalidInputException(
                     "El tamaño de página no puede superar "

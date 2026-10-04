@@ -30,12 +30,14 @@ public class CategoryService implements
             "idx_categories_user_name_active";
 
     private final CategoryRepository categoryRepository;
-    private final UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase;
+    private final UnassignCategoryFromTransactionsUseCase
+            unassignCategoryFromTransactionsUseCase;
     private final TimeProvider timeProvider;
 
     public CategoryService(
             CategoryRepository categoryRepository,
-            UnassignCategoryFromTransactionsUseCase unassignCategoryFromTransactionsUseCase,
+            UnassignCategoryFromTransactionsUseCase
+                    unassignCategoryFromTransactionsUseCase,
             TimeProvider timeProvider
     ) {
         this.categoryRepository = categoryRepository;
@@ -60,6 +62,7 @@ public class CategoryService implements
                 timeProvider,
                 command.userId(),
                 command.name(),
+                command.description(),
                 command.color(),
                 command.budgetLimit()
         );
@@ -140,6 +143,7 @@ public class CategoryService implements
         category.updateDetails(
                 timeProvider,
                 command.name(),
+                command.description(),
                 command.color(),
                 command.budgetLimit()
         );
@@ -168,6 +172,7 @@ public class CategoryService implements
         Category category = getCategory(id, userId);
 
         category.deactivate(timeProvider);
+
         categoryRepository.save(category);
 
         unassignCategoryFromTransactionsUseCase.unassignCategory(

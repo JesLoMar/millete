@@ -1,8 +1,8 @@
 # Security Policy
 
 > **Project:** Millete — Personal Finance Platform  
-> **Version:** 0.1.0  
-> **Last updated:** 2026-06-25
+> **Version:** 0.2.0  
+> **Last updated:** 2026-10-04
 
 ---
 
@@ -11,7 +11,7 @@
 If you discover a security vulnerability, **do NOT** open a public issue.
 
 - **Email:** contact@millete.online
-- **Expected response time:** within 48 hours
+- **Expected response time:** within 24 hours
 - **Please include:** a clear description, steps to reproduce, and potential impact assessment
 
 We follow responsible disclosure. Once the vulnerability is confirmed and patched, we will credit the reporter (if desired) in the release notes.

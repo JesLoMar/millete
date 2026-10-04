@@ -8,6 +8,7 @@ public record CategoryResponseDTO(
         UUID id,
         UUID userId,
         String name,
+        String description,
         String color,
         BigDecimal budgetLimit,
         Instant createdAt,
