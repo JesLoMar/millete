@@ -1,4 +1,4 @@
-package com.millete.assistant.domain.model;
+package com.puntomartinez.millete.assistant.domain.model;
 
 public enum InterpretationStatus {
 

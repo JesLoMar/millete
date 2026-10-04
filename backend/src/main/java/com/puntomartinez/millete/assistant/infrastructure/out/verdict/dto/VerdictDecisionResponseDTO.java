@@ -1,4 +1,4 @@
-package com.millete.assistant.infrastructure.out.verdict.dto;
+package com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto;
 
 import java.util.List;
 import java.util.Map;

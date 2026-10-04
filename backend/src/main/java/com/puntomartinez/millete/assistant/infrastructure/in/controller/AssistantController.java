@@ -1,9 +1,9 @@
-package com.millete.assistant.infrastructure.in.controller;
+package com.puntomartinez.millete.assistant.infrastructure.in.controller;
 
-import com.millete.assistant.domain.ports.in.InterpretUserInputCommand;
-import com.millete.assistant.domain.ports.in.InterpretUserInputUseCase;
-import com.millete.assistant.infrastructure.in.controller.dto.InterpretationResponseDTO;
-import com.millete.assistant.infrastructure.in.controller.dto.InterpretUserInputRequestDTO;
+import com.puntomartinez.millete.assistant.domain.ports.in.InterpretUserInputCommand;
+import com.puntomartinez.millete.assistant.domain.ports.in.InterpretUserInputUseCase;
+import com.puntomartinez.millete.assistant.infrastructure.in.controller.dto.InterpretationResponseDTO;
+import com.puntomartinez.millete.assistant.infrastructure.in.controller.dto.InterpretUserInputRequestDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

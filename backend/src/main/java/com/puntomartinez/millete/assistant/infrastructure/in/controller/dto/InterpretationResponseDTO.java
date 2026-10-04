@@ -1,8 +1,8 @@
-package com.millete.assistant.infrastructure.in.controller.dto;
+package com.puntomartinez.millete.assistant.infrastructure.in.controller.dto;
 
-import com.millete.assistant.domain.model.AppAction;
-import com.millete.assistant.domain.model.InterpretationResult;
-import com.millete.assistant.domain.model.InterpretationStatus;
+import com.puntomartinez.millete.assistant.domain.model.AppAction;
+import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
+import com.puntomartinez.millete.assistant.domain.model.InterpretationStatus;
 
 public record InterpretationResponseDTO(
         InterpretationStatus status,

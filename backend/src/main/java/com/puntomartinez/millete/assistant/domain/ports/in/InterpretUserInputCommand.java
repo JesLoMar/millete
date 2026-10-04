@@ -1,4 +1,4 @@
-package com.millete.assistant.domain.ports.in;
+package com.puntomartinez.millete.assistant.domain.ports.in;
 
 import java.util.Objects;
 

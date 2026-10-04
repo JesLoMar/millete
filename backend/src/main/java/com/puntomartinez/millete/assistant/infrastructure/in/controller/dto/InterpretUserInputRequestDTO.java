@@ -1,4 +1,4 @@
-package com.millete.assistant.infrastructure.in.controller.dto;
+package com.puntomartinez.millete.assistant.infrastructure.in.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

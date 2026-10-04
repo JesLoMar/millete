@@ -1,12 +1,12 @@
-package com.millete.assistant.infrastructure.out.verdict.adapters;
+package com.puntomartinez.millete.assistant.infrastructure.out.verdict.adapters;
 
-import com.millete.assistant.domain.model.AppAction;
-import com.millete.assistant.domain.model.Confidence;
-import com.millete.assistant.domain.model.InterpretationResult;
-import com.millete.assistant.domain.ports.out.AiDecisionProvider;
-import com.millete.assistant.infrastructure.out.verdict.client.VerdictClient;
-import com.millete.assistant.infrastructure.out.verdict.config.VerdictProperties;
-import com.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionRequestDTO;
+import com.puntomartinez.millete.assistant.domain.model.AppAction;
+import com.puntomartinez.millete.assistant.domain.model.Confidence;
+import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
+import com.puntomartinez.millete.assistant.domain.ports.out.AiDecisionProvider;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.client.VerdictClient;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.config.VerdictProperties;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionRequestDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;

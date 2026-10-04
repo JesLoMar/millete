@@ -17,6 +17,9 @@ public record CategorySnapshot(
         @JsonProperty("name")
         String name,
 
+        @JsonProperty("description")
+        String description,
+
         @JsonProperty("color")
         String color,
 

@@ -1,6 +1,6 @@
-package com.millete.assistant.domain.ports.in;
+package com.puntomartinez.millete.assistant.domain.ports.in;
 
-import com.millete.assistant.domain.model.InterpretationResult;
+import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
 
 public interface InterpretUserInputUseCase {
 

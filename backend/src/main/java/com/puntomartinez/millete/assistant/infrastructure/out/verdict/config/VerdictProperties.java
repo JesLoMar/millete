@@ -1,4 +1,4 @@
-package com.millete.assistant.infrastructure.out.verdict.config;
+package com.puntomartinez.millete.assistant.infrastructure.out.verdict.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

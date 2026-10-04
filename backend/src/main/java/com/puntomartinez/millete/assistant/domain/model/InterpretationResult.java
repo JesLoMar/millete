@@ -1,4 +1,4 @@
-package com.millete.assistant.domain.model;
+package com.puntomartinez.millete.assistant.domain.model;
 
 import java.util.Objects;
 
@@ -8,9 +8,17 @@ public record InterpretationResult(
         Confidence confidence
 ) {
 
-    public InterpretationResult {
-        Objects.requireNonNull(status, "status cannot be null");
-        Objects.requireNonNull(confidence, "confidence cannot be null");
+    public InterpretationResult(
+            InterpretationStatus status,
+            AppAction action,
+            Confidence confidence
+    ) {
+        this.status = Objects.requireNonNull(status, "status cannot be null");
+        this.action = action;
+        this.confidence = Objects.requireNonNull(
+                confidence,
+                "confidence cannot be null"
+        );
 
         if (status == InterpretationStatus.READY && action == null) {
             throw new IllegalArgumentException(
@@ -22,6 +30,7 @@ public record InterpretationResult(
             throw new IllegalArgumentException(
                     "Action must be null when interpretation status is UNKNOWN"
             );
+        }
     }
 
     public static InterpretationResult ready(

@@ -14,7 +14,8 @@ public class CategoryExportAdapter implements CategoryExportPort {
     private final CategoryRepository categoryRepository;
 
     public CategoryExportAdapter(
-            CategoryRepository categoryRepository) {
+            CategoryRepository categoryRepository
+    ) {
         this.categoryRepository = categoryRepository;
     }
 
@@ -27,6 +28,7 @@ public class CategoryExportAdapter implements CategoryExportPort {
                                 category.getId(),
                                 category.getUserId(),
                                 category.getName(),
+                                category.getDescription(),
                                 category.getColor(),
                                 category.getBudgetLimit(),
                                 category.getCreatedAt(),

@@ -2,6 +2,10 @@
 -- 1. CATEGORIES
 -- ============================================================================
 
+-- Añadir descripción opcional de la categoría.
+ALTER TABLE categories
+    ADD COLUMN IF NOT EXISTS description VARCHAR(500);
+
 -- Bug 3: Alinear precisión de budget_limit con el resto de campos monetarios.
 ALTER TABLE categories
     ALTER COLUMN budget_limit TYPE numeric(12, 2);
@@ -12,7 +16,6 @@ ALTER TABLE categories
 CREATE UNIQUE INDEX idx_categories_user_name_active
     ON categories (user_id, LOWER(name))
     WHERE active = true;
-
 -- ============================================================================
 -- 2. PLANNED TRANSACTIONS
 -- ============================================================================

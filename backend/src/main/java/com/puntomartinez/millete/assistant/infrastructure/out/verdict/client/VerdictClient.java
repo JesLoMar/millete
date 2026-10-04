@@ -1,8 +1,8 @@
-package com.millete.assistant.infrastructure.out.verdict.client;
+package com.puntomartinez.millete.assistant.infrastructure.out.verdict.client;
 
-import com.millete.assistant.infrastructure.out.verdict.config.VerdictProperties;
-import com.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionRequestDTO;
-import com.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionResponseDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.config.VerdictProperties;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionRequestDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionResponseDTO;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;

@@ -76,6 +76,7 @@ public class CategoryImportAdapter implements CategoryImportPort {
                 existing.updateDetails(
                         timeProvider,
                         category.name(),
+                        category.description(),
                         category.color(),
                         category.budgetLimit()
                 );
@@ -96,6 +97,7 @@ public class CategoryImportAdapter implements CategoryImportPort {
                                 newId,
                                 userId,
                                 category.name(),
+                                category.description(),
                                 category.color(),
                                 category.budgetLimit(),
                                 category.createdAt(),
