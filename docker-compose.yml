@@ -6,31 +6,44 @@ services:
     image: postgres:16-alpine
     container_name: millete-db
     restart: unless-stopped
+
     env_file:
       - .env
+
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
       PGDATA: /var/lib/postgresql/data/pgdata
+
+      # Used by init-app-user.sh
       APP_DB_PASSWORD: ${DATABASE_PASSWORD}
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-app-user.sh:/docker-entrypoint-initdb.d/01-init-app-user.sh:ro
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d $${DATABASE_NAME}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d $${POSTGRES_DB}"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+
     networks:
       - millete-network
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
 
   # =============================================
   # 2. BACKEND (SPRING BOOT + JAVA 25)
@@ -39,45 +52,78 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+
     container_name: millete-backend
     restart: unless-stopped
+
     env_file:
       - .env
+
     environment:
+      # -----------------------------------------
+      # DATABASE
+      # -----------------------------------------
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DATABASE_NAME}
       SPRING_DATASOURCE_USERNAME: ${DATABASE_USER}
       SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
-      JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_ENCRYPTOR_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JAVA_OPTS: "-Xmx512m -Xms256m"
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # -----------------------------------------
+      # AI / VERDICT
+      #
+      # VerdictProperties:
+      #
+      # @ConfigurationProperties(
+      #     prefix = "millete.ai.verdict"
+      # )
+      #
+      # Spring environment variable mapping:
+      # baseUrl        -> MILLETE_AI_VERDICT_BASEURL
+      # decider        -> MILLETE_AI_VERDICT_DECIDER
+      # connectTimeout -> MILLETE_AI_VERDICT_CONNECTTIMEOUT
+      # readTimeout    -> MILLETE_AI_VERDICT_READTIMEOUT
+      # -----------------------------------------
+      MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-off}
+      MILLETE_AI_VERDICT_BASEURL: ${VERDICT_BASE_URL:-http://verdict:8002}
+      MILLETE_AI_VERDICT_DECIDER: ${VERDICT_DECIDER:-millete}
+      MILLETE_AI_VERDICT_CONNECTTIMEOUT: ${VERDICT_CONNECT_TIMEOUT:-2s}
+      MILLETE_AI_VERDICT_READTIMEOUT: ${VERDICT_READ_TIMEOUT:-5s}
+
+      # -----------------------------------------
+      # LOGGING
+      # -----------------------------------------
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
 
-      # =========================================
-      # OPTIONAL AI / VERDICT
-      # =========================================
-      MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-off}
-      VERDICT_BASE_URL: ${VERDICT_BASE_URL:-http://verdict:8002}
-      VERDICT_DECIDER: ${VERDICT_DECIDER:-millete}
-      VERDICT_CONNECT_TIMEOUT: ${VERDICT_CONNECT_TIMEOUT:-2s}
-      VERDICT_READ_TIMEOUT: ${VERDICT_READ_TIMEOUT:-5s}
+      # -----------------------------------------
+      # JVM
+      # -----------------------------------------
+      JAVA_OPTS: "-Xmx512m -Xms256m"
 
     depends_on:
       postgres:
         condition: service_healthy
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8080/actuator/health"
+        ]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 30s
+
     networks:
       - millete-network
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
 
   # =============================================
   # 3. FRONTEND (REACT + VITE + PNPM + NGINX)
@@ -86,24 +132,37 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+
       args:
         VITE_API_URL: ${VITE_API_URL:-/api/v1}
-        VITE_APP_VERSION: ${VITE_APP_VERSION:-0.1.2}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-0.2.0}
+
     container_name: millete-frontend
     restart: unless-stopped
+
     ports:
       - "${FRONTEND_PORT:-3000}:80"
+
     depends_on:
       backend:
         condition: service_started
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:80/health"
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
     networks:
       - millete-network
+
 
   # =============================================
   # 4. DAILY AUTOMATIC BACKUP
@@ -112,67 +171,100 @@ services:
     image: postgres:16-alpine
     container_name: millete-db-backup
     restart: unless-stopped
+
     user: "1000:1000"
+
     env_file:
       - .env
+
     environment:
       PGHOST: postgres
       PGDATABASE: ${DATABASE_NAME}
       PGUSER: postgres
-      PGPASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-${DATABASE_PASSWORD}}
-      BACKUP_RETENTION_DAYS: 7
+      PGPASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      BACKUP_RETENTION_DAYS: "7"
+
     volumes:
       - ./backups:/backups
       - ./scripts/restore.sh:/restore.sh:ro
+
     command: >
       sh -c '
         echo "===================================";
         echo "  Daily Backup System";
         echo "===================================";
-        echo "Database: ${PGDATABASE}";
-        echo "Host: ${PGHOST}";
-        echo "User: ${PGUSER}";
-        echo "Retention: ${BACKUP_RETENTION_DAYS} days";
+        echo "Database: $${PGDATABASE}";
+        echo "Host: $${PGHOST}";
+        echo "User: $${PGUSER}";
+        echo "Retention: $${BACKUP_RETENTION_DAYS} days";
         echo "===================================";
+
         LAST_BACKUP="";
-        TODAY=$(date +%Y%m%d);
-        EXISTING_BACKUP=$(ls -t /backups/${PGDATABASE}_${TODAY}*.sql.gz 2>/dev/null | head -1);
-        if [ -n "$EXISTING_BACKUP" ]; then
-          echo "[$(date)] Today backup already exists: $(basename $EXISTING_BACKUP)";
-          LAST_BACKUP="$TODAY";
+        TODAY=$$(date +%Y%m%d);
+
+        EXISTING_BACKUP=$$(ls -t /backups/$${PGDATABASE}_$${TODAY}*.sql.gz 2>/dev/null | head -1);
+
+        if [ -n "$${EXISTING_BACKUP}" ]; then
+          echo "[$$(date)] Today backup already exists: $$(basename "$${EXISTING_BACKUP}")";
+          LAST_BACKUP="$${TODAY}";
         fi;
+
         while true; do
-          HOUR=$(date +%H);
-          TODAY=$(date +%Y%m%d);
-          if [ "$HOUR" = "02" ] && [ "$LAST_BACKUP" != "$TODAY" ]; then
-            TIMESTAMP=$(date +%Y%m%d_%H%M%S);
-            BACKUP_FILE="/backups/${PGDATABASE}_${TIMESTAMP}.sql.gz";
-            echo "[$(date)] Starting daily backup...";
-            if PGPASSWORD="${PGPASSWORD}" pg_dump -h "${PGHOST}" -U "${PGUSER}" -d "${PGDATABASE}" --no-owner --no-acl | gzip > "$BACKUP_FILE"; then
-              SIZE=$(ls -lh "$BACKUP_FILE" | awk "{print \$5}");
-              echo "[$(date)] Backup successful: $(basename $BACKUP_FILE) (${SIZE})";
-              LAST_BACKUP="$TODAY";
-              DELETED=$(find /backups -name "${PGDATABASE}_*.sql.gz" -mtime +${BACKUP_RETENTION_DAYS} -delete -print | wc -l);
-              if [ "$DELETED" -gt 0 ]; then
-                echo "[$(date)] Cleaned ${DELETED} old backup(s) (>${BACKUP_RETENTION_DAYS} days)";
+          HOUR=$$(date +%H);
+          TODAY=$$(date +%Y%m%d);
+
+          if [ "$${HOUR}" = "02" ] && [ "$${LAST_BACKUP}" != "$${TODAY}" ]; then
+            TIMESTAMP=$$(date +%Y%m%d_%H%M%S);
+            BACKUP_FILE="/backups/$${PGDATABASE}_$${TIMESTAMP}.sql.gz";
+
+            echo "[$$(date)] Starting daily backup...";
+
+            if PGPASSWORD="$${PGPASSWORD}" pg_dump \
+                -h "$${PGHOST}" \
+                -U "$${PGUSER}" \
+                -d "$${PGDATABASE}" \
+                --no-owner \
+                --no-acl \
+                | gzip > "$${BACKUP_FILE}"; then
+
+              SIZE=$$(ls -lh "$${BACKUP_FILE}" | awk "{print \$$5}");
+
+              echo "[$$(date)] Backup successful: $$(basename "$${BACKUP_FILE}") ($${SIZE})";
+
+              LAST_BACKUP="$${TODAY}";
+
+              DELETED=$$(find /backups \
+                -name "$${PGDATABASE}_*.sql.gz" \
+                -mtime +$${BACKUP_RETENTION_DAYS} \
+                -delete \
+                -print | wc -l);
+
+              if [ "$${DELETED}" -gt 0 ]; then
+                echo "[$$(date)] Cleaned $${DELETED} old backup(s) (>$${BACKUP_RETENTION_DAYS} days)";
               fi;
+
             else
-              echo "[$(date)] Backup failed";
+              echo "[$$(date)] Backup failed";
             fi;
           fi;
+
           sleep 60;
         done
       '
+
     depends_on:
       postgres:
         condition: service_healthy
+
     networks:
       - millete-network
+
     logging:
       driver: "json-file"
       options:
         max-size: "5m"
         max-file: "2"
+
 
   # =============================================
   # 5. OPTIONAL AI / VERDICT
@@ -200,17 +292,16 @@ services:
       HF_HUB_DISABLE_TELEMETRY: "1"
 
     entrypoint:
-      ["verdict", "serve"]
+      - verdict
+      - serve
 
     command:
-      [
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "8002",
-        "--decider",
-        "/workspace/millete.verdict"
-      ]
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8002"
+      - "--decider"
+      - "/workspace/millete.verdict"
 
     networks:
       - millete-network
@@ -241,6 +332,7 @@ networks:
   millete-network:
     name: millete_network
     driver: bridge
+
     ipam:
       config:
         - subnet: 172.20.0.0/16

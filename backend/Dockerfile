@@ -1,9 +1,8 @@
-# =========================================================================
-# FASE 1: Compilación del Backend (JDK 25 nativo + Maven manual)
-# =========================================================================
 FROM eclipse-temurin:25-jdk-jammy AS builder
 
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y maven && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -12,11 +11,9 @@ RUN mvn dependency:resolve -B
 
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
-# =========================================================================
-# FASE 2: Entorno de Ejecución Ligero y Seguro
-# =========================================================================
+
 FROM eclipse-temurin:25-jre-jammy
 
 RUN apt-get update && \

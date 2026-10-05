@@ -3,14 +3,14 @@ package com.puntomartinez.millete.investments.infrastructure.out.persistence.pos
 import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
 import com.puntomartinez.millete.investments.domain.ports.out.UserCurrencyPort;
 import com.puntomartinez.millete.users.domain.ports.out.UserLocalCurrencyHistoryRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
-public class UserCurrencyPostgresAdapter
+@Component
+public final class UserCurrencyPostgresAdapter
         implements UserCurrencyPort {
 
     private final UserLocalCurrencyHistoryRepository history;

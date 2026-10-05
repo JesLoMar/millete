@@ -4,12 +4,12 @@ import com.puntomartinez.millete.investments.domain.model.AssetSector;
 import com.puntomartinez.millete.investments.domain.ports.out.AssetSectorCatalogPort;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+@Component
 public final class AssetSectorCatalogPostgresAdapter
         implements AssetSectorCatalogPort {
 

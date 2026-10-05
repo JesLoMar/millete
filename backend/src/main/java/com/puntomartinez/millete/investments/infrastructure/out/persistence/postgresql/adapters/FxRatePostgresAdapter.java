@@ -7,7 +7,6 @@ import com.puntomartinez.millete.investments.infrastructure.out.persistence.post
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.FxRateEntityMapper;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaFxRateRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +28,6 @@ public final class FxRatePostgresAdapter
     }
 
     @Override
-    @Transactional
     public void saveAll(
             List<FxRate> rates
     ) {
@@ -44,7 +42,8 @@ public final class FxRatePostgresAdapter
                 );
             }
 
-            FxRateEntity entity = mapper.toEntity(rate);
+            FxRateEntity entity =
+                    mapper.toEntity(rate);
 
             repository.upsert(
                     entity.getId(),
@@ -59,7 +58,6 @@ public final class FxRatePostgresAdapter
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<FxRate> findLatestAt(
             CurrencyCode baseCurrency,
             CurrencyCode quoteCurrency,
@@ -85,7 +83,6 @@ public final class FxRatePostgresAdapter
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<FxRate> findByCurrenciesAndTimestampBetween(
             CurrencyCode baseCurrency,
             CurrencyCode quoteCurrency,

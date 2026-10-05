@@ -6,7 +6,6 @@ import com.puntomartinez.millete.investments.infrastructure.out.persistence.post
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.AssetPriceEntityMapper;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaAssetPriceRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +28,6 @@ public final class AssetPricePostgresAdapter
     }
 
     @Override
-    @Transactional
     public void saveAll(
             List<AssetPrice> prices
     ) {
@@ -44,7 +42,8 @@ public final class AssetPricePostgresAdapter
                 );
             }
 
-            AssetPriceEntity entity = mapper.toEntity(price);
+            AssetPriceEntity entity =
+                    mapper.toEntity(price);
 
             repository.upsert(
                     entity.getId(),
@@ -64,7 +63,6 @@ public final class AssetPricePostgresAdapter
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<AssetPrice> findLatestAt(
             UUID sharedAssetId,
             Instant at
@@ -83,7 +81,6 @@ public final class AssetPricePostgresAdapter
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<AssetPrice> findBySharedAssetIdAndTimestampBetween(
             UUID sharedAssetId,
             Instant from,

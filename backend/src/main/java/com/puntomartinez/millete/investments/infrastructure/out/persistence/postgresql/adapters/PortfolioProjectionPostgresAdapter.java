@@ -14,13 +14,12 @@ import com.puntomartinez.millete.investments.infrastructure.out.persistence.post
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaLotRepository;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaPositionRepository;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Component
 public final class PortfolioProjectionPostgresAdapter
         implements PortfolioProjectionRepository {
 
@@ -49,7 +48,6 @@ public final class PortfolioProjectionPostgresAdapter
     }
 
     @Override
-    @Transactional
     public void replace(
             UUID userId,
             List<Lot> lots,
@@ -66,10 +64,6 @@ public final class PortfolioProjectionPostgresAdapter
         );
 
         try {
-            /*
-             * Los consumptions dependen de los Lots,
-             * así que se eliminan primero.
-             */
             lotConsumptionRepository.deleteAllByUserId(
                     userId
             );
@@ -83,7 +77,10 @@ public final class PortfolioProjectionPostgresAdapter
             );
 
             saveLots(lots);
-            saveConsumptions(userId, consumptions);
+            saveConsumptions(
+                    userId,
+                    consumptions
+            );
             savePositions(positions);
 
         } catch (DataAccessException exception) {

@@ -5,13 +5,12 @@ import com.puntomartinez.millete.investments.domain.ports.out.HoldingRepository;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.HoldingEntity;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.HoldingEntityMapper;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaHoldingRepository;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+@Component
 public final class HoldingPostgresAdapter
         implements HoldingRepository {
 
@@ -27,7 +26,6 @@ public final class HoldingPostgresAdapter
     }
 
     @Override
-    @Transactional
     public Holding save(
             Holding holding
     ) {
@@ -47,7 +45,6 @@ public final class HoldingPostgresAdapter
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Holding> findAllByUserId(
             UUID userId
     ) {

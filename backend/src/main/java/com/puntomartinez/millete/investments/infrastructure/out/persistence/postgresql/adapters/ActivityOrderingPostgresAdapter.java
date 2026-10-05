@@ -3,13 +3,13 @@ package com.puntomartinez.millete.investments.infrastructure.out.persistence.pos
 import com.puntomartinez.millete.investments.domain.ports.out.ActivityOrderingPort;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 
-@Repository
+@Component
 public final class ActivityOrderingPostgresAdapter
         implements ActivityOrderingPort {
 
