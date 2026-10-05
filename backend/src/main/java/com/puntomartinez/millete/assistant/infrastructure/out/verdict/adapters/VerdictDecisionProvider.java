@@ -2,7 +2,7 @@ package com.puntomartinez.millete.assistant.infrastructure.out.verdict.adapters;
 
 import com.puntomartinez.millete.assistant.domain.model.AppAction;
 import com.puntomartinez.millete.assistant.domain.model.Confidence;
-import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.AiInterpretation;
 import com.puntomartinez.millete.assistant.domain.ports.out.AiDecisionProvider;
 import com.puntomartinez.millete.assistant.infrastructure.out.verdict.client.VerdictClient;
 import com.puntomartinez.millete.assistant.infrastructure.out.verdict.config.VerdictProperties;
@@ -38,7 +38,7 @@ public class VerdictDecisionProvider implements AiDecisionProvider {
     }
 
     @Override
-    public InterpretationResult decide(String input) {
+    public AiInterpretation decide(String input) {
 
         var request = new VerdictDecisionRequestDTO(
                 properties.decider(),
@@ -59,7 +59,7 @@ public class VerdictDecisionProvider implements AiDecisionProvider {
         if (response == null
                 || response.answers() == null
                 || response.answers().isEmpty()) {
-            return InterpretationResult.unknown(
+            return AiInterpretation.unknown(
                     new Confidence(
                             0.0,
                             0.0,
@@ -70,35 +70,26 @@ public class VerdictDecisionProvider implements AiDecisionProvider {
 
         var answer = response.answers().getFirst();
 
-        AppAction action = parseAction(answer.label());
+        var confidence = new Confidence(
+                answer.confidence().probability(),
+                answer.confidence().margin(),
+                answer.confidence().abstain()
+        );
 
-        if (answer.confidence().abstain()) {
-            return InterpretationResult.unknown(
-                    new Confidence(
-                            answer.confidence().probability(),
-                            answer.confidence().margin(),
-                            true
-                    )
-            );
+        if (confidence.abstain()) {
+            return AiInterpretation.unknown(confidence);
         }
+
+        var action = parseAction(answer.label());
 
         if (action == null) {
-            return InterpretationResult.unknown(
-                    new Confidence(
-                            answer.confidence().probability(),
-                            answer.confidence().margin(),
-                            false
-                    )
-            );
+            return AiInterpretation.unknown(confidence);
         }
 
-        return InterpretationResult.ready(
+        return AiInterpretation.of(
                 action,
-                new Confidence(
-                        answer.confidence().probability(),
-                        answer.confidence().margin(),
-                        false
-                )
+                confidence,
+                null
         );
     }
 
@@ -145,6 +136,9 @@ public class VerdictDecisionProvider implements AiDecisionProvider {
 
             case EDIT_SAVING_GOAL ->
                     "Modificar un objetivo de ahorro existente.";
+
+            case ADD_SAVING_GOAL_CONTRIBUTION ->
+                    "Añadir fondos a un objetivo de ahorro existente.";
         };
     }
 }

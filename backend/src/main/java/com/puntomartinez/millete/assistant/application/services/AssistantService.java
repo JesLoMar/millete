@@ -21,9 +21,26 @@ public class AssistantService implements InterpretUserInputUseCase {
     }
 
     @Override
-    public InterpretationResult interpret(InterpretUserInputCommand command) {
-        Objects.requireNonNull(command, "command cannot be null");
+public InterpretationResult interpret(
+        InterpretUserInputCommand command
+) {
+    Objects.requireNonNull(
+            command,
+            "command cannot be null"
+    );
 
-        return aiDecisionProvider.decide(command.input());
+    var aiInterpretation =
+            aiDecisionProvider.decide(command.input());
+
+    if (aiInterpretation.action() == null) {
+        return InterpretationResult.unknown(
+                aiInterpretation.confidence()
+        );
     }
+
+    return InterpretationResult.needsInformation(
+            aiInterpretation.action(),
+            aiInterpretation.confidence()
+    );
+}
 }

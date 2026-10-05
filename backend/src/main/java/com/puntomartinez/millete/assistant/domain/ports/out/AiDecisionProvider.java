@@ -1,8 +1,8 @@
 package com.puntomartinez.millete.assistant.domain.ports.out;
 
-import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.AiInterpretation;
 
 public interface AiDecisionProvider {
 
-    InterpretationResult decide(String input);
+    AiInterpretation decide(String input);
 }

@@ -610,3 +610,107 @@ INVESTMENTS
 └── Revisar estado
     ├── Salud de inversiones
     └── Actualización de market data
+
+
+======================================
+MODALES
+======================================
+
+ADD_CATEGORY
+│
+├── name           → extraíble por IA, obligatorio
+├── description    → extraíble por IA, opcional
+├── budgetLimit    → extraíble por IA, opcional
+└── color          → NO interpretar, lo proporciona el frontend
+
+EDIT_CATEGORY
+├── target         → IA + resolución contra categorías del usuario
+│   └── name
+│
+└── changes
+    ├── name       → IA, opcional
+    ├── description→ IA, opcional
+    ├── budgetLimit→ IA, opcional
+    └── color      → IA, opcional
+
+ADD_EXPENSE_TRANSACTION
+    description
+    amount
+    category
+    type = EXPENSE
+    date → actualmente automático
+
+
+ADD_INCOME_TRANSACTION
+    description
+    amount
+    category
+    type = INCOME
+    date → actualmente automático
+
+
+EDIT_TRANSACTION
+    target
+    changes
+        description?
+        amount?
+        type?
+        category?
+
+ADD_RECURRING_EXPENSE_TRANSACTION
+    description
+    amount
+    category
+    type = EXPENSE
+    frequencyType
+    frequencyInterval
+    startDate
+    endDate?
+
+
+ADD_RECURRING_INCOME_TRANSACTION
+    description
+    amount
+    category
+    type = INCOME
+    frequencyType
+    frequencyInterval
+    startDate
+    endDate?
+
+
+EDIT_RECURRING_TRANSACTION
+    target
+    changes
+        description?
+        amount?
+        type?
+        frequencyType?
+        frequencyInterval?
+
+ADD_SAVING_GOAL
+│
+├── name              ✅
+├── targetAmount      ✅
+├── priority          ✅ / default MEDIUM
+├── deadline          opcional
+└── link              opcional
+
+EDIT_SAVING_GOAL
+│
+├── target
+│   └── name / criterios de identificación
+│
+└── changes
+    ├── name?
+    ├── targetAmount?
+    ├── priority?
+    ├── deadline?
+    └── link?
+
+ADD_SAVING_GOAL_CONTRIBUTION
+│
+├── target
+│   └── objetivo existente
+│
+└── amount ✅
