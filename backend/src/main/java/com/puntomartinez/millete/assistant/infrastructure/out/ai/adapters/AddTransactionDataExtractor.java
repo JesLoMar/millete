@@ -28,11 +28,19 @@ public final class AddTransactionDataExtractor
 
             Extract information for creating a new one-time transaction.
 
+            The supported actions are:
+            - ADD_EXPENSE_TRANSACTION: create a one-time expense.
+            - ADD_INCOME_TRANSACTION: create a one-time income.
+
+            Extract only information that is explicitly present in the user's input.
+
+            Fields:
+            - description: the transaction description.
+            - amount: the transaction amount.
+            - categoryName: the category name or category reference explicitly mentioned by the user.
+
             Rules:
-            - Extract the transaction description if explicitly provided.
-            - Extract the transaction amount if explicitly provided.
-            - Extract the category name or category reference if explicitly provided.
-            - If a value was not provided, return null.
+            - If a value was not explicitly provided, return null.
             - Never invent or guess a description.
             - Never invent or guess an amount.
             - Never invent or guess a category.
@@ -41,6 +49,8 @@ public final class AddTransactionDataExtractor
             - Do not generate a date.
             - Do not generate a transaction type.
             - The transaction type is determined by the application action.
+            - ADD_EXPENSE_TRANSACTION means EXPENSE.
+            - ADD_INCOME_TRANSACTION means INCOME.
             - Return only the JSON object matching the required schema.
             """;
 
@@ -73,13 +83,9 @@ public final class AddTransactionDataExtractor
                 "context cannot be null"
         );
 
-        if (context.action()
-                != AppAction.ADD_EXPENSE_TRANSACTION) {
-
-            throw new IllegalArgumentException(
-                    "This extractor only supports ADD_EXPENSE_TRANSACTION"
-            );
-        }
+        validateAction(
+                context.action()
+        );
 
         var request =
                 new StructuredAiRequest(
@@ -90,7 +96,9 @@ public final class AddTransactionDataExtractor
                 );
 
         var rawResponse =
-                structuredAiClient.generate(request);
+                structuredAiClient.generate(
+                        request
+                );
 
         if (rawResponse == null
                 || rawResponse.isBlank()) {
@@ -115,6 +123,18 @@ public final class AddTransactionDataExtractor
             throw new IllegalStateException(
                     "Could not parse AI transaction extraction response",
                     exception
+            );
+        }
+    }
+
+    private void validateAction(
+            AppAction action
+    ) {
+        if (action != AppAction.ADD_EXPENSE_TRANSACTION
+                && action != AppAction.ADD_INCOME_TRANSACTION) {
+
+            throw new IllegalArgumentException(
+                    "This extractor only supports ADD_EXPENSE_TRANSACTION and ADD_INCOME_TRANSACTION"
             );
         }
     }

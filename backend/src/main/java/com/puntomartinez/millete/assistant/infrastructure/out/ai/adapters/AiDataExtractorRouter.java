@@ -13,10 +13,7 @@ import java.util.Objects;
 public final class AiDataExtractorRouter
         implements AiDataExtractor {
 
-    private final Map<
-            AppAction,
-            AiDataExtractor
-            > extractors;
+    private final Map<AppAction, AiDataExtractor> extractors;
 
     public AiDataExtractorRouter(
             AddCategoryDataExtractor addCategoryDataExtractor,
@@ -26,12 +23,20 @@ public final class AiDataExtractorRouter
                 Map.of(
                         AppAction.ADD_CATEGORY,
                         Objects.requireNonNull(
-                                addCategoryDataExtractor
+                                addCategoryDataExtractor,
+                                "addCategoryDataExtractor cannot be null"
                         ),
 
                         AppAction.ADD_EXPENSE_TRANSACTION,
                         Objects.requireNonNull(
-                                addTransactionDataExtractor
+                                addTransactionDataExtractor,
+                                "addTransactionDataExtractor cannot be null"
+                        ),
+
+                        AppAction.ADD_INCOME_TRANSACTION,
+                        Objects.requireNonNull(
+                                addTransactionDataExtractor,
+                                "addTransactionDataExtractor cannot be null"
                         )
                 );
     }
@@ -51,12 +56,14 @@ public final class AiDataExtractorRouter
                 );
 
         if (extractor == null) {
-            throw new IllegalArgumentException(
-                    "No AI extractor configured for action: "
+            throw new IllegalStateException(
+                    "No AI data extractor configured for action: "
                             + context.action()
             );
         }
 
-        return extractor.extract(context);
+        return extractor.extract(
+                context
+        );
     }
 }
