@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.assistant.application.services;
 
 import com.puntomartinez.millete.assistant.domain.model.AppAction;
+import com.puntomartinez.millete.assistant.domain.model.Confidence;
 import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddCategoryData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddTransactionData;
@@ -79,9 +80,6 @@ public class AssistantService
         var action =
                 aiInterpretation.action();
 
-        /*
-         * ADD_CATEGORY is already fully implemented.
-         */
         if (action == AppAction.ADD_CATEGORY) {
             return interpretAddCategory(
                     command,
@@ -89,21 +87,16 @@ public class AssistantService
             );
         }
 
-        /*
-         * ADD_EXPENSE_TRANSACTION is now connected.
-         */
-        if (action
-                == AppAction.ADD_EXPENSE_TRANSACTION) {
+        if (action == AppAction.ADD_EXPENSE_TRANSACTION
+                || action == AppAction.ADD_INCOME_TRANSACTION) {
 
-            return interpretAddExpenseTransaction(
+            return interpretAddTransaction(
                     command,
-                    aiInterpretation.confidence()
+                    aiInterpretation.confidence(),
+                    action
             );
         }
 
-        /*
-         * Other actions are still not connected.
-         */
         return InterpretationResult.needsInformation(
                 action,
                 aiInterpretation.confidence()
@@ -112,7 +105,7 @@ public class AssistantService
 
     private InterpretationResult interpretAddCategory(
             InterpretUserInputCommand command,
-            com.puntomartinez.millete.assistant.domain.model.Confidence confidence
+            Confidence confidence
     ) {
         var data =
                 aiDataExtractor.extract(
@@ -155,27 +148,28 @@ public class AssistantService
         );
     }
 
-    private InterpretationResult interpretAddExpenseTransaction(
+    private InterpretationResult interpretAddTransaction(
             InterpretUserInputCommand command,
-            com.puntomartinez.millete.assistant.domain.model.Confidence confidence
+            Confidence confidence,
+            AppAction action
     ) {
         var extractedData =
                 aiDataExtractor.extract(
                         new AiExtractionContext(
                                 command.input(),
-                                AppAction.ADD_EXPENSE_TRANSACTION
+                                action
                         )
                 );
 
         var missingFields =
                 findMissingFields(
-                        AppAction.ADD_EXPENSE_TRANSACTION,
+                        action,
                         extractedData
                 );
 
         if (!missingFields.isEmpty()) {
             return InterpretationResult.needsInformation(
-                    AppAction.ADD_EXPENSE_TRANSACTION,
+                    action,
                     confidence,
                     extractedData,
                     missingFields,
@@ -184,8 +178,12 @@ public class AssistantService
             );
         }
 
-        var transactionData =
-                (AddTransactionData) extractedData;
+        if (!(extractedData instanceof AddTransactionData transactionData)) {
+            throw new IllegalStateException(
+                    "AI extractor returned invalid data for action: "
+                            + action
+            );
+        }
 
         var categoryResolution =
                 categoryResolver.resolve(
@@ -197,7 +195,7 @@ public class AssistantService
                 != CategoryResolutionStatus.FOUND) {
 
             return InterpretationResult.needsInformation(
-                    AppAction.ADD_EXPENSE_TRANSACTION,
+                    action,
                     confidence,
                     transactionData,
                     List.of(),
@@ -219,7 +217,7 @@ public class AssistantService
                 );
 
         return InterpretationResult.ready(
-                AppAction.ADD_EXPENSE_TRANSACTION,
+                action,
                 confidence,
                 resolvedData,
                 List.of()
@@ -245,8 +243,8 @@ public class AssistantService
             }
         }
 
-        if (action
-                == AppAction.ADD_EXPENSE_TRANSACTION
+        if ((action == AppAction.ADD_EXPENSE_TRANSACTION
+                || action == AppAction.ADD_INCOME_TRANSACTION)
                 && data instanceof AddTransactionData transactionData) {
 
             if (transactionData.description() == null

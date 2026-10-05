@@ -1,7 +1,5 @@
 package com.puntomartinez.millete.assistant.infrastructure.out.verdict.adapters;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryCandidate;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolutionStatus;
@@ -11,6 +9,7 @@ import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import tools.jackson.databind.JsonNode;
 
 import java.net.http.HttpClient;
 import java.util.Comparator;
@@ -35,22 +34,14 @@ public final class VerdictCategorySelector {
             0.15;
 
     private final RestClient restClient;
-    private final ObjectMapper objectMapper;
 
     public VerdictCategorySelector(
-            VerdictProperties properties,
-            ObjectMapper objectMapper
+            VerdictProperties properties
     ) {
         Objects.requireNonNull(
                 properties,
                 "properties cannot be null"
         );
-
-        this.objectMapper =
-                Objects.requireNonNull(
-                        objectMapper,
-                        "objectMapper cannot be null"
-                );
 
         var httpClient =
                 HttpClient.newBuilder()
@@ -81,7 +72,6 @@ public final class VerdictCategorySelector {
                         .defaultHeader(
                                 "Content-Type",
                                 MediaType.APPLICATION_JSON_VALUE
-                                        .toString()
                         )
                         .build();
     }
@@ -126,7 +116,7 @@ public final class VerdictCategorySelector {
             response =
                     restClient
                             .post()
-                            .uri("v1/systemone/")
+                            .uri("v1/systemone")
                             .contentType(
                                     MediaType.APPLICATION_JSON
                             )
@@ -286,8 +276,9 @@ public final class VerdictCategorySelector {
         var orderedProbabilities =
                 new LinkedHashMap<String, Double>();
 
-        probabilities.fields()
-                .forEachRemaining(entry -> {
+        probabilities
+                .propertyStream()
+                .forEach(entry -> {
                     var value =
                             entry.getValue()
                                     .asDouble(
