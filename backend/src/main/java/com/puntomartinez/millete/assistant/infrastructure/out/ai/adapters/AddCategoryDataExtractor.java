@@ -11,37 +11,37 @@ import com.puntomartinez.millete.assistant.infrastructure.out.ai.client.Structur
 import com.puntomartinez.millete.assistant.infrastructure.out.ai.client.StructuredAiRequest;
 import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddCategoryExtractionDTO;
 import com.puntomartinez.millete.assistant.infrastructure.out.ai.mappers.AddCategoryExtractionMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+@Component
 public final class AddCategoryDataExtractor
         implements AiDataExtractor {
 
-    private static final String SCHEMA_NAME =
-            "add_category";
+    private static final String SCHEMA_NAME = "add_category";
 
     private static final String SYSTEM_PROMPT = """
             You extract data for the Millete personal finance application.
 
-            The user input may be written in any language supported by Millete.
+            The user's input may be written in any language.
 
-            Your task is to extract only the information explicitly provided
-            by the user for creating a new category.
+            Extract only the information explicitly provided by the user
+            for creating a new category.
 
             Rules:
-            - Extract the category name.
+            - Extract the category name if the user explicitly provides it.
             - Extract the description only if the user explicitly provides one.
             - Extract the budget limit only if the user explicitly provides one.
-            - If an optional value was not provided, return null.
-            - Never invent, guess or infer a description or budget limit.
+            - If a value was not provided, return null.
+            - Never invent or guess a category name.
+            - Never invent or guess a description.
+            - Never invent or guess a budget limit.
             - Do not extract or generate a color.
             - Do not extract or generate IDs.
-            - Do not create additional fields.
+            - Do not add any fields outside the schema.
             - Preserve the meaning of the user's words.
-            - Interpret numbers according to the user's locale.
-            - The configured Millete currency is provided as context.
-            - Do not perform currency conversion.
-            - Return only a JSON object matching the provided schema.
+            - Return only the JSON object matching the required schema.
             """;
 
     private final StructuredAiClient structuredAiClient;
@@ -63,13 +63,8 @@ public final class AddCategoryDataExtractor
     }
 
     @Override
-    public InterpretationData extract(
-            AiExtractionContext context
-    ) {
-        Objects.requireNonNull(
-                context,
-                "context cannot be null"
-        );
+    public InterpretationData extract(AiExtractionContext context) {
+        Objects.requireNonNull(context, "context cannot be null");
 
         if (context.action() != AppAction.ADD_CATEGORY) {
             throw new IllegalArgumentException(
@@ -79,7 +74,7 @@ public final class AddCategoryDataExtractor
 
         var request = new StructuredAiRequest(
                 SYSTEM_PROMPT,
-                buildUserPrompt(context),
+                context.input(),
                 SCHEMA_NAME,
                 buildResponseSchema()
         );
@@ -99,28 +94,13 @@ public final class AddCategoryDataExtractor
             );
 
             return AddCategoryExtractionMapper.toDomain(dto);
+
         } catch (Exception exception) {
             throw new IllegalStateException(
                     "Could not parse AI category extraction response",
                     exception
             );
         }
-    }
-
-    private static String buildUserPrompt(
-            AiExtractionContext context
-    ) {
-        return """
-                User locale: %s
-                Millete currency: %s
-
-                User input:
-                %s
-                """.formatted(
-                context.locale(),
-                context.currencyCode(),
-                context.input()
-        );
     }
 
     private JsonNode buildResponseSchema() {
@@ -131,8 +111,15 @@ public final class AddCategoryDataExtractor
 
         var properties = objectMapper.createObjectNode();
 
+        /*
+         * name is nullable because the user may not have
+         * provided the mandatory information yet.
+         */
         var name = objectMapper.createObjectNode();
-        name.put("type", "string");
+        var nameTypes = objectMapper.createArrayNode();
+        nameTypes.add("string");
+        nameTypes.add("null");
+        name.set("type", nameTypes);
         properties.set("name", name);
 
         var description = objectMapper.createObjectNode();
@@ -151,6 +138,11 @@ public final class AddCategoryDataExtractor
 
         schema.set("properties", properties);
 
+        /*
+         * The keys are always present in the JSON.
+         * Their values may be null when the information
+         * was not provided by the user.
+         */
         var required = objectMapper.createArrayNode();
         required.add("name");
         required.add("description");

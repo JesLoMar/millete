@@ -6,10 +6,12 @@ import com.puntomartinez.millete.assistant.infrastructure.out.ai.client.dto.Stru
 import com.puntomartinez.millete.assistant.infrastructure.out.ai.config.AiProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,8 +57,24 @@ public class OpenAiCompatibleStructuredAiClient
                 "properties cannot be null"
         );
 
+        var httpClient = HttpClient.newBuilder()
+                .connectTimeout(properties.connectTimeout())
+                .build();
+
+        var requestFactory =
+                new JdkClientHttpRequestFactory(httpClient);
+
+        requestFactory.setReadTimeout(
+                properties.readTimeout()
+        );
+
         this.restClient = RestClient.builder()
-                .baseUrl(normalizeBaseUrl(properties.baseUrl()))
+                .baseUrl(
+                        normalizeBaseUrl(
+                                properties.baseUrl()
+                        )
+                )
+                .requestFactory(requestFactory)
                 .defaultHeader(
                         "Content-Type",
                         MediaType.APPLICATION_JSON_VALUE

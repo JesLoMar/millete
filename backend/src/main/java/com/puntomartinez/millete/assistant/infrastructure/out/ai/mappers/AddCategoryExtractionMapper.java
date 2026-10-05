@@ -13,42 +13,32 @@ public final class AddCategoryExtractionMapper {
     public static AddCategoryData toDomain(
             AddCategoryExtractionDTO dto
     ) {
-        Objects.requireNonNull(
-                dto,
-                "dto cannot be null"
-        );
+        Objects.requireNonNull(dto, "dto cannot be null");
 
-        if (dto.name() == null || dto.name().isBlank()) {
-            throw new IllegalArgumentException(
-                    "Extracted category name cannot be blank"
-            );
-        }
+        var name = normalizeNullable(dto.name());
+        var description = normalizeNullable(dto.description());
 
         if (dto.budgetLimit() != null
                 && dto.budgetLimit().signum() < 0) {
             throw new IllegalArgumentException(
-                    "Extracted category budget limit cannot be negative"
+                    "Budget limit cannot be negative"
             );
         }
 
         return new AddCategoryData(
-                dto.name().trim(),
-                normalizeNullableText(dto.description()),
+                name,
+                description,
                 dto.budgetLimit()
         );
     }
 
-    private static String normalizeNullableText(
-            String value
-    ) {
+    private static String normalizeNullable(String value) {
         if (value == null) {
             return null;
         }
 
         var normalized = value.trim();
 
-        return normalized.isEmpty()
-                ? null
-                : normalized;
+        return normalized.isEmpty() ? null : normalized;
     }
 }

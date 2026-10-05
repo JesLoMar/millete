@@ -71,11 +71,27 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
 
       # -----------------------------------------
-      MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-off}
-      MILLETE_AI_VERDICT_BASEURL: ${VERDICT_BASE_URL:-http://verdict:8002}
+      # SPRING
+      # -----------------------------------------
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # -----------------------------------------
+      # AI - STRUCTURED EXTRACTION
+      # -----------------------------------------
+      MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-false}
+      MILLETE_AI_BASE_URL: ${MILLETE_AI_BASE_URL:-http://host.docker.internal:11434/v1}
+      MILLETE_AI_API_KEY: ${MILLETE_AI_API_KEY:-ollama}
+      MILLETE_AI_MODEL: ${MILLETE_AI_MODEL:-qwen3:4b-instruct}
+      MILLETE_AI_CONNECT_TIMEOUT: ${MILLETE_AI_CONNECT_TIMEOUT:-2s}
+      MILLETE_AI_READ_TIMEOUT: ${MILLETE_AI_READ_TIMEOUT:-60s}
+
+      # -----------------------------------------
+      # VERDICT - INTENT CLASSIFICATION
+      # -----------------------------------------
+      MILLETE_AI_VERDICT_BASE_URL: ${VERDICT_BASE_URL:-http://verdict:8002}
       MILLETE_AI_VERDICT_DECIDER: ${VERDICT_DECIDER:-millete}
-      MILLETE_AI_VERDICT_CONNECTTIMEOUT: ${VERDICT_CONNECT_TIMEOUT:-2s}
-      MILLETE_AI_VERDICT_READTIMEOUT: ${VERDICT_READ_TIMEOUT:-5s}
+      MILLETE_AI_VERDICT_CONNECT_TIMEOUT: ${VERDICT_CONNECT_TIMEOUT:-2s}
+      MILLETE_AI_VERDICT_READ_TIMEOUT: ${VERDICT_READ_TIMEOUT:-5s}
 
       # -----------------------------------------
       # LOGGING
@@ -86,6 +102,9 @@ services:
       # JVM
       # -----------------------------------------
       JAVA_OPTS: "-Xmx512m -Xms256m"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     depends_on:
       postgres:
