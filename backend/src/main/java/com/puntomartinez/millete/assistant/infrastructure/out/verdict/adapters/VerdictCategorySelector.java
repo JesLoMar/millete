@@ -176,15 +176,46 @@ public final class VerdictCategorySelector {
                             candidates,
                             candidate
                     ),
-                    "The user's category reference refers to the category named \""
-                            + candidate.name()
-                            + "\"."
+                    """
+                    Select this category when its meaning is the closest
+                    match to the user's category reference.
+
+                    Compare the user's reference with the category name
+                    semantically, not only textually.
+
+                    Consider:
+                    - synonyms;
+                    - common alternative terms;
+                    - colloquial expressions;
+                    - abbreviations;
+                    - natural language variations;
+                    - concepts that refer to the same thing.
+
+                    Examples:
+                    - "nómina" can refer to "Sueldo".
+                    - "salario" can refer to "Sueldo".
+                    - "payroll" can refer to "Sueldo".
+                    - "gasolina" can refer to "Gasolina".
+
+                    Choose this category only when its meaning is a good
+                    match for the user's reference.
+                    """.formatted(
+                            candidate.name()
+                    )
             );
         }
 
         criteria.put(
                 NONE_OF_THE_ABOVE,
-                "None of the available categories matches the user's category reference."
+                """
+                Select this option when none of the available categories
+                is a sufficiently good semantic match for the user's
+                category reference.
+
+                Do not choose a category only because it belongs to the
+                same broad financial type. The category must be relevant
+                to the specific meaning of the user's reference.
+                """
         );
 
         var question =
@@ -197,7 +228,27 @@ public final class VerdictCategorySelector {
 
         question.put(
                 "instructions",
-                "Which available Millete category best matches the user's category reference?"
+                """
+                Choose the available Millete category that best matches
+                the user's category reference semantically.
+
+                The user's reference may not exactly match the category
+                name. It may use a synonym, colloquial expression,
+                abbreviation, or another natural-language expression.
+
+                Prefer the category with the closest meaning.
+
+                Example:
+                - User reference: "nómina"
+                - "Sueldo" is a better match than "Ingreso extra".
+
+                Another example:
+                - User reference: "gasolina"
+                - "Gasolina" is a better match than "Transporte".
+
+                Choose "none_of_the_above" only when no available category
+                is a reasonable semantic match.
+                """
         );
 
         question.put(

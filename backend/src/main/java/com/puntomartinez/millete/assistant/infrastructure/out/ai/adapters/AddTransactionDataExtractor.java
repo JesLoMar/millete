@@ -22,37 +22,64 @@ public final class AddTransactionDataExtractor
             "add_transaction";
 
     private static final String SYSTEM_PROMPT = """
-            You extract data for the Millete personal finance application.
+        You extract data for the Millete personal finance application.
 
-            The user's input may be written in any language.
+        The user's input may be written in any language.
 
-            Extract information for creating a new one-time transaction.
+        Extract information for creating a new one-time transaction.
 
-            The supported actions are:
-            - ADD_EXPENSE_TRANSACTION: create a one-time expense.
-            - ADD_INCOME_TRANSACTION: create a one-time income.
+        The supported actions are:
+        - ADD_EXPENSE_TRANSACTION: create a one-time expense.
+        - ADD_INCOME_TRANSACTION: create a one-time income.
 
-            Extract only information that is explicitly present in the user's input.
+        Fields:
 
-            Fields:
-            - description: the transaction description.
-            - amount: the transaction amount.
-            - categoryName: the category name or category reference explicitly mentioned by the user.
+        1. description
+        - A short description of what the transaction is about.
+        - Do NOT copy the whole user sentence.
+        - Prefer the concise concept or reason of the transaction.
+        - Example:
+          "He cobrado 1500 euros de nómina"
+          -> description = "nómina"
 
-            Rules:
-            - If a value was not explicitly provided, return null.
-            - Never invent or guess a description.
-            - Never invent or guess an amount.
-            - Never invent or guess a category.
-            - Do not generate a category ID.
-            - Do not generate a transaction ID.
-            - Do not generate a date.
-            - Do not generate a transaction type.
-            - The transaction type is determined by the application action.
-            - ADD_EXPENSE_TRANSACTION means EXPENSE.
-            - ADD_INCOME_TRANSACTION means INCOME.
-            - Return only the JSON object matching the required schema.
-            """;
+        2. amount
+        - The numeric transaction amount explicitly mentioned by the user.
+        - Example:
+          "He cobrado 1500 euros de nómina"
+          -> amount = 1500
+
+        3. categoryName
+        - The category name or category reference explicitly mentioned or clearly identified in the user input.
+        - A category reference can be expressed naturally inside the sentence.
+        - Example:
+          "He cobrado 1500 euros de nómina"
+          -> categoryName = "Nómina"
+        - Example:
+          "He pagado 40 euros de gasolina"
+          -> categoryName = "Gasolina"
+        - Example:
+          "Me han ingresado 2000 euros por mi nómina"
+          -> categoryName = "Nómina"
+
+        Important distinction:
+        - The full user sentence is NOT the description.
+        - When a phrase contains both a transaction concept and a category reference,
+          extract the concise transaction concept as description and the category reference as categoryName.
+
+        Rules:
+        - If a value was not explicitly provided, return null.
+        - Never invent or guess a description.
+        - Never invent or guess an amount.
+        - Never invent or guess a category.
+        - Do not generate a category ID.
+        - Do not generate a transaction ID.
+        - Do not generate a date.
+        - Do not generate a transaction type.
+        - The transaction type is determined by the application action.
+        - ADD_EXPENSE_TRANSACTION means EXPENSE.
+        - ADD_INCOME_TRANSACTION means INCOME.
+        - Return only the JSON object matching the required schema.
+        """;
 
     private final StructuredAiClient structuredAiClient;
     private final ObjectMapper objectMapper;

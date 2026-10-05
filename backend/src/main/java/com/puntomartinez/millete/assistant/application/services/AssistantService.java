@@ -208,12 +208,15 @@ public class AssistantService
             );
         }
 
+        var resolvedCategory =
+                categoryResolution.category();
+
         var resolvedData =
                 new AddTransactionData(
                         transactionData.description(),
                         transactionData.amount(),
-                        transactionData.categoryName(),
-                        categoryResolution.category().id()
+                        resolvedCategory.name(),
+                        resolvedCategory.id()
                 );
 
         return InterpretationResult.ready(
