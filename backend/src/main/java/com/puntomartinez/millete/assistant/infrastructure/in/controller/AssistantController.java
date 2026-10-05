@@ -4,9 +4,12 @@ import com.puntomartinez.millete.assistant.domain.ports.in.InterpretUserInputCom
 import com.puntomartinez.millete.assistant.domain.ports.in.InterpretUserInputUseCase;
 import com.puntomartinez.millete.assistant.infrastructure.in.controller.dto.InterpretationResponseDTO;
 import com.puntomartinez.millete.assistant.infrastructure.in.controller.dto.InterpretUserInputRequestDTO;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/assistant")
@@ -17,16 +20,26 @@ public class AssistantController {
     public AssistantController(
             InterpretUserInputUseCase interpretUserInputUseCase
     ) {
-        this.interpretUserInputUseCase = interpretUserInputUseCase;
+        this.interpretUserInputUseCase =
+                interpretUserInputUseCase;
     }
 
     @PostMapping("/interpret")
     public ResponseEntity<InterpretationResponseDTO> interpret(
-            @Valid @RequestBody InterpretUserInputRequestDTO request
+            @Valid @RequestBody InterpretUserInputRequestDTO request,
+            Authentication authentication
     ) {
-        var command = new InterpretUserInputCommand(request.input());
+        UUID userId =
+                ((JwtUser) authentication.getPrincipal()).getId();
 
-        var result = interpretUserInputUseCase.interpret(command);
+        var command =
+                new InterpretUserInputCommand(
+                        userId,
+                        request.input()
+                );
+
+        var result =
+                interpretUserInputUseCase.interpret(command);
 
         return ResponseEntity.ok(
                 InterpretationResponseDTO.from(result)
