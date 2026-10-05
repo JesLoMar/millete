@@ -59,6 +59,9 @@ services:
     env_file:
       - .env
 
+    ports:
+      - "8080:8080"
+
     environment:
       # -----------------------------------------
       # DATABASE
@@ -67,20 +70,6 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DATABASE_USER}
       SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
 
-      # -----------------------------------------
-      # AI / VERDICT
-      #
-      # VerdictProperties:
-      #
-      # @ConfigurationProperties(
-      #     prefix = "millete.ai.verdict"
-      # )
-      #
-      # Spring environment variable mapping:
-      # baseUrl        -> MILLETE_AI_VERDICT_BASEURL
-      # decider        -> MILLETE_AI_VERDICT_DECIDER
-      # connectTimeout -> MILLETE_AI_VERDICT_CONNECTTIMEOUT
-      # readTimeout    -> MILLETE_AI_VERDICT_READTIMEOUT
       # -----------------------------------------
       MILLETE_AI_ENABLED: ${MILLETE_AI_ENABLED:-off}
       MILLETE_AI_VERDICT_BASEURL: ${VERDICT_BASE_URL:-http://verdict:8002}
