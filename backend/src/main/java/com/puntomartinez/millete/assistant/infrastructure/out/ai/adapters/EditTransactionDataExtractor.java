@@ -2,6 +2,7 @@ package com.puntomartinez.millete.assistant.infrastructure.out.ai.adapters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.puntomartinez.millete.assistant.domain.model.AppAction;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AiExtractionContext;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.InterpretationData;
@@ -186,7 +187,7 @@ public final class EditTransactionDataExtractor
                 false
         );
 
-        var properties =
+        ObjectNode properties =
                 schema.putObject(
                         "properties"
                 );
@@ -224,7 +225,7 @@ public final class EditTransactionDataExtractor
                 false
         );
 
-        var properties =
+        ObjectNode properties =
                 target.putObject(
                         "properties"
                 );
@@ -280,7 +281,7 @@ public final class EditTransactionDataExtractor
                 false
         );
 
-        var properties =
+        ObjectNode properties =
                 changes.putObject(
                         "properties"
                 );
@@ -330,7 +331,7 @@ public final class EditTransactionDataExtractor
                 false
         );
 
-        var properties =
+        ObjectNode properties =
                 change.putObject(
                         "properties"
                 );
@@ -370,7 +371,7 @@ public final class EditTransactionDataExtractor
                 false
         );
 
-        var properties =
+        ObjectNode properties =
                 change.putObject(
                         "properties"
                 );
@@ -401,7 +402,7 @@ public final class EditTransactionDataExtractor
     }
 
     private void addNullableStringProperty(
-            JsonNode properties,
+            ObjectNode properties,
             String propertyName
     ) {
         properties
@@ -412,7 +413,7 @@ public final class EditTransactionDataExtractor
     }
 
     private void addNullableNumberProperty(
-            JsonNode properties,
+            ObjectNode properties,
             String propertyName
     ) {
         properties

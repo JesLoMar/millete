@@ -2,6 +2,7 @@ package com.puntomartinez.millete.assistant.infrastructure.out.ai.adapters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.puntomartinez.millete.assistant.domain.model.AppAction;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AiExtractionContext;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.InterpretationData;
@@ -250,7 +251,7 @@ public final class AddRecurringTransactionDataExtractor
                 nullableStringSchema()
         );
 
-        var frequencyType =
+        ObjectNode frequencyType =
                 nullableStringSchema();
 
         frequencyType.set(
@@ -316,7 +317,7 @@ public final class AddRecurringTransactionDataExtractor
         return schema;
     }
 
-    private JsonNode nullableStringSchema() {
+    private ObjectNode nullableStringSchema() {
         var schema =
                 objectMapper.createObjectNode();
 

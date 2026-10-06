@@ -5,15 +5,20 @@ import com.puntomartinez.millete.assistant.domain.model.Confidence;
 import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddCategoryData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddRecurringTransactionData;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.AddSavingsGoalData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddTransactionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AppliedDefault;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AiExtractionContext;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolutionStatus;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.EditRecurringTransactionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.EditTransactionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.FieldChange;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.InterpretationData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.MissingField;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.RecurringTransactionResolution;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.RecurringTransactionResolution.RecurringTransactionResolutionStatus;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalPriority;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.TransactionResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.TransactionResolutionStatus;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.UnresolvedEntity;
@@ -22,11 +27,11 @@ import com.puntomartinez.millete.assistant.domain.ports.in.InterpretUserInputUse
 import com.puntomartinez.millete.assistant.domain.ports.out.AiDataExtractor;
 import com.puntomartinez.millete.assistant.domain.ports.out.AiDecisionProvider;
 import com.puntomartinez.millete.assistant.domain.ports.out.CategoryResolver;
+import com.puntomartinez.millete.assistant.domain.ports.out.RecurringTransactionResolver;
 import com.puntomartinez.millete.assistant.domain.ports.out.TransactionResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,13 +44,15 @@ public class AssistantService
     private final AiDataExtractor aiDataExtractor;
     private final CategoryResolver categoryResolver;
     private final TransactionResolver transactionResolver;
+    private final RecurringTransactionResolver recurringTransactionResolver;
 
     public AssistantService(
             AiDecisionProvider aiDecisionProvider,
             @Qualifier("aiDataExtractorRouter")
             AiDataExtractor aiDataExtractor,
             CategoryResolver categoryResolver,
-            TransactionResolver transactionResolver
+            TransactionResolver transactionResolver,
+            RecurringTransactionResolver recurringTransactionResolver
     ) {
         this.aiDecisionProvider =
                 Objects.requireNonNull(
@@ -69,6 +76,12 @@ public class AssistantService
                 Objects.requireNonNull(
                         transactionResolver,
                         "transactionResolver cannot be null"
+                );
+
+        this.recurringTransactionResolver =
+                Objects.requireNonNull(
+                        recurringTransactionResolver,
+                        "recurringTransactionResolver cannot be null"
                 );
     }
 
@@ -126,6 +139,20 @@ public class AssistantService
                     command,
                     aiInterpretation.confidence(),
                     action
+            );
+        }
+
+        if (action == AppAction.EDIT_RECURRING_TRANSACTION) {
+            return interpretEditRecurringTransaction(
+                    command,
+                    aiInterpretation.confidence()
+            );
+        }
+
+        if (action == AppAction.ADD_SAVING_GOAL) {
+            return interpretAddSavingsGoal(
+                    command,
+                    aiInterpretation.confidence()
             );
         }
 
@@ -451,6 +478,247 @@ public class AssistantService
         );
     }
 
+    private InterpretationResult interpretEditRecurringTransaction(
+            InterpretUserInputCommand command,
+            Confidence confidence
+    ) {
+        var extractedData =
+                aiDataExtractor.extract(
+                        new AiExtractionContext(
+                                command.input(),
+                                AppAction.EDIT_RECURRING_TRANSACTION
+                        )
+                );
+
+        if (!(extractedData instanceof EditRecurringTransactionData editData)) {
+            throw new IllegalStateException(
+                    "AI extractor returned invalid data for EDIT_RECURRING_TRANSACTION"
+            );
+        }
+
+        var defaultsApplied =
+                new ArrayList<AppliedDefault>();
+
+        var normalizedData =
+                applyRecurringEditDefaults(
+                        editData,
+                        defaultsApplied
+                );
+
+        var missingFields =
+                findMissingFields(
+                        AppAction.EDIT_RECURRING_TRANSACTION,
+                        normalizedData
+                );
+
+        if (!missingFields.isEmpty()) {
+            return InterpretationResult.needsInformation(
+                    AppAction.EDIT_RECURRING_TRANSACTION,
+                    confidence,
+                    normalizedData,
+                    missingFields,
+                    List.of(),
+                    defaultsApplied
+            );
+        }
+
+        java.util.UUID categoryId = null;
+
+        if (normalizedData.target().categoryName() != null) {
+
+            var categoryResolution =
+                    categoryResolver.resolve(
+                            command.userId(),
+                            normalizedData.target().categoryName()
+                    );
+
+            if (categoryResolution.status()
+                    != CategoryResolutionStatus.FOUND) {
+
+                return InterpretationResult.needsInformation(
+                        AppAction.EDIT_RECURRING_TRANSACTION,
+                        confidence,
+                        normalizedData,
+                        List.of(),
+                        List.of(
+                                toUnresolvedEntity(
+                                        categoryResolution
+                                )
+                        ),
+                        defaultsApplied
+                );
+            }
+
+            categoryId =
+                    categoryResolution.category().id();
+        }
+
+        var recurringResolution =
+                recurringTransactionResolver.resolve(
+                        command.userId(),
+                        normalizedData.target(),
+                        categoryId
+                );
+
+        if (recurringResolution.status()
+                != RecurringTransactionResolutionStatus.FOUND) {
+
+            return InterpretationResult.needsInformation(
+                    AppAction.EDIT_RECURRING_TRANSACTION,
+                    confidence,
+                    normalizedData,
+                    List.of(),
+                    List.of(
+                            toUnresolvedEntity(
+                                    recurringResolution
+                            )
+                    ),
+                    defaultsApplied
+            );
+        }
+
+        var resolvedTransaction =
+                recurringResolution.transaction();
+
+        var resolvedTarget =
+                new EditRecurringTransactionData.RecurringTransactionTarget(
+                        resolvedTransaction.description(),
+                        resolvedTransaction.amount(),
+                        resolvedTransaction.categoryName(),
+                        resolvedTransaction.frequencyType(),
+                        resolvedTransaction.frequencyInterval(),
+                        resolvedTransaction.type()
+                );
+
+        var resolvedData =
+                new EditRecurringTransactionData(
+                        resolvedTarget,
+                        normalizedData.changes()
+                );
+
+        return InterpretationResult.ready(
+                AppAction.EDIT_RECURRING_TRANSACTION,
+                confidence,
+                resolvedData,
+                defaultsApplied
+        );
+    }
+
+    private InterpretationResult interpretAddSavingsGoal(
+            InterpretUserInputCommand command,
+            Confidence confidence
+    ) {
+        var extractedData =
+                aiDataExtractor.extract(
+                        new AiExtractionContext(
+                                command.input(),
+                                AppAction.ADD_SAVING_GOAL
+                        )
+                );
+
+        if (!(extractedData instanceof AddSavingsGoalData savingsGoalData)) {
+            throw new IllegalStateException(
+                    "AI extractor returned invalid data for ADD_SAVING_GOAL"
+            );
+        }
+
+        var defaultsApplied =
+                new ArrayList<AppliedDefault>();
+
+        var normalizedData =
+                applySavingsGoalDefaults(
+                        savingsGoalData,
+                        defaultsApplied
+                );
+
+        var missingFields =
+                findMissingFields(
+                        AppAction.ADD_SAVING_GOAL,
+                        normalizedData
+                );
+
+        if (!missingFields.isEmpty()) {
+            return InterpretationResult.needsInformation(
+                    AppAction.ADD_SAVING_GOAL,
+                    confidence,
+                    normalizedData,
+                    missingFields,
+                    List.of(),
+                    defaultsApplied
+            );
+        }
+
+        return InterpretationResult.ready(
+                AppAction.ADD_SAVING_GOAL,
+                confidence,
+                normalizedData,
+                defaultsApplied
+        );
+    }
+
+    private AddSavingsGoalData applySavingsGoalDefaults(
+            AddSavingsGoalData data,
+            List<AppliedDefault> defaultsApplied
+    ) {
+        var priority =
+                data.priority();
+
+        if (priority == null) {
+            priority =
+                    SavingsGoalPriority.MEDIUM;
+
+            defaultsApplied.add(
+                    new AppliedDefault(
+                            "priority",
+                            "The priority defaults to MEDIUM when the user does not specify one"
+                    )
+            );
+        }
+
+        return new AddSavingsGoalData(
+                data.name(),
+                data.targetAmount(),
+                priority,
+                data.deadline(),
+                data.link()
+        );
+    }
+
+    private EditRecurringTransactionData applyRecurringEditDefaults(
+            EditRecurringTransactionData data,
+            List<AppliedDefault> defaultsApplied
+    ) {
+        var changes =
+                data.changes();
+
+        if (changes.frequencyType().specified()
+                && !changes.frequencyInterval().specified()) {
+
+            changes =
+                    new EditRecurringTransactionData.RecurringTransactionChanges(
+                            changes.description(),
+                            changes.amount(),
+                            changes.type(),
+                            changes.frequencyType(),
+                            FieldChange.set(
+                                    1
+                            )
+                    );
+
+            defaultsApplied.add(
+                    new AppliedDefault(
+                            "frequencyInterval",
+                            "The interval defaults to 1 when the frequency unit is changed without an explicit interval"
+                    )
+            );
+        }
+
+        return new EditRecurringTransactionData(
+                data.target(),
+                changes
+        );
+    }
+
     private AddRecurringTransactionData applyRecurringDefaults(
             AddRecurringTransactionData data,
             List<AppliedDefault> defaultsApplied
@@ -475,7 +743,7 @@ public class AssistantService
                 data.startDate();
 
         if (startDate == null) {
-            startDate = LocalDate.now();
+            startDate = java.time.LocalDate.now();
 
             defaultsApplied.add(
                     new AppliedDefault(
@@ -670,6 +938,40 @@ public class AssistantService
             }
         }
 
+        if (action == AppAction.EDIT_RECURRING_TRANSACTION
+                && data instanceof EditRecurringTransactionData editData) {
+
+            if (!editData.hasTargetCriteria()) {
+                missingFields.add(
+                        new MissingField("target")
+                );
+            }
+
+            if (!editData.hasChanges()) {
+                missingFields.add(
+                        new MissingField("changes")
+                );
+            }
+        }
+
+        if (action == AppAction.ADD_SAVING_GOAL
+                && data instanceof AddSavingsGoalData savingsGoalData) {
+
+            if (savingsGoalData.name() == null
+                    || savingsGoalData.name().isBlank()) {
+
+                missingFields.add(
+                        new MissingField("name")
+                );
+            }
+
+            if (savingsGoalData.targetAmount() == null) {
+                missingFields.add(
+                        new MissingField("targetAmount")
+                );
+            }
+        }
+
         return List.copyOf(
                 missingFields
         );
@@ -718,6 +1020,30 @@ public class AssistantService
 
         return new UnresolvedEntity(
                 UnresolvedEntity.EntityType.TRANSACTION,
+                resolution.reference(),
+                status
+        );
+    }
+
+    private UnresolvedEntity toUnresolvedEntity(
+            RecurringTransactionResolution resolution
+    ) {
+        var status =
+                switch (resolution.status()) {
+                    case NOT_FOUND ->
+                            UnresolvedEntity.ResolutionStatus.NOT_FOUND;
+
+                    case AMBIGUOUS ->
+                            UnresolvedEntity.ResolutionStatus.AMBIGUOUS;
+
+                    case FOUND ->
+                            throw new IllegalStateException(
+                                    "FOUND recurring transaction cannot be unresolved"
+                            );
+                };
+
+        return new UnresolvedEntity(
+                UnresolvedEntity.EntityType.RECURRING_TRANSACTION,
                 resolution.reference(),
                 status
         );

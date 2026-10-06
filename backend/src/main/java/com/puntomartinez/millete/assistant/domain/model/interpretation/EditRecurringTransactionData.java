@@ -20,6 +20,23 @@ public record EditRecurringTransactionData(
         );
     }
 
+    public boolean hasTargetCriteria() {
+        return target.description() != null
+                || target.amount() != null
+                || target.categoryName() != null
+                || target.frequencyType() != null
+                || target.frequencyInterval() != null
+                || target.type() != null;
+    }
+
+    public boolean hasChanges() {
+        return changes.description().specified()
+                || changes.amount().specified()
+                || changes.type().specified()
+                || changes.frequencyType().specified()
+                || changes.frequencyInterval().specified();
+    }
+
     public record RecurringTransactionTarget(
             String description,
             BigDecimal amount,
