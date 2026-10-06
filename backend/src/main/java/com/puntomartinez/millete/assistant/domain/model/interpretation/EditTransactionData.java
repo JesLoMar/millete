@@ -3,6 +3,7 @@ package com.puntomartinez.millete.assistant.domain.model.interpretation;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 
 public record EditTransactionData(
         TransactionTarget target,
@@ -22,12 +23,39 @@ public record EditTransactionData(
     }
 
     public record TransactionTarget(
+            UUID id,
             String description,
             BigDecimal amount,
             String categoryName,
             LocalDate date,
             TransactionType type
     ) {
+
+        public TransactionTarget {
+            if (description != null
+                    && description.isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Target description cannot be blank"
+                );
+            }
+
+            if (categoryName != null
+                    && categoryName.isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Target categoryName cannot be blank"
+                );
+            }
+        }
+
+        public boolean hasCriteria() {
+            return description != null
+                    || amount != null
+                    || categoryName != null
+                    || date != null
+                    || type != null;
+        }
     }
 
     public record TransactionChanges(
@@ -57,6 +85,13 @@ public record EditTransactionData(
                     type,
                     "type change cannot be null"
             );
+        }
+
+        public boolean hasChanges() {
+            return description.specified()
+                    || amount.specified()
+                    || categoryName.specified()
+                    || type.specified();
         }
 
         public static TransactionChanges empty() {
