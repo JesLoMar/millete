@@ -3,6 +3,7 @@ package com.puntomartinez.millete.assistant.domain.model.interpretation;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 
 public record EditSavingsGoalData(
         SavingsGoalTarget target,
@@ -22,8 +23,14 @@ public record EditSavingsGoalData(
     }
 
     public record SavingsGoalTarget(
+            UUID id,
             String name
     ) {
+
+        public boolean hasCriteria() {
+            return name != null
+                    && !name.isBlank();
+        }
     }
 
     public record SavingsGoalChanges(
@@ -59,6 +66,14 @@ public record EditSavingsGoalData(
                     link,
                     "link change cannot be null"
             );
+        }
+
+        public boolean hasChanges() {
+            return name.specified()
+                    || targetAmount.specified()
+                    || priority.specified()
+                    || deadline.specified()
+                    || link.specified();
         }
 
         public static SavingsGoalChanges empty() {

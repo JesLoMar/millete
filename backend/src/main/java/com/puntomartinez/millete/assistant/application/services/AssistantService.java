@@ -5,6 +5,7 @@ import com.puntomartinez.millete.assistant.domain.model.Confidence;
 import com.puntomartinez.millete.assistant.domain.model.InterpretationResult;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddCategoryData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddRecurringTransactionData;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.AddSavingsGoalContributionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddSavingsGoalData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AddTransactionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.AppliedDefault;
@@ -12,6 +13,7 @@ import com.puntomartinez.millete.assistant.domain.model.interpretation.AiExtract
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.CategoryResolutionStatus;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.EditRecurringTransactionData;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.EditSavingsGoalData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.EditTransactionData;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.FieldChange;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.InterpretationData;
@@ -19,6 +21,8 @@ import com.puntomartinez.millete.assistant.domain.model.interpretation.MissingFi
 import com.puntomartinez.millete.assistant.domain.model.interpretation.RecurringTransactionResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.RecurringTransactionResolution.RecurringTransactionResolutionStatus;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalPriority;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalResolution;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalResolutionStatus;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.TransactionResolution;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.TransactionResolutionStatus;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.UnresolvedEntity;
@@ -28,6 +32,7 @@ import com.puntomartinez.millete.assistant.domain.ports.out.AiDataExtractor;
 import com.puntomartinez.millete.assistant.domain.ports.out.AiDecisionProvider;
 import com.puntomartinez.millete.assistant.domain.ports.out.CategoryResolver;
 import com.puntomartinez.millete.assistant.domain.ports.out.RecurringTransactionResolver;
+import com.puntomartinez.millete.assistant.domain.ports.out.SavingsGoalResolver;
 import com.puntomartinez.millete.assistant.domain.ports.out.TransactionResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -45,6 +50,7 @@ public class AssistantService
     private final CategoryResolver categoryResolver;
     private final TransactionResolver transactionResolver;
     private final RecurringTransactionResolver recurringTransactionResolver;
+    private final SavingsGoalResolver savingsGoalResolver;
 
     public AssistantService(
             AiDecisionProvider aiDecisionProvider,
@@ -52,7 +58,8 @@ public class AssistantService
             AiDataExtractor aiDataExtractor,
             CategoryResolver categoryResolver,
             TransactionResolver transactionResolver,
-            RecurringTransactionResolver recurringTransactionResolver
+            RecurringTransactionResolver recurringTransactionResolver,
+            SavingsGoalResolver savingsGoalResolver
     ) {
         this.aiDecisionProvider =
                 Objects.requireNonNull(
@@ -82,6 +89,12 @@ public class AssistantService
                 Objects.requireNonNull(
                         recurringTransactionResolver,
                         "recurringTransactionResolver cannot be null"
+                );
+
+        this.savingsGoalResolver =
+                Objects.requireNonNull(
+                        savingsGoalResolver,
+                        "savingsGoalResolver cannot be null"
                 );
     }
 
@@ -151,6 +164,20 @@ public class AssistantService
 
         if (action == AppAction.ADD_SAVING_GOAL) {
             return interpretAddSavingsGoal(
+                    command,
+                    aiInterpretation.confidence()
+            );
+        }
+
+        if (action == AppAction.EDIT_SAVING_GOAL) {
+            return interpretEditSavingsGoal(
+                    command,
+                    aiInterpretation.confidence()
+            );
+        }
+
+        if (action == AppAction.ADD_SAVING_GOAL_CONTRIBUTION) {
+            return interpretAddSavingsGoalContribution(
                     command,
                     aiInterpretation.confidence()
             );
@@ -656,6 +683,169 @@ public class AssistantService
         );
     }
 
+    private InterpretationResult interpretEditSavingsGoal(
+            InterpretUserInputCommand command,
+            Confidence confidence
+    ) {
+        var extractedData =
+                aiDataExtractor.extract(
+                        new AiExtractionContext(
+                                command.input(),
+                                AppAction.EDIT_SAVING_GOAL
+                        )
+                );
+
+        if (!(extractedData instanceof EditSavingsGoalData editData)) {
+            throw new IllegalStateException(
+                    "AI extractor returned invalid data for EDIT_SAVING_GOAL"
+            );
+        }
+
+        var missingFields =
+                findMissingFields(
+                        AppAction.EDIT_SAVING_GOAL,
+                        editData
+                );
+
+        if (!missingFields.isEmpty()) {
+            return InterpretationResult.needsInformation(
+                    AppAction.EDIT_SAVING_GOAL,
+                    confidence,
+                    editData,
+                    missingFields,
+                    List.of(),
+                    List.of()
+            );
+        }
+
+        var resolution =
+                savingsGoalResolver.resolve(
+                        command.userId(),
+                        editData.target().name()
+                );
+
+        if (resolution.status()
+                != SavingsGoalResolutionStatus.FOUND) {
+
+            return InterpretationResult.needsInformation(
+                    AppAction.EDIT_SAVING_GOAL,
+                    confidence,
+                    editData,
+                    List.of(),
+                    List.of(
+                            toUnresolvedEntity(
+                                    resolution
+                            )
+                    ),
+                    List.of()
+            );
+        }
+
+        var goal =
+                resolution.goal();
+
+        var resolvedTarget =
+                new EditSavingsGoalData.SavingsGoalTarget(
+                        goal.id(),
+                        goal.name()
+                );
+
+        var resolvedData =
+                new EditSavingsGoalData(
+                        resolvedTarget,
+                        editData.changes()
+                );
+
+        return InterpretationResult.ready(
+                AppAction.EDIT_SAVING_GOAL,
+                confidence,
+                resolvedData,
+                List.of()
+        );
+    }
+
+    private InterpretationResult interpretAddSavingsGoalContribution(
+            InterpretUserInputCommand command,
+            Confidence confidence
+    ) {
+        var extractedData =
+                aiDataExtractor.extract(
+                        new AiExtractionContext(
+                                command.input(),
+                                AppAction.ADD_SAVING_GOAL_CONTRIBUTION
+                        )
+                );
+
+        if (!(extractedData instanceof AddSavingsGoalContributionData contributionData)) {
+            throw new IllegalStateException(
+                    "AI extractor returned invalid data for "
+                            + "ADD_SAVING_GOAL_CONTRIBUTION"
+            );
+        }
+
+        var missingFields =
+                findMissingFields(
+                        AppAction.ADD_SAVING_GOAL_CONTRIBUTION,
+                        contributionData
+                );
+
+        if (!missingFields.isEmpty()) {
+            return InterpretationResult.needsInformation(
+                    AppAction.ADD_SAVING_GOAL_CONTRIBUTION,
+                    confidence,
+                    contributionData,
+                    missingFields,
+                    List.of(),
+                    List.of()
+            );
+        }
+
+        var resolution =
+                savingsGoalResolver.resolve(
+                        command.userId(),
+                        contributionData.target().name()
+                );
+
+        if (resolution.status()
+                != SavingsGoalResolutionStatus.FOUND) {
+
+            return InterpretationResult.needsInformation(
+                    AppAction.ADD_SAVING_GOAL_CONTRIBUTION,
+                    confidence,
+                    contributionData,
+                    List.of(),
+                    List.of(
+                            toUnresolvedEntity(
+                                    resolution
+                            )
+                    ),
+                    List.of()
+            );
+        }
+
+        var goal =
+                resolution.goal();
+
+        var resolvedTarget =
+                new AddSavingsGoalContributionData.SavingsGoalTarget(
+                        goal.id(),
+                        goal.name()
+                );
+
+        var resolvedData =
+                new AddSavingsGoalContributionData(
+                        resolvedTarget,
+                        contributionData.amount()
+                );
+
+        return InterpretationResult.ready(
+                AppAction.ADD_SAVING_GOAL_CONTRIBUTION,
+                confidence,
+                resolvedData,
+                List.of()
+        );
+    }
+
     private AddSavingsGoalData applySavingsGoalDefaults(
             AddSavingsGoalData data,
             List<AppliedDefault> defaultsApplied
@@ -972,6 +1162,40 @@ public class AssistantService
             }
         }
 
+        if (action == AppAction.EDIT_SAVING_GOAL
+                && data instanceof EditSavingsGoalData editData) {
+
+            if (!editData.target().hasCriteria()) {
+                missingFields.add(
+                        new MissingField("target")
+                );
+            }
+
+            if (!editData.changes().hasChanges()) {
+                missingFields.add(
+                        new MissingField("changes")
+                );
+            }
+        }
+
+        if (action == AppAction.ADD_SAVING_GOAL_CONTRIBUTION
+                && data instanceof AddSavingsGoalContributionData contributionData) {
+
+            if (contributionData.target().name() == null
+                    || contributionData.target().name().isBlank()) {
+
+                missingFields.add(
+                        new MissingField("target")
+                );
+            }
+
+            if (contributionData.amount() == null) {
+                missingFields.add(
+                        new MissingField("amount")
+                );
+            }
+        }
+
         return List.copyOf(
                 missingFields
         );
@@ -1044,6 +1268,30 @@ public class AssistantService
 
         return new UnresolvedEntity(
                 UnresolvedEntity.EntityType.RECURRING_TRANSACTION,
+                resolution.reference(),
+                status
+        );
+    }
+
+    private UnresolvedEntity toUnresolvedEntity(
+            SavingsGoalResolution resolution
+    ) {
+        var status =
+                switch (resolution.status()) {
+                    case NOT_FOUND ->
+                            UnresolvedEntity.ResolutionStatus.NOT_FOUND;
+
+                    case AMBIGUOUS ->
+                            UnresolvedEntity.ResolutionStatus.AMBIGUOUS;
+
+                    case FOUND ->
+                            throw new IllegalStateException(
+                                    "FOUND savings goal cannot be unresolved"
+                            );
+                };
+
+        return new UnresolvedEntity(
+                UnresolvedEntity.EntityType.SAVINGS_GOAL,
                 resolution.reference(),
                 status
         );

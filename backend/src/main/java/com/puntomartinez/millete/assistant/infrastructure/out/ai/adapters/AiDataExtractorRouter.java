@@ -21,7 +21,9 @@ public final class AiDataExtractorRouter
             EditTransactionDataExtractor editTransactionDataExtractor,
             AddRecurringTransactionDataExtractor addRecurringTransactionDataExtractor,
             EditRecurringTransactionDataExtractor editRecurringTransactionDataExtractor,
-            AddSavingsGoalDataExtractor addSavingsGoalDataExtractor
+            AddSavingsGoalDataExtractor addSavingsGoalDataExtractor,
+            EditSavingsGoalDataExtractor editSavingsGoalDataExtractor,
+            AddSavingsGoalContributionDataExtractor addSavingsGoalContributionDataExtractor
     ) {
         this.extractors =
                 Map.of(
@@ -71,6 +73,18 @@ public final class AiDataExtractorRouter
                         Objects.requireNonNull(
                                 addSavingsGoalDataExtractor,
                                 "addSavingsGoalDataExtractor cannot be null"
+                        ),
+
+                        AppAction.EDIT_SAVING_GOAL,
+                        Objects.requireNonNull(
+                                editSavingsGoalDataExtractor,
+                                "editSavingsGoalDataExtractor cannot be null"
+                        ),
+
+                        AppAction.ADD_SAVING_GOAL_CONTRIBUTION,
+                        Objects.requireNonNull(
+                                addSavingsGoalContributionDataExtractor,
+                                "addSavingsGoalContributionDataExtractor cannot be null"
                         )
                 );
     }
