@@ -1,0 +1,253 @@
+{"input":"Recibo 500 cada mes por alquilar una habitación.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Gastei 20 € num restaurante ontem.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Crea Ocio con 200 € de presupuesto.","answer":"ADD_CATEGORY"}
+{"input":"Quiero aportar 250 € a mi objetivo de casa.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Quiero cambiar el nombre de mi categoría Casa.","answer":"EDIT_CATEGORY"}
+{"input":"Añade una categoría llamada Restaurantes con límite de 300 € y la descripción “comidas fuera de casa”.","answer":"ADD_CATEGORY"}
+{"input":"Apunta 50 euros de gasolina cada mes.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Quiero llegar a 1.500 antes de verano.","answer":"ADD_SAVING_GOAL"}
+{"input":"Lo de la cena fue a medias, yo puse 17.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Actualiza la cantidad que necesito ahorrar para la boda.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Quiero una categoría llamada Ocio, de color azul y con 150 € de presupuesto.","answer":"ADD_CATEGORY"}
+{"input":"He gastado 20 € en sushi.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero una categoría que se llame Ropa.","answer":"ADD_CATEGORY"}
+{"input":"El alquiler son 1.050 y entra todos los meses.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Apunta 9,99 € de Spotify.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero modificar el color de Supermercado a verde.","answer":"EDIT_CATEGORY"}
+{"input":"Quiero registrar 400 € mensuales por alquilar una habitación.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Me han ingresado 300 por un trabajo.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Edita el gasto recurrente de Netflix y cambia el importe a 15 €.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Quiero repetir el pago del gimnasio.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Me he gastado 15 € en una farmacia.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Registra una entrada mensual de 500 € por el alquiler del piso.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Crea Restaurantes en color rojo.","answer":"ADD_CATEGORY"}
+{"input":"Modifica el transporte recurrente a 25 € por semana.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Cambia la meta de ahorro de la PlayStation a 700 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Cada tres meses pago 90 euros.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Añade Supermercado con un límite de 400 €.","answer":"ADD_CATEGORY"}
+{"input":"Todos los meses recibo 800 por el piso.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Quiero registrar 7,80 € que me gasté en pan y leche.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero una categoría nueva que se llame Transporte.","answer":"ADD_CATEGORY"}
+{"input":"Haz un bote para la moto.","answer":"ADD_SAVING_GOAL"}
+{"input":"Hazme un objetivo de 800 € para un festival.","answer":"ADD_SAVING_GOAL"}
+{"input":"Corrige la fecha de la transacción de gasolina al lunes.","answer":"EDIT_TRANSACTION"}
+{"input":"Actualiza la descripción de Restaurantes.","answer":"EDIT_CATEGORY"}
+{"input":"Registra 50 euros de la compra del supermercado.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"He ahorrado 50 € y quiero añadirlos al objetivo de vacaciones.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Add an income of €2,100 from my salary.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Crea un objetivo para comprarme un ordenador.","answer":"ADD_SAVING_GOAL"}
+{"input":"Edita mi objetivo de emergencia.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Hoy he pagado 45 euros de gasolina.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero una categoría llamada Casa.","answer":"ADD_CATEGORY"}
+{"input":"Trage ein Einkommen von 1.900 € aus meinem Gehalt ein.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Ayer pagué 18,50 por comer fuera.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Set up a recurring monthly expense of €15 for Spotify.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Cambia el día de cobro del ingreso recurrente.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Cambia la fecha de inicio del gasto recurrente.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Create a category called Groceries for food and household purchases from supermarkets.","answer":"ADD_CATEGORY"}
+{"input":"Quiero que este gasto se repita hasta final de año.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Cambia el color de la categoría Ocio a #3498DB.","answer":"EDIT_CATEGORY"}
+{"input":"Lo de Mercadona fueron unos 47 euros.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"J’ai dépensé 25 € au restaurant hier soir.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Han entrado 2.000 en la cuenta.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Cambia el importe de la compra del supermercado a 63 €.","answer":"EDIT_TRANSACTION"}
+{"input":"Ayer me dejé 12 € en Mercadona.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero meter el gimnasio todos los meses.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Actualiza el importe del gasto recurrente de electricidad.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Necesito un objetivo nuevo de 3.000 € para una reforma.","answer":"ADD_SAVING_GOAL"}
+{"input":"Me han devuelto 40 euros.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Lo de Netflix que se repita cada mes.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Corrige el ingreso de 1.500 € a 1.600 €.","answer":"EDIT_TRANSACTION"}
+{"input":"Quiero cambiar el nombre del objetivo del coche.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Crea una categoría llamada Restaurantes.","answer":"ADD_CATEGORY"}
+{"input":"Actualiza el importe objetivo de la casa a 20.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Registra un ingreso de 120 €.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Quiero agrupar aquí gasolina, metro y Uber.","answer":"ADD_CATEGORY"}
+{"input":"Añade 100 € al objetivo de ahorro para el viaje.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Me han pagado 75 € que me debía un amigo.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"He recibido una transferencia de 200 €.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Mi salario de 1.800 € entra todos los meses.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Mi objetivo es llegar a 3.000 euros.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero ir guardando para Navidad.","answer":"ADD_SAVING_GOAL"}
+{"input":"Añade la categoría Supermercado.","answer":"ADD_CATEGORY"}
+{"input":"Crea uno para viajar a Japón.","answer":"ADD_SAVING_GOAL"}
+{"input":"Ponme 35 de gasolina.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Crea Transporte con el color #FF5733.","answer":"ADD_CATEGORY"}
+{"input":"I spent €32 on dinner last night.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Cambia la descripción de Viajes.","answer":"EDIT_CATEGORY"}
+{"input":"Añade un ingreso mensual de 900 € por el alquiler.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Añade una categoría llamada Salud.","answer":"ADD_CATEGORY"}
+{"input":"Quiero añadir la nómina de 2.100 € como ingreso mensual.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Crea la categoría Ocio.","answer":"ADD_CATEGORY"}
+{"input":"Hoy he comido fuera y han sido 27 €.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Añade 300 € de ingresos cada semana por mi trabajo.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Cambia el nombre de la categoría Restaurantes a Restauración.","answer":"EDIT_CATEGORY"}
+{"input":"Ayer me entraron 120 de un amigo.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Añade Ropa con la descripción ropa, zapatos y complementos.","answer":"ADD_CATEGORY"}
+{"input":"Quiero cambiar la periodicidad del gimnasio a mensual.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Apunta 1.500 euros de salario.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Hazme una categoría para las cosas del perro.","answer":"ADD_CATEGORY"}
+{"input":"Me han cobrado 42,30 € del gimnasio.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero corregir el gasto de 20 € de ayer y poner 25 €.","answer":"EDIT_TRANSACTION"}
+{"input":"Edita la nómina recurrente y pon 2.200 €.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Añade el alquiler mensual de 1.000.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Edita mi ingreso recurrente del alquiler.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Crea la categoría Restaurantes con un presupuesto de 300 €.","answer":"ADD_CATEGORY"}
+{"input":"Quiero ahorrar para cambiar de coche.","answer":"ADD_SAVING_GOAL"}
+{"input":"Crea una para los gastos médicos.","answer":"ADD_CATEGORY"}
+{"input":"Apunta 18 € de la cena de anoche.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"He pagado 1.200 € de alquiler.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"He cobrado 600 de un proyecto.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Añade Viajes con un presupuesto de 500 €.","answer":"ADD_CATEGORY"}
+{"input":"Añade un gasto semanal de 15 € en transporte.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"He pagado 60 € de electricidad.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"El día 1 pago 950 de alquiler.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Edita la transacción de la cena y ponla en la categoría Restaurantes.","answer":"EDIT_TRANSACTION"}
+{"input":"Añade Supermercado en color verde.","answer":"ADD_CATEGORY"}
+{"input":"Crea un objetivo para la PlayStation de 600 €.","answer":"ADD_SAVING_GOAL"}
+{"input":"Hoy he cobrado 1.850 € de nómina.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Note un revenu de 1 800 € correspondant à mon salaire.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Hoy me han ingresado 25 € de intereses.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Quiero llegar a 10.000 para una entrada de una vivienda.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero una categoría llamada Mascotas y un límite de 100 €.","answer":"ADD_CATEGORY"}
+{"input":"Crea Ocio con color #3498DB y presupuesto de 200 €.","answer":"ADD_CATEGORY"}
+{"input":"Quiero automatizar este gasto.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Crea Salud con un presupuesto de 100 €.","answer":"ADD_CATEGORY"}
+{"input":"Quiero cambiar la categoría del gasto de 30 € de ayer.","answer":"EDIT_TRANSACTION"}
+{"input":"Crea un objetivo para la boda con una meta de 4.000 €.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero registrar un ingreso recurrente de 2.000 € cada mes.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Modifica el alquiler recurrente de 1.000 € a 1.050 €.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Lo de Wallapop, 75 euros.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"He comprado unas zapatillas por 79,95 €.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Añade Supermercado con la descripción compras de alimentación y productos del hogar.","answer":"ADD_CATEGORY"}
+{"input":"Füge eine monatlich wiederkehrende Ausgabe von 30 € für Netflix hinzu.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Añade un objetivo de 2.000 para el viaje.","answer":"ADD_SAVING_GOAL"}
+{"input":"Crea una categoría llamada Viajes con un límite de 1.000 €.","answer":"ADD_CATEGORY"}
+{"input":"Quiero una para todo lo que tenga que ver con comer fuera.","answer":"ADD_CATEGORY"}
+{"input":"Cambia la fecha del último gasto.","answer":"EDIT_TRANSACTION"}
+{"input":"Ayer gasté 22 € en una heladería.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero ahorrar para el coche.","answer":"ADD_SAVING_GOAL"}
+{"input":"Cada mes recibo 800 € de alquiler.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Regista um rendimento de 1.750 € do meu salário.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Cambia los datos de mi objetivo de reforma.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Je veux ajouter une dépense récurrente de 40 € par mois pour la salle de sport.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Hazme uno para la entrada de la casa.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero una categoría Mascotas para comida, veterinario y accesorios.","answer":"ADD_CATEGORY"}
+{"input":"Crea un objetivo llamado “Vacaciones” con una meta de 2.000 €.","answer":"ADD_SAVING_GOAL"}
+{"input":"Actualiza el presupuesto mensual de Ropa a 150 €.","answer":"EDIT_CATEGORY"}
+{"input":"Quiero ahorrar 1.200 € para cambiar de móvil.","answer":"ADD_SAVING_GOAL"}
+{"input":"Adiciona uma despesa recorrente de 35 € por mês para o ginásio.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Crea Transporte con la descripción gastos de gasolina, taxis y transporte público.","answer":"ADD_CATEGORY"}
+{"input":"La nómina entra todos los meses, 1.900.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Erstelle eine Kategorie namens Restaurants für Ausgaben in Restaurants, Bars und Eisdielen.","answer":"ADD_CATEGORY"}
+{"input":"Añade una categoría llamada Viajes.","answer":"ADD_CATEGORY"}
+{"input":"He comprado entradas para el cine por 18 euros.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Quiero renombrar el objetivo de vacaciones.","answer":"EDIT_SAVING_GOAL"}
+{"input":"He pagado 24,90 € en Netflix.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Crea Restaurantes y describe: gastos en restaurantes y comida preparada.","answer":"ADD_CATEGORY"}
+{"input":"Haz recurrente el ingreso mensual de 850 € del alquiler.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Crea una categoría para Educación.","answer":"ADD_CATEGORY"}
+{"input":"Edita la transacción del restaurante de ayer.","answer":"EDIT_TRANSACTION"}
+{"input":"Quiero apartar dinero para emergencias.","answer":"ADD_SAVING_GOAL"}
+{"input":"Necesito una para cuando salgo de fiesta.","answer":"ADD_CATEGORY"}
+{"input":"Quiero cambiar la frecuencia del seguro a anual.","answer":"EDIT_RECURRING_TRANSACTION"}
+{"input":"Cada mes recibo 750 € de alquiler.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Este mes he recibido 950 € de alquiler.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Mi alquiler es de 1.000 € al mes, regístralo como recurrente.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Me han ingresado 500 euros.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Quiero guardar dinero para una casa.","answer":"ADD_SAVING_GOAL"}
+{"input":"Son 30 euros cada lunes.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"He cobrado 300 € por un trabajo puntual.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Me ha llegado una transferencia de 90 euros.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Añade la nómina como recurrente, son 2.200.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Acabo de pagar 6,50 € por un café y una tostada.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Este mes he gastado 32 euros en Uber.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Añade una entrada recurrente de 2.000 al mes.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Modifica el objetivo de ahorro del coche y pon 8.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Edita mi última transacción y cambia su descripción.","answer":"EDIT_TRANSACTION"}
+{"input":"Cria uma categoria chamada Supermercado para compras de alimentos e produtos para a casa.","answer":"ADD_CATEGORY"}
+{"input":"Edita la categoría Mascotas para que incluya también veterinario.","answer":"EDIT_CATEGORY"}
+{"input":"Quiero modificar el importe de la transacción de Netflix.","answer":"EDIT_TRANSACTION"}
+{"input":"Crea una categoría para Mascotas.","answer":"ADD_CATEGORY"}
+{"input":"Todos los meses me ingresan 1.600 € de sueldo.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Crea Transporte con presupuesto mensual de 150 €.","answer":"ADD_CATEGORY"}
+{"input":"Modifica el límite de presupuesto de Transporte a 200 €.","answer":"EDIT_CATEGORY"}
+{"input":"Esto me lo cobran periódicamente, son 15 €.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Quiero que el seguro del coche de 420 € sea un gasto recurrente anual.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Registra un gasto de 35 € en comida a domicilio.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Cada día 1 recibo 1.900 € de salario.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Todos los meses pago 60 € de electricidad.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Hazme un objetivo de 5.000 para las vacaciones.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero aportar 100 € al objetivo compartido del viaje.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"He gastado 14 € en un taxi.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Edita la categoría Supermercado y ponle un presupuesto de 350 €.","answer":"EDIT_CATEGORY"}
+{"input":"Modifica la descripción del objetivo de viaje.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Este mes han sido 1.950 de nómina.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Esta mañana me ingresaron 1.700.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Esto ocurre cada dos semanas y son 20 €.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Quiero crear un objetivo de ahorro para comprar un coche.","answer":"ADD_SAVING_GOAL"}
+{"input":"Registra el alquiler para todos los meses.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Apunta los 250 que me han dado por el alquiler.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Haz que la luz se repita.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Apunta 10 euros que me gasté en una heladería.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Añade un gasto recurrente de 45 € al mes del gimnasio.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Quiero registrar 30 € mensuales de Netflix.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Añade mi nómina de 2.100 € como ingreso recurrente mensual.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Quiero registrar como recurrente el alquiler de 900 € al mes.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Edita mi objetivo de vacaciones y cambia la meta a 3.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Registra 50 € que he ganado vendiendo una cosa.","answer":"ADD_INCOME_TRANSACTION"}
+{"input":"Crée un objectif d’épargne de 3 000 € pour les vacances.","answer":"ADD_SAVING_GOAL"}
+{"input":"Cada mes me cobran 12,99 por esto.","answer":"ADD_RECURRING_EXPENSE_TRANSACTION"}
+{"input":"Quiero repetir cada mes el ingreso de 2.000 € de mi nómina.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Quiero una categoría llamada Formación con descripción cursos y libros.","answer":"ADD_CATEGORY"}
+{"input":"Ich habe gestern 45 € für Benzin ausgegeben.","answer":"ADD_EXPENSE_TRANSACTION"}
+{"input":"Recibo 650 € de alquiler el día 5 de cada mes.","answer":"ADD_RECURRING_INCOME_TRANSACTION"}
+{"input":"Crea un objetivo de ahorro de 1.500 € para unas vacaciones.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero crear un objetivo nuevo para comprar un coche.","answer":"ADD_SAVING_GOAL"}
+{"input":"Necesito una meta de ahorro de 10.000 € para la entrada de una casa.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero empezar a ahorrar para una boda.","answer":"ADD_SAVING_GOAL"}
+{"input":"Hazme un objetivo para ahorrar 600 € para un ordenador.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero reservar dinero para emergencias con un objetivo nuevo.","answer":"ADD_SAVING_GOAL"}
+{"input":"Create a new savings goal of €3,000 for a trip.","answer":"ADD_SAVING_GOAL"}
+{"input":"I want to start a savings goal for a new motorcycle.","answer":"ADD_SAVING_GOAL"}
+{"input":"Crée un nouvel objectif d’épargne de 2 500 € pour les vacances.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quero criar uma meta de poupança de 4.000 € para um carro.","answer":"ADD_SAVING_GOAL"}
+{"input":"Erstelle ein neues Sparziel von 5.000 € für ein Haus.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero crear una meta llamada Fondo de emergencia de 8.000 €.","answer":"ADD_SAVING_GOAL"}
+{"input":"Crea un objetivo nuevo para ahorrar 900 € para Navidad.","answer":"ADD_SAVING_GOAL"}
+{"input":"Quiero una meta de ahorro nueva para un viaje a Japón.","answer":"ADD_SAVING_GOAL"}
+{"input":"Cambia la meta de mi objetivo coche a 9.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Pon mi objetivo de vacaciones en 3.500 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Actualiza el nombre de mi objetivo casa y llámalo Entrada vivienda.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Modifica mi objetivo de emergencia y pon prioridad alta.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Cambia la fecha límite del objetivo del coche.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Quiero editar mi objetivo de boda y cambiar el importe a 6.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Actualiza el enlace de mi objetivo de viaje.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Reduce la cantidad objetivo de mi meta de vacaciones a 2.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Change my existing car savings goal to €7,500.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Update the deadline of my emergency savings goal.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Modifie mon objectif d’épargne pour les vacances et mets-le à 3 200 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Altera a meta de poupança do carro para 6.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Ändere mein bestehendes Sparziel für das Auto auf 8.000 €.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Renombra mi objetivo de viaje a Japón.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Quiero cambiar los datos de mi objetivo existente de la casa.","answer":"EDIT_SAVING_GOAL"}
+{"input":"Añade 500 € a mi objetivo coche.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Aporta 200 € a mi objetivo de vacaciones.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Ingresa 100 € en el objetivo de emergencia.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Deposita 75 € en mi meta de la boda.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Quiero meter 300 € en mi objetivo para la casa.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Suma 50 € a lo que ya tengo ahorrado para el coche.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Voy a poner 1.000 € en mi objetivo de vacaciones.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Quiero añadir otros 150 € al objetivo del viaje.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Haz una aportación de 250 € a mi objetivo de emergencia.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Añade 80 € a la meta de ahorro del ordenador.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Ya tengo el objetivo del coche; añade 400 € a lo ahorrado.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Suma 60 € a mi objetivo existente de vacaciones.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Add €500 to my existing car savings goal.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Contribute €200 to my travel savings goal.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Deposit €100 into my emergency savings goal.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Ajoute 300 € à mon objectif d’épargne pour la voiture.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Ajoute 150 € à mon objectif vacances.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Adiciona 250 € à minha meta de poupança para a casa.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Zahle 500 € auf mein bestehendes Sparziel für das Auto ein.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}
+{"input":"Aporta 100 € más a mi objetivo compartido del viaje.","answer":"ADD_SAVING_GOAL_CONTRIBUTION"}

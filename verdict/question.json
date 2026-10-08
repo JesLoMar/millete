@@ -1,0 +1,50 @@
+{
+"kind": "choose",
+"prompt": "Identify the Millete application action that best matches the user's intention.\n\nThe user may write in any language supported by Millete. Interpret the meaning and intention semantically, regardless of the language used. Do not require literal word matching.\n\nChoose the single action that best represents what the user wants to do.\n\nImportant distinctions:\n\nTRANSACTIONS:\n- ADD_EXPENSE_TRANSACTION means creating a new one-time expense.\n- ADD_INCOME_TRANSACTION means creating a new one-time income.\n- EDIT_TRANSACTION means modifying an existing one-time transaction. A one-time transaction cannot be converted into a recurring transaction and its transaction type cannot be changed.\n- ADD_RECURRING_EXPENSE_TRANSACTION means creating a new recurring expense.\n- ADD_RECURRING_INCOME_TRANSACTION means creating a new recurring income.\n- EDIT_RECURRING_TRANSACTION means modifying an existing recurring transaction, including amount, description, frequency or dates.\n\nIf the user is modifying the frequency or recurrence of an existing transaction, use EDIT_RECURRING_TRANSACTION. Do not use an ADD_RECURRING_* action for an existing recurring transaction.\n\nSAVINGS GOALS:\n- ADD_SAVING_GOAL means creating a completely new savings goal.\n- EDIT_SAVING_GOAL means modifying an existing savings goal, including its target amount, name, priority, deadline or link.\n- ADD_SAVING_GOAL_CONTRIBUTION means adding money to the amount already saved in an existing savings goal.\n\nThe presence of a monetary amount alone does not determine the savings-goal action. Distinguish between creating a new goal, modifying the target/properties of an existing goal, and contributing money to an existing goal.\n\nCATEGORIES:\n- ADD_CATEGORY means creating a new category.\n- EDIT_CATEGORY means modifying an existing category.\n\nINVESTMENTS:\nInvestment operations such as buying or selling shares or assets are not represented by the available actions and should not be mapped to a transaction action. The investment module will handle them separately.",
+"options": [
+{
+"label": "ADD_CATEGORY",
+"description": "Create a new expense category."
+},
+{
+"label": "EDIT_CATEGORY",
+"description": "Modify an existing expense category, such as its name, description, color or budget."
+},
+{
+"label": "ADD_EXPENSE_TRANSACTION",
+"description": "Create a new one-time expense transaction."
+},
+{
+"label": "ADD_INCOME_TRANSACTION",
+"description": "Create a new one-time income transaction."
+},
+{
+"label": "EDIT_TRANSACTION",
+"description": "Modify an existing one-time transaction, such as its description, amount, category or date. It remains a one-time transaction."
+},
+{
+"label": "ADD_RECURRING_EXPENSE_TRANSACTION",
+"description": "Create a new recurring expense transaction with a recurrence such as daily, weekly, monthly or yearly."
+},
+{
+"label": "ADD_RECURRING_INCOME_TRANSACTION",
+"description": "Create a new recurring income transaction with a recurrence such as daily, weekly, monthly or yearly."
+},
+{
+"label": "EDIT_RECURRING_TRANSACTION",
+"description": "Modify an existing recurring income or expense transaction, including its amount, description, frequency or dates."
+},
+{
+"label": "EDIT_SAVING_GOAL",
+"description": "Modify an existing savings goal, such as its target amount, name, priority, deadline or link."
+},
+{
+"label": "ADD_SAVING_GOAL_CONTRIBUTION",
+"description": "Add money to the amount already saved in an existing savings goal."
+},
+{
+"label": "ADD_SAVING_GOAL",
+"description": "Create a completely new savings goal."
+}
+]
+}
