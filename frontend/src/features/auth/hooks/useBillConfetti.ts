@@ -123,8 +123,8 @@ export function useBillConfetti(
 
       const { el } = bill;
 
-      const size = 16 + Math.random() * 26;
-      const normalizedSize = (size - 16) / 26;
+      const size = 72 + Math.random() * 117;
+      const normalizedSize = (size - 72) / 117;
 
       const opacity = Math.max(
         0.2,

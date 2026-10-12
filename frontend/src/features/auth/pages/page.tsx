@@ -12,11 +12,11 @@ export const LoginPage = () => {
 
   return (
     <main
-      className="relative grid min-h-screen w-full grid-cols-1 overflow-x-hidden bg-background lg:grid-cols-2"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-background"
       aria-label={t('auth:aria.pageLabel')}
     >
       <section
-        className="relative z-10 flex w-full min-w-0 items-start justify-center p-6 sm:p-12 md:p-16"
+        className="relative z-10 flex w-full min-w-0 items-center justify-center p-6 sm:p-12 md:p-16"
         aria-label={t('auth:aria.formLabel')}
       >
         <div className="mx-auto w-full max-w-md">
@@ -47,8 +47,8 @@ export const LoginPage = () => {
       <BackgroundDecoration />
 
       <BillConfetti
-        maxBills={120}
-        billsPerScroll={40}
+        maxBills={24}
+        billsPerScroll={8}
         enabled={!isLoading}
       />
     </main>
