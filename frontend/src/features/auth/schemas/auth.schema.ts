@@ -46,7 +46,7 @@ export const registerSchema = authFormFieldsSchema
       const emailRegex =
         /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
-      return emailRegex.test(data.emailRegistro);
+      return emailRegex.test(data.emailRegistro.trim());
     },
     {
       message: 'validations:invalid_email',

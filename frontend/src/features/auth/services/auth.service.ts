@@ -16,6 +16,7 @@ export const authService = {
         credentials,
         {
           skipGlobalErrorNotify: true,
+          skipAuthErrorHandler: true,
         },
       );
 
@@ -30,6 +31,7 @@ export const authService = {
       data,
       {
         skipGlobalErrorNotify: true,
+        skipAuthErrorHandler: true,
       },
     );
   },

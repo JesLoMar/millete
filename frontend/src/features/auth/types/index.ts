@@ -11,4 +11,7 @@ export interface RegisterUserRequest {
 
 export interface LoginResponse {
   status: string;
+  username?: string | null;
+  email?: string | null;
+  sessionId?: string | null;
 }

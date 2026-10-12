@@ -83,7 +83,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
+    public ResponseEntity<Map<String, Object>> login(
             @Valid @RequestBody LoginRequestDTO request,
             HttpServletRequest httpRequest,
             HttpServletResponse response
@@ -96,8 +96,8 @@ public class AuthController {
 
         User user = loginUserUseCase.login(command);
 
-        // Resetear el rate limit tras login exitoso (Bug 11)
-        String clientIp = LoginRateLimitFilter.resolveClientIp(httpRequest);
+        String clientIp =
+                LoginRateLimitFilter.resolveClientIp(httpRequest);
         loginRateLimitFilter.resetForIp(clientIp);
 
         UserSession session = manageUserSessionUseCase.createSession(
@@ -110,8 +110,11 @@ public class AuthController {
         ResponseCookie cookie = cookieAuthFactory.createJwtCookie(jwt);
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        Map<String, String> body = new HashMap<>();
+        Map<String, Object> body = new HashMap<>();
         body.put("status", "authenticated");
+        body.put("username", user.getUsername());
+        body.put("email", user.getEmail());
+        body.put("sessionId", session.getId().toString());
 
         return ResponseEntity.ok(body);
     }

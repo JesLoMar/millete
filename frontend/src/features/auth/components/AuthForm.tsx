@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   useForm,
-  useWatch,
 } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,10 +8,15 @@ import { ArrowRight } from 'lucide-react';
 
 import { Spinner } from '@/shared/components/Spinner';
 import { Button } from '@/shared/components/core/button';
-import { loginSchema, registerSchema } from '@/features/auth/schemas/auth.schema';
-import type { CombinedAuthFormData } from '@/features/auth/schemas/auth.schema';
+import {
+  loginSchema,
+  registerSchema,
+} from '@/features/auth/schemas/auth.schema';
+import type {
+  CombinedAuthFormData,
+} from '@/features/auth/schemas/auth.schema';
 
-import { useLoginMutation } from '../hooks/useLoginMutation.ts';
+import { useLoginMutation } from '../hooks/useLoginMutation';
 import { useRegisterMutation } from '../hooks/useRegisterMutation';
 import type { RegisterUserRequest } from '../types';
 
@@ -33,9 +37,11 @@ export function AuthForm() {
   const {
     register,
     handleSubmit,
-    reset,
     control,
-    formState: { errors, isValid },
+    getValues,
+    setValue,
+    clearErrors,
+    formState: { errors },
   } = useForm<CombinedAuthFormData>({
     resolver: zodResolver(currentSchema),
     mode: 'onChange',
@@ -47,38 +53,84 @@ export function AuthForm() {
     isError: isLoginError,
   } = useLoginMutation();
 
+  const handleAutoLoginFailed = (identifier: string) => {
+    clearErrors();
+
+    setValue('identifier', identifier, {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+
+    setMode('login');
+  };
+
   const {
     mutate: registerMutate,
     isPending: isRegisterPending,
     isError: isRegisterError,
-  } = useRegisterMutation();
+  } = useRegisterMutation({
+    onAutoLoginFailed: handleAutoLoginFailed,
+  });
 
   const isPending = isLoginPending || isRegisterPending;
 
-  const usernameWatch = useWatch({
-    control,
-    name: 'usernameRegistro',
-  });
+  const handleModeChange = (
+    newMode: 'login' | 'register',
+  ) => {
+    if (newMode === mode) {
+      return;
+    }
 
-  const emailWatch = useWatch({
-    control,
-    name: 'emailRegistro',
-  });
+    if (newMode === 'login') {
+      const identifier =
+        getValues('usernameRegistro')?.trim() ||
+        getValues('emailRegistro')?.trim() ||
+        getValues('identifier')?.trim() ||
+        '';
 
-  const hasIdentifier =
-    !!usernameWatch?.trim() || !!emailWatch?.trim();
+      setValue('identifier', identifier, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    } else {
+      const identifier =
+        getValues('identifier')?.trim() || '';
 
-  const handleModeChange = (newMode: 'login' | 'register') => {
+      if (identifier) {
+        const looksLikeEmail =
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+        if (looksLikeEmail) {
+          setValue('emailRegistro', identifier, {
+            shouldDirty: false,
+            shouldValidate: false,
+          });
+        } else {
+          setValue('usernameRegistro', identifier, {
+            shouldDirty: false,
+            shouldValidate: false,
+          });
+        }
+      }
+    }
+
+    clearErrors();
     setMode(newMode);
-    reset();
   };
 
   const onSubmit = (data: CombinedAuthFormData) => {
     if (mode === 'login') {
+      const identifier = data.identifier?.trim();
+
+      if (!identifier) {
+        return;
+      }
+
       loginMutate({
-        identifier: data.identifier!,
+        identifier,
         password: data.password,
       });
+
       return;
     }
 
@@ -104,13 +156,8 @@ export function AuthForm() {
           <Trans
             i18nKey="greeting"
             ns="auth"
-            components={{ br: <br /> }}
           />
         </h1>
-
-        <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground sm:text-sm sm:tracking-[0.2em]">
-          {t('auth:subtitle')}
-        </p>
       </div>
 
       <AuthToggle
@@ -133,7 +180,7 @@ export function AuthForm() {
           <RegisterFields
             register={register}
             errors={errors}
-            hasIdentifier={hasIdentifier}
+            control={control}
             disabled={isPending}
           />
         )}
@@ -147,7 +194,7 @@ export function AuthForm() {
 
         <Button
           type="submit"
-          disabled={isPending || !isValid}
+          disabled={isPending}
           className="h-12 w-full bg-primary text-base font-semibold transition-all duration-200 hover:bg-primary/90 sm:h-14 sm:text-lg"
           aria-label={
             mode === 'login'

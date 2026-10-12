@@ -5,13 +5,14 @@ import {
   useEffect,
   useEffectEvent,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { ReactNode } from 'react';
 
-import { apiClient } from '@/shared/api/axiosClient';
+import { apiClient, bumpAuthEpoch } from '@/shared/api/axiosClient';
 import { sessionCache } from '@/shared/utils/sessionCache';
 
 interface User {
@@ -20,9 +21,9 @@ interface User {
 }
 
 interface CurrentUserResponse {
-  username?: string;
-  email?: string;
-  sessionId?: string;
+  username?: string | null;
+  email?: string | null;
+  sessionId?: string | null;
 }
 
 interface AuthContextType {
@@ -31,8 +32,9 @@ interface AuthContextType {
   isOffline: boolean;
   user: User | null;
   sessionId: string | null;
-  login: (userData?: User) => Promise<void>;
+  login: (userData?: CurrentUserResponse) => Promise<void>;
   logout: () => Promise<void>;
+  waitForPendingLogout: () => Promise<void>;
   retryAuth: () => void;
 }
 
@@ -66,6 +68,8 @@ export const AuthProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const authAttemptRef = useRef(0);
+  const logoutPromiseRef = useRef<Promise<void> | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [sessionId, setSessionId] =
     useState<string | null>(null);
@@ -74,6 +78,14 @@ export const AuthProvider = ({
 
   const queryClient = useQueryClient();
 
+  const waitForPendingLogout = useCallback(async () => {
+    const pending = logoutPromiseRef.current;
+
+    if (pending) {
+      await pending;
+    }
+  }, []);
+
   const fetchCurrentUser = useCallback(
     async (): Promise<FetchUserResult> => {
       try {
@@ -81,7 +93,9 @@ export const AuthProvider = ({
           await apiClient.get<CurrentUserResponse>(
             '/auth/me/topnav',
             {
+              timeout: 6000,
               skipGlobalErrorNotify: true,
+              skipAuthErrorHandler: true,
             },
           );
 
@@ -114,15 +128,13 @@ export const AuthProvider = ({
   );
 
   const applyAuthenticatedState = useCallback(
-    (
-      result: Extract<
-        FetchUserResult,
-        { status: 'ok' }
-      >,
-    ) => {
+    (result: Extract<FetchUserResult, { status: 'ok' }>) => {
+      bumpAuthEpoch();
+
       setUser(result.user);
       setSessionId(result.sessionId);
       setIsOffline(false);
+      setIsLoading(false);
 
       sessionCache.setUser(result.user);
       sessionCache.setSessionId(result.sessionId);
@@ -130,47 +142,76 @@ export const AuthProvider = ({
     [],
   );
 
-  const clearAuthenticatedState =
-    useCallback(() => {
-      setUser(null);
-      setSessionId(null);
-      setIsOffline(false);
-      sessionCache.clear();
-    }, []);
+  const clearAuthenticatedState = useCallback(() => {
+    bumpAuthEpoch();
+
+    setUser(null);
+    setSessionId(null);
+    setIsOffline(false);
+    setIsLoading(false);
+    sessionCache.clear();
+  }, []);
 
   const logout = useCallback(async () => {
-    try {
-      await apiClient.post(
+    // Si ya existe un logout, todas las llamadas comparten la promesa.
+    if (logoutPromiseRef.current) {
+      await logoutPromiseRef.current;
+      return;
+    }
+
+    // Invalida las comprobaciones de sesión que sigan en vuelo.
+    authAttemptRef.current += 1;
+
+    // La UI se limpia inmediatamente, sin esperar a la red.
+    clearAuthenticatedState();
+    queryClient.clear();
+
+    const request: Promise<void> = apiClient
+      .post(
         '/auth/logout',
         undefined,
         {
+          timeout: 3000,
           skipGlobalErrorNotify: true,
+          skipAuthErrorHandler: true,
         },
-      );
-    } catch {
-    } finally {
-      clearAuthenticatedState();
-      queryClient.clear();
-    }
+      )
+      .then(() => undefined, () => undefined)
+      .finally(() => {
+        if (logoutPromiseRef.current === request) {
+          logoutPromiseRef.current = null;
+        }
+      });
+
+    logoutPromiseRef.current = request;
+
+    await request;
   }, [clearAuthenticatedState, queryClient]);
 
   const initAuth = useCallback(async () => {
+    const attempt = ++authAttemptRef.current;
+
     setIsLoading(true);
+    setIsOffline(false);
 
     try {
       const result = await fetchCurrentUser();
+
+      if (attempt !== authAttemptRef.current) {
+        return;
+      }
 
       if (result.status === 'ok') {
         applyAuthenticatedState(result);
       } else if (result.status === 'unauthenticated') {
         clearAuthenticatedState();
       } else {
-        setUser(null);
-        setSessionId(null);
         setIsOffline(true);
       }
     } finally {
-      setIsLoading(false);
+      if (attempt === authAttemptRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [
     applyAuthenticatedState,
@@ -203,26 +244,47 @@ export const AuthProvider = ({
   }, [initAuth]);
 
   const login = useCallback(
-    async (userData?: User): Promise<void> => {
-      if (userData) {
-        setUser(userData);
-        sessionCache.setUser(userData);
+    async (userData?: CurrentUserResponse): Promise<void> => {
+      const attempt = ++authAttemptRef.current;
+
+      setIsLoading(false);
+
+      if (userData?.sessionId) {
+        applyAuthenticatedState({
+          status: 'ok',
+          user: formatUser(userData),
+          sessionId: userData.sessionId,
+        });
+
+        return;
+      }
+      let result = await fetchCurrentUser();
+
+      if (result.status === 'unavailable') {
+        result = await fetchCurrentUser();
       }
 
-      const result = await fetchCurrentUser();
+      if (attempt !== authAttemptRef.current) {
+        throw new Error('AUTH_STATE_CHANGED');
+      }
 
       if (result.status === 'ok') {
         applyAuthenticatedState(result);
         return;
       }
 
-      await logout();
-
-      throw new Error(
-        'Fallo al obtener perfil tras login',
-      );
+      if (result.status === 'unauthenticated') {
+        clearAuthenticatedState();
+        throw new Error('AUTH_SESSION_UNAUTHENTICATED');
+      }
+      setIsOffline(true);
+      throw new Error('AUTH_PROFILE_UNAVAILABLE');
     },
-    [applyAuthenticatedState, fetchCurrentUser, logout],
+    [
+      applyAuthenticatedState,
+      clearAuthenticatedState,
+      fetchCurrentUser,
+    ],
   );
 
   const value = useMemo<AuthContextType>(
@@ -234,6 +296,7 @@ export const AuthProvider = ({
       sessionId,
       login,
       logout,
+      waitForPendingLogout,
       retryAuth,
     }),
     [
@@ -243,6 +306,7 @@ export const AuthProvider = ({
       sessionId,
       login,
       logout,
+      waitForPendingLogout,
       retryAuth,
     ],
   );

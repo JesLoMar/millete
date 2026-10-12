@@ -1,6 +1,8 @@
 import { AlertTriangle, Mail, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useWatch } from 'react-hook-form';
 import type {
+  Control,
   FieldErrors,
   UseFormRegister,
 } from 'react-hook-form';
@@ -13,17 +15,31 @@ import { Label } from '@/shared/components/core/label';
 interface RegisterFieldsProps {
   register: UseFormRegister<CombinedAuthFormData>;
   errors: FieldErrors<CombinedAuthFormData>;
+  control: Control<CombinedAuthFormData>;
   disabled: boolean;
-  hasIdentifier: boolean;
 }
 
 export function RegisterFields({
   register,
   errors,
+  control,
   disabled,
-  hasIdentifier,
 }: RegisterFieldsProps) {
   const { t } = useTranslation();
+
+  const usernameWatch = useWatch({
+    control,
+    name: 'usernameRegistro',
+  });
+
+  const emailWatch = useWatch({
+    control,
+    name: 'emailRegistro',
+  });
+
+  const hasIdentifier =
+    !!usernameWatch?.trim() ||
+    !!emailWatch?.trim();
 
   return (
     <div className="animate-in fade-in slide-in-from-top-2 space-y-4 duration-300">
@@ -42,6 +58,9 @@ export function RegisterFields({
         <Input
           id="usernameRegistro"
           type="text"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder={t('auth:form.fields.username.placeholder')}
           disabled={disabled}
           aria-invalid={errors.usernameRegistro ? 'true' : 'false'}
@@ -84,6 +103,9 @@ export function RegisterFields({
         <Input
           id="emailRegistro"
           type="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder={t('auth:form.fields.placeholder.register')}
           disabled={disabled}
           aria-invalid={errors.emailRegistro ? 'true' : 'false'}
@@ -101,15 +123,17 @@ export function RegisterFields({
         )}
       </div>
 
-      {!hasIdentifier && !errors.emailRegistro && (
-        <p className="ml-1 flex items-center gap-1 text-xs text-warning">
-          <AlertTriangle
-            className="size-3.5"
-            aria-hidden="true"
-          />
-          {t('auth:form.registerHint')}
-        </p>
-      )}
+      {!hasIdentifier &&
+        !errors.emailRegistro &&
+        !errors.usernameRegistro && (
+          <p className="ml-1 flex items-center gap-1 text-xs text-warning">
+            <AlertTriangle
+              className="size-3.5"
+              aria-hidden="true"
+            />
+            {t('auth:form.registerHint')}
+          </p>
+        )}
     </div>
   );
 }

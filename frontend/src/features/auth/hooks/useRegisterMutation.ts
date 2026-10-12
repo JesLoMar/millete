@@ -2,7 +2,6 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
@@ -10,13 +9,26 @@ import { authService } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
 import { handlePostAuthSuccess } from '../utils/handlePostAuthSuccess';
 
-import { ROUTES } from '@/app/router/routes';
 import type {
   RegisterUserRequest,
-  LoginRequest,
   LoginResponse,
 } from '../types';
+
 import { notify } from '@/shared/utils/notifications/notify';
+
+type RegisterFlowResult =
+  | {
+      kind: 'authenticated';
+      response: LoginResponse;
+    }
+  | {
+      kind: 'created-login-failed';
+      identifier: string;
+    };
+
+interface UseRegisterMutationOptions {
+  onAutoLoginFailed?: (identifier: string) => void;
+}
 
 const getErrorMessage = (
   error: unknown,
@@ -40,26 +52,24 @@ const getErrorMessage = (
   return fallback;
 };
 
-export const useRegisterMutation = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+export const useRegisterMutation = (
+  options: UseRegisterMutationOptions = {},
+) => {
+  const { login, waitForPendingLogout } = useAuth();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   return useMutation<
-    LoginResponse,
+    RegisterFlowResult,
     unknown,
     RegisterUserRequest
   >({
-    mutationFn: async (
-      data: RegisterUserRequest,
-    ) => {
-      await authService.register(data);
+    mutationFn: async (data) => {
+      const username = data.username?.trim() || '';
+      const email = data.email?.trim() || '';
 
-      const identifier =
-        data.username ||
-        data.email ||
-        '';
+      // Validar antes de crear la cuenta.
+      const identifier = username || email;
 
       if (!identifier) {
         throw new Error(
@@ -67,33 +77,52 @@ export const useRegisterMutation = () => {
         );
       }
 
-      const loginData: LoginRequest = {
-        identifier,
+      await authService.register({
+        username,
+        email,
         password: data.password,
-      };
+      });
 
+      // A partir de aquí, el registro ya ha sido confirmado.
       try {
-        return await authService.login(
-          loginData,
-        );
+        await waitForPendingLogout();
+
+        const response = await authService.login({
+          identifier,
+          password: data.password,
+        });
+
+        return {
+          kind: 'authenticated',
+          response,
+        };
       } catch {
-        throw new Error(
-          t(
-            'auth:errors.auto_login_failed',
-          ),
-        );
+        return {
+          kind: 'created-login-failed',
+          identifier,
+        };
       }
     },
 
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      if (result.kind === 'created-login-failed') {
+        options.onAutoLoginFailed?.(result.identifier);
+
+        // Texto temporal hasta preparar las traducciones.
+        notify.error(
+          'La cuenta se ha creado, pero no se ha podido iniciar sesión automáticamente. Inicia sesión con tus credenciales.',
+        );
+
+        return;
+      }
+
       await handlePostAuthSuccess({
         login,
+        loginData: result.response,
         queryClient,
-        navigate,
         successMessage: t(
           'auth:alerts.register_success',
         ),
-        destination: ROUTES.dashboard,
       });
     },
 

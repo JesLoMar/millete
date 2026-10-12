@@ -35,6 +35,9 @@ export function LoginFields({
         id="identifier"
         type="text"
         autoComplete="username"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         placeholder={t('auth:form.fields.placeholder.login')}
         disabled={disabled}
         aria-invalid={errors.identifier ? 'true' : 'false'}

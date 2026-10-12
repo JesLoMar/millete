@@ -1,34 +1,18 @@
-import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { ROUTES } from '@/app/router/routes';
 import { AuthForm } from '@/features/auth/components/AuthForm';
 import { BackgroundDecoration } from '@/features/auth/components/BackgroundDecoration';
 import { BillConfetti } from '@/features/auth/components/BillConfetti';
-import { InfoSection } from '@/features/auth/components/InfoSection';
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { Button } from '@/shared/components/core/button';
 
 export const LoginPage = () => {
   const { t } = useTranslation();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">
-          {t('common:status.loading')}
-        </div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTES.dashboard} replace />;
-  }
+  const { isLoading, isOffline, retryAuth } = useAuth();
 
   return (
     <main
-      className="relative grid min-h-screen w-full grid-cols-1 overflow-x-hidden bg-background select-none lg:grid-cols-2"
+      className="relative grid min-h-screen w-full grid-cols-1 overflow-x-hidden bg-background lg:grid-cols-2"
       aria-label={t('auth:aria.pageLabel')}
     >
       <section
@@ -36,15 +20,28 @@ export const LoginPage = () => {
         aria-label={t('auth:aria.formLabel')}
       >
         <div className="mx-auto w-full max-w-md">
+          {isOffline && (
+            <div
+              className="mb-6 flex flex-col items-start gap-3 rounded-xl border border-border/50 p-4"
+              role="status"
+            >
+              <p className="text-sm text-muted-foreground">
+                {t('common:status.connectionError')}
+              </p>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isLoading}
+                onClick={retryAuth}
+              >
+                {t('common:actions.retry')}
+              </Button>
+            </div>
+          )}
+
           <AuthForm />
         </div>
-      </section>
-
-      <section
-        className="relative z-10 flex w-full min-w-0"
-        aria-label={t('auth:aria.infoLabel')}
-      >
-        <InfoSection />
       </section>
 
       <BackgroundDecoration />
