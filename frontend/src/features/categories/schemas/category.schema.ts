@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const CATEGORY_NAME_MAX_LENGTH = 20;
+export const CATEGORY_DESCRIPTION_MAX_LENGTH = 500;
 
 export const categoryFormSchema = z.object({
   name: z
@@ -11,6 +12,13 @@ export const categoryFormSchema = z.object({
     })
     .max(CATEGORY_NAME_MAX_LENGTH, {
       message: 'categories:nameTooLong',
+    }),
+
+  description: z
+    .string()
+    .trim()
+    .max(CATEGORY_DESCRIPTION_MAX_LENGTH, {
+      message: 'categories:descriptionTooLong',
     }),
 
   color: z
@@ -55,4 +63,16 @@ export const parseCategoryBudget = (
   }
 
   return Number(trimmedValue);
+};
+
+/**
+ * Empty descriptions are sent as null so the backend does not
+ * store blank strings.
+ */
+export const parseCategoryDescription = (
+  value: string,
+): string | null => {
+  const trimmedValue = value.trim();
+
+  return trimmedValue === '' ? null : trimmedValue;
 };

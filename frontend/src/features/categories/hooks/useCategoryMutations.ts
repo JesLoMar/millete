@@ -15,9 +15,15 @@ type CategoryMutationErrorKey =
   | 'categories:updateError'
   | 'categories:deleteError';
 
-const CATEGORY_RELATED_QUERY_KEYS = [
-  ['categories'],
+const CATEGORIES_LIST_QUERY_KEY = ['categories'] as const;
+
+/**
+ * Queries that depend on categories but are not the list itself.
+ * They are invalidated in the background (not awaited).
+ */
+const CATEGORY_DEPENDENT_QUERY_KEYS = [
   ['budgets'],
+  ['categoryBudgets'],
   ['categoryExpenses'],
   ['dashboardMetrics'],
   ['transactionMetrics'],
@@ -34,14 +40,21 @@ export const useCategoryMutations = () => {
 
   const queryClient = useQueryClient();
 
+  /**
+   * Only the category list is awaited, so the dialog closes once the list
+   * is up to date. The rest of the queries refetch in the background
+   * instead of keeping the mutation (and its spinner) pending.
+   */
   const invalidateCategoryQueries = async () => {
-    await Promise.all(
-      CATEGORY_RELATED_QUERY_KEYS.map((queryKey) =>
-        queryClient.invalidateQueries({
-          queryKey,
-        }),
-      ),
-    );
+    CATEGORY_DEPENDENT_QUERY_KEYS.forEach((queryKey) => {
+      void queryClient.invalidateQueries({
+        queryKey,
+      });
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: CATEGORIES_LIST_QUERY_KEY,
+    });
   };
 
   const getErrorMessage = (
@@ -77,6 +90,7 @@ export const useCategoryMutations = () => {
         '/categories',
         {
           name: data.name.trim(),
+          description: data.description?.trim() || null,
           color: data.color,
           budgetLimit: data.budgetLimit ?? null,
         },
@@ -122,6 +136,7 @@ export const useCategoryMutations = () => {
         `/categories/${id}`,
         {
           name: data.name.trim(),
+          description: data.description?.trim() || null,
           color: data.color,
           budgetLimit: data.budgetLimit ?? null,
         },

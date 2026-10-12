@@ -1,54 +1,174 @@
-import { memo } from 'react'
-import { Edit2, MoreHorizontal, Trash2 } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { memo } from 'react';
+import {
+  Edit2,
+  MoreHorizontal,
+  Trash2,
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { cn } from '@/lib/utils'
-import { formatCurrency } from '@/shared/utils/i18nFormat'
-import { Button } from '@/shared/components/core/button'
+import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/shared/utils/i18nFormat';
+import { Button } from '@/shared/components/core/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/components/core/dropdown-menu'
-import { ProgressBar } from '@/shared/components/core/progress-bar'
+} from '@/shared/components/core/dropdown-menu';
+import { ProgressBar } from '@/shared/components/core/progress-bar';
 
-import type { Category } from '../types'
+import type { Category } from '../types';
 
 interface CategoryRowProps {
-  category: Category
-  spent: number
-  budgetLimit: number | null
-  percentage: number
-  onEdit: (category: Category) => void
-  onDelete: (category: Category) => void
+  category: Category;
+  spent: number;
+  /** Presupuesto convertido al periodo seleccionado. */
+  budgetLimit: number | null;
+  /** Porcentaje real de gasto; puede superar el 100 %. */
+  percentage: number;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
 }
 
 interface CategoryActionsProps {
-  category: Category
-  onEdit: (category: Category) => void
-  onDelete: (category: Category) => void
-  compact?: boolean
+  category: Category;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
 }
 
-interface CategoryLayoutProps {
-  category: Category
-  spent: number
-  budgetLimit: number | null
-  percentage: number
-  onEdit: (category: Category) => void
-  onDelete: (category: Category) => void
-}
+const DEFAULT_CATEGORY_COLOR = '#4A6FA5';
 
-const DEFAULT_CATEGORY_COLOR = '#4A6FA5'
+export const CategoryRow = memo(function CategoryRow({
+  category,
+  spent,
+  budgetLimit,
+  percentage,
+  onEdit,
+  onDelete,
+}: CategoryRowProps) {
+  const { t } = useTranslation('categories');
 
-const CategoryActions = ({
+  const hasBudget =
+    budgetLimit !== null && budgetLimit > 0;
+
+  // Alcanzar exactamente el límite también se considera excedido.
+  const isOverBudget =
+    hasBudget && spent >= budgetLimit;
+
+  // El porcentaje mostrado no supera el 100 %.
+  const roundedPercentage = Math.min(
+    Math.round(percentage),
+    100,
+  );
+
+  // Solo se recorta la barra visual.
+  const barValue = Math.min(percentage, 100);
+
+  const formattedSpent = formatCurrency(spent);
+
+  const formattedBudget = hasBudget
+    ? formatCurrency(budgetLimit)
+    : '—';
+
+  const categoryColor =
+    category.color || DEFAULT_CATEGORY_COLOR;
+
+  const description = category.description?.trim();
+
+  return (
+    <div className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-2 border-b p-3 transition-colors hover:bg-accent/30 last:border-0 sm:flex sm:items-center sm:gap-4 sm:p-4">
+      {/* Color de la categoría */}
+      <div
+        className="size-4 shrink-0 rounded-full sm:size-5"
+        style={{ backgroundColor: categoryColor }}
+        aria-hidden="true"
+      />
+
+      {/* Nombre y descripción */}
+      <div className="min-w-0 sm:w-32 sm:flex-none">
+        <p className="truncate text-sm font-semibold">
+          {category.name}
+        </p>
+
+        {description && (
+          <p
+            className="truncate text-xs text-muted-foreground"
+            title={description}
+          >
+            {description}
+          </p>
+        )}
+      </div>
+
+      {/*
+       * Móvil: una fila inferior con progreso e importe.
+       * Escritorio: display: contents integra ambos elementos
+       * directamente en la fila flex principal.
+       */}
+      <div className="col-span-3 row-start-2 flex min-w-0 items-center gap-3 sm:contents">
+        {/* Progreso y porcentaje */}
+        <div className="min-w-0 flex-1 sm:px-2">
+          {hasBudget ? (
+            <div className="flex flex-col-reverse gap-1 sm:flex-col">
+              <span
+                className={cn(
+                  'text-xs font-medium',
+                  isOverBudget
+                    ? 'text-destructive'
+                    : 'text-muted-foreground',
+                )}
+              >
+                {roundedPercentage}%
+              </span>
+
+              <ProgressBar
+                value={barValue}
+                max={100}
+                color={
+                  isOverBudget
+                    ? undefined
+                    : categoryColor
+                }
+                variant={
+                  isOverBudget
+                    ? 'overbudget'
+                    : 'default'
+                }
+                size="sm"
+                ariaLabel={`${category.name}: ${roundedPercentage}%`}
+              />
+            </div>
+          ) : (
+            <p className="text-xs italic text-muted-foreground">
+              {t('categories:noBudgetTooltip')}
+            </p>
+          )}
+        </div>
+
+        {/* El ancho fijo se aplica solo a escritorio */}
+        <span className="shrink-0 whitespace-nowrap text-right text-xs tabular-nums text-muted-foreground sm:w-40 sm:text-sm">
+          {formattedSpent} / {formattedBudget}
+        </span>
+      </div>
+
+      {/* Acciones: arriba a la derecha en móvil */}
+      <div className="col-start-3 row-start-1 -mr-1 shrink-0 sm:mr-0">
+        <CategoryActions
+          category={category}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </div>
+    </div>
+  );
+});
+
+function CategoryActions({
   category,
   onEdit,
   onDelete,
-  compact = false,
-}: CategoryActionsProps) => {
-  const { t } = useTranslation('categories')
+}: CategoryActionsProps) {
+  const { t } = useTranslation('categories');
 
   return (
     <DropdownMenu>
@@ -56,15 +176,12 @@ const CategoryActions = ({
         <Button
           variant="ghost"
           size="icon"
-          className={cn(
-            compact
-              ? 'size-7 shrink-0 -mr-1'
-              : 'size-8',
-          )}
+          className="size-7 shrink-0 sm:size-8"
           aria-label={`${t('edit')} / ${t('delete')}`}
         >
           <MoreHorizontal
-            size={compact ? 15 : 16}
+            size={15}
+            className="sm:size-4"
             aria-hidden="true"
           />
         </Button>
@@ -97,216 +214,5 @@ const CategoryActions = ({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
-
-const CategoryDesktopRow = ({
-  category,
-  spent,
-  budgetLimit,
-  percentage,
-  onEdit,
-  onDelete,
-}: CategoryLayoutProps) => {
-  const { t } = useTranslation('categories')
-
-  const isOverBudget = percentage >= 100
-  const hasBudget =
-    budgetLimit !== null && budgetLimit > 0
-
-  const formattedSpent = formatCurrency(spent)
-  const formattedBudget =
-    hasBudget
-      ? formatCurrency(budgetLimit ?? 0)
-      : '—'
-
-  const categoryColor =
-    category.color || DEFAULT_CATEGORY_COLOR
-
-  return (
-    <div className="group hidden items-center gap-4 border-b p-4 transition-colors hover:bg-accent/30 last:border-0 sm:flex">
-      <div
-        className="size-5 shrink-0 rounded-full"
-        style={{ backgroundColor: categoryColor }}
-        aria-hidden="true"
-      />
-
-      <div className="w-32 min-w-0">
-        <p className="truncate text-sm font-semibold">
-          {category.name}
-        </p>
-      </div>
-
-      <div className="min-w-0 flex-1 px-2">
-        {hasBudget ? (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs font-medium">
-              <span
-                className={cn(
-                  isOverBudget
-                    ? 'text-destructive'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {percentage.toFixed(0)}%
-              </span>
-            </div>
-
-            <ProgressBar
-              value={percentage}
-              max={100}
-              color={
-                isOverBudget
-                  ? undefined
-                  : categoryColor
-              }
-              variant={
-                isOverBudget
-                  ? 'overbudget'
-                  : 'default'
-              }
-              size="sm"
-              ariaLabel={`${category.name}: ${percentage.toFixed(0)}%`}
-            />
-          </div>
-        ) : (
-          <p className="text-xs italic text-muted-foreground">
-            {t('categories:noBudgetTooltip')}
-          </p>
-        )}
-      </div>
-
-      <div className="w-40 text-right text-sm tabular-nums text-muted-foreground">
-        {formattedSpent} / {formattedBudget}
-      </div>
-
-      <CategoryActions
-        category={category}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    </div>
-  )
-}
-
-const CategoryMobileRow = ({
-  category,
-  spent,
-  budgetLimit,
-  percentage,
-  onEdit,
-  onDelete,
-}: CategoryLayoutProps) => {
-  const { t } = useTranslation('categories')
-
-  const isOverBudget = percentage >= 100
-  const hasBudget =
-    budgetLimit !== null && budgetLimit > 0
-
-  const formattedSpent = formatCurrency(spent)
-  const formattedBudget =
-    hasBudget
-      ? formatCurrency(budgetLimit ?? 0)
-      : '—'
-
-  const categoryColor =
-    category.color || DEFAULT_CATEGORY_COLOR
-
-  return (
-    <div className="border-b p-3 transition-colors hover:bg-accent/30 last:border-0 sm:hidden">
-      <div className="mb-2 flex items-center gap-2.5">
-        <div
-          className="size-4 shrink-0 rounded-full"
-          style={{ backgroundColor: categoryColor }}
-          aria-hidden="true"
-        />
-
-        <p className="min-w-0 flex-1 truncate text-sm font-semibold">
-          {category.name}
-        </p>
-
-        <CategoryActions
-          category={category}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          compact
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          {hasBudget ? (
-            <div className="space-y-1">
-              <ProgressBar
-                value={percentage}
-                max={100}
-                color={
-                  isOverBudget
-                    ? undefined
-                    : categoryColor
-                }
-                variant={
-                  isOverBudget
-                    ? 'overbudget'
-                    : 'default'
-                }
-                size="sm"
-                ariaLabel={`${category.name}: ${percentage.toFixed(0)}%`}
-              />
-
-              <p
-                className={cn(
-                  'text-xs font-medium',
-                  isOverBudget
-                    ? 'text-destructive'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {percentage.toFixed(0)}%
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs italic text-muted-foreground">
-              {t('categories:noBudgetTooltip')}
-            </p>
-          )}
-        </div>
-
-        <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-          {formattedSpent} / {formattedBudget}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-export const CategoryRow = memo(function CategoryRow({
-  category,
-  spent,
-  budgetLimit,
-  percentage,
-  onEdit,
-  onDelete,
-}: CategoryRowProps) {
-  return (
-    <>
-      <CategoryDesktopRow
-        category={category}
-        spent={spent}
-        budgetLimit={budgetLimit}
-        percentage={percentage}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-
-      <CategoryMobileRow
-        category={category}
-        spent={spent}
-        budgetLimit={budgetLimit}
-        percentage={percentage}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    </>
-  )
-})

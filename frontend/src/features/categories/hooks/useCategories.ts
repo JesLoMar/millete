@@ -7,9 +7,11 @@ import {
 } from '@/shared/hooks/useServerPagination';
 
 import type { Category } from '../types';
+import { useDebouncedValue } from './useDebouncedValue';
 
 const SERVER_SIZE = 50;
 const DISPLAY_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 300;
 
 interface UseCategoriesOptions {
   search?: string;
@@ -24,7 +26,11 @@ export function useCategories(
     enabled = true,
   } = options;
 
-  const normalizedSearch = search.trim();
+  // One request per pause in typing, not one per keystroke.
+  const normalizedSearch = useDebouncedValue(
+    search.trim(),
+    SEARCH_DEBOUNCE_MS,
+  );
 
   const fetchPage = useCallback(
     async (

@@ -4,7 +4,6 @@ import {
   useState,
   type FormEvent,
 } from 'react';
-import axios from 'axios';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -21,13 +20,13 @@ import {
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
 
+import { CATEGORY_COLORS } from '../constants';
 import {
-  CATEGORY_COLORS,
-} from '../constants';
-import {
+  CATEGORY_DESCRIPTION_MAX_LENGTH,
   CATEGORY_NAME_MAX_LENGTH,
   categoryFormSchema,
   parseCategoryBudget,
+  parseCategoryDescription,
 } from '../schemas/category.schema';
 import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import { ColorPicker } from './ColorPicker';
@@ -39,6 +38,7 @@ interface AddCategoryDialogProps {
 
 interface CategoryFormState {
   name: string;
+  description: string;
   color: string;
   budgetLimit: string;
   error: string | null;
@@ -47,6 +47,7 @@ interface CategoryFormState {
 const createInitialFormState =
   (): CategoryFormState => ({
     name: '',
+    description: '',
     color: CATEGORY_COLORS[0],
     budgetLimit: '',
     error: null,
@@ -59,6 +60,7 @@ export function AddCategoryDialog({
   const { t } = useTranslation([
     'categories',
     'common',
+    'auth',
   ]);
 
   const { createCategory, isCreating } =
@@ -72,11 +74,11 @@ export function AddCategoryDialog({
       createInitialFormState,
     );
 
-  const inputRef =
-    useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const nameInputId = useId();
-  const colorInputId = useId();
+  const descriptionInputId = useId();
+  const colorLabelId = useId();
   const budgetInputId = useId();
 
   const isControlled =
@@ -100,6 +102,10 @@ export function AddCategoryDialog({
   };
 
   const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && isCreating) {
+      return;
+    }
+
     setOpen(isOpen);
 
     if (!isOpen) {
@@ -121,22 +127,34 @@ export function AddCategoryDialog({
   };
 
   const handleSave = async () => {
-    const validation = categoryFormSchema.safeParse(
-      form,
-    );
+    if (isCreating) {
+      return;
+    }
+
+    const validation = categoryFormSchema.safeParse({
+      name: form.name,
+      description: form.description,
+      color: form.color,
+      budgetLimit: form.budgetLimit,
+    });
 
     if (!validation.success) {
+      const issueKey =
+        validation.error.issues[0]?.message;
+
       setForm((previous) => ({
         ...previous,
-        error:
-          validation.error.issues[0]?.message ??
-          t('categories:createError'),
+        error: issueKey
+          ? t(issueKey)
+          : t('categories:createError'),
       }));
+
       return;
     }
 
     const {
       name,
+      description,
       color,
       budgetLimit,
     } = validation.data;
@@ -144,28 +162,17 @@ export function AddCategoryDialog({
     try {
       await createCategory.mutateAsync({
         name,
+        description:
+          parseCategoryDescription(description),
         color,
         budgetLimit:
           parseCategoryBudget(budgetLimit),
       });
 
       handleOpenChange(false);
-    } catch (error) {
-      const backendMessage =
-        axios.isAxiosError(error)
-          ? error.response?.data?.message
-          : undefined;
+    } catch {
 
-      const message =
-        typeof backendMessage === 'string' &&
-        backendMessage.trim()
-          ? backendMessage
-          : t('categories:createError');
 
-      setForm((previous) => ({
-        ...previous,
-        error: message,
-      }));
     }
   };
 
@@ -240,25 +247,57 @@ export function AddCategoryDialog({
             </div>
 
             <div className="space-y-2">
+              <div className="flex items-baseline justify-between gap-2">
+                <Label
+                  htmlFor={descriptionInputId}
+                  className="text-sm font-semibold"
+                >
+                  {t('categories:description')}
+
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
+                    ({t('auth:form.optional')})
+                  </span>
+                </Label>
+
+                <span
+                  className="text-xs tabular-nums text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  {form.description.length}/
+                  {CATEGORY_DESCRIPTION_MAX_LENGTH}
+                </span>
+              </div>
+
+              <textarea
+                id={descriptionInputId}
+                rows={3}
+                placeholder={t('categories:descriptionPlaceholder')}
+                value={form.description}
+                onChange={(event) =>
+                  updateField('description', event.target.value)
+                }
+                disabled={isCreating}
+                maxLength={CATEGORY_DESCRIPTION_MAX_LENGTH}
+                className="w-full min-w-0 resize-none rounded-md border border-border bg-background px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50 aria-invalid:border-crust aria-invalid:ring-crust/30"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label
-                htmlFor={colorInputId}
+                id={colorLabelId}
                 className="text-sm font-semibold"
               >
                 {t('categories:color')}
               </Label>
 
-              <div id={colorInputId}>
-                <ColorPicker
-                  value={form.color}
-                  onChange={(color) =>
-                    updateField(
-                      'color',
-                      color,
-                    )
-                  }
-                  disabled={isCreating}
-                />
-              </div>
+              <ColorPicker
+                value={form.color}
+                onChange={(color) =>
+                  updateField('color', color)
+                }
+                disabled={isCreating}
+                labelledBy={colorLabelId}
+              />
             </div>
 
             <div className="space-y-2">
@@ -306,9 +345,7 @@ export function AddCategoryDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() =>
-                handleOpenChange(false)
-              }
+              onClick={() => handleOpenChange(false)}
               disabled={isCreating}
               className="border-border"
             >
@@ -318,8 +355,7 @@ export function AddCategoryDialog({
             <Button
               type="submit"
               disabled={
-                isCreating ||
-                !form.name.trim()
+                isCreating || !form.name.trim()
               }
               className="bg-primary px-6 hover:bg-primary/90"
             >

@@ -1,29 +1,38 @@
-import { useMemo, useState } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { m } from 'framer-motion';
+import { m, MotionConfig } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
   Search,
 } from 'lucide-react';
 
-import {
-  useCategories,
-} from '@/features/categories/hooks/useCategories';
-import type { Category } from '@/features/categories/types';
 import type { PeriodFilter } from '@/shared/components/PeriodSelector';
+import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog';
 import { Input } from '@/shared/components/core/input';
 import { Button } from '@/shared/components/core/button';
 
+import { useCategories } from '../hooks/useCategories';
 import { useCategoryExpenses } from '../hooks/useCategoryExpenses';
 import { useCategoryMutations } from '../hooks/useCategoryMutations';
-import { EditCategoryDialog } from './EditCategoryDialog';
-import { ConfirmDeletionDialog } from '../../../shared/components/ConfirmDeletionDialog';
+import type { Category } from '../types';
+import { getPeriodBudgetLimit } from '../utils/budget';
 import { CategoryRow } from './CategoryRow';
-import { CategoryTableSkeleton } from './CategoryTableSkeleton';
+import { CategoryRowsSkeleton } from './CategoryTableSkeleton';
+import { EditCategoryDialog } from './EditCategoryDialog';
 
 interface CategoryTableProps {
   period: PeriodFilter;
+}
+
+interface EditTarget {
+  category: Category;
+  /** Incrementa en cada apertura para reinicializar el formulario. */
+  session: number;
 }
 
 const categoryListVariants = {
@@ -64,10 +73,23 @@ export function CategoryTable({
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingCategory, setEditingCategory] =
+
+  /*
+   * Conservamos el objetivo mientras el diálogo se cierra.
+   * Así no desaparecen el nombre y el título durante
+   * la animación de salida.
+   */
+  const [editTarget, setEditTarget] =
+    useState<EditTarget | null>(null);
+
+  const [isEditOpen, setIsEditOpen] =
+    useState(false);
+
+  const [deleteTarget, setDeleteTarget] =
     useState<Category | null>(null);
-  const [deletingCategory, setDeletingCategory] =
-    useState<Category | null>(null);
+
+  const [isDeleteOpen, setIsDeleteOpen] =
+    useState(false);
 
   const {
     displayItems: categories,
@@ -92,65 +114,60 @@ export function CategoryTable({
     isFetching: isExpensesFetching,
   } = useCategoryExpenses(period);
 
+  /*
+   * Usamos el ID de la categoría y no su nombre:
+   * el nombre puede cambiar o repetirse.
+   */
   const expensesByCategoryId = useMemo(() => {
-    if (!expensesData?.categories) {
-      return {};
-    }
+    const map: Record<string, number> = {};
 
-    return expensesData.categories.reduce<
-      Record<string, number>
-    >((map, category) => {
+    for (const category of expensesData?.categories ?? []) {
       if (category.categoryId) {
         map[category.categoryId] = category.amount;
       }
+    }
 
-      return map;
-    }, {});
+    return map;
   }, [expensesData]);
 
-  /**
-   * Categories store their budget as a monthly amount.
-   * The displayed budget depends on the selected period.
-   */
-  const getAdjustedBudgetLimit = (
-    budgetLimit: number | null | undefined,
-  ): number | null => {
-    if (!budgetLimit) {
-      return null;
-    }
+  const handleEdit = useCallback((category: Category) => {
+    setEditTarget((previous) => ({
+      category,
+      session: (previous?.session ?? 0) + 1,
+    }));
 
-    switch (period) {
-      case 'week':
-        return budgetLimit / 4;
+    setIsEditOpen(true);
+  }, []);
 
-      case 'year':
-        return budgetLimit * 12;
+  const handleRequestDelete = useCallback(
+    (category: Category) => {
+      setDeleteTarget(category);
+      setIsDeleteOpen(true);
+    },
+    [],
+  );
 
-      case 'month':
-      default:
-        return budgetLimit;
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deletingCategory) {
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget || isDeleting) {
       return;
     }
 
     try {
-      await deleteCategory.mutateAsync(
-        deletingCategory.id,
-      );
+      await deleteCategory.mutateAsync(deleteTarget.id);
 
-      setDeletingCategory(null);
+      setIsDeleteOpen(false);
     } catch {
-      // useCategoryMutations already handles the error notification.
+      // La mutación ya muestra la notificación de error.
+      // El diálogo permanece abierto para poder reintentar.
     }
   };
 
-  if (isLoading && categories.length === 0) {
-    return <CategoryTableSkeleton />;
-  }
+  /*
+   * Solo mostramos el skeleton de las filas.
+   * El buscador y la cabecera nunca se desmontan al buscar.
+   */
+  const showSkeleton =
+    isLoading && categories.length === 0;
 
   const from =
     totalElements === 0
@@ -164,6 +181,7 @@ export function CategoryTable({
 
   return (
     <div className="space-y-4">
+      {/* Error independiente de la consulta de gastos */}
       {isExpensesError && (
         <div
           role="alert"
@@ -176,7 +194,9 @@ export function CategoryTable({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetchExpenses()}
+            onClick={() => {
+              void refetchExpenses();
+            }}
             disabled={isExpensesFetching}
           >
             {t('categories:actions.retry')}
@@ -184,6 +204,7 @@ export function CategoryTable({
         </div>
       )}
 
+      {/* Cabecera y buscador: distribución original */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="relative w-full sm:w-[320px]">
           <Search
@@ -196,90 +217,94 @@ export function CategoryTable({
             aria-label={t('categories:search')}
             className="h-10 border-border bg-card pl-10"
             value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(event.target.value)
-            }
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+            }}
           />
         </div>
 
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-            {t(
-              `dashboard:header.period.${period}`,
-            )}
+            {t(`dashboard:header.period.${period}`)}
           </span>
 
-          <p className="text-sm text-muted-foreground">
-            {t('categories:showing', {
-              total: totalElements,
-            })}
-          </p>
+          {!showSkeleton && (
+            <p className="text-sm text-muted-foreground">
+              {t('categories:showing', {
+                total: totalElements,
+              })}
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Tabla */}
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        <m.div
-          className="flex flex-col"
-          initial="hidden"
-          animate="visible"
-          variants={categoryListVariants}
-        >
-          {categories.length === 0 ? (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              {t('categories:empty')}
-            </p>
-          ) : (
-            categories.map((category) => {
-              const spent =
-                expensesByCategoryId[category.id] ?? 0;
+        {showSkeleton ? (
+          <CategoryRowsSkeleton />
+        ) : (
+          <MotionConfig reducedMotion="user">
+            <m.div
+              className="flex flex-col"
+              initial="hidden"
+              animate="visible"
+              variants={categoryListVariants}
+            >
+              {categories.length === 0 ? (
+                <p className="py-12 text-center text-sm text-muted-foreground">
+                  {t('categories:empty')}
+                </p>
+              ) : (
+                categories.map((category) => {
+                  const spent =
+                    expensesByCategoryId[category.id] ?? 0;
 
-              const budgetLimit =
-                getAdjustedBudgetLimit(
-                  category.budgetLimit,
-                );
+                  const budgetLimit =
+                    getPeriodBudgetLimit(
+                      category.budgetLimit,
+                      period,
+                    );
 
-              const percentageValue =
-                budgetLimit !== null &&
-                budgetLimit > 0
-                  ? (spent / budgetLimit) * 100
-                  : 0;
+                  /*
+                   * El porcentaje es real y puede superar el 100 %.
+                   * El recorte se realiza únicamente en CategoryRow.
+                   */
+                  const percentage =
+                    budgetLimit !== null
+                      ? (spent / budgetLimit) * 100
+                      : 0;
 
-              const percentage = Math.min(
-                percentageValue,
-                100,
-              );
+                  return (
+                    <m.div
+                      key={category.id}
+                      variants={categoryRowVariants}
+                      transition={categoryRowTransition}
+                    >
+                      <CategoryRow
+                        category={category}
+                        spent={spent}
+                        budgetLimit={budgetLimit}
+                        percentage={percentage}
+                        onEdit={handleEdit}
+                        onDelete={handleRequestDelete}
+                      />
+                    </m.div>
+                  );
+                })
+              )}
+            </m.div>
+          </MotionConfig>
+        )}
 
-              return (
-                <m.div
-                  key={category.id}
-                  variants={categoryRowVariants}
-                  transition={categoryRowTransition}
-                >
-                  <CategoryRow
-                    category={category}
-                    spent={spent}
-                    budgetLimit={budgetLimit}
-                    percentage={percentage}
-                    onEdit={setEditingCategory}
-                    onDelete={setDeletingCategory}
-                  />
-                </m.div>
-              );
-            })
-          )}
-        </m.div>
-
+        {/* Paginación original */}
         {totalDisplayPages > 1 && (
           <div className="flex items-center justify-between border-t border-border bg-background/20 px-6 py-4">
             <p className="text-xs font-medium text-muted-foreground">
-              {t(
-                'transactions:showingInterval',
-                {
-                  from,
-                  to,
-                  total: totalElements,
-                },
-              )}
+              {t('transactions:showingInterval', {
+                from,
+                to,
+                total: totalElements,
+              })}
             </p>
 
             <div className="flex items-center gap-2">
@@ -297,8 +322,7 @@ export function CategoryTable({
               </Button>
 
               <span className="min-w-15 text-center text-sm text-muted-foreground">
-                {displayPage + 1} /{' '}
-                {totalDisplayPages}
+                {displayPage + 1} / {totalDisplayPages}
               </span>
 
               <Button
@@ -306,8 +330,7 @@ export function CategoryTable({
                 size="sm"
                 onClick={nextPage}
                 disabled={
-                  displayPage >=
-                  totalDisplayPages - 1
+                  displayPage >= totalDisplayPages - 1
                 }
                 className="h-8 border-border"
               >
@@ -321,26 +344,30 @@ export function CategoryTable({
         )}
       </div>
 
+      {/* Edición: mantiene el objetivo durante el cierre */}
       <EditCategoryDialog
-        key={editingCategory?.id}
-        category={editingCategory}
-        open={!!editingCategory}
+        key={editTarget?.session}
+        category={editTarget?.category ?? null}
+        open={isEditOpen}
         onOpenChange={(open) => {
           if (!open) {
-            setEditingCategory(null);
+            setIsEditOpen(false);
           }
         }}
       />
 
+      {/* Eliminación: mantiene el nombre durante el cierre */}
       <ConfirmDeletionDialog
-        open={!!deletingCategory}
+        open={isDeleteOpen}
         onOpenChange={(open) => {
-          if (!open) {
-            setDeletingCategory(null);
+          if (!open && isDeleting) {
+            return;
           }
+
+          setIsDeleteOpen(open);
         }}
-        itemName={deletingCategory?.name ?? ''}
-        onConfirm={handleDelete}
+        itemName={deleteTarget?.name ?? ''}
+        onConfirm={handleConfirmDelete}
         isDeleting={isDeleting}
       />
     </div>

@@ -1,5 +1,5 @@
 import {
-  useEffect,
+  useId,
   useState,
   type FormEvent,
 } from 'react';
@@ -18,12 +18,15 @@ import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
 import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
 
+import { CATEGORY_COLORS } from '../constants';
 import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import type { Category } from '../types';
 import {
+  CATEGORY_DESCRIPTION_MAX_LENGTH,
   CATEGORY_NAME_MAX_LENGTH,
   categoryFormSchema,
   parseCategoryBudget,
+  parseCategoryDescription,
 } from '../schemas/category.schema';
 import { ColorPicker } from './ColorPicker';
 
@@ -35,6 +38,7 @@ interface EditCategoryDialogProps {
 
 interface EditCategoryFormState {
   name: string;
+  description: string;
   color: string;
   budgetLimit: string;
   error: string | null;
@@ -44,7 +48,8 @@ const getInitialState = (
   category: Category | null,
 ): EditCategoryFormState => ({
   name: category?.name ?? '',
-  color: category?.color ?? '',
+  description: category?.description ?? '',
+  color: category?.color || CATEGORY_COLORS[0],
   budgetLimit:
     category?.budgetLimit !== null &&
       category?.budgetLimit !== undefined
@@ -53,6 +58,13 @@ const getInitialState = (
   error: null,
 });
 
+/**
+ * El estado del formulario se inicializa una sola vez
+ * a partir de category.
+ *
+ * El componente padre debe remontarlo mediante key
+ * cada vez que se abra una categoría diferente.
+ */
 export function EditCategoryDialog({
   category,
   open,
@@ -72,11 +84,16 @@ export function EditCategoryDialog({
       () => getInitialState(category),
     );
 
-  useEffect(() => {
-    if (open) {
-      setForm(getInitialState(category));
+  const colorLabelId = useId();
+
+  const handleOpenChange = (isOpen: boolean) => {
+
+    if (!isOpen && isUpdating) {
+      return;
     }
-  }, [open, category]);
+
+    onOpenChange(isOpen);
+  };
 
   const updateField = <
     K extends keyof EditCategoryFormState,
@@ -96,29 +113,35 @@ export function EditCategoryDialog({
   ) => {
     event.preventDefault();
 
-    if (isUpdating) {
+    if (isUpdating || !category) {
       return;
     }
 
-    if (!category) {
-      return;
-    }
-
-    const validation =
-      categoryFormSchema.safeParse(form);
+    const validation = categoryFormSchema.safeParse({
+      name: form.name,
+      description: form.description,
+      color: form.color,
+      budgetLimit: form.budgetLimit,
+    });
 
     if (!validation.success) {
+
+      const issueKey =
+        validation.error.issues[0]?.message;
+
       setForm((previous) => ({
         ...previous,
-        error:
-          validation.error.issues[0]?.message ??
-          t('categories:updateError'),
+        error: issueKey
+          ? t(issueKey)
+          : t('categories:updateError'),
       }));
+
       return;
     }
 
     const {
       name,
+      description,
       color,
       budgetLimit,
     } = validation.data;
@@ -128,6 +151,8 @@ export function EditCategoryDialog({
         id: category.id,
         data: {
           name,
+          description:
+            parseCategoryDescription(description),
           color,
           budgetLimit:
             parseCategoryBudget(budgetLimit),
@@ -135,24 +160,16 @@ export function EditCategoryDialog({
       });
 
       onOpenChange(false);
-    } catch (error) {
-      const message =
-        error instanceof Error &&
-          error.message
-          ? error.message
-          : t('categories:updateError');
+    } catch {
 
-      setForm((previous) => ({
-        ...previous,
-        error: message,
-      }));
+
     }
   };
 
   return (
     <Dialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
     >
       <DialogContent className="rounded-lg border-border bg-card sm:max-w-lg">
         <div className="max-h-[85dvh] overflow-y-auto p-4 sm:p-6">
@@ -200,6 +217,42 @@ export function EditCategoryDialog({
             </div>
 
             <div className="space-y-2">
+              <div className="flex items-baseline justify-between gap-2">
+                <Label
+                  htmlFor="edit-description"
+                  className="text-sm font-medium text-foreground/80"
+                >
+                  {t('categories:descriptionLabel')}
+
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    ({t('auth:form.optional')})
+                  </span>
+                </Label>
+
+                <span
+                  className="text-xs tabular-nums text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  {form.description.length}/
+                  {CATEGORY_DESCRIPTION_MAX_LENGTH}
+                </span>
+              </div>
+
+              <textarea
+                id="edit-description"
+                rows={3}
+                value={form.description}
+                onChange={(event) =>
+                  updateField('description', event.target.value)
+                }
+                disabled={isUpdating}
+                placeholder={t('categories:descriptionPlaceholder')}
+                maxLength={CATEGORY_DESCRIPTION_MAX_LENGTH}
+                className="w-full min-w-0 resize-none rounded-xl border border-border bg-background px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50 aria-invalid:border-crust aria-invalid:ring-crust/30"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label
                 htmlFor="edit-budget"
                 className="text-sm font-medium text-foreground/80"
@@ -239,19 +292,20 @@ export function EditCategoryDialog({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-foreground/80">
+              <Label
+                id={colorLabelId}
+                className="text-sm font-medium text-foreground/80"
+              >
                 {t('categories:colorLabel')}
               </Label>
 
               <ColorPicker
                 value={form.color}
                 onChange={(color) =>
-                  updateField(
-                    'color',
-                    color,
-                  )
+                  updateField('color', color)
                 }
                 disabled={isUpdating}
+                labelledBy={colorLabelId}
               />
             </div>
 
@@ -268,9 +322,7 @@ export function EditCategoryDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  onOpenChange(false)
-                }
+                onClick={() => handleOpenChange(false)}
                 disabled={isUpdating}
                 className="h-10 rounded-xl border-border px-4 text-foreground hover:bg-secondary"
               >
@@ -279,7 +331,9 @@ export function EditCategoryDialog({
 
               <Button
                 type="submit"
-                disabled={isUpdating}
+                disabled={
+                  isUpdating || !form.name.trim()
+                }
                 className="min-h-11 h-10 rounded-xl bg-primary px-5 font-semibold text-primary-foreground transition-all hover:bg-primary/90"
               >
                 {isUpdating ? (

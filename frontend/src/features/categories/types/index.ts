@@ -2,21 +2,23 @@ export interface Category {
   readonly id: string;
   readonly userId: string;
   readonly name: string;
+  readonly description: string | null;
   readonly color: string;
   readonly budgetLimit: number | null;
   readonly createdAt: string;
-  readonly modifiedAt: string;
   readonly active: boolean;
 }
 
 export interface RegisterCategoryRequest {
   name: string;
+  description?: string | null;
   color: string;
   budgetLimit?: number | null;
 }
 
 export interface UpdateCategoryRequest {
   name: string;
+  description: string | null;
   color: string;
   budgetLimit: number | null;
 }
