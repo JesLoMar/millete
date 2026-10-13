@@ -1,4 +1,7 @@
-import { useCallback } from 'react';
+import {
+  useCallback,
+  useMemo,
+} from 'react';
 
 import { apiClient } from '@/shared/api/axiosClient';
 import {
@@ -32,9 +35,15 @@ export function useCategories(
     SEARCH_DEBOUNCE_MS,
   );
 
+  const categoryQueryKey = useMemo(
+    () => ['categories', normalizedSearch] as const,
+    [normalizedSearch],
+  );
+
   const fetchPage = useCallback(
     async (
       page: number,
+      signal?: AbortSignal,
     ): Promise<PaginatedResponse<Category>> => {
       const params = new URLSearchParams({
         page: String(page),
@@ -48,6 +57,7 @@ export function useCategories(
       const response =
         await apiClient.get<PaginatedResponse<Category>>(
           `/categories?${params.toString()}`,
+          { signal },
         );
 
       return response.data;
@@ -57,7 +67,7 @@ export function useCategories(
 
   return {
     ...useServerPagination<Category>({
-      queryKey: ['categories', normalizedSearch],
+      queryKey: categoryQueryKey,
       fetchPage,
       serverSize: SERVER_SIZE,
       displaySize: DISPLAY_SIZE,

@@ -1,4 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
@@ -17,10 +20,6 @@ type CategoryMutationErrorKey =
 
 const CATEGORIES_LIST_QUERY_KEY = ['categories'] as const;
 
-/**
- * Queries that depend on categories but are not the list itself.
- * They are invalidated in the background (not awaited).
- */
 const CATEGORY_DEPENDENT_QUERY_KEYS = [
   ['budgets'],
   ['categoryBudgets'],
@@ -40,21 +39,15 @@ export const useCategoryMutations = () => {
 
   const queryClient = useQueryClient();
 
-  /**
-   * Only the category list is awaited, so the dialog closes once the list
-   * is up to date. The rest of the queries refetch in the background
-   * instead of keeping the mutation (and its spinner) pending.
-   */
   const invalidateCategoryQueries = async () => {
-    CATEGORY_DEPENDENT_QUERY_KEYS.forEach((queryKey) => {
-      void queryClient.invalidateQueries({
-        queryKey,
-      });
-    });
-
-    await queryClient.invalidateQueries({
-      queryKey: CATEGORIES_LIST_QUERY_KEY,
-    });
+    await Promise.all([
+      ...CATEGORY_DEPENDENT_QUERY_KEYS.map((queryKey) =>
+        queryClient.invalidateQueries({ queryKey }),
+      ),
+      queryClient.invalidateQueries({
+        queryKey: CATEGORIES_LIST_QUERY_KEY,
+      }),
+    ]);
   };
 
   const getErrorMessage = (

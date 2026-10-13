@@ -9,12 +9,7 @@ import {
 
 import { toast } from 'sonner';
 
-import { apiClient } from '@/shared/api/axiosClient';
-
-import {
-  useServerPagination,
-  type PaginatedResponse,
-} from '@/shared/hooks/useServerPagination';
+import { useServerPagination } from '@/shared/hooks/useServerPagination';
 
 import { savingsGoalsService } from '../services/savingsGoals.service';
 
@@ -26,12 +21,13 @@ import type {
   UpdateSavingsGoalDTO,
 } from '../types';
 
+const SAVINGS_GOALS_QUERY_KEY = 'savings-goals';
+
 const SERVER_SIZE = 45;
 const DISPLAY_SIZE = 9;
 
 interface UseSavingsGoalsOptions {
   search?: string;
-  status?: SavingsGoal['status'] | '';
   enabled?: boolean;
 }
 
@@ -40,55 +36,44 @@ export function useSavingsGoals(
 ) {
   const {
     search = '',
-    status = '',
     enabled = true,
   } = options;
 
   const normalizedSearch = search.trim();
-  const normalizedStatus = status.trim().toUpperCase();
 
   const fetchPage = useCallback(
-    async (
-      page: number,
-    ): Promise<PaginatedResponse<SavingsGoal>> => {
-      const params = new URLSearchParams({
-        page: String(page),
-        size: String(SERVER_SIZE),
-      });
-
-      if (normalizedSearch) {
-        params.set('search', normalizedSearch);
-      }
-
-      if (normalizedStatus) {
-        params.set('status', normalizedStatus);
-      }
-
-      const response = await apiClient.get<
-        PaginatedResponse<SavingsGoal>
-      >(`/savings-goals?${params.toString()}`);
-
-      return response.data;
-    },
-    [normalizedSearch, normalizedStatus],
+    (page: number, signal?: AbortSignal) =>
+      savingsGoalsService.getPage(
+        {
+          page,
+          size: SERVER_SIZE,
+          search: normalizedSearch,
+        },
+        signal,
+      ),
+    [normalizedSearch],
   );
 
+  const pagination = useServerPagination<SavingsGoal>({
+    queryKey: [
+      SAVINGS_GOALS_QUERY_KEY,
+      normalizedSearch,
+    ],
+    fetchPage,
+    serverSize: SERVER_SIZE,
+    displaySize: DISPLAY_SIZE,
+    enabled,
+  });
+
   return {
-    ...useServerPagination<SavingsGoal>({
-      queryKey: [
-        'savings-goals',
-        normalizedSearch,
-        normalizedStatus,
-      ],
-      fetchPage,
-      serverSize: SERVER_SIZE,
-      displaySize: DISPLAY_SIZE,
-      enabled,
-    }),
+    ...pagination,
     serverSize: SERVER_SIZE,
     displaySize: DISPLAY_SIZE,
   };
 }
+
+// Las mutaciones solicitan la invalidación de las consultas relacionadas.
+// De este modo, los saldos y la lista se actualizan después de cada operación.
 
 export const useCreateSavingsGoal = () => {
   const queryClient = useQueryClient();
@@ -102,11 +87,11 @@ export const useCreateSavingsGoal = () => {
       }),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['savings-goals'],
-      });
-
       toast.success(t('alerts.createSuccess'));
+
+      return queryClient.invalidateQueries({
+        queryKey: [SAVINGS_GOALS_QUERY_KEY],
+      });
     },
 
     onError: () => {
@@ -133,11 +118,11 @@ export const useUpdateSavingsGoal = () => {
       }),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['savings-goals'],
-      });
-
       toast.success(t('alerts.updateSuccess'));
+
+      return queryClient.invalidateQueries({
+        queryKey: [SAVINGS_GOALS_QUERY_KEY],
+      });
     },
 
     onError: () => {
@@ -155,11 +140,11 @@ export const useDeleteSavingsGoal = () => {
       savingsGoalsService.delete(id),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['savings-goals'],
-      });
-
       toast.success(t('alerts.deleteSuccess'));
+
+      return queryClient.invalidateQueries({
+        queryKey: [SAVINGS_GOALS_QUERY_KEY],
+      });
     },
 
     onError: () => {
@@ -179,26 +164,45 @@ export const useAddContribution = () => {
     }: {
       id: string;
       amount: number;
-    }) =>
-      savingsGoalsService.addContribution(
-        id,
-        amount,
-      ),
+    }) => savingsGoalsService.addContribution(id, amount),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['savings-goals'],
-      });
+      toast.success(t('alerts.contributionSuccess'));
 
-      toast.success(
-        t('alerts.contributionSuccess'),
-      );
+      return queryClient.invalidateQueries({
+        queryKey: [SAVINGS_GOALS_QUERY_KEY],
+      });
     },
 
     onError: () => {
-      toast.error(
-        t('alerts.contributionError'),
-      );
+      toast.error(t('alerts.contributionError'));
+    },
+  });
+};
+
+export const useWithdrawFromGoal = () => {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation('savingsGoals');
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      amount,
+    }: {
+      id: string;
+      amount: number;
+    }) => savingsGoalsService.withdraw(id, amount),
+
+    onSuccess: () => {
+      toast.success(t('alerts.withdrawSuccess'));
+
+      return queryClient.invalidateQueries({
+        queryKey: [SAVINGS_GOALS_QUERY_KEY],
+      });
+    },
+
+    onError: () => {
+      toast.error(t('alerts.withdrawError'));
     },
   });
 };

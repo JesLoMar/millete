@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useId,
   useRef,
   useState,
@@ -25,6 +26,7 @@ import {
   CATEGORY_DESCRIPTION_MAX_LENGTH,
   CATEGORY_NAME_MAX_LENGTH,
   categoryFormSchema,
+  getCategoryBudgetStep,
   parseCategoryBudget,
   parseCategoryDescription,
 } from '../schemas/category.schema';
@@ -44,14 +46,13 @@ interface CategoryFormState {
   error: string | null;
 }
 
-const createInitialFormState =
-  (): CategoryFormState => ({
-    name: '',
-    description: '',
-    color: CATEGORY_COLORS[0],
-    budgetLimit: '',
-    error: null,
-  });
+const createInitialFormState = (): CategoryFormState => ({
+  name: '',
+  description: '',
+  color: CATEGORY_COLORS[0],
+  budgetLimit: '',
+  error: null,
+});
 
 export function AddCategoryDialog({
   open: controlledOpen,
@@ -66,27 +67,31 @@ export function AddCategoryDialog({
   const { createCategory, isCreating } =
     useCategoryMutations();
 
-  const [internalOpen, setInternalOpen] =
-    useState(false);
-
-  const [form, setForm] =
-    useState<CategoryFormState>(
-      createInitialFormState,
-    );
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [form, setForm] = useState<CategoryFormState>(
+    createInitialFormState,
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
-
   const nameInputId = useId();
   const descriptionInputId = useId();
   const colorLabelId = useId();
   const budgetInputId = useId();
 
-  const isControlled =
-    controlledOpen !== undefined;
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
 
-  const open = isControlled
-    ? controlledOpen
-    : internalOpen;
+  const previousOpenRef = useRef(open);
+
+  // Reset the form on every real open -> closed transition, including when
+  // a parent controls `open` and closes the dialog directly.
+  useEffect(() => {
+    if (previousOpenRef.current && !open) {
+      setForm(createInitialFormState());
+    }
+
+    previousOpenRef.current = open;
+  }, [open]);
 
   const setOpen = (value: boolean) => {
     if (isControlled) {
@@ -97,20 +102,12 @@ export function AddCategoryDialog({
     setInternalOpen(value);
   };
 
-  const resetForm = () => {
-    setForm(createInitialFormState());
-  };
-
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen && isCreating) {
       return;
     }
 
     setOpen(isOpen);
-
-    if (!isOpen) {
-      resetForm();
-    }
   };
 
   const updateField = <
@@ -139,8 +136,7 @@ export function AddCategoryDialog({
     });
 
     if (!validation.success) {
-      const issueKey =
-        validation.error.issues[0]?.message;
+      const issueKey = validation.error.issues[0]?.message;
 
       setForm((previous) => ({
         ...previous,
@@ -162,23 +158,19 @@ export function AddCategoryDialog({
     try {
       await createCategory.mutateAsync({
         name,
-        description:
-          parseCategoryDescription(description),
+        description: parseCategoryDescription(description),
         color,
-        budgetLimit:
-          parseCategoryBudget(budgetLimit),
+        budgetLimit: parseCategoryBudget(budgetLimit),
       });
 
       handleOpenChange(false);
     } catch {
-
-
+      // useCategoryMutations already notifies the user. Keep the dialog open
+      // after a failed mutation so the form can be corrected or retried.
     }
   };
 
-  const handleSubmit = (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void handleSave();
   };
@@ -230,15 +222,10 @@ export function AddCategoryDialog({
               <Input
                 id={nameInputId}
                 ref={inputRef}
-                placeholder={t(
-                  'categories:namePlaceholder',
-                )}
+                placeholder={t('categories:namePlaceholder')}
                 value={form.name}
                 onChange={(event) =>
-                  updateField(
-                    'name',
-                    event.target.value,
-                  )
+                  updateField('name', event.target.value)
                 }
                 disabled={isCreating}
                 maxLength={CATEGORY_NAME_MAX_LENGTH}
@@ -292,9 +279,7 @@ export function AddCategoryDialog({
 
               <ColorPicker
                 value={form.color}
-                onChange={(color) =>
-                  updateField('color', color)
-                }
+                onChange={(color) => updateField('color', color)}
                 disabled={isCreating}
                 labelledBy={colorLabelId}
               />
@@ -315,14 +300,11 @@ export function AddCategoryDialog({
                 placeholder="0.00"
                 value={form.budgetLimit}
                 onChange={(event) =>
-                  updateField(
-                    'budgetLimit',
-                    event.target.value,
-                  )
+                  updateField('budgetLimit', event.target.value)
                 }
                 disabled={isCreating}
                 min="0"
-                step="0.01"
+                step={getCategoryBudgetStep()}
                 className="border-border bg-background"
               />
 
@@ -354,9 +336,7 @@ export function AddCategoryDialog({
 
             <Button
               type="submit"
-              disabled={
-                isCreating || !form.name.trim()
-              }
+              disabled={isCreating || !form.name.trim()}
               className="bg-primary px-6 hover:bg-primary/90"
             >
               {isCreating ? (

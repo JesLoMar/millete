@@ -21,11 +21,10 @@ import type { Category } from '../types';
 
 interface CategoryRowProps {
   category: Category;
-  spent: number;
-  /** Presupuesto convertido al periodo seleccionado. */
+  /** Null means the expense amount is not currently available. */
+  spent: number | null;
   budgetLimit: number | null;
-  /** Porcentaje real de gasto; puede superar el 100 %. */
-  percentage: number;
+  percentage: number | null;
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
 }
@@ -48,27 +47,42 @@ export const CategoryRow = memo(function CategoryRow({
 }: CategoryRowProps) {
   const { t } = useTranslation('categories');
 
-  const hasBudget =
-    budgetLimit !== null && budgetLimit > 0;
+  const safeSpent =
+    typeof spent === 'number' && Number.isFinite(spent)
+      ? spent
+      : null;
 
-  // Alcanzar exactamente el límite también se considera excedido.
+  const validBudgetLimit =
+    typeof budgetLimit === 'number' &&
+    Number.isFinite(budgetLimit) &&
+    budgetLimit > 0
+      ? budgetLimit
+      : null;
+
+  const hasBudget = validBudgetLimit !== null;
+  const hasKnownSpent = safeSpent !== null;
+
+  // Treat "over budget" strictly as spending greater than the limit.
   const isOverBudget =
-    hasBudget && spent >= budgetLimit;
+    validBudgetLimit !== null &&
+    safeSpent !== null &&
+    safeSpent > validBudgetLimit;
 
-  // El porcentaje mostrado no supera el 100 %.
-  const roundedPercentage = Math.min(
-    Math.round(percentage),
-    100,
-  );
+  const safePercentage =
+    typeof percentage === 'number' && Number.isFinite(percentage)
+      ? Math.max(0, Math.min(percentage, 100))
+      : 0;
 
-  // Solo se recorta la barra visual.
-  const barValue = Math.min(percentage, 100);
+  const roundedPercentage = Math.round(safePercentage);
+  const barValue = safePercentage;
 
-  const formattedSpent = formatCurrency(spent);
+  const formattedSpent =
+    safeSpent === null ? '—' : formatCurrency(safeSpent);
 
-  const formattedBudget = hasBudget
-    ? formatCurrency(budgetLimit)
-    : '—';
+  const formattedBudget =
+    validBudgetLimit === null
+      ? '—'
+      : formatCurrency(validBudgetLimit);
 
   const categoryColor =
     category.color || DEFAULT_CATEGORY_COLOR;
@@ -77,14 +91,12 @@ export const CategoryRow = memo(function CategoryRow({
 
   return (
     <div className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-2 border-b p-3 transition-colors hover:bg-accent/30 last:border-0 sm:flex sm:items-center sm:gap-4 sm:p-4">
-      {/* Color de la categoría */}
       <div
         className="size-4 shrink-0 rounded-full sm:size-5"
         style={{ backgroundColor: categoryColor }}
         aria-hidden="true"
       />
 
-      {/* Nombre y descripción */}
       <div className="min-w-0 sm:w-32 sm:flex-none">
         <p className="truncate text-sm font-semibold">
           {category.name}
@@ -100,44 +112,42 @@ export const CategoryRow = memo(function CategoryRow({
         )}
       </div>
 
-      {/*
-       * Móvil: una fila inferior con progreso e importe.
-       * Escritorio: display: contents integra ambos elementos
-       * directamente en la fila flex principal.
-       */}
       <div className="col-span-3 row-start-2 flex min-w-0 items-center gap-3 sm:contents">
-        {/* Progreso y porcentaje */}
         <div className="min-w-0 flex-1 sm:px-2">
           {hasBudget ? (
-            <div className="flex flex-col-reverse gap-1 sm:flex-col">
-              <span
-                className={cn(
-                  'text-xs font-medium',
-                  isOverBudget
-                    ? 'text-destructive'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {roundedPercentage}%
-              </span>
+            hasKnownSpent ? (
+              <div className="flex flex-col-reverse gap-1 sm:flex-col">
+                <span
+                  className={cn(
+                    'text-xs font-medium',
+                    isOverBudget
+                      ? 'text-destructive'
+                      : 'text-muted-foreground',
+                  )}
+                >
+                  {roundedPercentage}%
+                </span>
 
-              <ProgressBar
-                value={barValue}
-                max={100}
-                color={
-                  isOverBudget
-                    ? undefined
-                    : categoryColor
-                }
-                variant={
-                  isOverBudget
-                    ? 'overbudget'
-                    : 'default'
-                }
-                size="sm"
-                ariaLabel={`${category.name}: ${roundedPercentage}%`}
-              />
-            </div>
+                <ProgressBar
+                  value={barValue}
+                  max={100}
+                  color={
+                    isOverBudget
+                      ? undefined
+                      : categoryColor
+                  }
+                  variant={
+                    isOverBudget
+                      ? 'overbudget'
+                      : 'default'
+                  }
+                  size="sm"
+                  ariaLabel={`${category.name}: ${roundedPercentage}%`}
+                />
+              </div>
+            ) : (
+              <p className="text-xs italic text-muted-foreground">—</p>
+            )
           ) : (
             <p className="text-xs italic text-muted-foreground">
               {t('categories:noBudgetTooltip')}
@@ -145,13 +155,11 @@ export const CategoryRow = memo(function CategoryRow({
           )}
         </div>
 
-        {/* El ancho fijo se aplica solo a escritorio */}
         <span className="shrink-0 whitespace-nowrap text-right text-xs tabular-nums text-muted-foreground sm:w-40 sm:text-sm">
           {formattedSpent} / {formattedBudget}
         </span>
       </div>
 
-      {/* Acciones: arriba a la derecha en móvil */}
       <div className="col-start-3 row-start-1 -mr-1 shrink-0 sm:mr-0">
         <CategoryActions
           category={category}

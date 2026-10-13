@@ -1,8 +1,10 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import {
   Calendar,
   ExternalLink,
+  Minus,
   Pencil,
   Plus,
   Trash2,
@@ -20,6 +22,9 @@ import { ProgressBar } from '@/shared/components/core/progress-bar';
 import { formatCurrency } from '@/shared/utils/i18nFormat';
 
 import type { SavingsGoal } from '../types';
+import { getRemainingAmount } from '../utils/amounts';
+import { formatDeadline, isPastDeadline } from '../utils/dates';
+import { normalizeHttpLink } from '../utils/links';
 
 interface PriorityBadgeProps {
   priority: SavingsGoal['priority'];
@@ -59,152 +64,213 @@ function PriorityBadge({ priority }: PriorityBadgeProps) {
 interface SavingsGoalCardProps {
   goal: SavingsGoal;
   onAddContribution: (goal: SavingsGoal) => void;
+  onWithdraw: (goal: SavingsGoal) => void;
   onEdit: (goal: SavingsGoal) => void;
   onDelete: (goal: SavingsGoal) => void;
 }
 
-export const SavingsGoalCard = memo(
-  ({
-    goal,
-    onAddContribution,
-    onEdit,
-    onDelete,
-  }: SavingsGoalCardProps) => {
-    const { t } = useTranslation('savingsGoals');
+export const SavingsGoalCard = memo(function SavingsGoalCard({
+  goal,
+  onAddContribution,
+  onWithdraw,
+  onEdit,
+  onDelete,
+}: SavingsGoalCardProps) {
+  const { t, i18n } = useTranslation('savingsGoals');
 
-    const progressPercentage =
-      goal.targetAmount > 0
-        ? Math.min(
+  const progressPercentage =
+    goal.targetAmount > 0
+      ? Math.min(
+          Math.max(
             (goal.currentAmount / goal.targetAmount) * 100,
-            100,
-          )
-        : 0;
+            0,
+          ),
+          100,
+        )
+      : 0;
 
-    const formattedProgress = progressPercentage.toFixed(0);
+  const formattedProgress = Math.floor(progressPercentage);
 
-    return (
-      <Card className="flex flex-col transition-colors hover:border-ring">
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-          <div className="min-w-0 pr-2">
-            <CardTitle className="truncate text-base font-medium">
-              {goal.name}
-            </CardTitle>
+  const remaining = getRemainingAmount(goal);
 
-            {goal.deadline && (
-              <div className="mt-1 flex items-center text-xs text-muted-foreground">
-                <Calendar
-                  className="mr-1 size-3"
-                  aria-hidden="true"
-                />
-                {goal.deadline}
-              </div>
-            )}
-          </div>
+  const canContribute =
+    goal.active && remaining > 0;
 
-          <div className="shrink-0">
-            <PriorityBadge priority={goal.priority} />
-          </div>
-        </CardHeader>
+  const canWithdraw =
+    goal.active && goal.currentAmount > 0;
 
-        <CardContent className="mt-auto flex flex-col gap-4 pt-4">
-          <div>
-            <div className="mb-2 flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {t('progress')}
-              </span>
+  const deadlineLabel = goal.deadline
+    ? formatDeadline(goal.deadline, i18n.language)
+    : null;
 
-              <span className="font-medium text-foreground">
-                {formattedProgress}%
-              </span>
-            </div>
+  const isOverdue =
+    goal.deadline !== undefined &&
+    goal.active &&
+    remaining > 0 &&
+    isPastDeadline(goal.deadline);
 
-            <ProgressBar
-              value={goal.currentAmount}
-              max={goal.targetAmount}
-              size="sm"
-              ariaLabel={`${goal.name}: ${formattedProgress}%`}
-            />
-          </div>
+  const safeLink = normalizeHttpLink(goal.link);
 
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="text-xl font-semibold text-foreground">
-                {formatCurrency(goal.currentAmount)}
-              </div>
+  const contributeLabel = canContribute
+    ? t('addContribution')
+    : t('contributionUnavailable');
 
-              <div className="text-xs text-muted-foreground">
-                {t('of')} {formatCurrency(goal.targetAmount)}
-              </div>
-            </div>
+  const withdrawLabel = t('withdrawAction');
 
-            <div className="flex gap-1">
-              {goal.link && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  asChild
-                >
-                  <a
-                    href={goal.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={t('viewLink')}
-                    aria-label={t('viewLink')}
-                  >
-                    <ExternalLink
-                      className="size-4"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </Button>
+  return (
+    <Card className="flex flex-col transition-colors hover:border-ring">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <div className="min-w-0 pr-2">
+          <CardTitle
+            className="truncate text-base font-medium"
+            title={goal.name}
+          >
+            {goal.name}
+          </CardTitle>
+
+          {deadlineLabel && (
+            <div
+              className={`mt-1 flex items-center text-xs ${
+                isOverdue
+                  ? 'text-destructive'
+                  : 'text-muted-foreground'
+              }`}
+            >
+              <Calendar
+                className="mr-1 size-3"
+                aria-hidden="true"
+              />
+
+              {deadlineLabel}
+
+              {isOverdue && (
+                <span className="ml-1 font-medium">
+                  · {t('overdue')}
+                </span>
               )}
+            </div>
+          )}
+        </div>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(goal)}
-                title={t('editGoal')}
-                aria-label={t('editGoal')}
-              >
-                <Pencil
-                  className="size-4"
-                  aria-hidden="true"
-                />
-              </Button>
+        <div className="shrink-0">
+          <PriorityBadge priority={goal.priority} />
+        </div>
+      </CardHeader>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(goal)}
-                title={t('deleteGoal')}
-                aria-label={t('deleteGoal')}
-              >
-                <Trash2
-                  className="size-4"
-                  aria-hidden="true"
-                />
-              </Button>
+      <CardContent className="mt-auto flex flex-col gap-4 pt-4">
+        <div>
+          <div className="mb-2 flex justify-between text-sm">
+            <span className="text-muted-foreground">
+              {t('progress')}
+            </span>
 
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                onClick={() => onAddContribution(goal)}
-                title={t('addContribution')}
-                aria-label={t('addContribution')}
-              >
-                <Plus
-                  className="size-4"
-                  aria-hidden="true"
-                />
-              </Button>
+            <span className="font-medium text-foreground">
+              {formattedProgress}%
+            </span>
+          </div>
+
+          <ProgressBar
+            value={goal.currentAmount}
+            max={goal.targetAmount}
+            size="sm"
+            ariaLabel={`${goal.name}: ${formattedProgress}%`}
+          />
+        </div>
+
+        <div className="flex items-end justify-between">
+          <div>
+            <div className="text-xl font-semibold text-foreground">
+              {formatCurrency(goal.currentAmount)}
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              {t('of')} {formatCurrency(goal.targetAmount)}
             </div>
           </div>
-        </CardContent>
-      </Card>
-    );
-  },
-);
+
+          <div className="flex gap-1">
+            {safeLink && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                asChild
+              >
+                <a
+                  href={safeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={t('viewLink')}
+                  aria-label={t('viewLink')}
+                >
+                  <ExternalLink
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+                </a>
+              </Button>
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(goal)}
+              title={t('editGoal')}
+              aria-label={t('editGoal')}
+            >
+              <Pencil
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(goal)}
+              title={t('deleteGoal')}
+              aria-label={t('deleteGoal')}
+            >
+              <Trash2
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              onClick={() => onWithdraw(goal)}
+              disabled={!canWithdraw}
+              title={withdrawLabel}
+              aria-label={withdrawLabel}
+            >
+              <Minus
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              onClick={() => onAddContribution(goal)}
+              disabled={!canContribute}
+              title={contributeLabel}
+              aria-label={contributeLabel}
+            >
+              <Plus
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+});

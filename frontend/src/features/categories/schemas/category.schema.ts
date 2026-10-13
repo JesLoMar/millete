@@ -1,7 +1,43 @@
 import { z } from 'zod';
 
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
+
 export const CATEGORY_NAME_MAX_LENGTH = 20;
 export const CATEGORY_DESCRIPTION_MAX_LENGTH = 500;
+const CATEGORY_BUDGET_PATTERN = /^\d+(?:\.(\d+))?$/;
+
+function getLocalCurrencyFractionDigits(): number {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: getLocalCurrencyCode(),
+    }).resolvedOptions().maximumFractionDigits;
+  } catch {
+    // Keep a sensible fallback if the configured currency is invalid.
+    return 2;
+  }
+}
+
+function hasValidBudgetPrecision(value: string): boolean {
+  const match = CATEGORY_BUDGET_PATTERN.exec(value);
+
+  if (!match) {
+    return false;
+  }
+
+  const decimalPlaces = match[1]?.length ?? 0;
+  return decimalPlaces <= getLocalCurrencyFractionDigits();
+}
+
+export function getCategoryBudgetStep(): string {
+  const decimalPlaces = getLocalCurrencyFractionDigits();
+
+  if (decimalPlaces === 0) {
+    return '1';
+  }
+
+  return `0.${'0'.repeat(decimalPlaces - 1)}1`;
+}
 
 export const categoryFormSchema = z.object({
   name: z
@@ -40,7 +76,8 @@ export const categoryFormSchema = z.object({
 
         return (
           Number.isFinite(parsedValue) &&
-          parsedValue >= 0
+          parsedValue >= 0 &&
+          hasValidBudgetPrecision(value)
         );
       },
       {

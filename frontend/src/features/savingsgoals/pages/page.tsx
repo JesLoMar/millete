@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
+
+import { Loader2, X } from 'lucide-react';
+
 import { useTranslation } from 'react-i18next';
 
 import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog';
 import { Header } from '@/shared/components/Header';
+import { Button } from '@/shared/components/core/button';
 import { Input } from '@/shared/components/core/input';
 import { Pagination } from '@/shared/components/Pagination';
 import { Sidebar } from '@/shared/components/Sidebar';
@@ -14,26 +17,38 @@ import { EmptyState } from '../components/EmptyState';
 import { SavingsGoalCard } from '../components/SavingsGoalCard';
 import { SavingsGoalDialog } from '../components/SavingsGoalDialog';
 import { SavingsGoalEditDialog } from '../components/SavingsGoalEditDialog';
+import { WithdrawalModal } from '../components/WithdrawalModal';
+
+import { SEARCH_DEBOUNCE_MS } from '../constants';
+
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+
 import {
   useAddContribution,
   useDeleteSavingsGoal,
   useSavingsGoals,
+  useWithdrawFromGoal,
 } from '../hooks/useSavingsGoals';
+
 import type { SavingsGoal } from '../types';
+
+type GoalDialog = {
+  kind: 'contribute' | 'withdraw' | 'edit' | 'delete';
+  goal: SavingsGoal;
+};
 
 export const SavingsGoalsPage = () => {
   const { t } = useTranslation('savingsGoals');
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [ui, setUi] = useState({
-    isContributionOpen: false,
-    isEditOpen: false,
-    deletingGoal: null as SavingsGoal | null,
-  });
+  const debouncedSearch = useDebouncedValue(
+    searchTerm,
+    SEARCH_DEBOUNCE_MS,
+  );
 
-  const [selectedGoal, setSelectedGoal] =
-    useState<SavingsGoal | null>(null);
+  const [dialog, setDialog] = useState<GoalDialog | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const {
     displayItems: goals,
@@ -42,98 +57,116 @@ export const SavingsGoalsPage = () => {
     totalDisplayPages,
     totalElements,
     isLoading,
-    error,
+    isError,
+    isTransitioning,
     nextPage,
     prevPage,
+    refetch,
   } = useSavingsGoals({
-    search: searchTerm,
+    search: debouncedSearch,
   });
 
   const {
-    mutateAsync: addContribution,
+    mutate: addContribution,
     isPending: isAddingContribution,
   } = useAddContribution();
 
   const {
-    mutateAsync: deleteGoal,
+    mutate: withdraw,
+    isPending: isWithdrawing,
+  } = useWithdrawFromGoal();
+
+  const {
+    mutate: deleteGoal,
     isPending: isDeleting,
   } = useDeleteSavingsGoal();
 
   const from =
-    totalElements === 0
-      ? 0
-      : displayPage * displaySize + 1;
+    totalElements === 0 ? 0 : displayPage * displaySize + 1;
 
   const to = Math.min(
     (displayPage + 1) * displaySize,
     totalElements,
   );
 
-  const openContribution = (goal: SavingsGoal) => {
-    setSelectedGoal(goal);
+  const openDialog = useCallback(
+    (kind: GoalDialog['kind'], goal: SavingsGoal) => {
+      setDialog({ kind, goal });
+      setIsDialogOpen(true);
+    },
+    [],
+  );
 
-    setUi((previous) => ({
-      ...previous,
-      isContributionOpen: true,
-    }));
-  };
+  const closeDialog = useCallback(() => {
+    setIsDialogOpen(false);
+  }, []);
 
-  const openEdit = (goal: SavingsGoal) => {
-    setSelectedGoal(goal);
+  const openContribution = useCallback(
+    (goal: SavingsGoal) => openDialog('contribute', goal),
+    [openDialog],
+  );
 
-    setUi((previous) => ({
-      ...previous,
-      isEditOpen: true,
-    }));
-  };
+  const openWithdraw = useCallback(
+    (goal: SavingsGoal) => openDialog('withdraw', goal),
+    [openDialog],
+  );
 
-  const openDelete = (goal: SavingsGoal) => {
-    setUi((previous) => ({
-      ...previous,
-      deletingGoal: goal,
-    }));
-  };
+  const openEdit = useCallback(
+    (goal: SavingsGoal) => openDialog('edit', goal),
+    [openDialog],
+  );
 
-  const closeContribution = () => {
-    setUi((previous) => ({
-      ...previous,
-      isContributionOpen: false,
-    }));
+  const openDelete = useCallback(
+    (goal: SavingsGoal) => openDialog('delete', goal),
+    [openDialog],
+  );
 
-    setSelectedGoal(null);
-  };
-
-  const handleAddContribution = async (amount: number) => {
-    if (!selectedGoal) {
+  const handleAddContribution = (amount: number) => {
+    if (dialog?.kind !== 'contribute') {
       return;
     }
 
-    try {
-      await addContribution({
-        id: selectedGoal.id,
+    addContribution(
+      {
+        id: dialog.goal.id,
         amount,
-      });
-
-      closeContribution();
-    } catch {
-    }
+      },
+      {
+        onSuccess: closeDialog,
+      },
+    );
   };
 
-  const handleDelete = async () => {
-    if (!ui.deletingGoal) {
+  const handleWithdraw = (amount: number) => {
+    if (dialog?.kind !== 'withdraw') {
       return;
     }
 
-    try {
-      await deleteGoal(ui.deletingGoal.id);
-
-      setUi((previous) => ({
-        ...previous,
-        deletingGoal: null,
-      }));
-    } catch {
-    }
+    withdraw(
+      {
+        id: dialog.goal.id,
+        amount,
+      },
+      {
+        onSuccess: closeDialog,
+      },
+    );
   };
+
+  const handleDelete = () => {
+    if (dialog?.kind !== 'delete') {
+      return;
+    }
+
+    deleteGoal(
+      dialog.goal.id,
+      {
+        onSuccess: closeDialog,
+      },
+    );
+  };
+
+  const isSearching = debouncedSearch.trim().length > 0;
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
@@ -151,129 +184,169 @@ export const SavingsGoalsPage = () => {
             </div>
           </div>
 
-          {isLoading && (
-            <div
-              className="flex items-center justify-center py-12"
-              role="status"
-              aria-live="polite"
-            >
-              <Loader2
-                className="size-8 animate-spin text-muted-foreground"
-                aria-hidden="true"
-              />
-              <span className="sr-only">
-                {t('loading')}
-              </span>
-            </div>
-          )}
-
-          {!isLoading && error && (
-            <div
-              className="py-8 text-center text-sm text-destructive"
-              role="alert"
-            >
-              {t('loadingError')}
-            </div>
-          )}
-
-          {!isLoading && !error && (
-            <div className="space-y-4">
-              <div className="relative">
-                <Input
-                  type="search"
-                  placeholder={t('searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(event) =>
-                    setSearchTerm(event.target.value)
+          <div className="space-y-4">
+            <div className="relative">
+              <Input
+                type="text"
+                role="searchbox"
+                autoComplete="off"
+                enterKeyHint="search"
+                placeholder={t('searchPlaceholder')}
+                aria-label={t('searchPlaceholder')}
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    setSearchTerm('');
                   }
-                  className="w-full"
-                />
+                }}
+                className="w-full pr-10"
+              />
 
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={t('clearSearch')}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {goals.length === 0 ? (
-                <EmptyState />
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {goals.map((goal) => (
-                      <SavingsGoalCard
-                        key={goal.id}
-                        goal={goal}
-                        onAddContribution={openContribution}
-                        onEdit={openEdit}
-                        onDelete={openDelete}
-                      />
-                    ))}
-                  </div>
-
-                  <Pagination
-                    currentPage={displayPage}
-                    totalPages={totalDisplayPages}
-                    from={from}
-                    to={to}
-                    total={totalElements}
-                    onPrev={prevPage}
-                    onNext={nextPage}
-                  />
-                </>
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={t('clearSearch')}
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
               )}
             </div>
-          )}
+
+            {isLoading ? (
+              <div
+                className="flex items-center justify-center py-12"
+                role="status"
+                aria-live="polite"
+              >
+                <Loader2
+                  className="size-8 animate-spin text-muted-foreground"
+                  aria-hidden="true"
+                />
+
+                <span className="sr-only">
+                  {t('loading')}
+                </span>
+              </div>
+            ) : isError ? (
+              <div
+                className="flex flex-col items-center gap-3 py-8 text-center text-sm text-destructive"
+                role="alert"
+              >
+                {t('loadingError')}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void refetch()}
+                >
+                  {t('retry')}
+                </Button>
+              </div>
+            ) : goals.length === 0 ? (
+              <EmptyState isSearching={isSearching} />
+            ) : (
+              <>
+                <div
+                  aria-busy={isTransitioning}
+                  className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 ${
+                    isTransitioning ? 'opacity-60' : ''
+                  }`}
+                >
+                  {goals.map((goal) => (
+                    <SavingsGoalCard
+                      key={goal.id}
+                      goal={goal}
+                      onAddContribution={openContribution}
+                      onWithdraw={openWithdraw}
+                      onEdit={openEdit}
+                      onDelete={openDelete}
+                    />
+                  ))}
+                </div>
+
+                <Pagination
+                  currentPage={displayPage}
+                  totalPages={totalDisplayPages}
+                  from={from}
+                  to={to}
+                  total={totalElements}
+                  onPrev={prevPage}
+                  onNext={nextPage}
+                />
+              </>
+            )}
+          </div>
         </main>
       </div>
 
       <ContributionModal
-        key={selectedGoal?.id}
-        isOpen={ui.isContributionOpen}
-        onClose={closeContribution}
+        isOpen={
+          isDialogOpen && dialog?.kind === 'contribute'
+        }
+        onClose={closeDialog}
         onSubmit={handleAddContribution}
-        goal={selectedGoal}
+        goal={
+          dialog?.kind === 'contribute'
+            ? dialog.goal
+            : null
+        }
         isSubmitting={isAddingContribution}
       />
 
-      <SavingsGoalEditDialog
-        key={`${selectedGoal?.id}-${ui.isEditOpen}`}
-        open={ui.isEditOpen}
-        onOpenChange={(open) => {
-          setUi((previous) => ({
-            ...previous,
-            isEditOpen: open,
-          }));
+      <WithdrawalModal
+        isOpen={
+          isDialogOpen && dialog?.kind === 'withdraw'
+        }
+        onClose={closeDialog}
+        onSubmit={handleWithdraw}
+        goal={
+          dialog?.kind === 'withdraw'
+            ? dialog.goal
+            : null
+        }
+        isSubmitting={isWithdrawing}
+      />
 
+      <SavingsGoalEditDialog
+        open={isDialogOpen && dialog?.kind === 'edit'}
+        onOpenChange={(open) => {
           if (!open) {
-            setSelectedGoal(null);
+            closeDialog();
           }
         }}
-        goal={selectedGoal}
+        goal={
+          dialog?.kind === 'edit'
+            ? dialog.goal
+            : null
+        }
       />
 
       <ConfirmDeletionDialog
-        open={ui.deletingGoal !== null}
+        open={isDialogOpen && dialog?.kind === 'delete'}
         onOpenChange={(open) => {
-          if (!open) {
-            setUi((previous) => ({
-              ...previous,
-              deletingGoal: null,
-            }));
+          if (!open && !isDeleting) {
+            closeDialog();
           }
         }}
-        itemName={ui.deletingGoal?.name ?? ''}
+        itemName={
+          dialog?.kind === 'delete'
+            ? dialog.goal.name
+            : ''
+        }
         onConfirm={handleDelete}
         isDeleting={isDeleting}
         title={t('deleteGoalTitle')}
         description={t('deleteGoalConfirmation', {
-          name: ui.deletingGoal?.name ?? '',
+          name:
+            dialog?.kind === 'delete'
+              ? dialog.goal.name
+              : '',
         })}
       />
     </div>

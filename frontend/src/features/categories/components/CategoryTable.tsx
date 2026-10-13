@@ -31,7 +31,6 @@ interface CategoryTableProps {
 
 interface EditTarget {
   category: Category;
-  /** Incrementa en cada apertura para reinicializar el formulario. */
   session: number;
 }
 
@@ -74,22 +73,13 @@ export function CategoryTable({
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  /*
-   * Conservamos el objetivo mientras el diálogo se cierra.
-   * Así no desaparecen el nombre y el título durante
-   * la animación de salida.
-   */
+  // Keep the target through the close animation so the dialog title remains stable.
   const [editTarget, setEditTarget] =
     useState<EditTarget | null>(null);
-
-  const [isEditOpen, setIsEditOpen] =
-    useState(false);
-
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] =
     useState<Category | null>(null);
-
-  const [isDeleteOpen, setIsDeleteOpen] =
-    useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const {
     displayItems: categories,
@@ -97,7 +87,11 @@ export function CategoryTable({
     displaySize,
     totalDisplayPages,
     totalElements,
-    isLoading,
+    isLoading: isCategoriesLoading,
+    isFetching: isCategoriesFetching,
+    isError: isCategoriesError,
+    isPlaceholderData,
+    refetch: refetchCategories,
     nextPage,
     prevPage,
   } = useCategories({
@@ -114,10 +108,7 @@ export function CategoryTable({
     isFetching: isExpensesFetching,
   } = useCategoryExpenses(period);
 
-  /*
-   * Usamos el ID de la categoría y no su nombre:
-   * el nombre puede cambiar o repetirse.
-   */
+  // Map expense totals by category ID, never by a potentially repeated name.
   const expensesByCategoryId = useMemo(() => {
     const map: Record<string, number> = {};
 
@@ -135,7 +126,6 @@ export function CategoryTable({
       category,
       session: (previous?.session ?? 0) + 1,
     }));
-
     setIsEditOpen(true);
   }, []);
 
@@ -154,20 +144,22 @@ export function CategoryTable({
 
     try {
       await deleteCategory.mutateAsync(deleteTarget.id);
-
       setIsDeleteOpen(false);
     } catch {
-      // La mutación ya muestra la notificación de error.
-      // El diálogo permanece abierto para poder reintentar.
+      // The mutation hook already shows the error notification.
+      // Keep the dialog open so the user can retry.
     }
   };
 
-  /*
-   * Solo mostramos el skeleton de las filas.
-   * El buscador y la cabecera nunca se desmontan al buscar.
-   */
+  // Placeholder rows belong to the previous query/page, so don't present them
+  // as if they matched the currently selected search or server chunk.
   const showSkeleton =
-    isLoading && categories.length === 0;
+    !isCategoriesError &&
+    (isCategoriesLoading || isPlaceholderData);
+
+  const showCategoryErrorWithoutData =
+    isCategoriesError &&
+    (categories.length === 0 || isPlaceholderData);
 
   const from =
     totalElements === 0
@@ -179,16 +171,41 @@ export function CategoryTable({
     totalElements,
   );
 
+  const categoriesLoadError = t('categories:loadError');
+
+  const retryLabel = t('categories:retry');
+
   return (
     <div className="space-y-4">
-      {/* Error independiente de la consulta de gastos */}
+      {isCategoriesError && !showCategoryErrorWithoutData && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
+        >
+          <p className="text-sm text-destructive">
+            {categoriesLoadError}
+          </p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void refetchCategories();
+            }}
+            disabled={isCategoriesFetching}
+          >
+            {retryLabel}
+          </Button>
+        </div>
+      )}
+
       {isExpensesError && (
         <div
           role="alert"
           className="flex items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3"
         >
           <p className="text-sm text-destructive">
-            {t('categories:errors.expenses')}
+            {t('categories:expensesError')}
           </p>
 
           <Button
@@ -199,12 +216,11 @@ export function CategoryTable({
             }}
             disabled={isExpensesFetching}
           >
-            {t('categories:actions.retry')}
+            {retryLabel}
           </Button>
         </div>
       )}
 
-      {/* Cabecera y buscador: distribución original */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="relative w-full sm:w-[320px]">
           <Search
@@ -228,7 +244,7 @@ export function CategoryTable({
             {t(`dashboard:header.period.${period}`)}
           </span>
 
-          {!showSkeleton && (
+          {!showSkeleton && !isCategoriesError && (
             <p className="text-sm text-muted-foreground">
               {t('categories:showing', {
                 total: totalElements,
@@ -238,10 +254,25 @@ export function CategoryTable({
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         {showSkeleton ? (
           <CategoryRowsSkeleton />
+        ) : showCategoryErrorWithoutData ? (
+          <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+            <p className="text-sm text-destructive" role="alert">
+              {categoriesLoadError}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void refetchCategories();
+              }}
+              disabled={isCategoriesFetching}
+            >
+              {retryLabel}
+            </Button>
+          </div>
         ) : (
           <MotionConfig reducedMotion="user">
             <m.div
@@ -252,27 +283,25 @@ export function CategoryTable({
             >
               {categories.length === 0 ? (
                 <p className="py-12 text-center text-sm text-muted-foreground">
-                  {t('categories:empty')}
+                  {searchTerm.trim()
+                    ? t('categories:noSearchResults')
+                    : t('categories:empty')}
                 </p>
               ) : (
                 categories.map((category) => {
-                  const spent =
-                    expensesByCategoryId[category.id] ?? 0;
+                  const spent = expensesData
+                    ? expensesByCategoryId[category.id] ?? 0
+                    : null;
 
-                  const budgetLimit =
-                    getPeriodBudgetLimit(
-                      category.budgetLimit,
-                      period,
-                    );
+                  const budgetLimit = getPeriodBudgetLimit(
+                    category.budgetLimit,
+                    period,
+                  );
 
-                  /*
-                   * El porcentaje es real y puede superar el 100 %.
-                   * El recorte se realiza únicamente en CategoryRow.
-                   */
                   const percentage =
-                    budgetLimit !== null
+                    spent !== null && budgetLimit !== null
                       ? (spent / budgetLimit) * 100
-                      : 0;
+                      : null;
 
                   return (
                     <m.div
@@ -296,55 +325,56 @@ export function CategoryTable({
           </MotionConfig>
         )}
 
-        {/* Paginación original */}
-        {totalDisplayPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border bg-background/20 px-6 py-4">
-            <p className="text-xs font-medium text-muted-foreground">
-              {t('transactions:showingInterval', {
-                from,
-                to,
-                total: totalElements,
-              })}
-            </p>
+        {totalDisplayPages > 1 &&
+          !showSkeleton &&
+          !showCategoryErrorWithoutData &&
+          categories.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border bg-background/20 px-6 py-4">
+              <p className="text-xs font-medium text-muted-foreground">
+                {t('transactions:showingInterval', {
+                  from,
+                  to,
+                  total: totalElements,
+                })}
+              </p>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={prevPage}
-                disabled={displayPage === 0}
-                className="h-8 border-border"
-              >
-                <ChevronLeft
-                  size={16}
-                  aria-hidden="true"
-                />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={prevPage}
+                  disabled={displayPage === 0}
+                  className="h-8 border-border"
+                >
+                  <ChevronLeft
+                    size={16}
+                    aria-hidden="true"
+                  />
+                </Button>
 
-              <span className="min-w-15 text-center text-sm text-muted-foreground">
-                {displayPage + 1} / {totalDisplayPages}
-              </span>
+                <span className="min-w-15 text-center text-sm text-muted-foreground">
+                  {displayPage + 1} / {totalDisplayPages}
+                </span>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={nextPage}
-                disabled={
-                  displayPage >= totalDisplayPages - 1
-                }
-                className="h-8 border-border"
-              >
-                <ChevronRight
-                  size={16}
-                  aria-hidden="true"
-                />
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={nextPage}
+                  disabled={
+                    displayPage >= totalDisplayPages - 1
+                  }
+                  className="h-8 border-border"
+                >
+                  <ChevronRight
+                    size={16}
+                    aria-hidden="true"
+                  />
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
-      {/* Edición: mantiene el objetivo durante el cierre */}
       <EditCategoryDialog
         key={editTarget?.session}
         category={editTarget?.category ?? null}
@@ -356,7 +386,6 @@ export function CategoryTable({
         }}
       />
 
-      {/* Eliminación: mantiene el nombre durante el cierre */}
       <ConfirmDeletionDialog
         open={isDeleteOpen}
         onOpenChange={(open) => {

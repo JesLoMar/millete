@@ -7,9 +7,12 @@
   "deleteGoalConfirmation": "$t(common:prompts.deleteConfirm)",
   "searchPlaceholder": "Buscar meta por nombre...",
   "clearSearch": "Limpiar búsqueda",
+  "loading": "Cargando metas...",
   "loadingError": "Error al cargar las metas. Intente de nuevo.",
   "loadingDetails": "Cargando detalles...",
+  "retry": "Reintentar",
   "emptyState": "No hay metas de ahorro activas.",
+  "noResults": "No hay metas que coincidan con tu búsqueda.",
   "name": "Nombre",
   "namePlaceholder": "Ej: Fondo de emergencia",
   "targetAmount": "Cantidad objetivo (€)",
@@ -21,6 +24,8 @@
   "invalidLink": "Introduce una URL válida",
   "progress": "Progreso",
   "of": "de",
+  "overdue": "Vencida",
+  "remaining": "Faltan {{amount}}",
   "addFunds": "$t(common:actions.add) fondos a {{name}}",
   "amount": "Cantidad (€)",
   "add": "$t(common:actions.add)",
@@ -29,10 +34,21 @@
   "editGoal": "$t(common:actions.edit) meta",
   "deleteGoal": "$t(common:actions.delete) meta",
   "addContribution": "$t(common:actions.add) aportación",
+  "contributionUnavailable": "Esta meta no admite más aportaciones",
+  "withdrawFundsTitle": "Retirar dinero de {{name}}",
+  "withdrawAction": "Retirar",
+  "availableToWithdraw": "Disponible para retirar: {{amount}}",
   "priorities": {
     "HIGH": "Alta",
     "MEDIUM": "Media",
     "LOW": "Baja"
+  },
+  "errors": {
+    "nameRequired": "Introduce un nombre.",
+    "amountInvalid": "Introduce una cantidad mayor que 0, con un máximo de 2 decimales.",
+    "targetBelowCurrent": "El objetivo no puede ser inferior a lo ya ahorrado ({{amount}}).",
+    "contributionExceeds": "No puedes aportar más de lo que falta ({{amount}}).",
+    "withdrawExceeds": "No puedes retirar más de {{amount}}."
   },
   "alerts": {
     "createSuccess": "$t(common:entities.savingsGoal) creada correctamente",
@@ -42,6 +58,8 @@
     "deleteSuccess": "$t(common:entities.savingsGoal) eliminada correctamente",
     "deleteError": "Error al eliminar la meta de ahorro",
     "contributionSuccess": "¡Aportación añadida correctamente!",
-    "contributionError": "Hubo un error al procesar la aportación."
+    "contributionError": "Hubo un error al procesar la aportación.",
+    "withdrawSuccess": "Dinero retirado correctamente.",
+    "withdrawError": "No se ha podido retirar el dinero."
   }
 }

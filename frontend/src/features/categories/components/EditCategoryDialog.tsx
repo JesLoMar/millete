@@ -25,6 +25,7 @@ import {
   CATEGORY_DESCRIPTION_MAX_LENGTH,
   CATEGORY_NAME_MAX_LENGTH,
   categoryFormSchema,
+  getCategoryBudgetStep,
   parseCategoryBudget,
   parseCategoryDescription,
 } from '../schemas/category.schema';
@@ -52,18 +53,15 @@ const getInitialState = (
   color: category?.color || CATEGORY_COLORS[0],
   budgetLimit:
     category?.budgetLimit !== null &&
-      category?.budgetLimit !== undefined
+    category?.budgetLimit !== undefined
       ? String(category.budgetLimit)
       : '',
   error: null,
 });
 
 /**
- * El estado del formulario se inicializa una sola vez
- * a partir de category.
- *
- * El componente padre debe remontarlo mediante key
- * cada vez que se abra una categoría diferente.
+ * The form is initialized once from category.
+ * The parent remounts this dialog with a new key for each edit session.
  */
 export function EditCategoryDialog({
   category,
@@ -79,15 +77,13 @@ export function EditCategoryDialog({
   const { updateCategory, isUpdating } =
     useCategoryMutations();
 
-  const [form, setForm] =
-    useState<EditCategoryFormState>(
-      () => getInitialState(category),
-    );
+  const [form, setForm] = useState<EditCategoryFormState>(
+    () => getInitialState(category),
+  );
 
   const colorLabelId = useId();
 
   const handleOpenChange = (isOpen: boolean) => {
-
     if (!isOpen && isUpdating) {
       return;
     }
@@ -125,9 +121,7 @@ export function EditCategoryDialog({
     });
 
     if (!validation.success) {
-
-      const issueKey =
-        validation.error.issues[0]?.message;
+      const issueKey = validation.error.issues[0]?.message;
 
       setForm((previous) => ({
         ...previous,
@@ -151,18 +145,16 @@ export function EditCategoryDialog({
         id: category.id,
         data: {
           name,
-          description:
-            parseCategoryDescription(description),
+          description: parseCategoryDescription(description),
           color,
-          budgetLimit:
-            parseCategoryBudget(budgetLimit),
+          budgetLimit: parseCategoryBudget(budgetLimit),
         },
       });
 
       onOpenChange(false);
     } catch {
-
-
+      // useCategoryMutations already notifies the user. Keep the dialog open
+      // after a failed mutation so the form can be corrected or retried.
     }
   };
 
@@ -202,15 +194,10 @@ export function EditCategoryDialog({
                 id="edit-name"
                 value={form.name}
                 onChange={(event) =>
-                  updateField(
-                    'name',
-                    event.target.value,
-                  )
+                  updateField('name', event.target.value)
                 }
                 disabled={isUpdating}
-                placeholder={t(
-                  'categories:namePlaceholder',
-                )}
+                placeholder={t('categories:namePlaceholder')}
                 className="h-11 rounded-xl border-border bg-background text-base"
                 maxLength={CATEGORY_NAME_MAX_LENGTH}
               />
@@ -269,19 +256,14 @@ export function EditCategoryDialog({
                   id="edit-budget"
                   type="number"
                   inputMode="decimal"
-                  step="0.01"
+                  step={getCategoryBudgetStep()}
                   min="0"
                   value={form.budgetLimit}
                   onChange={(event) =>
-                    updateField(
-                      'budgetLimit',
-                      event.target.value,
-                    )
+                    updateField('budgetLimit', event.target.value)
                   }
                   disabled={isUpdating}
-                  placeholder={t(
-                    'categories:budgetPlaceholder',
-                  )}
+                  placeholder={t('categories:budgetPlaceholder')}
                   className="h-11 rounded-xl border-border bg-background pr-12 text-base [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
 
@@ -301,9 +283,7 @@ export function EditCategoryDialog({
 
               <ColorPicker
                 value={form.color}
-                onChange={(color) =>
-                  updateField('color', color)
-                }
+                onChange={(color) => updateField('color', color)}
                 disabled={isUpdating}
                 labelledBy={colorLabelId}
               />
@@ -331,9 +311,7 @@ export function EditCategoryDialog({
 
               <Button
                 type="submit"
-                disabled={
-                  isUpdating || !form.name.trim()
-                }
+                disabled={isUpdating || !form.name.trim()}
                 className="min-h-11 h-10 rounded-xl bg-primary px-5 font-semibold text-primary-foreground transition-all hover:bg-primary/90"
               >
                 {isUpdating ? (

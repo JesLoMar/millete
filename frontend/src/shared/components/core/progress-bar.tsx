@@ -1,4 +1,4 @@
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface ProgressSegment {
@@ -35,6 +35,12 @@ const variantClasses = {
   warning: 'bg-accent',
 }
 
+const clamp = (n: number, min: number, max: number) =>
+  Math.min(Math.max(n, min), max)
+
+const finiteOr = (n: number | undefined, fallback: number) =>
+  typeof n === 'number' && Number.isFinite(n) ? n : fallback
+
 export function ProgressBar({
   value,
   max = 100,
@@ -45,23 +51,41 @@ export function ProgressBar({
   className,
   barClassName,
   ariaLabel,
+  ariaValueNow,
+  ariaValueMin,
+  ariaValueMax,
 }: ProgressBarProps) {
-  const percentage =
-    value !== undefined
-      ? Math.min((value / max) * 100, 100)
-      : 0
+  const reduceMotion = useReducedMotion()
+
+  const transition = {
+    duration: reduceMotion ? 0 : 0.7,
+    ease: 'easeOut' as const,
+  }
 
   if (segments && segments.length > 0) {
+    const widths = segments.map((segment) =>
+      clamp(finiteOr(segment.value, 0), 0, 100),
+    )
+    const total = clamp(
+      widths.reduce((sum, width) => sum + width, 0),
+      0,
+      100,
+    )
+
     return (
       <div
+        role="progressbar"
+        aria-label={ariaLabel}
+        aria-valuemin={ariaValueMin ?? 0}
+        aria-valuemax={ariaValueMax ?? 100}
+        aria-valuenow={ariaValueNow ?? Math.round(total)}
         className={cn(
           sizeClasses[size],
           'w-full bg-secondary rounded-full overflow-hidden flex',
           className,
         )}
-        aria-label={ariaLabel}
       >
-        {segments.map((segment) => (
+        {segments.map((segment, index) => (
           <m.div
             key={segment.id}
             className={cn(
@@ -69,23 +93,22 @@ export function ProgressBar({
               segment.className,
               barClassName,
             )}
-            style={{
-              width: `${segment.value}%`,
-              transformOrigin: 'left center',
-            }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{
-              duration: 0.7,
-              ease: 'easeOut',
-            }}
+            initial={{ width: 0 }}
+            animate={{ width: `${widths[index]}%` }}
+            transition={transition}
             title={segment.label}
-            aria-label={segment.label}
           />
         ))}
       </div>
     )
   }
+
+  const safeMax = finiteOr(max, 0)
+  const hasValidMax = safeMax > 0
+  const safeValue = hasValidMax
+    ? clamp(finiteOr(value, 0), 0, safeMax)
+    : 0
+  const percentage = hasValidMax ? (safeValue / safeMax) * 100 : 0
 
   return (
     <div
@@ -96,9 +119,12 @@ export function ProgressBar({
       )}
     >
       <progress
-        value={value ?? 0}
-        max={max}
+        value={safeValue}
+        max={hasValidMax ? safeMax : 1}
         aria-label={ariaLabel}
+        aria-valuenow={ariaValueNow}
+        aria-valuemin={ariaValueMin}
+        aria-valuemax={ariaValueMax}
         className={cn(
           'absolute inset-0 h-full w-full appearance-none rounded-full bg-transparent',
           '[&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-secondary',
@@ -107,30 +133,25 @@ export function ProgressBar({
         )}
       />
 
-      <div className="absolute inset-0 h-full w-full rounded-full overflow-hidden pointer-events-none">
+      <div
+        className="absolute inset-0 h-full w-full rounded-full overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
         <m.div
           className={cn(
             'h-full rounded-full',
-            variant === 'default' &&
-              !color &&
-              'bg-primary',
-            variant !== 'default' &&
-              variantClasses[variant],
+            variant === 'default' && !color && 'bg-primary',
+            variant !== 'default' && variantClasses[variant],
             barClassName,
           )}
-          style={{
-            width: `${percentage}%`,
-            transformOrigin: 'left center',
-            ...(color && variant === 'default'
+          style={
+            color && variant === 'default'
               ? { backgroundColor: color }
-              : {}),
-          }}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{
-            duration: 0.7,
-            ease: 'easeOut',
-          }}
+              : undefined
+          }
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={transition}
         />
       </div>
     </div>

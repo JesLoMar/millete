@@ -9,7 +9,6 @@ interface ColorPickerProps {
   value: string;
   onChange: (color: string) => void;
   disabled?: boolean;
-  /** id of the element that labels this group (e.g. a <Label id=...>) */
   labelledBy?: string;
 }
 
@@ -21,16 +20,26 @@ export function ColorPicker({
 }: ColorPickerProps) {
   const { t } = useTranslation('categories');
 
-  const buttonsRef = useRef<
-    (HTMLButtonElement | null)[]
-  >([]);
+  const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const total = CATEGORY_COLORS.length;
-  const selectedIndex = CATEGORY_COLORS.indexOf(value);
+  const normalizedValue = value.toLowerCase();
+  const isPaletteColor = CATEGORY_COLORS.some(
+    (color) => color.toLowerCase() === normalizedValue,
+  );
+  const isValidHexColor = /^#[0-9A-Fa-f]{6}$/.test(value);
 
-  // Roving tabindex: only one swatch is a tab stop.
-  const focusableIndex =
-    selectedIndex === -1 ? 0 : selectedIndex;
+  // Keep valid custom colors representable so an edit doesn't silently
+  // display no selected option when the stored color isn't in the palette.
+  const colors: readonly string[] =
+    !isPaletteColor && isValidHexColor
+      ? [value, ...CATEGORY_COLORS]
+      : CATEGORY_COLORS;
+
+  const total = colors.length;
+  const selectedIndex = colors.findIndex(
+    (color) => color.toLowerCase() === normalizedValue,
+  );
+  const focusableIndex = selectedIndex === -1 ? 0 : selectedIndex;
 
   const handleKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
@@ -63,7 +72,7 @@ export function ColorPicker({
 
     event.preventDefault();
     buttonsRef.current[nextIndex]?.focus();
-    onChange(CATEGORY_COLORS[nextIndex]);
+    onChange(colors[nextIndex]);
   };
 
   return (
@@ -75,8 +84,9 @@ export function ColorPicker({
         labelledBy ? undefined : t('categories:color')
       }
     >
-      {CATEGORY_COLORS.map((color, index) => {
-        const isSelected = value === color;
+      {colors.map((color, index) => {
+        const isSelected =
+          color.toLowerCase() === normalizedValue;
 
         return (
           <button
@@ -88,14 +98,10 @@ export function ColorPicker({
             role="radio"
             aria-checked={isSelected}
             aria-label={color}
-            tabIndex={
-              index === focusableIndex ? 0 : -1
-            }
+            tabIndex={index === focusableIndex ? 0 : -1}
             disabled={disabled}
             onClick={() => onChange(color)}
-            onKeyDown={(event) =>
-              handleKeyDown(event, index)
-            }
+            onKeyDown={(event) => handleKeyDown(event, index)}
             className={cn(
               'size-7 cursor-pointer rounded-md border transition-all',
               'border-white/10 hover:border-white/30',

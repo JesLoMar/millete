@@ -6,12 +6,8 @@ export interface SavingsGoal {
   readonly currentAmount: number;
   readonly deadline?: string;
   readonly priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  readonly status:
-    | 'ACTIVE'
-    | 'PAUSED'
-    | 'COMPLETED'
-    | 'CANCELLED';
   readonly link?: string;
+  readonly active: boolean;
 }
 
 export interface CreateSavingsGoalDTO {
@@ -27,10 +23,5 @@ export interface UpdateSavingsGoalDTO {
   targetAmount: number;
   deadline?: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  status:
-    | 'ACTIVE'
-    | 'PAUSED'
-    | 'COMPLETED'
-    | 'CANCELLED';
   link?: string;
 }
