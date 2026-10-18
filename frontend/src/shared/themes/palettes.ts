@@ -20,6 +20,7 @@ export interface ThemeColors {
   readonly border: string;
   readonly input: string;
   readonly ring: string;
+  readonly crust: string;
   readonly chart1: string;
   readonly chart2: string;
   readonly chart3: string;
@@ -63,6 +64,7 @@ export const MILLETE_THEME: Theme = {
     border: '42.1 42.9% 73.9%',
     input: '42.1 42.9% 73.9%',
     ring: '25.7 77.8% 42.4%',
+    crust: '25.7 77.8% 42.4%',
     chart1: '162.0 48.1% 20.4%',
     chart2: '144.1 47.1% 46.7%',
     chart3: '47.0 91.7% 52.7%',
@@ -100,6 +102,7 @@ export const DARK_MILLETE_THEME: Theme = {
     border: '26.1 23.2% 19.4%',
     input: '26.1 23.2% 19.4%',
     ring: '25.0 80.7% 53.3%',
+    crust: '25.0 80.7% 53.3%',
     chart1: '161.2 47.9% 45.9%',
     chart2: '142.3 54.1% 59.0%',
     chart3: '44.4 87.1% 48.6%',
@@ -137,6 +140,7 @@ export const ROSE_MILLETE_THEME: Theme = {
     border: '340 20% 88%',
     input: '340 20% 88%',
     ring: '340 60% 56%',
+    crust: '340 60% 56%',
     chart1: '340 55% 39%',
     chart2: '160 50% 53%',
     chart3: '30 80% 60%',
@@ -174,6 +178,7 @@ export const EMBER_MILLETE_THEME: Theme = {
     border: '0 8% 20%',
     input: '0 8% 20%',
     ring: '0 100% 69%',
+    crust: '0 100% 69%',
     chart1: '355 80% 56%',
     chart2: '160 50% 50%',
     chart3: '25 90% 53%',

@@ -1,3 +1,4 @@
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -5,11 +6,24 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 import axios, { type AxiosError } from 'axios';
+import '@fontsource-variable/dm-sans';
 
 import App from './App';
 import './index.css';
 import '@/lib/i18n';
 import { MotionProvider } from '@/shared/components/MotionProvider';
+import {
+  applyTheme,
+  getInitialTheme,
+} from '@/shared/themes/applyTheme';
+
+// Aplicar el tema guardado antes del primer render de React.
+const initialTheme = getInitialTheme();
+
+applyTheme(
+  document.documentElement,
+  initialTheme.colors,
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
