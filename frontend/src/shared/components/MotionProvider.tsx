@@ -1,20 +1,29 @@
-import type { ReactNode } from "react"
-import { LazyMotion, MotionConfig, useReducedMotion, domAnimation } from "framer-motion"
+import type { ReactNode } from 'react';
+import {
+  LazyMotion,
+  MotionConfig,
+  useReducedMotion,
+} from 'framer-motion';
 
 interface MotionProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export function MotionProvider({ children }: MotionProviderProps) {
-  const shouldReduceMotion = useReducedMotion()
+const loadFeatures = () =>
+  import('./motionFeatures').then((module) => module.default);
+
+export function MotionProvider({
+  children,
+}: MotionProviderProps) {
+  const shouldReduceMotion = useReducedMotion();
 
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={loadFeatures} strict>
       <MotionConfig
-        reducedMotion={shouldReduceMotion ? "always" : "user"}
+        reducedMotion={shouldReduceMotion ? 'always' : 'user'}
       >
         {children}
       </MotionConfig>
     </LazyMotion>
-  )
+  );
 }

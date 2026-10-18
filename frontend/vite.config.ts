@@ -1,19 +1,42 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => {
-  loadEnv(mode, process.cwd(), 'VITE_');
-  const isProduction = mode === 'production';
+  const isProduction = mode === 'production' || mode === 'analyze';
+
+  const consoleFunctionsToRemove = isProduction
+    ? [
+      'console.log',
+      'console.info',
+      'console.debug',
+      'console.table',
+    ]
+    : [];
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      ...(mode === 'analyze'
+        ? [
+          visualizer({
+            filename: 'stats.html',
+            gzipSize: true,
+            emitFile: true,
+          }) as PluginOption,
+        ]
+        : []),
+    ],
+
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
-      }
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
     },
+
     server: {
       port: 5173,
       open: true,
@@ -24,6 +47,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+
     preview: {
       proxy: {
         '/api': {
@@ -32,89 +56,49 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+
     build: {
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: isProduction,
-          drop_debugger: isProduction,
-          pure_funcs: isProduction ? ['console.log', 'console.info', 'console.debug', 'console.table'] : [],
-        },
-        format: {
-          comments: false,
-        },
-      },
-      target: 'es2020',
       sourcemap: false,
       chunkSizeWarningLimit: 200,
-      rollupOptions: {
+
+      rolldownOptions: {
         output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('react-router') || id.includes('@remix-run')) {
-                return 'router';
-              }
-              if (
-                id.includes('i18next') ||
-                id.includes('react-i18next') ||
-                id.includes('i18next-browser-languagedetector') ||
-                id.includes('i18next-resources-to-backend')
-              ) {
-                return 'i18n';
-              }
-              if (
-                id.includes('react-hook-form') ||
-                id.includes('zod') ||
-                id.includes('@hookform')
-              ) {
-                return 'forms';
-              }
-              if (
-                id.includes('@tanstack') ||
-                id.includes('axios')
-              ) {
-                return 'data';
-              }
-              if (
-                id.includes('framer-motion') ||
-                id.includes('motion-dom') ||
-                id.includes('motion-utils')
-              ) {
-                return 'motion';
-              }
-              if (id.includes('lucide-react')) {
-                return 'icons';
-              }
-              if (id.includes('sonner')) {
-                return 'notifications';
-              }
-              if (id.includes('clsx') || id.includes('tailwind-merge')) {
-                return 'utils';
-              }
-              if (
-                id.includes('@radix-ui') ||
-                id.includes('@floating-ui') ||
-                id.includes('class-variance-authority')
-              ) {
-                return 'ui';
-              }
-              if (
-                id.includes('react') ||
-                id.includes('scheduler') ||
-                id.includes('use-sync-external-store')
-              ) {
-                return 'vendor';
-              }
-            }
+          minify: {
+            compress: {
+              dropDebugger: isProduction,
+              treeshake: {
+                manualPureFunctions: consoleFunctionsToRemove,
+              },
+            },
+            mangle: true,
+          },
+
+          comments: false,
+
+          codeSplitting: {
+            groups: [
+              {
+                name: 'react',
+                test:
+                  /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom|@remix-run)([\\/]|$)/,
+                priority: 20,
+              },
+              {
+                name: 'motion',
+                test:
+                  /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils)([\\/]|$)/,
+                priority: 10,
+              },
+            ],
           },
         },
       },
     },
-    optimizeDeps: {
-      include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query', 'axios'],
-    },
+
     define: {
-      __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+      __APP_VERSION__: JSON.stringify(
+        process.env.npm_package_version ?? 'dev',
+      ),
     },
   };
 });
