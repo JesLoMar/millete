@@ -30,7 +30,7 @@ export function QuickActions({
   isExporting = false,
   isImporting = false,
 }: QuickActionsProps) {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t } = useTranslation('dashboard');
   const isAnyLoading = isExporting || isImporting
 
   const allActions: Action[] = [

@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { AddContributionDialog } from '@/features/groupgoals/components/dialogs/AddContributionDialog'
 import { CreateGroupGoalDialog } from '@/features/groupgoals/components/dialogs/CreateGroupGoalDialog'
@@ -29,8 +28,7 @@ import { TopNav } from '@/shared/components/TopNav'
 import { useTranslation } from 'react-i18next'
 
 export const GroupGoalsPage = () => {
-  const { t } = useTranslation('groupGoals')
-  const queryClient = useQueryClient()
+  const { t } = useTranslation(['groupGoals', 'common'])
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [internalSelectedGoalId, setInternalSelectedGoalId] =
@@ -159,10 +157,6 @@ export const GroupGoalsPage = () => {
       monthlyTarget,
       distributionMode:
         distributionMode as DistributionMode,
-    })
-
-    await queryClient.invalidateQueries({
-      queryKey: ['group-goals'],
     })
 
     setDialogs((prev) => ({

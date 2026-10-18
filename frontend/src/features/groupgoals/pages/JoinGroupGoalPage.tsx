@@ -34,7 +34,11 @@ type JoinStatus =
   | 'error';
 
 export const JoinGroupGoalPage = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation([
+    'groupGoals',
+    'nav',
+    'common',
+  ]);
   const [searchParams] =
     useSearchParams();
   const navigate = useNavigate();

@@ -1,6 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import axios, { type AxiosError } from 'axios';
 
 import App from './App';
 import './index.css';
@@ -12,6 +16,18 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
+      retry: (failureCount, error) => {
+        if (
+          axios.isCancel(error) ||
+          (error as AxiosError).code === 'ERR_CANCELED'
+        ) {
+          return false;
+        }
+
+        const status = (error as AxiosError).response?.status;
+
+        return (status == null || status >= 500) && failureCount < 2;
+      },
     },
   },
 });

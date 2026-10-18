@@ -31,7 +31,6 @@ export function ExportModal({
 }: ExportModalProps) {
   const { t } = useTranslation([
     'dashboard',
-    'nav',
     'common',
   ])
 

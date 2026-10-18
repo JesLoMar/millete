@@ -27,10 +27,7 @@ export function HistoryChart({
   data: externalData,
   loading = false,
 }: HistoryChartProps) {
-  const { t } = useTranslation([
-    'dashboard',
-    'common',
-  ])
+  const { t } = useTranslation('dashboard');
 
   const [tooltip, setTooltip] = useState<{
     label: string

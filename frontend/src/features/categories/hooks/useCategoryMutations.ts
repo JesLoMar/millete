@@ -32,10 +32,7 @@ const CATEGORY_DEPENDENT_QUERY_KEYS = [
 ] as const;
 
 export const useCategoryMutations = () => {
-  const { t } = useTranslation([
-    'categories',
-    'common',
-  ]);
+  const { t } = useTranslation('categories');
 
   const queryClient = useQueryClient();
 

@@ -18,7 +18,7 @@ import { useCreateSavingsGoal } from '../hooks/useSavingsGoals';
 import { SavingsGoalForm } from './SavingsGoalForm';
 
 export function SavingsGoalDialog() {
-  const { t } = useTranslation(['savingsGoals', 'common']);
+  const { t } = useTranslation('savingsGoals');
 
   const { mutate: createGoal, isPending: isCreating } =
     useCreateSavingsGoal();
@@ -27,8 +27,6 @@ export function SavingsGoalDialog() {
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // No se puede cerrar (Escape, clic fuera, Cancelar) mientras se guarda: si
-  // fallase, el usuario perdería lo que había escrito.
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && isCreating) {
       return;
@@ -68,8 +66,6 @@ export function SavingsGoalDialog() {
             </DialogTitle>
           </DialogHeader>
 
-          {/* Se monta al abrir y se desmonta al cerrar: el formulario se
-              reinicia solo, también con Cancelar. */}
           <SavingsGoalForm
             isSubmitting={isCreating}
             submitLabel={t('create')}

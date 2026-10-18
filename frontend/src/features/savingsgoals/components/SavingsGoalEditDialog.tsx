@@ -28,7 +28,7 @@ export function SavingsGoalEditDialog({
   onOpenChange,
   goal,
 }: SavingsGoalEditDialogProps) {
-  const { t } = useTranslation(['savingsGoals', 'common']);
+  const { t } = useTranslation('savingsGoals');
 
   const { mutate: updateGoal, isPending: isUpdating } =
     useUpdateSavingsGoal();

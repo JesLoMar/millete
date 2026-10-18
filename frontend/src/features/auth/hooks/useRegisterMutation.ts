@@ -57,7 +57,7 @@ export const useRegisterMutation = (
 ) => {
   const { login, waitForPendingLogout } = useAuth();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
 
   return useMutation<
     RegisterFlowResult,

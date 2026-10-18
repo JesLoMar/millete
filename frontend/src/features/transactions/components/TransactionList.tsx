@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -102,9 +103,7 @@ export function TransactionList({ period }: TransactionListProps) {
         {transactions.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">
             {hasActiveFilters
-              ? t('noResults', {
-                  defaultValue: 'No se encontraron transacciones.',
-                })
+              ? t('noResults')
               : t('empty')}
           </p>
         ) : (

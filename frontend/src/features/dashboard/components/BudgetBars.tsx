@@ -44,10 +44,7 @@ export function BudgetBars({
   loading = false,
   period = 'month',
 }: BudgetBarsProps) {
-  const { t } = useTranslation([
-    'dashboard',
-    'common',
-  ]);
+  const { t } = useTranslation('dashboard');
 
   const budgets = externalData ?? [];
 

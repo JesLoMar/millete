@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeSelector } from '@/shared/components/ThemeSelector';
 
 export function AuthHeader() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
 
   return (
     <header className="mb-12 flex items-center justify-between">

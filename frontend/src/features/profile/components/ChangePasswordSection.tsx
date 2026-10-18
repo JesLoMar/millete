@@ -18,7 +18,7 @@ import { SettingsSection } from './SettingsSection';
 export function ChangePasswordSection() {
   const { t } = useTranslation([
     'userProfile',
-    'common',
+    'validations',
   ]);
 
   const {

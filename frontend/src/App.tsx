@@ -57,14 +57,6 @@ const JoinGroupGoalPage = lazy(() =>
   ),
 );
 
-const WikiLayout = lazy(() =>
-  import('@/features/wiki/components/WikiLayout'),
-);
-
-const WikiPage = lazy(() =>
-  import('@/features/wiki/pages/page'),
-);
-
 const ProfilePage = lazy(() =>
   import('@/features/profile/pages/page').then((module) => ({
     default: module.ProfilePage,
@@ -96,11 +88,6 @@ export default function App() {
             <Route element={<PublicRoute />}>
               <Route path={ROUTES.home} element={<LoginPage />} />
               <Route path={ROUTES.login} element={<LoginPage />} />
-            </Route>
-
-            <Route path={ROUTES.wiki} element={<WikiLayout />}>
-              <Route index element={<WikiPage />} />
-              <Route path=":section" element={<WikiPage />} />
             </Route>
 
             <Route element={<ProtectedRoute />}>

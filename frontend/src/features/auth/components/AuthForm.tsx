@@ -29,7 +29,7 @@ import { AuthFooter } from './AuthForm/AuthFooter';
 
 export function AuthForm() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const { t } = useTranslation(['auth', 'common']);
+  const { t } = useTranslation('auth');
 
   const currentSchema =
     mode === 'login' ? loginSchema : registerSchema;

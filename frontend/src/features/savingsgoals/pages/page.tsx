@@ -99,6 +99,7 @@ export const SavingsGoalsPage = () => {
 
   const closeDialog = useCallback(() => {
     setIsDialogOpen(false);
+    setDialog(null);
   }, []);
 
   const openContribution = useCallback(

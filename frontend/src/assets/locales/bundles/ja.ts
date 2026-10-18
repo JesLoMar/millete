@@ -14,7 +14,6 @@ import settings_ja from '@/assets/locales/ja/settings.json';
 import transactions_ja from '@/assets/locales/ja/transactions.json';
 import userProfile_ja from '@/assets/locales/ja/userProfile.json';
 import validations_ja from '@/assets/locales/ja/validations.json';
-import wiki_ja from '@/assets/locales/ja/wiki.json';
 
 const resources: ResourceLanguage = {
   api: api_ja,
@@ -31,8 +30,7 @@ const resources: ResourceLanguage = {
   settings: settings_ja,
   transactions: transactions_ja,
   userProfile: userProfile_ja,
-  validations: validations_ja,
-  wiki: wiki_ja,
+  validations: validations_ja
 };
 
 export default resources;

@@ -41,7 +41,6 @@ interface ContributionFormProps {
   onCancel: () => void;
 }
 
-/** Su estado se reinicia solo: se monta al abrir y se desmonta al cerrar. */
 function ContributionForm({
   goal,
   isSubmitting,
@@ -49,7 +48,7 @@ function ContributionForm({
   onSubmit,
   onCancel,
 }: ContributionFormProps) {
-  const { t } = useTranslation(['savingsGoals', 'common']);
+  const { t } = useTranslation('savingsGoals');
 
   const [amount, setAmount] = useState('');
   const [submitted, setSubmitted] = useState(false);

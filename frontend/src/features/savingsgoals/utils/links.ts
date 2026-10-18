@@ -20,13 +20,10 @@ export const normalizeHttpLink = (
       return undefined;
     }
 
-    // Rechaza "mailto:a@b" (que se interpretaría como usuario@host) y
-    // cualquier URL con credenciales incrustadas.
     if (url.username || url.password) {
       return undefined;
     }
 
-    // Rechaza hosts sin punto ("foo") salvo localhost.
     if (url.hostname !== 'localhost' && !url.hostname.includes('.')) {
       return undefined;
     }

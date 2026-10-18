@@ -17,7 +17,7 @@ export function ContributionHistory({
   goalId,
   onAddClick,
 }: ContributionHistoryProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation('groupGoals')
 
   const {
     displayItems: contributions,

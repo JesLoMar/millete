@@ -15,7 +15,6 @@ import enApi from '@/assets/locales/en/api.json';
 import enNotifications from '@/assets/locales/en/notifications.json';
 import enUserProfile from '@/assets/locales/en/userProfile.json';
 import enInfo from '@/assets/locales/en/info.json';
-import enWiki from '@/assets/locales/en/wiki.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -36,7 +35,6 @@ declare module 'i18next' {
       'userProfile',
       'notifications',
       'info',
-      'wiki',
     ];
     resources: {
       common: typeof enCommon;

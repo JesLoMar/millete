@@ -25,10 +25,7 @@ export function RecentTransactions({
   loading = false,
   limit = 5,
 }: RecentTransactionsProps) {
-  const { t } = useTranslation([
-    'dashboard',
-    'common',
-  ])
+  const { t } = useTranslation('dashboard');
 
   const navigate = useNavigate()
 

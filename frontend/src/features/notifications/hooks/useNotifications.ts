@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import {
   useMutation,
@@ -14,14 +15,17 @@ import { notificationsService } from '../services/notifications.service';
 import type { Notification } from '../types';
 
 const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const;
+
 const ALL_QUERY_KEY = [
   ...NOTIFICATIONS_QUERY_KEY,
   'all',
 ] as const;
+
 const PAGINATED_QUERY_KEY = [
   ...NOTIFICATIONS_QUERY_KEY,
   'paginated',
 ] as const;
+
 const COUNT_QUERY_KEY = [
   ...NOTIFICATIONS_QUERY_KEY,
   'unread-count',
@@ -33,7 +37,8 @@ const NOTIFICATION_DISPLAY_SIZE = 5;
 export function useNotifications() {
   return useQuery<Notification[]>({
     queryKey: ALL_QUERY_KEY,
-    queryFn: () => notificationsService.getAll(),
+    queryFn: ({ signal }) =>
+      notificationsService.getAll(undefined, signal),
     staleTime: 60_000,
   });
 }
@@ -45,19 +50,22 @@ export function useRecentNotifications(limit: number) {
       'recent',
       limit,
     ],
-    queryFn: () => notificationsService.getAll(limit),
+    queryFn: ({ signal }) =>
+      notificationsService.getAll(limit, signal),
     staleTime: 60_000,
   });
 }
 
 export function usePaginatedNotifications() {
   const fetchPage = useCallback(
-    async (
+    (
       page: number,
+      signal?: AbortSignal,
     ): Promise<PaginatedResponse<Notification>> =>
       notificationsService.getPaginated(
         page,
         NOTIFICATION_SERVER_SIZE,
+        signal,
       ),
     [],
   );
@@ -77,7 +85,8 @@ export function usePaginatedNotifications() {
 export function useUnreadNotificationsCount() {
   return useQuery<number>({
     queryKey: COUNT_QUERY_KEY,
-    queryFn: notificationsService.getUnreadCount,
+    queryFn: ({ signal }) =>
+      notificationsService.getUnreadCount(signal),
     staleTime: 60_000,
   });
 }
@@ -89,7 +98,7 @@ export function useMarkNotificationAsRead() {
     mutationFn: notificationsService.markAsRead,
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: NOTIFICATIONS_QUERY_KEY,
       });
     },
@@ -108,9 +117,7 @@ export function useMarkAllNotificationsAsRead() {
       });
 
       const previousCount =
-        queryClient.getQueryData<number>(
-          COUNT_QUERY_KEY,
-        );
+        queryClient.getQueryData<number>(COUNT_QUERY_KEY);
 
       queryClient.setQueryData(COUNT_QUERY_KEY, 0);
 
@@ -127,7 +134,7 @@ export function useMarkAllNotificationsAsRead() {
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: NOTIFICATIONS_QUERY_KEY,
       });
     },
@@ -141,7 +148,7 @@ export function useDeleteNotification() {
     mutationFn: notificationsService.delete,
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: NOTIFICATIONS_QUERY_KEY,
       });
     },

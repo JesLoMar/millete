@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { Button } from '@/shared/components/core/button';
 
 export const ProtectedRoute = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const { isAuthenticated, isLoading, isOffline, retryAuth } = useAuth();
   const location = useLocation();
 
@@ -14,7 +14,7 @@ export const ProtectedRoute = () => {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">
-          {t('common:status.loadingSession')}
+          {t('status.loadingSession')}
         </p>
       </div>
     );
@@ -24,11 +24,11 @@ export const ProtectedRoute = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="text-muted-foreground">
-          {t('common:status.connectionError')}
+          {t('status.connectionError')}
         </p>
 
         <Button variant="outline" onClick={retryAuth}>
-          {t('common:actions.retry')}
+          {t('actions.retry')}
         </Button>
       </div>
     );

@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { Button } from '@/shared/components/core/button';
 
 export const LoginPage = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'common']);
   const { isLoading, isOffline, retryAuth } = useAuth();
 
   return (

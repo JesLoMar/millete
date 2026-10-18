@@ -72,9 +72,6 @@ export function useSavingsGoals(
   };
 }
 
-// Las mutaciones solicitan la invalidación de las consultas relacionadas.
-// De este modo, los saldos y la lista se actualizan después de cada operación.
-
 export const useCreateSavingsGoal = () => {
   const queryClient = useQueryClient();
   const { t } = useTranslation('savingsGoals');

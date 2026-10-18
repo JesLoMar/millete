@@ -92,7 +92,7 @@ const initialUIState: UIState = {
 }
 
 export const DashboardPage = () => {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t } = useTranslation('dashboard')
   const [period, setPeriod] = useState<PeriodFilter>('month')
   const [ui, dispatch] = useReducer(uiReducer, initialUIState)
   const queryClient = useQueryClient()
@@ -386,46 +386,54 @@ export const DashboardPage = () => {
         </m.main>
       </div>
 
-      <ImportModal
-        isOpen={ui.isImportOpen}
-        onClose={() =>
-          dispatch({
-            type: 'CLOSE_MODAL',
-            modal: 'import',
-          })
-        }
-        onImport={handleImport}
-      />
+      {ui.isImportOpen && (
+        <ImportModal
+          isOpen={true}
+          onClose={() =>
+            dispatch({
+              type: 'CLOSE_MODAL',
+              modal: 'import',
+            })
+          }
+          onImport={handleImport}
+        />
+      )}
 
-      <ExportModal
-        open={ui.isExportOpen}
-        onOpenChange={(open) =>
-          dispatch({
-            type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
-            modal: 'export',
-          })
-        }
-      />
+      {ui.isExportOpen && (
+        <ExportModal
+          open={true}
+          onOpenChange={(open) =>
+            dispatch({
+              type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
+              modal: 'export',
+            })
+          }
+        />
+      )}
 
-      <NewTransactionDialog
-        open={ui.isAddOpen}
-        onOpenChange={(open) =>
-          dispatch({
-            type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
-            modal: 'add',
-          })
-        }
-      />
+      {ui.isAddOpen && (
+        <NewTransactionDialog
+          open={true}
+          onOpenChange={(open) =>
+            dispatch({
+              type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
+              modal: 'add',
+            })
+          }
+        />
+      )}
 
-      <AddCategoryDialog
-        open={ui.isAddCategoryOpen}
-        onOpenChange={(open) =>
-          dispatch({
-            type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
-            modal: 'addCategory',
-          })
-        }
-      />
+      {ui.isAddCategoryOpen && (
+        <AddCategoryDialog
+          open={true}
+          onOpenChange={(open) =>
+            dispatch({
+              type: open ? 'OPEN_MODAL' : 'CLOSE_MODAL',
+              modal: 'addCategory',
+            })
+          }
+        />
+      )}
     </div>
   )
 }

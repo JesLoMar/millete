@@ -50,17 +50,13 @@ function getInitialForm(goal?: SavingsGoal | null): FormState {
         ? String(goal.targetAmount)
         : '',
     priority: goal?.priority ?? 'MEDIUM',
-    // El input date solo admite yyyy-MM-dd; si el backend devuelve un ISO con
-    // hora, sin esto el campo se vería vacío.
     deadline: toDateInputValue(goal?.deadline),
     link: goal?.link ?? '',
   };
 }
 
 interface SavingsGoalFormProps {
-  /** Meta a editar. Sin meta, el formulario es de creación. */
   initialGoal?: SavingsGoal | null;
-  /** El objetivo no puede ser inferior a este importe (lo ya ahorrado). */
   minTargetAmount?: number;
   isSubmitting: boolean;
   submitLabel: string;
@@ -69,11 +65,6 @@ interface SavingsGoalFormProps {
   onCancel: () => void;
 }
 
-/**
- * Formulario compartido de crear/editar. Su estado vive aquí: al montarse
- * dentro de DialogContent (que se desmonta al cerrar) se reinicia solo cada
- * vez que se abre el diálogo, sin `key` ni efectos.
- */
 export function SavingsGoalForm({
   initialGoal,
   minTargetAmount = 0,
@@ -147,8 +138,6 @@ export function SavingsGoalForm({
   };
 
   return (
-    // noValidate: la validación es propia (el type="url" nativo rechazaría
-    // "ejemplo.com", que normalizeHttpLink sí acepta).
     <form onSubmit={handleSubmit} noValidate>
       <div className="space-y-4 py-2 sm:py-4">
         <div className="space-y-2">

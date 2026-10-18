@@ -31,10 +31,12 @@ export function ConfirmDeletionDialog({
   title,
   description,
 }: ConfirmDeletionDialogProps) {
-  const { t } = useTranslation([
-    'categories',
-    'common',
-  ]);
+  const translationNamespaces =
+    title !== undefined && description !== undefined
+      ? (['common'] as const)
+      : (['categories', 'common'] as const);
+
+  const { t } = useTranslation(translationNamespaces);
 
   const dialogTitle =
     title ?? t('categories:deleteTitle');

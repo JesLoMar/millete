@@ -27,7 +27,7 @@ export function AddContributionDialog({
   onSave,
   isSaving = false,
 }: AddContributionDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation(['groupGoals', 'common'])
   const [amount, setAmount] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 

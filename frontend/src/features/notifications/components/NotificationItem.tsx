@@ -44,7 +44,7 @@ export const NotificationItem = memo(
     onMarkAsRead,
     onDelete,
   }: NotificationItemProps) {
-    const { t } = useTranslation([
+    const { t, i18n } = useTranslation([
       'notifications',
       'common',
       'groupGoals',
@@ -140,6 +140,14 @@ export const NotificationItem = memo(
       onDelete(notification.id);
     }, [notification.id, onDelete]);
 
+    const createdAtDate = new Date(notification.createdAt);
+
+    const formattedCreatedAt = Number.isNaN(
+      createdAtDate.getTime(),
+    )
+      ? notification.createdAt
+      : createdAtDate.toLocaleString(i18n.language);
+
     return (
       <div
         className={cn(
@@ -166,9 +174,7 @@ export const NotificationItem = memo(
           </p>
 
           <p className="mt-2 text-xs text-muted-foreground">
-            {new Date(
-              notification.createdAt,
-            ).toLocaleString()}
+            {formattedCreatedAt}
           </p>
 
           {isGoalInvitation &&

@@ -25,7 +25,7 @@ export function RegisterFields({
   control,
   disabled,
 }: RegisterFieldsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'validations']);
 
   const usernameWatch = useWatch({
     control,

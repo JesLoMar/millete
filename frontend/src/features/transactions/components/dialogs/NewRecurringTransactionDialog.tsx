@@ -162,7 +162,7 @@ function RecurringSaveButton({
 }
 
 export function NewRecurringTransactionDialog() {
-  const { t } = useTranslation(['transactions', 'common', 'auth']);
+  const { t } = useTranslation(['transactions', 'common']);
   const { createRecurring, isCreating } =
     useTransactionMutations();
 
@@ -457,7 +457,7 @@ export function NewRecurringTransactionDialog() {
                 >
                   {t('transactions:recurring.endDate')}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    ({t('auth:form.optional')})
+                    ({t('transactions:recurring.optional')})
                   </span>
                 </Label>
 

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 interface EmptyStateProps {
-  /** true cuando no hay resultados para una búsqueda (no es que no haya metas). */
   isSearching?: boolean;
 }
 

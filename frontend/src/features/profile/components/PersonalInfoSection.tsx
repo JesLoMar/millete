@@ -19,7 +19,7 @@ interface FormState {
 }
 
 export function PersonalInfoSection() {
-  const { t } = useTranslation('userProfile');
+  const { t } = useTranslation(['userProfile','common']);
 
   const { profile, isLoading } = useProfile();
   const {

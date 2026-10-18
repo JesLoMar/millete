@@ -20,7 +20,7 @@ export function LoginFields({
   disabled,
   errors,
 }: LoginFieldsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'validations']);
 
   return (
     <div className="space-y-3">

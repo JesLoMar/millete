@@ -1,7 +1,6 @@
 # PLANIFICACIÓN Y TODO-LIST: MILLETE
 
 ## IDEAS A CHOLÓN
-- [ ] Añadir sugerencias con IA. ChatGPT Finance.
 - [ ] Añadir escaneo de tickets para que se añada directamente la categoría compra o a lo que pertenezca y el dinero gastado.
 - [ ] Diseño propio mobile.
 - [ ] Importar movimientos con csv bancarios, investigar bancos más usados en España.
@@ -153,26 +152,3 @@
 - [x] Mejoras en el apartado visual.
 
 ---
-
-🟠 Bugs de lógica
-
-13. Mensajes de error en español hardcodeados en todo el backend
-Los mensajes de excepciones ("Credenciales inválidas", "Demasiados intentos...", el del rate limiter con String.formatted...) van directos al message que el front muestra tal cual (error.response?.data?.message). Tu app soporta 7 idiomas pero el backend siempre habla español. Lo correcto: el backend devuelve códigos de error (AUTH_INVALID_CREDENTIALS) y el front los traduce. Es un refactor con enjundia, pero al menos documenta el contrato.
-
-🟡 Seguridad / endurecimiento
-
-18. Scheduler sin lock distribuido (TransactionScheduler)
-@Scheduled en cada instancia: el día que escales a 2 réplicas, las transacciones planificadas se ejecutan dos veces (cargos duplicados). ShedLock o equivalente antes de escalar. También: sin timeout ni alertado si falla.
-
-19. importUserData parsea 10MB de JSON en memoria y escribe todo en una transacción
-El multipart cap de 10MB ayuda, pero objectMapper.readValue materializa todo el árbol y luego insertas miles de filas en una única @Transactional — una importación grande puede tardar minutos con la transacción abierta (locks) y un fallo al final lo revierte todo sin progreso. Considera streaming/batch. Y valida tamaño máximo de arrays, no solo del archivo.
-
-
-🔵 Menores / deuda
-GlobalExceptionHandler: los errores de validación devuelven validationErrors.toString() (formato {campo=msg, campo2=msg2} de Java) como string plano — el front no puede parsearlo. Devuelve el Map estructurado.
-El handler deja escapar ex.getMessage() en varias ramas de 400 — ok para validación, pero revisa que ningún mensaje interno (SQL, paths) llegue al cuerpo.
-checkLockStatus guarda sesiones sin modificarlas (saveSession(session) dentro del loop sin cambios) — escritura innecesaria por cada login.
-NotificationService/GroupGoalService: usan log.info con IDs — bien; pero el rate limiter escribe JSON a mano con formatted (frágil si el mensaje lleva comillas).
-Tests: tienes buena cobertura de servicios, pero no vi ni un test de seguridad (filtro JWT, rate limiter, constraint de sesiones). El bug #2 lo habría cazado un test de integración de "login dos veces".
-pom.xml — revisa que spring-boot-starter-actuator no esté expuesto sin seguridad si lo incluyes (no lo vi, bien).
-Flyway con baseline-on-migrate: true y solo V1+V2: correcto, pero el comentario del punto 2 sugiere que V2 introdujo la tabla de sesiones sin test de migración contra datos reales.

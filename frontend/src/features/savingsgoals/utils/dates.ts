@@ -1,27 +1,52 @@
 const DATE_PREFIX_PATTERN = /^(\d{4})-(\d{2})-(\d{2})/;
 
-/**
- * Devuelve yyyy-MM-dd (el único formato que acepta <input type="date">) a
- * partir de "2026-12-31" o de un ISO con hora ("2026-12-31T00:00:00Z").
- * Devuelve '' si no se reconoce.
- */
-export const toDateInputValue = (value?: string | null): string => {
-  const match = value ? DATE_PREFIX_PATTERN.exec(value) : null;
+interface ParsedDate {
+  iso: string;
+  date: Date;
+}
 
-  return match ? `${match[1]}-${match[2]}-${match[3]}` : '';
-};
+const parseDatePrefix = (
+  value?: string | null,
+): ParsedDate | null => {
+  const match = value
+    ? DATE_PREFIX_PATTERN.exec(value)
+    : null;
 
-const parseDateOnly = (value: string): Date | null => {
-  const iso = toDateInputValue(value);
-
-  if (!iso) {
+  if (!match) {
     return null;
   }
 
-  const [year, month, day] = iso.split('-').map(Number);
+  const [, yearText, monthText, dayText] = match;
+
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
   const date = new Date(year, month - 1, day);
 
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return {
+    iso: `${yearText}-${monthText}-${dayText}`,
+    date,
+  };
+};
+
+export const toDateInputValue = (
+  value?: string | null,
+): string => {
+  return parseDatePrefix(value)?.iso ?? '';
+};
+
+const parseDateOnly = (value: string): Date | null => {
+  return parseDatePrefix(value)?.date ?? null;
 };
 
 export const formatDeadline = (
@@ -31,9 +56,9 @@ export const formatDeadline = (
   const date = parseDateOnly(value);
 
   return date
-    ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(
-        date,
-      )
+    ? new Intl.DateTimeFormat(locale, {
+        dateStyle: 'medium',
+      }).format(date)
     : value;
 };
 

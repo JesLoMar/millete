@@ -13,86 +13,93 @@ const LOCALE_MAP: Record<string, string> = {
 
 const DEFAULT_LOCALE = 'es-ES'
 const DEFAULT_CURRENCY = 'EUR'
+const MAX_FORMATTER_CACHE_SIZE = 100
 
 function getLocale(): string {
   const lang = i18n.language?.split('-')[0]
   return (lang && LOCALE_MAP[lang]) || DEFAULT_LOCALE
 }
 
+let lastPreferencesRaw: string | null | undefined
+let lastCurrencyCode = DEFAULT_CURRENCY
+
 export function getLocalCurrencyCode(): string {
+  const raw = sessionCache.getItem('userPreferences')
+
+  if (raw === lastPreferencesRaw) {
+    return lastCurrencyCode
+  }
+
+  lastPreferencesRaw = raw
+  lastCurrencyCode = DEFAULT_CURRENCY
+
+  if (!raw) {
+    return lastCurrencyCode
+  }
+
   try {
-    const raw = sessionCache.getItem('userPreferences')
-
-    if (raw) {
-      const prefs = JSON.parse(raw) as {
-        localCurrency?: string
-        currencyFormat?: {
-          currency?: string
-        }
-      }
-
-      const currency = prefs.localCurrency || prefs.currencyFormat?.currency
-      if (currency) {
-        new Intl.NumberFormat('en', {
-          style: 'currency',
-          currency,
-        })
-        return currency
+    const prefs = JSON.parse(raw) as {
+      localCurrency?: unknown
+      currencyFormat?: {
+        currency?: unknown
       }
     }
+
+    const configuredCurrency =
+      prefs.localCurrency || prefs.currencyFormat?.currency
+
+    if (
+      typeof configuredCurrency !== 'string' ||
+      configuredCurrency.trim().length === 0
+    ) {
+      return lastCurrencyCode
+    }
+
+    const currency = configuredCurrency.trim().toUpperCase()
+
+    new Intl.NumberFormat('en', {
+      style: 'currency',
+      currency,
+    })
+
+    lastCurrencyCode = currency
   } catch {
   }
 
-  return DEFAULT_CURRENCY
+  return lastCurrencyCode
 }
 
-const CURRENCY_FORMATTERS = new Map<
-  string,
-  Intl.NumberFormat
->()
+const FORMATTERS = new Map<string, Intl.NumberFormat>()
 
-const NUMBER_FORMATTERS = new Map<
-  string,
-  Intl.NumberFormat
->()
+function getFormatter(
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat {
+  const normalizedOptions = Object.keys(options)
+    .sort()
+    .map((key) => [key, options[key as keyof Intl.NumberFormatOptions]])
 
-const DYNAMIC_CURRENCY_FORMATTERS = new Map<
-  string,
-  Intl.NumberFormat
->()
+  const key = JSON.stringify([locale, normalizedOptions])
+  const cachedFormatter = FORMATTERS.get(key)
 
-const COMMON_LOCALES = Object.values(LOCALE_MAP)
-
-const COMMON_CURRENCIES = [
-  'EUR',
-  'USD',
-  'GBP',
-  'CHF',
-  'CAD',
-  'AUD',
-  'JPY',
-]
-
-for (const locale of COMMON_LOCALES) {
-  for (const currency of COMMON_CURRENCIES) {
-    CURRENCY_FORMATTERS.set(
-      `${locale}:${currency}`,
-      new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    )
+  if (cachedFormatter) {
+    FORMATTERS.delete(key)
+    FORMATTERS.set(key, cachedFormatter)
+    return cachedFormatter
   }
 
-  NUMBER_FORMATTERS.set(
-    locale,
-    new Intl.NumberFormat(locale, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }),
-  )
+  const formatter = new Intl.NumberFormat(locale, options)
+  FORMATTERS.set(key, formatter)
+
+  if (FORMATTERS.size > MAX_FORMATTER_CACHE_SIZE) {
+    const oldestKey = FORMATTERS.keys().next().value
+
+    if (oldestKey !== undefined) {
+      FORMATTERS.delete(oldestKey)
+    }
+  }
+
+  return formatter
 }
 
 interface FormatCurrencyOptions {
@@ -102,7 +109,10 @@ interface FormatCurrencyOptions {
 }
 
 function normalizeFractionDigits(
-  options: FormatCurrencyOptions,
+  options: {
+    minimumFractionDigits?: number
+    maximumFractionDigits?: number
+  },
   defaults: {
     minimum: number
     maximum: number
@@ -111,30 +121,30 @@ function normalizeFractionDigits(
   minimumFractionDigits: number
   maximumFractionDigits: number
 } {
-  let minimumFractionDigits =
-    options.minimumFractionDigits ??
-    defaults.minimum
+  const normalize = (value: number | undefined, fallback: number) => {
+    if (
+      typeof value !== 'number' ||
+      !Number.isFinite(value) ||
+      !Number.isInteger(value)
+    ) {
+      return fallback
+    }
 
-  let maximumFractionDigits =
-    options.maximumFractionDigits ??
-    defaults.maximum
+    return Math.max(0, Math.min(20, value))
+  }
 
-  minimumFractionDigits = Math.max(
-    0,
-    Math.min(20, minimumFractionDigits),
+  let minimumFractionDigits = normalize(
+    options.minimumFractionDigits,
+    defaults.minimum,
   )
 
-  maximumFractionDigits = Math.max(
-    0,
-    Math.min(20, maximumFractionDigits),
+  const maximumFractionDigits = normalize(
+    options.maximumFractionDigits,
+    Math.max(defaults.maximum, minimumFractionDigits),
   )
 
-  if (
-    minimumFractionDigits >
-    maximumFractionDigits
-  ) {
-    minimumFractionDigits =
-      maximumFractionDigits
+  if (minimumFractionDigits > maximumFractionDigits) {
+    minimumFractionDigits = maximumFractionDigits
   }
 
   return {
@@ -143,112 +153,39 @@ function normalizeFractionDigits(
   }
 }
 
-function getDynamicCurrencyFormatter(
-  locale: string,
-  currency: string,
-  options: Intl.NumberFormatOptions,
-): Intl.NumberFormat {
-  const key = JSON.stringify([
-    locale,
-    currency,
-    options,
-  ])
-
-  const cachedFormatter =
-    DYNAMIC_CURRENCY_FORMATTERS.get(key)
-
-  if (cachedFormatter) {
-    return cachedFormatter
-  }
-
-  const formatter = Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    ...options,
-  })
-
-  DYNAMIC_CURRENCY_FORMATTERS.set(
-    key,
-    formatter,
-  )
-
-  return formatter
-}
-
 export function formatCurrency(
   value: number,
   currency?: string,
   options: FormatCurrencyOptions = {},
 ): string {
   const locale = getLocale()
+  const currencyCode = currency || getLocalCurrencyCode()
 
-  const currencyCode =
-    currency || getLocalCurrencyCode()
-
-  if (
-    options.compact &&
-    Math.abs(value) >= 1_000
-  ) {
-    const {
-      minimumFractionDigits,
-      maximumFractionDigits,
-    } = normalizeFractionDigits(
-      options,
-      {
-        minimum: 1,
-        maximum: 1,
-      },
-    )
-
-    return getDynamicCurrencyFormatter(
-      locale,
-      currencyCode,
-      {
-        notation: 'compact',
-        compactDisplay: 'short',
-        minimumFractionDigits,
-        maximumFractionDigits,
-      },
-    ).format(value)
-  }
+  const useCompactNotation =
+    options.compact === true && Math.abs(value) >= 1_000
 
   const {
     minimumFractionDigits,
     maximumFractionDigits,
   } = normalizeFractionDigits(
     options,
-    {
-      minimum: 2,
-      maximum: 2,
-    },
+    useCompactNotation
+      ? { minimum: 1, maximum: 1 }
+      : { minimum: 2, maximum: 2 },
   )
 
-  const isDefaultFormat =
-    minimumFractionDigits === 2 &&
-    maximumFractionDigits === 2
-
-  if (
-    isDefaultFormat &&
-    !options.compact
-  ) {
-    const formatter =
-      CURRENCY_FORMATTERS.get(
-        `${locale}:${currencyCode}`,
-      )
-
-    if (formatter) {
-      return formatter.format(value)
-    }
-  }
-
-  return getDynamicCurrencyFormatter(
-    locale,
-    currencyCode,
-    {
-      minimumFractionDigits,
-      maximumFractionDigits,
-    },
-  ).format(value)
+  return getFormatter(locale, {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits,
+    maximumFractionDigits,
+    ...(useCompactNotation
+      ? {
+          notation: 'compact',
+          compactDisplay: 'short',
+        }
+      : {}),
+  }).format(value)
 }
 
 export function formatNumber(
@@ -258,68 +195,28 @@ export function formatNumber(
   const locale = getLocale()
 
   const {
-    maximumFractionDigits,
-    minimumFractionDigits,
+    minimumFractionDigits: requestedMinimumFractionDigits,
+    maximumFractionDigits: requestedMaximumFractionDigits,
     ...restOptions
   } = options || {}
 
-  const finalOptions: Intl.NumberFormatOptions = {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  const {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  } = normalizeFractionDigits(
+    {
+      minimumFractionDigits: requestedMinimumFractionDigits,
+      maximumFractionDigits: requestedMaximumFractionDigits,
+    },
+    {
+      minimum: 2,
+      maximum: 2,
+    },
+  )
+
+  return getFormatter(locale, {
     ...restOptions,
-  }
-
-  if (
-    typeof maximumFractionDigits === 'number' &&
-    !isNaN(maximumFractionDigits) &&
-    maximumFractionDigits >= 0 &&
-    maximumFractionDigits <= 20
-  ) {
-    finalOptions.maximumFractionDigits =
-      maximumFractionDigits
-  }
-
-  if (
-    typeof minimumFractionDigits === 'number' &&
-    !isNaN(minimumFractionDigits) &&
-    minimumFractionDigits >= 0 &&
-    minimumFractionDigits <= 20
-  ) {
-    finalOptions.minimumFractionDigits =
-      minimumFractionDigits
-  }
-
-  if (
-    (finalOptions.minimumFractionDigits ?? 0) >
-    (finalOptions.maximumFractionDigits ?? 20)
-  ) {
-    finalOptions.minimumFractionDigits =
-      finalOptions.maximumFractionDigits
-  }
-
-  const hasExtraOptions =
-    Object.keys(restOptions).length > 0
-
-  const isDefaultMinMax =
-    finalOptions.minimumFractionDigits === 2 &&
-    finalOptions.maximumFractionDigits === 2
-
-  if (
-    !hasExtraOptions &&
-    isDefaultMinMax
-  ) {
-    const formatter =
-      NUMBER_FORMATTERS.get(locale)
-
-    if (formatter) {
-      return formatter.format(value)
-    }
-  }
-
-  const fallbackFormatter =
-    NUMBER_FORMATTERS.get(DEFAULT_LOCALE)
-
-  return fallbackFormatter
-    ? fallbackFormatter.format(value)
-    : String(value)
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value)
 }

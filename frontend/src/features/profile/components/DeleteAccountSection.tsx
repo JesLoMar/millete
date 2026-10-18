@@ -24,7 +24,7 @@ import { Label } from '@/shared/components/core/label';
 import { useDeactivateAccount } from '../hooks/useDeactivateAccount';
 
 export function DeleteAccountSection() {
-  const { t } = useTranslation('userProfile');
+  const { t } = useTranslation(['userProfile', 'common']);
 
   const {
     mutate: deactivateAccount,
@@ -47,6 +47,10 @@ export function DeleteAccountSection() {
   };
 
   const handleOpenChange = (open: boolean) => {
+    if (!open && isPending) {
+      return;
+    }
+
     setModalOpen(open);
 
     if (!open) {

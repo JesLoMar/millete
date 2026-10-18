@@ -2,11 +2,6 @@ import { MAX_AMOUNT } from '../constants';
 
 const AMOUNT_PATTERN = /^\d+(\.\d{1,2})?$/;
 
-/**
- * Convierte el texto de un input numérico en un importe válido:
- * mayor que 0, como máximo 2 decimales y sin notación científica.
- * Devuelve null si no es válido.
- */
 export const parseAmount = (value: string): number | null => {
   const trimmed = value.trim();
 
@@ -27,7 +22,6 @@ export const parseAmount = (value: string): number | null => {
   return amount;
 };
 
-/** Compara importes en céntimos para evitar errores de coma flotante. */
 export const toCents = (amount: number): number =>
   Math.round(amount * 100);
 

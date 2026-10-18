@@ -11,7 +11,7 @@ export function AuthToggle({
   mode,
   onToggle,
 }: AuthToggleProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
 
   return (
     <div

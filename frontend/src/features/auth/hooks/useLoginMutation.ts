@@ -16,7 +16,7 @@ import { notify } from '@/shared/utils/notifications/notify';
 export const useLoginMutation = () => {
   const { login, waitForPendingLogout } = useAuth();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'auth']);
 
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {

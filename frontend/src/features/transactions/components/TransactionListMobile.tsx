@@ -1,3 +1,4 @@
+
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -38,10 +39,12 @@ export const TransactionListMobile = memo(function TransactionListMobile({
   return (
     <div className="divide-y divide-border sm:hidden">
       {transactions.map((tx) => {
-        const categoryName = tx.category || 'Sin categoría';
         const isIncome = tx.type === 'INCOME';
-        const isOrphan =
-          !tx.category || tx.category === 'Sin categoría';
+        const isOrphan = !tx.category?.trim();
+
+        const categoryName = isOrphan
+          ? t('uncategorized')
+          : tx.category;
 
         return (
           <m.div

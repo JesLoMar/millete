@@ -23,7 +23,7 @@ export function CategoryDonut({
   loading = false,
   title,
 }: CategoryDonutProps) {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t } = useTranslation('dashboard');
 
   const chartData = externalData || []
 

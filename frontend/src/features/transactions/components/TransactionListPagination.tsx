@@ -41,7 +41,7 @@ export function TransactionListPagination({
           size="sm"
           onClick={onPrev}
           disabled={currentPage === 0}
-          aria-label={t('previousPage', 'Página anterior')}
+          aria-label={t('previousPage')}
           className="h-8 border-border"
         >
           <ChevronLeft size={16} aria-hidden="true" />
@@ -57,7 +57,7 @@ export function TransactionListPagination({
           size="sm"
           onClick={onNext}
           disabled={currentPage >= totalPages - 1}
-          aria-label={t('nextPage', 'Página siguiente')}
+          aria-label={t('nextPage')}
           className="h-8 border-border"
         >
           <ChevronRight size={16} aria-hidden="true" />

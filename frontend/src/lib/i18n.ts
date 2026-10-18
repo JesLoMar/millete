@@ -1,48 +1,46 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
-import resourcesToBackend from "i18next-resources-to-backend";
-import type { ResourceLanguage } from "i18next";
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import resourcesToBackend from 'i18next-resources-to-backend';
 
-const localeLoaders: Record<
-  string,
-  () => Promise<{ default: ResourceLanguage }>
-> = {
-  de: () => import("../assets/locales/bundles/de.ts"),
-  en: () => import("../assets/locales/bundles/en.ts"),
-  es: () => import("../assets/locales/bundles/es.ts"),
-  fr: () => import("../assets/locales/bundles/fr.ts"),
-  it: () => import("../assets/locales/bundles/it.ts"),
-  pt: () => import("../assets/locales/bundles/pt.ts"),
-  ja: () => import("../assets/locales/bundles/ja.ts"),
-};
+const localeModules = import.meta.glob<{
+  default: Record<string, unknown>;
+}>('../assets/locales/*/*.json');
+
+const INITIAL_NAMESPACES = [
+  'common',
+  'api',
+  'validations',
+] as const;
+
+const SUPPORTED_LANGUAGES = [
+  'de',
+  'en',
+  'es',
+  'fr',
+  'it',
+  'pt',
+  'ja',
+] as const;
 
 const backend = resourcesToBackend(
-  (language: string, namespace: string) =>
-    localeLoaders[language]().then((m) => m.default[namespace])
+  (language: string, namespace: string) => {
+
+    const path = `../assets/locales/${language}/${namespace}.json`;
+    const load = localeModules[path];
+
+    if (!load) {
+      return Promise.reject(
+        new Error(
+          `No se encuentra el archivo de traducción: ${path}`,
+        ),
+      );
+    }
+
+    return load().then((module) => module.default);
+  },
 );
 
-const namespaces = [
-  "common",
-  "validations",
-  "auth",
-  "nav",
-  "dashboard",
-  "transactions",
-  "categories",
-  "investments",
-  "groupGoals",
-  "savingsGoals",
-  "settings",
-  "userProfile",
-  "api",
-  "wiki",
-  "info",
-  "notifications",
-];
-
-// Sincroniza <html lang="..."> con el idioma activo (WCAG 3.1.1:
-// los lectores de pantalla dependen de este atributo para pronunciar bien).
 const syncDocumentLang = (lng: string | undefined) => {
   if (lng) {
     document.documentElement.lang = lng;
@@ -54,18 +52,20 @@ i18n
   .use(backend)
   .use(initReactI18next)
   .init({
-    fallbackLng: "en",
-    load: "currentOnly",
-    supportedLngs: ["de", "en", "es", "fr", "it", "pt", "ja"],
-    ns: namespaces,
-    defaultNS: "common",
+    fallbackLng: 'en',
+    load: 'currentOnly',
+    supportedLngs: [...SUPPORTED_LANGUAGES],
+    ns: [...INITIAL_NAMESPACES],
+    defaultNS: 'common',
     debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false,
     },
   })
-  .then(() => syncDocumentLang(i18n.language));
+  .then(() => {
+    syncDocumentLang(i18n.resolvedLanguage ?? i18n.language);
+  });
 
-i18n.on("languageChanged", syncDocumentLang);
+i18n.on('languageChanged', syncDocumentLang);
 
 export default i18n;

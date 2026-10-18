@@ -25,7 +25,7 @@ export function PasswordField({
   mode,
   errors,
 }: PasswordFieldProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['auth', 'validations']);
   const [showPassword, setShowPassword] = useState(false);
 
   return (

@@ -1,3 +1,4 @@
+
 import { apiClient } from '@/shared/api/axiosClient';
 import type { PaginatedResponse } from '@/shared/hooks/useServerPagination';
 
@@ -11,6 +12,7 @@ const BASE = '/notifications';
 export const notificationsService = {
   getAll: async (
     limit?: number,
+    signal?: AbortSignal,
   ): Promise<Notification[]> => {
     const { data } = await apiClient.get<Notification[]>(
       BASE,
@@ -19,6 +21,7 @@ export const notificationsService = {
           limit !== undefined
             ? { limit }
             : undefined,
+        signal,
       },
     );
 
@@ -28,6 +31,7 @@ export const notificationsService = {
   getPaginated: async (
     page: number,
     size: number,
+    signal?: AbortSignal,
   ): Promise<PaginatedResponse<Notification>> => {
     const { data } = await apiClient.get<
       PaginatedResponse<Notification>
@@ -36,15 +40,19 @@ export const notificationsService = {
         page,
         size,
       },
+      signal,
     });
 
     return data;
   },
 
-  getUnreadCount: async (): Promise<number> => {
+  getUnreadCount: async (
+    signal?: AbortSignal,
+  ): Promise<number> => {
     const { data } =
       await apiClient.get<NotificationCountResponse>(
         `${BASE}/unread-count`,
+        { signal },
       );
 
     return data.count;

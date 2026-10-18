@@ -58,11 +58,7 @@ export function AddCategoryDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: AddCategoryDialogProps = {}) {
-  const { t } = useTranslation([
-    'categories',
-    'common',
-    'auth',
-  ]);
+  const { t } = useTranslation(['categories', 'common']);
 
   const { createCategory, isCreating } =
     useCategoryMutations();
@@ -242,7 +238,7 @@ export function AddCategoryDialog({
                   {t('categories:description')}
 
                   <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    ({t('auth:form.optional')})
+                    ({t('categories:optional')})
                   </span>
                 </Label>
 

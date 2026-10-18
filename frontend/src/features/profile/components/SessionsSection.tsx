@@ -11,7 +11,7 @@ import { useSessions } from '../hooks/useSessions';
 import { SettingsSection } from './SettingsSection';
 
 export function SessionsSection() {
-  const { t } = useTranslation(['userProfile', 'common']);
+  const { t, i18n } = useTranslation(['userProfile', 'common']);
   const { sessionId: currentSessionId } = useAuth();
 
   const {
@@ -64,9 +64,7 @@ export function SessionsSection() {
                         </span>
 
                         <span className="text-xs text-muted-foreground">
-                          {new Date(
-                            session.createdAt,
-                          ).toLocaleString()}
+                          {new Date(session.createdAt).toLocaleString(i18n.language,)}
                         </span>
                       </div>
 

@@ -48,16 +48,25 @@ export function TimezoneSection() {
   }, [preferences]);
 
   const timezones = useMemo(() => {
-    const supported = Intl.supportedValuesOf('timeZone');
     const browserTimezone = getBrowserTimezone();
-    return Array.from(new Set([...supported, browserTimezone])).sort(
-      (left, right) => left.localeCompare(right),
+
+    let supported: string[] = [];
+
+    try {
+      supported = Intl.supportedValuesOf('timeZone');
+    } catch {
+
+    }
+
+    return Array.from(
+      new Set([...supported, browserTimezone]),
+    ).sort((left, right) =>
+      left.localeCompare(right),
     );
   }, []);
 
   const saveTimezone = useMutation({
     mutationFn: async (selectedTimezone: string) => {
-      // The backend replaces the preference map, so merge with its current value.
       const current = await profileService.getPreferences();
       await profileService.updatePreferences({
         ...current,
@@ -90,7 +99,11 @@ export function TimezoneSection() {
               className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={timezone}
               onChange={(event) => setTimezone(event.target.value)}
-              disabled={saveTimezone.isPending}
+              disabled={
+                isLoading ||
+                saveTimezone.isPending ||
+                timezone === (preferences?.timezone ?? getBrowserTimezone())
+              }
             >
               {timezones.map((option) => (
                 <option key={option} value={option}>
