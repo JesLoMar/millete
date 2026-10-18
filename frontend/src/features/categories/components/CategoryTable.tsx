@@ -4,7 +4,8 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { m, MotionConfig } from 'framer-motion';
+import * as m from 'framer-motion/m';
+import { MotionConfig } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,

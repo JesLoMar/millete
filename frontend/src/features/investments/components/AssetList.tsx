@@ -1,4 +1,4 @@
-import { m } from 'framer-motion'
+import * as m from 'framer-motion/m';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 

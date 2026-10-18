@@ -1,4 +1,5 @@
-import { m, useReducedMotion } from 'framer-motion'
+import * as m from 'framer-motion/m';
+import { useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils'
 
 interface ProgressSegment {

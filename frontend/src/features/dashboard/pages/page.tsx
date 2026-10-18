@@ -1,5 +1,5 @@
 import { useCallback, useReducer, useState } from 'react'
-import { m } from 'framer-motion'
+import * as m from 'framer-motion/m';
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {

@@ -1,7 +1,8 @@
 import * as React from "react"
 import { XIcon } from "lucide-react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { m, AnimatePresence } from "framer-motion"
+import * as m from 'framer-motion/m';
+import { AnimatePresence } from "framer-motion";
 
 import { cn } from "@/shared/components/core/utils"
 import { Button } from "@/shared/components/core/button"

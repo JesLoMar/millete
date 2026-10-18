@@ -1,6 +1,6 @@
 import { useRef, useLayoutEffect, useEffect, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { m } from "framer-motion"
+import * as m from 'framer-motion/m';
 import { cn } from "@/lib/utils"
 
 export type PeriodFilter = "week" | "month" | "year"

@@ -7,7 +7,7 @@ import {
   HelpCircle,
   MoreHorizontal,
 } from 'lucide-react';
-import { m } from 'framer-motion';
+import * as m from 'framer-motion/m';
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
