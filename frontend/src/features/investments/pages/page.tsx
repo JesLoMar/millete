@@ -1,144 +1,231 @@
-import { useCallback, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Plus, ShieldCheck, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Sidebar } from '@/shared/components/Sidebar';
+import { TopNav } from '@/shared/components/TopNav';
+import { Header } from '@/shared/components/Header';
+import { Button } from '@/shared/components/core/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/core/card';
+import {
+  useCurrentPortfolio,
+  useActivities,
+  useInvestmentTracking,
+} from '../hooks/useInvestmentQueries';
+import { PortfolioSummary } from '../components/PortfolioSummary';
+import { HoldingsTable } from '../components/HoldingsTable';
+import { ActivityHistory } from '../components/ActivityHistory';
+import { PerformanceCard } from '../components/PerformanceCard';
+import { RecordActivityDialog } from '../components/RecordActivityDialog';
+import { MarketDataRefreshButton } from '../components/MarketDataRefreshButton';
+import { EmptyPortfolioState } from '../components/EmptyPortfolioState';
+import { TrackingSetupDialog } from '../components/TrackingSetupDialog';
 
-import type { PeriodFilter } from '@/shared/components/PeriodSelector'
-import { PeriodSelector } from '@/shared/components/PeriodSelector'
-import { Header } from '@/shared/components/Header'
-import { Sidebar } from '@/shared/components/Sidebar'
-import { TopNav } from '@/shared/components/TopNav'
-import { ConfirmDeletionDialog } from '@/shared/components/ConfirmDeletionDialog'
+type TabKey = 'positions' | 'activities';
 
-import { AssetList } from '../components/AssetList'
-import { DistributionChart } from '../components/DistributionChart'
-import { EvolutionChart } from '../components/EvolutionChart'
-import { InvestmentMetrics } from '../components/InvestmentMetrics'
-import { NewInvestmentDialog } from '../components/NewInvestmentDialog'
-import { useInvestmentMutations } from '../hooks/useInvestmentMutations'
-import { useInvestmentQueries } from '../hooks/useInvestmentQueries'
-import type { InvestmentResponse } from '../types'
+export default function InvestmentsPage() {
+  const { t } = useTranslation('investments');
+  const [activeTab, setActiveTab] = useState<TabKey>('positions');
+  const [isRecordOpen, setIsRecordOpen] = useState(false);
+  const [isTrackingSetupOpen, setIsTrackingSetupOpen] = useState(false);
 
-export const InvestmentsPage = () => {
-  const { t } = useTranslation()
+  const { data: tracking, isLoading: isLoadingTracking } =
+    useInvestmentTracking();
 
-  const [period, setPeriod] = useState<PeriodFilter>('month')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [deletingInvestment, setDeletingInvestment] =
-    useState<InvestmentResponse | null>(null)
-
-  const handlePeriodChange = useCallback((newPeriod: PeriodFilter) => {
-    setPeriod(newPeriod)
-  }, [])
+  const isTrackingConfigured = tracking?.configured === true;
 
   const {
-    investments,
-    metrics,
-    evolution,
-    distribution,
-    displaySize,
-  } = useInvestmentQueries({
-    period,
-    search: searchTerm,
-    type: typeFilter,
-  })
+    data: portfolio,
+    isLoading: isLoadingPortfolio,
+    isError: isPortfolioError,
+  } = useCurrentPortfolio(isTrackingConfigured);
 
-  const { deleteInvestment } = useInvestmentMutations()
+  const { data: activitiesPage, isLoading: isLoadingActivities } =
+    useActivities({ page: 0, size: 50 });
 
-  const handleDelete = async () => {
-    if (!deletingInvestment) return
+  const handleOpenRecord = useCallback(() => {
+    setIsRecordOpen(true);
+  }, []);
 
-    try {
-      await deleteInvestment.mutateAsync(deletingInvestment.id)
-      setDeletingInvestment(null)
-    } catch (err) {
-      console.error('Error al eliminar inversión:', err)
-    }
-  }
+  const handleOpenTrackingSetup = useCallback(() => {
+    setIsTrackingSetupOpen(true);
+  }, []);
 
-  const data = investments.data
+  const hasPositions =
+    portfolio != null && portfolio.positions.length > 0;
+
+  const showEmptyState =
+    isTrackingConfigured &&
+    !isLoadingPortfolio &&
+    !isPortfolioError &&
+    !hasPositions;
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
-
-      <div className="flex-1 flex flex-col overflow-hidden pt-16">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopNav />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <Header hidePeriodSelector onPeriodChange={undefined} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <Header
-              onPeriodChange={handlePeriodChange}
-              defaultPeriod={period}
-              hidePeriodSelector
-            />
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-              <PeriodSelector
-                period={period}
-                onPeriodChange={handlePeriodChange}
-                className="w-full sm:flex-none"
-              />
-
-              <div className="w-full sm:w-auto flex flex-col">
-                <NewInvestmentDialog />
+            {isLoadingTracking && (
+              <div className="flex justify-center py-20">
+                <Loader2
+                  className="size-8 animate-spin text-primary"
+                  aria-hidden="true"
+                />
               </div>
-            </div>
+            )}
+
+            {!isLoadingTracking && !isTrackingConfigured && (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+                <h3 className="mb-1 text-lg font-semibold text-foreground">
+                  {t('tracking.notConfiguredTitle')}
+                </h3>
+                <p className="mb-4 max-w-md text-sm text-muted-foreground">
+                  {t('tracking.notConfiguredDescription')}
+                </p>
+                <Button type="button" onClick={handleOpenTrackingSetup}>
+                  {t('tracking.configure')}
+                </Button>
+              </div>
+            )}
+
+            {!isLoadingTracking && isTrackingConfigured && (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    {t('title')}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <MarketDataRefreshButton />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleOpenRecord}
+                      className="gap-2"
+                    >
+                      <Plus className="size-4" aria-hidden="true" />
+                      {t('activities.record')}
+                    </Button>
+                  </div>
+                </div>
+
+                {isPortfolioError && (
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {t('common:status.error')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {isLoadingPortfolio && (
+                  <div className="flex justify-center py-20">
+                    <Loader2
+                      className="size-8 animate-spin text-primary"
+                      aria-hidden="true"
+                    />
+                  </div>
+                )}
+
+                {showEmptyState && (
+                  <EmptyPortfolioState
+                    onRecordActivity={handleOpenRecord}
+                  />
+                )}
+
+                {!isLoadingPortfolio &&
+                  !isPortfolioError &&
+                  portfolio &&
+                  hasPositions && (
+                    <>
+                      <PortfolioSummary portfolio={portfolio} />
+
+                      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        <div className="lg:col-span-2">
+                          <Card>
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium">
+                                  {activeTab === 'positions'
+                                    ? t('positions.title')
+                                    : t('activities.title')}
+                                </CardTitle>
+                                <div className="flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveTab('positions')}
+                                    className={cn(
+                                      'rounded px-2 py-1 text-xs font-medium transition-colors',
+                                      activeTab === 'positions'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:bg-accent/50',
+                                    )}
+                                  >
+                                    {t('positions.title')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveTab('activities')}
+                                    className={cn(
+                                      'rounded px-2 py-1 text-xs font-medium transition-colors',
+                                      activeTab === 'activities'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:bg-accent/50',
+                                    )}
+                                  >
+                                    {t('activities.title')}
+                                  </button>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              {activeTab === 'positions' ? (
+                                <HoldingsTable portfolio={portfolio} />
+                              ) : isLoadingActivities ? (
+                                <div className="flex justify-center py-10">
+                                  <Loader2
+                                    className="size-6 animate-spin text-primary"
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                              ) : (
+                                <ActivityHistory
+                                  activities={activitiesPage?.content ?? []}
+                                />
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        <div>
+                          <PerformanceCard />
+                        </div>
+                      </div>
+                    </>
+                  )}
+              </>
+            )}
           </div>
-
-          <InvestmentMetrics
-            data={metrics.data}
-            isLoading={metrics.isLoading}
-            period={period}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-            <div className="lg:col-span-8">
-              <EvolutionChart
-                data={evolution.data}
-                isLoading={evolution.isLoading}
-              />
-            </div>
-
-            <div className="lg:col-span-4">
-              <DistributionChart
-                data={distribution.data}
-                isLoading={distribution.isLoading}
-              />
-            </div>
-          </div>
-
-          <AssetList
-            investments={data?.displayItems || []}
-            isLoading={investments.isLoading}
-            displayPage={data?.displayPage ?? 0}
-            totalDisplayPages={data?.totalDisplayPages ?? 1}
-            totalElements={data?.totalElements ?? 0}
-            displaySize={displaySize}
-            searchTerm={searchTerm}
-            typeFilter={typeFilter}
-            onSearchChange={setSearchTerm}
-            onTypeFilterChange={setTypeFilter}
-            onNextPage={data?.nextPage ?? (() => { })}
-            onPrevPage={data?.prevPage ?? (() => { })}
-            onDelete={setDeletingInvestment}
-          />
         </main>
       </div>
 
-      <ConfirmDeletionDialog
-        open={!!deletingInvestment}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeletingInvestment(null)
-          }
-        }}
-        itemName={deletingInvestment?.assetName || ''}
-        onConfirm={handleDelete}
-        title={t('investments:deleteTitle')}
-        description={t('investments.deleteConfirmation', {
-          name: deletingInvestment?.assetName || '',
-        })}
+      <RecordActivityDialog
+        open={isRecordOpen}
+        onOpenChange={setIsRecordOpen}
+      />
+      <TrackingSetupDialog
+        open={isTrackingSetupOpen}
+        onOpenChange={setIsTrackingSetupOpen}
       />
     </div>
-  )
+  );
 }

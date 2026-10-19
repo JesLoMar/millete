@@ -1,60 +1,109 @@
 {
   "title": "$t(common:entities.investments)",
-  "portfolioValue": "Portfolio Value",
-  "monthlyReturn": "Monthly Return",
-  "dividends": "Dividends",
-  "comingSoon": "$t(common:prompts.comingSoon)",
-  "evolution": "Wealth Evolution",
-  "lastMonths": "Last {{count}} months",
-  "distribution": "Distribution",
-  "total": "Total",
-  "myAssets": "My Assets",
-  "searchAsset": "Search asset...",
-  "noAssets": "There are no assets in your portfolio",
-  "shares": "shares",
-  "filterAll": "$t(common:types.all)",
-  "new": "$t(common:actions.add) $t(common:entities.investment)",
-  "newTitle": "Register New Investment",
-  "assetName": "Asset Name",
-  "assetNamePlaceholder": "e.g., Apple Inc.",
-  "ticker": "Ticker",
-  "type": "Asset Type",
-  "quantity": "Quantity",
-  "purchasePrice": "Purchase Price",
-  "purchaseDate": "Purchase Date",
-  "save": "$t(common:actions.save) $t(common:entities.investment)",
-  "updatePrice": "Update Price",
-  "marketPrice": "Market Price",
-  "newPrice": "New Price",
-  "updateNow": "$t(common:actions.update) Now",
-  "delete": "$t(common:actions.delete)",
-  "deleteConfirm": "$t(common:prompts.deleteConfirm)",
-  "createError": "Error creating investment. Please try again.",
-  "assetOptions": "Options for {{name}}",
-  "deleteTitle": "$t(common:actions.delete) $t(common:entities.investment)",
-  "deleteConfirmation": "$t(common:prompts.deleteConfirm)",
-  "types": {
-    "stock": "Stocks",
-    "crypto": "Cryptocurrencies",
-    "fund": "Funds",
-    "realEstate": "Real Estate",
-    "real_estate": "Real Estate",
-    "other": "Other"
+  "summary": {
+    "totalValue": "Total portfolio value",
+    "investedCapital": "Invested capital",
+    "cashBalance": "Investment cash balance"
+  },
+  "positions": {
+    "title": "Positions",
+    "asset": "Asset",
+    "sector": "Sector",
+    "quantity": "Quantity",
+    "costBasis": "Cost basis",
+    "marketValue": "Market value",
+    "unrealizedGain": "Unrealized gain",
+    "return": "Return",
+    "unknownSector": "No sector",
+    "empty": "No open positions in the portfolio."
+  },
+  "activities": {
+    "title": "Activity",
+    "record": "Record activity",
+    "recordTitle": "Record investment activity",
+    "asset": "Asset",
+    "searchAsset": "Search asset by name or symbol...",
+    "userAsset": "Custom",
+    "noAssetsFound": "No assets found.",
+    "type": "Activity type",
+    "occurredAt": "Date and time",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "amount": "Amount",
+    "currency": "Currency",
+    "referenceUnitPrice": "Reference unit price",
+    "dividendCash": "In cash",
+    "dividendUnits": "In shares",
+    "comment": "Comment",
+    "commentPlaceholder": "Optional note about this activity...",
+    "details": "Details",
+    "empty": "No activities recorded yet.",
+    "types": {
+      "BUY": "Buy",
+      "SELL": "Sell",
+      "DIVIDEND": "Dividend",
+      "DEPOSIT": "Deposit",
+      "WITHDRAW": "Withdrawal",
+      "OPENING_CASH": "Opening cash",
+      "OPENING_POSITION": "Opening position",
+      "SPLIT": "Split",
+      "EXCHANGE": "Currency exchange"
+    }
+  },
+  "performance": {
+    "title": "Performance",
+    "openingValue": "Opening value",
+    "endingValue": "Ending value",
+    "contributions": "Contributions",
+    "withdrawals": "Withdrawals",
+    "realizedGains": "Realized gains",
+    "dividends": "Dividends",
+    "estimatedNote": "This calculation includes estimated values.",
+    "unavailable": "Not enough data to calculate performance."
+  },
+  "periods": {
+    "oneMonth": "1M",
+    "threeMonths": "3M",
+    "sixMonths": "6M",
+    "yearToDate": "YTD",
+    "oneYear": "1Y",
+    "all": "All"
+  },
+  "marketData": {
+    "refresh": "Refresh prices"
+  },
+  "health": {
+    "check": "Check health"
+  },
+  "tracking": {
+    "notConfiguredTitle": "Set up investment tracking",
+    "notConfiguredDescription": "To start tracking your portfolio, set the date from which you want to begin.",
+    "configure": "Set up tracking",
+    "setupTitle": "Set up investment tracking",
+    "setupDescription": "Select the date from which you want to start recording activities.",
+    "startDate": "Tracking start date"
+  },
+  "empty": {
+    "title": "Your portfolio is empty",
+    "description": "Record your first activity (buy, deposit, dividend...) to start building your portfolio.",
+    "cta": "Record first activity"
   },
   "alerts": {
-    "createSuccess": "$t(common:entities.investment) registered successfully",
-    "updatePriceSuccess": "Price updated successfully",
-    "deleteSuccess": "$t(common:entities.investment) deleted successfully",
-    "warningTitle": "Critical deviation detected",
-    "warningDesc": "The entered price varies by more than 50% from the current price. Click again to confirm."
-  },
-  "confirmUpdate": "Confirm critical change",
-  "updatePriceError": "Error updating price",
-  "charts": {
-    "tooltip": {
-      "amount": "Expense",
-      "percentage": "Percentage",
-      "wealth": "Wealth"
-    }
+    "activityCreated": "Activity recorded successfully",
+    "activityCreateError": "Error recording activity",
+    "activityUpdated": "Activity updated successfully",
+    "activityUpdateError": "Error updating activity",
+    "assetCreated": "Asset created successfully",
+    "assetCreateError": "Error creating asset",
+    "assetUpdated": "Asset updated successfully",
+    "assetUpdateError": "Error updating asset",
+    "assetDeleted": "Asset deleted successfully",
+    "assetDeleteError": "Error deleting asset",
+    "priceRegistered": "Price registered successfully",
+    "priceRegisterError": "Error registering price",
+    "trackingConfigured": "Tracking configured successfully",
+    "trackingConfigError": "Error configuring tracking",
+    "marketDataRefreshed": "Prices refreshed ({{count}} assets)",
+    "marketDataRefreshError": "Error refreshing market data"
   }
 }

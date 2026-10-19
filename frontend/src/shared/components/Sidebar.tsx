@@ -22,6 +22,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const location = useLocation()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
+  // Bloquea el scroll del body cuando el drawer móvil está abierto
   useEffect(() => {
     if (isMobileOpen) {
       document.body.style.overflow = "hidden"
@@ -33,12 +34,14 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     }
   }, [isMobileOpen])
 
+  // Escucha el evento custom que dispara el TopNav para abrir el drawer
   useEffect(() => {
     const handleOpen = () => setIsMobileOpen(true)
     window.addEventListener('sidebar:open', handleOpen)
     return () => window.removeEventListener('sidebar:open', handleOpen)
   }, [])
 
+  // Cierra el drawer con Escape
   useEffect(() => {
     if (!isMobileOpen) return
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,6 +62,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     prefetchRoute(path)
   }, [])
 
+  // i18next hace la interpolación de {{feature}} directamente
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
     notify.info(t('errors.featureComingSoon', { feature: t(itemLabelKey) }))
   }, [t])
@@ -176,8 +180,6 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
           className
         )}
-        aria-hidden={!isMobileOpen || undefined}
-        inert={!isMobileOpen || undefined}
       >
         <div className="flex items-center justify-between p-4 border-b border-border md:hidden">
           <span className="font-semibold text-sm text-foreground">

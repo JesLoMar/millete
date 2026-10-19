@@ -124,6 +124,8 @@ apiClient.interceptors.response.use(
         description = i18n.t('api:errors.status_403');
       } else if (status === 404) {
         description = i18n.t('api:errors.status_404');
+      } else if (status === 409) {
+        description = i18n.t('api:errors.status_409');
       } else if (status >= 500) {
         description = i18n.t('api:errors.status_500');
       } else if (error.code === 'ECONNABORTED') {

@@ -1,60 +1,109 @@
 {
   "title": "$t(common:entities.investments)",
-  "portfolioValue": "Valor Cartera",
-  "monthlyReturn": "Rentabilidad Mensual",
-  "dividends": "Dividendos",
-  "comingSoon": "$t(common:prompts.comingSoon)",
-  "evolution": "Evolución del Patrimonio",
-  "lastMonths": "Últimos {{count}} meses",
-  "distribution": "Distribución",
-  "total": "Total",
-  "myAssets": "Mis Activos",
-  "searchAsset": "Buscar activo...",
-  "noAssets": "No hay activos en tu cartera",
-  "shares": "participaciones",
-  "filterAll": "$t(common:types.all)",
-  "new": "$t(common:actions.add) $t(common:entities.investment)",
-  "newTitle": "Registrar Nueva Inversión",
-  "assetName": "Nombre del Activo",
-  "assetNamePlaceholder": "Ej: Apple Inc.",
-  "ticker": "Ticker",
-  "type": "Tipo de Activo",
-  "quantity": "Cantidad",
-  "purchasePrice": "Precio de Compra",
-  "purchaseDate": "Fecha de Compra",
-  "save": "$t(common:actions.save) $t(common:entities.investment)",
-  "updatePrice": "Actualizar Precio",
-  "marketPrice": "Precio de Mercado",
-  "newPrice": "Nuevo Precio",
-  "updateNow": "$t(common:actions.update) Ahora",
-  "delete": "$t(common:actions.delete)",
-  "deleteConfirm": "$t(common:prompts.deleteConfirm)",
-  "createError": "Error al crear la inversión. Inténtalo de nuevo.",
-  "assetOptions": "Opciones de {{name}}",
-  "deleteTitle": "$t(common:actions.delete) $t(common:entities.investment)",
-  "deleteConfirmation": "$t(common:prompts.deleteConfirm)",
-  "types": {
-    "stock": "Acciones",
-    "crypto": "Criptomonedas",
-    "fund": "Fondos",
-    "realEstate": "Inmobiliario",
-    "real_estate": "Inmobiliario",
-    "other": "Otros"
+  "summary": {
+    "totalValue": "Valor total del portfolio",
+    "investedCapital": "Capital invertido",
+    "cashBalance": "Efectivo en inversión"
+  },
+  "positions": {
+    "title": "Posiciones",
+    "asset": "Activo",
+    "sector": "Sector",
+    "quantity": "Cantidad",
+    "costBasis": "Coste de adquisición",
+    "marketValue": "Valor de mercado",
+    "unrealizedGain": "Ganancia no realizada",
+    "return": "Rentabilidad",
+    "unknownSector": "Sin sector",
+    "empty": "No hay posiciones abiertas en el portfolio."
+  },
+  "activities": {
+    "title": "Actividad",
+    "record": "Registrar actividad",
+    "recordTitle": "Registrar actividad de inversión",
+    "asset": "Activo",
+    "searchAsset": "Buscar activo por nombre o símbolo...",
+    "userAsset": "Propio",
+    "noAssetsFound": "No se han encontrado activos.",
+    "type": "Tipo de actividad",
+    "occurredAt": "Fecha y hora",
+    "quantity": "Cantidad",
+    "unitPrice": "Precio unitario",
+    "amount": "Importe",
+    "currency": "Moneda",
+    "referenceUnitPrice": "Precio de referencia",
+    "dividendCash": "En efectivo",
+    "dividendUnits": "En acciones",
+    "comment": "Comentario",
+    "commentPlaceholder": "Nota opcional sobre esta actividad...",
+    "details": "Detalles",
+    "empty": "Aún no hay actividades registradas.",
+    "types": {
+      "BUY": "Compra",
+      "SELL": "Venta",
+      "DIVIDEND": "Dividendo",
+      "DEPOSIT": "Depósito",
+      "WITHDRAW": "Retirada",
+      "OPENING_CASH": "Efectivo inicial",
+      "OPENING_POSITION": "Posición inicial",
+      "SPLIT": "Split",
+      "EXCHANGE": "Cambio de divisa"
+    }
+  },
+  "performance": {
+    "title": "Rendimiento",
+    "openingValue": "Valor inicial",
+    "endingValue": "Valor final",
+    "contributions": "Aportaciones",
+    "withdrawals": "Retiradas",
+    "realizedGains": "Ganancias realizadas",
+    "dividends": "Dividendos",
+    "estimatedNote": "Este cálculo incluye valores estimados.",
+    "unavailable": "No hay datos suficientes para calcular el rendimiento."
+  },
+  "periods": {
+    "oneMonth": "1M",
+    "threeMonths": "3M",
+    "sixMonths": "6M",
+    "yearToDate": "YTD",
+    "oneYear": "1A",
+    "all": "Todo"
+  },
+  "marketData": {
+    "refresh": "Actualizar precios"
+  },
+  "health": {
+    "check": "Verificar salud"
+  },
+  "tracking": {
+    "notConfiguredTitle": "Configura el tracking de inversiones",
+    "notConfiguredDescription": "Para empezar a registrar tu cartera, indica la fecha desde la que quieres hacer el seguimiento.",
+    "configure": "Configurar tracking",
+    "setupTitle": "Configurar tracking de inversiones",
+    "setupDescription": "Selecciona la fecha desde la que quieres empezar a registrar actividades.",
+    "startDate": "Fecha de inicio del tracking"
+  },
+  "empty": {
+    "title": "Tu portfolio está vacío",
+    "description": "Registra tu primera actividad (compra, depósito, dividendo...) para empezar a construir tu cartera.",
+    "cta": "Registrar primera actividad"
   },
   "alerts": {
-    "createSuccess": "$t(common:entities.investment) registrada correctamente",
-    "updatePriceSuccess": "Precio actualizado correctamente",
-    "deleteSuccess": "$t(common:entities.investment) eliminada correctamente",
-    "warningTitle": "Desviación crítica detectada",
-    "warningDesc": "El precio introducido varía más de un 50% con respecto al precio actual. Haz clic de nuevo para confirmar."
-  },
-  "confirmUpdate": "Confirmar cambio crítico",
-  "updatePriceError": "Error al actualizar el precio",
-  "charts": {
-    "tooltip": {
-      "amount": "Gasto",
-      "percentage": "Porcentaje",
-      "wealth": "Patrimonio"
-    }
+    "activityCreated": "Actividad registrada correctamente",
+    "activityCreateError": "Error al registrar la actividad",
+    "activityUpdated": "Actividad actualizada correctamente",
+    "activityUpdateError": "Error al actualizar la actividad",
+    "assetCreated": "Activo creado correctamente",
+    "assetCreateError": "Error al crear el activo",
+    "assetUpdated": "Activo actualizado correctamente",
+    "assetUpdateError": "Error al actualizar el activo",
+    "assetDeleted": "Activo eliminado correctamente",
+    "assetDeleteError": "Error al eliminar el activo",
+    "priceRegistered": "Precio registrado correctamente",
+    "priceRegisterError": "Error al registrar el precio",
+    "trackingConfigured": "Tracking configurado correctamente",
+    "trackingConfigError": "Error al configurar el tracking",
+    "marketDataRefreshed": "Precios actualizados ({{count}} activos)",
+    "marketDataRefreshError": "Error al actualizar los precios de mercado"
   }
 }

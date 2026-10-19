@@ -13,6 +13,8 @@ const IMPORTERS: Record<string, () => Promise<unknown>> = {
     import('@/features/investments/pages/page'),
   [ROUTES.groupGoals]: () =>
     import('@/features/groupgoals/pages/page'),
+  [ROUTES.joinGroupGoal]: () =>
+    import('@/features/groupgoals/pages/JoinGroupGoalPage'),
   [ROUTES.profile]: () =>
     import('@/features/profile/pages/page'),
   [ROUTES.savingsGoals]: () =>
@@ -27,7 +29,7 @@ export function prefetchRoute(path: string): void {
   if (!importer) return;
   prefetched.add(path);
   importer().catch(() => {
-
+    // Si falla, permitir reintentar más adelante
     prefetched.delete(path);
   });
 }

@@ -38,10 +38,8 @@ const CategoriesPage = lazy(() =>
   })),
 );
 
-const InvestmentsPage = lazy(() =>
-  import('@/features/investments/pages/page').then((module) => ({
-    default: module.InvestmentsPage,
-  })),
+const InvestmentsPage = lazy(
+  () => import('@/features/investments/pages/page'),
 );
 
 const GroupGoalsPage = lazy(() =>
