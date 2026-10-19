@@ -41,7 +41,7 @@ export function SimpleBarChart({
     return (
         <div className={cn("w-full relative", className)} style={{ height }}>
             <svg width="100%" height={height} className="w-full">
-                {}
+                { }
                 {showGrid &&
                     [0, 0.25, 0.5, 0.75, 1].map((line) => {
                         const y = chartAreaHeight * (1 - line)
@@ -52,14 +52,14 @@ export function SimpleBarChart({
                                 y1={y}
                                 x2="100%"
                                 y2={y}
-                                stroke="hsla(var(--border), 0.5)"
+                                stroke="hsl(var(--border) / 0.5)"
                                 strokeWidth={1}
                                 strokeDasharray="3 3"
                             />
                         )
                     })}
 
-                {}
+                { }
                 {data.map((item, i) => {
                     const isZero = item.value === 0
                     const rawBarHeight = (item.value / maxValue) * chartAreaHeight
@@ -89,7 +89,7 @@ export function SimpleBarChart({
                                 onMouseLeave={() => onBarHover?.(null)}
                             />
 
-                            {}
+                            { }
                             {showInnerLabel && (
                                 <text
                                     x={`${xPercent + barWidth / 2}%`}
@@ -104,7 +104,7 @@ export function SimpleBarChart({
                                 </text>
                             )}
 
-                            {}
+                            { }
                             {!showInnerLabel && !isZero && barHeight > 0 && (
                                 <text
                                     x={`${xPercent + barWidth / 2}%`}
@@ -119,7 +119,7 @@ export function SimpleBarChart({
                                 </text>
                             )}
 
-                            {}
+                            { }
                             {showLabels && (
                                 <text
                                     x={`${xPercent + barWidth / 2}%`}

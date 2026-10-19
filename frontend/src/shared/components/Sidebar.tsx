@@ -1,11 +1,16 @@
-import { useCallback, useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useCallback, useEffect, useState } from "react"
+import { Link, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Construction, X } from "lucide-react"
 import { Button } from "@/shared/components/core/button"
 import { cn } from "@/lib/utils"
-import { getEnabledNavItems, getDisabledNavItems, type NavItem } from "@/shared/config/navigation"
+import {
+  getEnabledNavItems,
+  getDisabledNavItems,
+  type NavItem,
+} from "@/shared/config/navigation"
 import { notify } from "@/shared/utils/notifications/notify"
+import { prefetchRoute } from "@/shared/config/routeLoaders"
 
 interface SidebarProps {
   className?: string
@@ -14,7 +19,6 @@ interface SidebarProps {
 
 export function Sidebar({ className, showDisabled = true }: SidebarProps) {
   const { t } = useTranslation(['nav', 'common'])
-  const navigate = useNavigate()
   const location = useLocation()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -35,18 +39,26 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     return () => window.removeEventListener('sidebar:open', handleOpen)
   }, [])
 
+  useEffect(() => {
+    if (!isMobileOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        setIsMobileOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileOpen])
+
   const mainItems = getEnabledNavItems("main")
   const bottomItems = getEnabledNavItems("bottom")
   const disabledItems = showDisabled ? getDisabledNavItems() : []
 
-  const handleNavigate = useCallback((path: string) => {
-    navigate(path)
-    setIsMobileOpen(false)
-  }, [navigate])
+  const handlePrefetch = useCallback((path: string) => {
+    prefetchRoute(path)
+  }, [])
 
-  // Interpolación nativa de i18next: la traducción declara {{feature}} y
-  // t() lo sustituye directamente — nada de pasar el placeholder como valor
-  // y re-reemplazarlo a mano después.
   const handleDisabledClick = useCallback((itemLabelKey: string) => {
     notify.info(t('errors.featureComingSoon', { feature: t(itemLabelKey) }))
   }, [t])
@@ -66,19 +78,27 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
             const active = isActive(item)
             return (
               <li key={item.id}>
-                <Button
-                  variant={active ? "secondary" : "ghost"}
-                  onClick={() => handleNavigate(item.path)}
+                <Link
+                  to={item.path}
+                  onClick={() => setIsMobileOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  onMouseEnter={() => handlePrefetch(item.path)}
+                  onFocus={() => handlePrefetch(item.path)}
                   className={cn(
-                    "w-full justify-start gap-3 h-11 px-4 transition-all duration-200",
+                    "inline-flex w-full items-center justify-start gap-3 h-11 px-4 rounded-md text-sm font-medium transition-all duration-200",
                     active
                       ? "bg-accent/50 text-foreground font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
                   )}
                 >
-                  <item.icon className={cn("size-5 transition-transform duration-200", active && "text-primary scale-105")} />
+                  <item.icon
+                    className={cn(
+                      "size-5 transition-transform duration-200",
+                      active && "text-primary scale-105"
+                    )}
+                  />
                   <span>{t(item.labelKey)}</span>
-                </Button>
+                </Link>
               </li>
             )
           })}
@@ -112,11 +132,14 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
               const active = isActive(item)
               return (
                 <li key={item.id}>
-                  <Button
-                    variant={active ? "secondary" : "ghost"}
-                    onClick={() => handleNavigate(item.path)}
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    onMouseEnter={() => handlePrefetch(item.path)}
+                    onFocus={() => handlePrefetch(item.path)}
                     className={cn(
-                      "w-full justify-start gap-3 h-11 px-4 transition-all duration-200",
+                      "inline-flex w-full items-center justify-start gap-3 h-11 px-4 rounded-md text-sm font-medium transition-all duration-200",
                       active
                         ? "bg-accent/50 text-foreground font-medium"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
@@ -124,7 +147,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
                   >
                     <item.icon className="size-5" />
                     <span>{t(item.labelKey)}</span>
-                  </Button>
+                  </Link>
                 </li>
               )
             })}
@@ -153,6 +176,8 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
           className
         )}
+        aria-hidden={!isMobileOpen || undefined}
+        inert={!isMobileOpen || undefined}
       >
         <div className="flex items-center justify-between p-4 border-b border-border md:hidden">
           <span className="font-semibold text-sm text-foreground">

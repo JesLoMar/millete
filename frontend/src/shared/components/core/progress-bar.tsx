@@ -113,48 +113,33 @@ export function ProgressBar({
 
   return (
     <div
+      role="progressbar"
+      aria-label={ariaLabel}
+      aria-valuenow={ariaValueNow}
+      aria-valuemin={ariaValueMin ?? 0}
+      aria-valuemax={ariaValueMax ?? (hasValidMax ? safeMax : 1)}
       className={cn(
-        'relative w-full',
+        'relative w-full overflow-hidden rounded-full bg-secondary',
         sizeClasses[size],
         className,
       )}
     >
-      <progress
-        value={safeValue}
-        max={hasValidMax ? safeMax : 1}
-        aria-label={ariaLabel}
-        aria-valuenow={ariaValueNow}
-        aria-valuemin={ariaValueMin}
-        aria-valuemax={ariaValueMax}
+      <m.div
         className={cn(
-          'absolute inset-0 h-full w-full appearance-none rounded-full bg-transparent',
-          '[&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-secondary',
-          '[&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-transparent',
-          '[&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-transparent',
+          'h-full w-full origin-left rounded-full',
+          variant === 'default' && !color && 'bg-primary',
+          variant !== 'default' && variantClasses[variant],
+          barClassName,
         )}
+        style={
+          color && variant === 'default'
+            ? { backgroundColor: color }
+            : undefined
+        }
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: hasValidMax ? percentage / 100 : 0 }}
+        transition={transition}
       />
-
-      <div
-        className="absolute inset-0 h-full w-full rounded-full overflow-hidden pointer-events-none"
-        aria-hidden="true"
-      >
-        <m.div
-          className={cn(
-            'h-full rounded-full',
-            variant === 'default' && !color && 'bg-primary',
-            variant !== 'default' && variantClasses[variant],
-            barClassName,
-          )}
-          style={
-            color && variant === 'default'
-              ? { backgroundColor: color }
-              : undefined
-          }
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={transition}
-        />
-      </div>
     </div>
   )
 }

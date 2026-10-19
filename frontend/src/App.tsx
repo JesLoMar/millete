@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import {
   BrowserRouter,
+  Navigate,
   Route,
   Routes,
 } from 'react-router-dom';
@@ -127,7 +128,7 @@ export default function App() {
                 path={ROUTES.notifications}
                 element={<NotificationsPage />}
               />
-              <Route path="*" element={<DashboardPage />} />
+              <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
             </Route>
           </Routes>
         </Suspense>

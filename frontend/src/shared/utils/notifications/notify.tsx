@@ -58,26 +58,24 @@ const config: Record<string, {
 interface NotifyOptions {
   description?: string;
   duration?: number;
+  id?: string;
 }
 
 export const notify = {
   success: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.success} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { duration: options?.duration ?? config.success.defaultDuration }),
-
+    ), { id: options?.id, duration: options?.duration ?? config.success.defaultDuration }),
   error: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.error} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { duration: options?.duration ?? config.error.defaultDuration }),
-
+    ), { id: options?.id, duration: options?.duration ?? config.error.defaultDuration }),
   info: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.info} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { duration: options?.duration ?? config.info.defaultDuration }),
-
+    ), { id: options?.id, duration: options?.duration ?? config.info.defaultDuration }),
   warning: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.warning} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { duration: options?.duration ?? config.warning.defaultDuration }),
+    ), { id: options?.id, duration: options?.duration ?? config.warning.defaultDuration }),
 };

@@ -119,9 +119,7 @@ apiClient.interceptors.response.use(
         error.response?.data?.error ||
         error.message ||
         i18n.t('api:errors.default');
-
       let description = '';
-
       if (status === 403) {
         description = i18n.t('api:errors.status_403');
       } else if (status === 404) {
@@ -131,8 +129,10 @@ apiClient.interceptors.response.use(
       } else if (error.code === 'ECONNABORTED') {
         description = i18n.t('api:errors.timeout');
       }
-
-      notify.error(errorMessage, { description });
+      notify.error(errorMessage, {
+        description,
+        id: `api-error:${status ?? error.code ?? 'unknown'}:${errorMessage}`,
+      });
     }
 
     return Promise.reject(error);

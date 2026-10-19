@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { Calendar } from "lucide-react"
@@ -53,26 +53,47 @@ function getGreetingKey(hour: number): GreetingKey {
   return "dashboard:header.greeting.evening"
 }
 
-// Semana del año según ISO-8601 (la semana 1 es la que contiene el primer
-// jueves del año; las semanas empiezan en lunes).
 function getISOWeek(now: Date): number {
   const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-  const dayNum = date.getUTCDay() || 7 // domingo pasa de 0 a 7
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum) // jueves de esta semana
+  const dayNum = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
+
+function getDateFormatter(timeZone: string): Intl.DateTimeFormat {
+  let formatter = dateFormatters.get(timeZone)
+  if (!formatter) {
+    try {
+      formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        weekday: 'short',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        hourCycle: 'h23',
+      })
+    } catch {
+      formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        weekday: 'short',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        hourCycle: 'h23',
+      })
+    }
+    dateFormatters.set(timeZone, formatter)
+  }
+  return formatter
+}
+
 function formatDate(now: Date, timezone: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    weekday: 'short',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    hourCycle: 'h23',
-  }).formatToParts(now)
+  const parts = getDateFormatter(timezone).formatToParts(now)
   const value = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? '0'
   const weekdayIndex: Record<string, number> = {
@@ -92,9 +113,6 @@ function formatDate(now: Date, timezone: string) {
   }
 }
 
-// "Reloj" barato: no hay intervalos; la fecha/hora se recalcula en cada render
-// (coste trivial) y se fuerza un render al recuperar el foco o la visibilidad,
-// para que una sesión abierta de un día para otro no muestre datos congelados.
 function useNow(): Date {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -123,7 +141,7 @@ export function Header({
   })
   const now = useNow()
   const timezone = preferences?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
-  const date = formatDate(now, timezone)
+  const date = useMemo(() => formatDate(now, timezone), [now, timezone])
   const greetingKey = getGreetingKey(date.hour)
   const userName = user?.name || user?.email?.split("@")[0] || t('nav:guest')
 

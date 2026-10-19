@@ -78,16 +78,13 @@ export function PeriodSelector({
       aria-label={t('header.period.ariaLabel')}
     >
       <m.div
-        layout
-        className="absolute top-1 bottom-1 rounded-lg bg-primary shadow-sm z-0"
+        className="absolute top-1 bottom-1 left-0 rounded-lg bg-primary shadow-sm z-0"
+        initial={false}
+        animate={{ x: sliderStyle.left, width: sliderStyle.width }}
         transition={{
           type: "spring",
           stiffness: 400,
           damping: 30,
-        }}
-        style={{
-          left: sliderStyle.left,
-          width: sliderStyle.width,
         }}
       />
 
