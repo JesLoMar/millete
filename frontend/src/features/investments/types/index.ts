@@ -171,11 +171,7 @@ export interface ClosedLot {
   holdingDays: number;
 }
 
-export interface CashBalance {
-  currency: string;
-  amount: number;
-  estimated: boolean;
-}
+export type CashBalances = Record<string, number>;
 
 export interface Position {
   assetReference: AssetReference;
@@ -201,7 +197,7 @@ export interface Position {
 export interface Portfolio {
   asOf: string;
   localCurrency: string;
-  cashBalances: CashBalance[];
+  cashBalances: CashBalances;
   positions: Position[];
   totalInLocalCurrency: number;
   estimated: boolean;

@@ -1,54 +1,56 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/core/button';
-import { investmentsService } from '../services/investments.service';
-import { notify } from '@/shared/utils/notifications/notify';
+import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
+import { formatActivityDateTime } from '../utils';
 
-export const MarketDataRefreshButton = memo(
-  function MarketDataRefreshButton() {
-    const { t } = useTranslation('investments');
-    const [isRefreshing, setIsRefreshing] = useState(false);
+interface MarketDataRefreshButtonProps {
+  /** Divisas de la cartera (moneda local + monedas de las posiciones). */
+  currencies: string[];
+}
 
-    const handleRefresh = async () => {
-      if (isRefreshing) return;
-      setIsRefreshing(true);
-      try {
-        const to = new Date().toISOString();
-        const from = new Date();
-        from.setDate(from.getDate() - 7);
+/**
+ * La market data es infraestructura: se muestra solo la última actualización
+ * y un botón secundario. No compite con los valores de la cartera.
+ */
+export const MarketDataRefreshButton = memo(function MarketDataRefreshButton({
+  currencies,
+}: MarketDataRefreshButtonProps) {
+  const { t } = useTranslation('investments');
+  const { refreshMarketData, isRefreshingMarketData } = useInvestmentMutations();
 
-        await investmentsService.refreshMarketData(
-          from.toISOString(),
-          to,
-          ['EUR', 'USD'],
-        );
-        notify.success(t('alerts.marketDataRefreshed', { count: 1 }));
-      } catch {
-        notify.error(t('alerts.marketDataRefreshError'));
-      } finally {
-        setIsRefreshing(false);
-      }
-    };
+  // Última actualización conocida en esta sesión. El backend no expone aún
+  // una marca de la última actualización global de precios.
+  const lastRefreshedAt = refreshMarketData.data?.refreshedAt ?? null;
 
-    return (
+  return (
+    <div className="flex items-center gap-2">
+      {lastRefreshedAt && (
+        <span className="hidden text-xs text-muted-foreground md:inline">
+          {t('marketData.lastUpdated', {
+            date: formatActivityDateTime(lastRefreshedAt),
+            defaultValue: 'Precios: {{date}}',
+          })}
+        </span>
+      )}
       <Button
         type="button"
-        variant="outline"
+        variant="ghost"
         size="sm"
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-        className="gap-2"
+        onClick={() => refreshMarketData.mutate({ currencies })}
+        disabled={isRefreshingMarketData || currencies.length === 0}
+        className="gap-2 text-muted-foreground"
       >
-        {isRefreshing ? (
+        {isRefreshingMarketData ? (
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
         ) : (
           <RefreshCw className="size-4" aria-hidden="true" />
         )}
         <span className="hidden sm:inline">
-          {t('marketData.refresh')}
+          {t('marketData.refresh', { defaultValue: 'Actualizar precios' })}
         </span>
       </Button>
-    );
-  },
-);
+    </div>
+  );
+});

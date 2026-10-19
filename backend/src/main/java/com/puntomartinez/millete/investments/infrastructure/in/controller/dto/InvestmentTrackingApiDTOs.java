@@ -14,4 +14,10 @@ public final class InvestmentTrackingApiDTOs {
             Instant trackingStartAt
     ) {
     }
+
+    public record InvestmentTrackingResponseDTO(
+            boolean configured,
+            Instant trackingStartAt
+    ) {
+    }
 }

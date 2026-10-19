@@ -19,8 +19,13 @@ import {
   SelectValue,
 } from '@/shared/components/core/select';
 import { cn } from '@/lib/utils';
-import { PRIMARY_ACTIVITY_TYPES, MAX_COMMENT_LENGTH } from '../constants';
+import {
+  CURRENCIES,
+  MAX_COMMENT_LENGTH,
+  PRIMARY_ACTIVITY_TYPES,
+} from '../constants';
 import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
+import { formatNumber, toLocalDateTimeInput } from '../utils';
 import { AssetPicker } from './AssetPicker';
 import type {
   ActivityDetails,
@@ -54,15 +59,95 @@ interface DividendForm {
 }
 
 const DEFAULT_CURRENCY = 'EUR';
-const CURRENCY_OPTIONS = ['EUR', 'USD', 'GBP', 'CHF', 'JPY'];
 
-function requiresAsset(type: ActivityType): boolean {
+function parsePositive(value: string): number | null {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+/** El activo es obligatorio en compra/venta y en dividendos en acciones. En efectivo es opcional. */
+function requiresAsset(type: ActivityType, dividendMode: DividendForm['mode']): boolean {
+  if (type === 'BUY' || type === 'SELL') return true;
+  if (type === 'DIVIDEND') return dividendMode === 'units';
+  return false;
+}
+
+function createIdempotencyKey(): string {
+  return crypto.randomUUID();
+}
+
+function initialTrade(): TradeForm {
+  return { quantity: '', unitPrice: '', currency: DEFAULT_CURRENCY };
+}
+
+function initialCash(): CashForm {
+  return { amount: '', currency: DEFAULT_CURRENCY };
+}
+
+function initialDividend(): DividendForm {
+  return {
+    mode: 'cash',
+    amount: '',
+    quantity: '',
+    referenceUnitPrice: '',
+    currency: DEFAULT_CURRENCY,
+  };
+}
+
+function CurrencySelect({
+  id,
+  value,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation('investments');
   return (
-    type === 'BUY' ||
-    type === 'SELL' ||
-    type === 'DIVIDEND' ||
-    type === 'SPLIT' ||
-    type === 'OPENING_POSITION'
+    <div className="space-y-2">
+      <Label htmlFor={id}>{t('activities.currency')}</Label>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
+        <SelectTrigger id={id}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CURRENCIES.map((currency) => (
+            <SelectItem key={currency} value={currency}>
+              {currency}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function ToggleButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+        active
+          ? 'border-primary bg-primary/10 text-primary'
+          : 'border-border bg-card text-muted-foreground hover:bg-accent/50',
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -75,99 +160,84 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
 
   const [type, setType] = useState<ActivityType>('BUY');
   const [assetReference, setAssetReference] = useState<AssetReference | null>(null);
-  const [occurredAt, setOccurredAt] = useState(() =>
-    new Date().toISOString().slice(0, 16)
-  );
+  const [occurredAt, setOccurredAt] = useState(() => toLocalDateTimeInput(new Date()));
   const [comment, setComment] = useState('');
+  const [trade, setTrade] = useState<TradeForm>(initialTrade);
+  const [cash, setCash] = useState<CashForm>(initialCash);
+  const [dividend, setDividend] = useState<DividendForm>(initialDividend);
+  // Una clave por formulario: un reintento tras error no duplica la operación.
+  const [idempotencyKey, setIdempotencyKey] = useState(createIdempotencyKey);
 
-  const [tradeForm, setTradeForm] = useState<TradeForm>({
-    quantity: '',
-    unitPrice: '',
-    currency: DEFAULT_CURRENCY,
-  });
+  const needsAsset = requiresAsset(type, dividend.mode);
+  const showAssetPicker = type === 'BUY' || type === 'SELL' || type === 'DIVIDEND';
 
-  const [cashForm, setCashForm] = useState<CashForm>({
-    amount: '',
-    currency: DEFAULT_CURRENCY,
-  });
-
-  const [dividendForm, setDividendForm] = useState<DividendForm>({
-    mode: 'cash',
-    amount: '',
-    quantity: '',
-    referenceUnitPrice: '',
-    currency: DEFAULT_CURRENCY,
-  });
-
-  const needsAsset = requiresAsset(type);
+  const tradeAmount = useMemo(() => {
+    if (type !== 'BUY' && type !== 'SELL') return null;
+    const quantity = parsePositive(trade.quantity);
+    const unitPrice = parsePositive(trade.unitPrice);
+    return quantity != null && unitPrice != null ? quantity * unitPrice : null;
+  }, [type, trade.quantity, trade.unitPrice]);
 
   const details: ActivityDetails | null = useMemo(() => {
     switch (type) {
       case 'BUY':
-      case 'SELL':
-      case 'OPENING_POSITION': {
-        const quantity = parseFloat(tradeForm.quantity);
-        const unitPrice = parseFloat(tradeForm.unitPrice);
-        if (Number.isNaN(quantity) || Number.isNaN(unitPrice)) return null;
-        return { quantity, unitPrice, currency: tradeForm.currency };
+      case 'SELL': {
+        const quantity = parsePositive(trade.quantity);
+        const unitPrice = parsePositive(trade.unitPrice);
+        if (quantity == null || unitPrice == null) return null;
+        return { quantity, unitPrice, currency: trade.currency };
       }
       case 'DEPOSIT':
-      case 'WITHDRAW':
-      case 'OPENING_CASH': {
-        const amount = parseFloat(cashForm.amount);
-        if (Number.isNaN(amount)) return null;
-        return { amount, currency: cashForm.currency };
+      case 'WITHDRAW': {
+        const amount = parsePositive(cash.amount);
+        if (amount == null) return null;
+        return { amount, currency: cash.currency };
       }
       case 'DIVIDEND': {
-        if (dividendForm.mode === 'cash') {
-          const amount = parseFloat(dividendForm.amount);
-          if (Number.isNaN(amount)) return null;
-          return { amount, currency: dividendForm.currency };
+        if (dividend.mode === 'cash') {
+          const amount = parsePositive(dividend.amount);
+          if (amount == null) return null;
+          return { amount, currency: dividend.currency };
         }
-        const quantity = parseFloat(dividendForm.quantity);
-        const referenceUnitPrice = parseFloat(dividendForm.referenceUnitPrice);
-        if (Number.isNaN(quantity) || Number.isNaN(referenceUnitPrice)) return null;
-        return { quantity, referenceUnitPrice, currency: dividendForm.currency };
+        const quantity = parsePositive(dividend.quantity);
+        const referenceUnitPrice = parsePositive(dividend.referenceUnitPrice);
+        if (quantity == null || referenceUnitPrice == null) return null;
+        return { quantity, referenceUnitPrice, currency: dividend.currency };
       }
       default:
         return null;
     }
-  }, [type, tradeForm, cashForm, dividendForm]);
+  }, [type, trade, cash, dividend]);
 
-  const isValid = useMemo(() => {
-    if (!details) return false;
-    if (!occurredAt) return false;
-    if (needsAsset && !assetReference) return false;
-    return true;
-  }, [details, occurredAt, needsAsset, assetReference]);
+  const isFutureDate = new Date(occurredAt).getTime() > Date.now();
+  const isValid =
+    details != null &&
+    occurredAt !== '' &&
+    !isFutureDate &&
+    (!needsAsset || assetReference != null);
 
   const resetForm = useCallback(() => {
     setType('BUY');
     setAssetReference(null);
-    setOccurredAt(new Date().toISOString().slice(0, 16));
+    setOccurredAt(toLocalDateTimeInput(new Date()));
     setComment('');
-    setTradeForm({ quantity: '', unitPrice: '', currency: DEFAULT_CURRENCY });
-    setCashForm({ amount: '', currency: DEFAULT_CURRENCY });
-    setDividendForm({
-      mode: 'cash',
-      amount: '',
-      quantity: '',
-      referenceUnitPrice: '',
-      currency: DEFAULT_CURRENCY,
-    });
+    setTrade(initialTrade());
+    setCash(initialCash());
+    setDividend(initialDividend());
+    setIdempotencyKey(createIdempotencyKey());
   }, []);
 
   const handleSubmit = useCallback(() => {
     if (!isValid || !details) return;
 
-    // El hook useInvestmentMutations se encarga de enrutar al endpoint correcto
-    // (/activities/buy, /activities/deposits, etc.) y de añadir el Idempotency-Key.
     const payload: RegisterActivityRequest = {
       type,
-      assetReference: needsAsset ? assetReference : null,
+      // Dividendo en efectivo puede llevar activo opcional; sin activo no se asigna después.
+      assetReference: showAssetPicker ? assetReference : null,
       occurredAt: new Date(occurredAt).toISOString(),
       details,
       comment: comment.trim() || null,
+      idempotencyKey,
     };
 
     registerActivity.mutate(payload, {
@@ -180,10 +250,11 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
     isValid,
     details,
     type,
+    showAssetPicker,
     assetReference,
-    needsAsset,
     occurredAt,
     comment,
+    idempotencyKey,
     registerActivity,
     onOpenChange,
     resetForm,
@@ -192,15 +263,14 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
       onOpenChange(nextOpen);
-      if (!nextOpen) {
-        resetForm();
-      }
+      if (!nextOpen) resetForm();
     },
-    [onOpenChange, resetForm]
+    [onOpenChange, resetForm],
   );
 
-  const isCashType = type === 'DEPOSIT' || type === 'WITHDRAW' || type === 'OPENING_CASH';
-  const isTradeType = type === 'BUY' || type === 'SELL' || type === 'OPENING_POSITION';
+  const isCashType = type === 'DEPOSIT' || type === 'WITHDRAW';
+  const isTradeType = type === 'BUY' || type === 'SELL';
+  const disabled = isRegisteringActivity;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -214,28 +284,23 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
             <Label>{t('activities.type')}</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {PRIMARY_ACTIVITY_TYPES.map((activityType) => (
-                <button
+                <ToggleButton
                   key={activityType}
-                  type="button"
+                  active={type === activityType}
                   onClick={() => setType(activityType)}
-                  className={cn(
-                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    type === activityType
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:bg-accent/50'
-                  )}
                 >
                   {t(`activities.types.${activityType}`)}
-                </button>
+                </ToggleButton>
               ))}
             </div>
           </div>
 
-          {needsAsset && (
+          {showAssetPicker && (
             <AssetPicker
               value={assetReference}
               onChange={setAssetReference}
-              disabled={isRegisteringActivity}
+              disabled={disabled}
+              optional={!needsAsset}
             />
           )}
 
@@ -245,9 +310,17 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
               id="activity-date"
               type="datetime-local"
               value={occurredAt}
+              max={toLocalDateTimeInput(new Date())}
               onChange={(event) => setOccurredAt(event.target.value)}
-              disabled={isRegisteringActivity}
+              disabled={disabled}
             />
+            {isFutureDate && (
+              <p className="text-xs text-destructive">
+                {t('activities.futureDate', {
+                  defaultValue: 'La fecha no puede ser futura.',
+                })}
+              </p>
+            )}
           </div>
 
           {isTradeType && (
@@ -259,11 +332,11 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                   type="number"
                   step="any"
                   min="0"
-                  value={tradeForm.quantity}
+                  value={trade.quantity}
                   onChange={(event) =>
-                    setTradeForm((prev) => ({ ...prev, quantity: event.target.value }))
+                    setTrade((prev) => ({ ...prev, quantity: event.target.value }))
                   }
-                  disabled={isRegisteringActivity}
+                  disabled={disabled}
                 />
               </div>
               <div className="space-y-2">
@@ -273,33 +346,30 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                   type="number"
                   step="any"
                   min="0"
-                  value={tradeForm.unitPrice}
+                  value={trade.unitPrice}
                   onChange={(event) =>
-                    setTradeForm((prev) => ({ ...prev, unitPrice: event.target.value }))
+                    setTrade((prev) => ({ ...prev, unitPrice: event.target.value }))
                   }
-                  disabled={isRegisteringActivity}
+                  disabled={disabled}
                 />
               </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="trade-currency">{t('activities.currency')}</Label>
-                <Select
-                  value={tradeForm.currency}
-                  onValueChange={(value) =>
-                    setTradeForm((prev) => ({ ...prev, currency: value }))
-                  }
-                >
-                  <SelectTrigger id="trade-currency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCY_OPTIONS.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="col-span-2">
+                <CurrencySelect
+                  id="trade-currency"
+                  value={trade.currency}
+                  onChange={(value) => setTrade((prev) => ({ ...prev, currency: value }))}
+                  disabled={disabled}
+                />
               </div>
+              {tradeAmount != null && (
+                <p className="col-span-2 text-sm text-muted-foreground">
+                  {t('activities.derivedAmount', {
+                    defaultValue: 'Importe calculado: {{amount}} {{currency}}',
+                    amount: formatNumber(tradeAmount),
+                    currency: trade.currency,
+                  })}
+                </p>
+              )}
             </div>
           )}
 
@@ -312,66 +382,40 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                   type="number"
                   step="any"
                   min="0"
-                  value={cashForm.amount}
+                  value={cash.amount}
                   onChange={(event) =>
-                    setCashForm((prev) => ({ ...prev, amount: event.target.value }))
+                    setCash((prev) => ({ ...prev, amount: event.target.value }))
                   }
-                  disabled={isRegisteringActivity}
+                  disabled={disabled}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="cash-currency">{t('activities.currency')}</Label>
-                <Select
-                  value={cashForm.currency}
-                  onValueChange={(value) =>
-                    setCashForm((prev) => ({ ...prev, currency: value }))
-                  }
-                >
-                  <SelectTrigger id="cash-currency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCY_OPTIONS.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
-                        {currency}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <CurrencySelect
+                id="cash-currency"
+                value={cash.currency}
+                onChange={(value) => setCash((prev) => ({ ...prev, currency: value }))}
+                disabled={disabled}
+              />
             </div>
           )}
 
           {type === 'DIVIDEND' && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDividendForm((prev) => ({ ...prev, mode: 'cash' }))}
-                  className={cn(
-                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    dividendForm.mode === 'cash'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:bg-accent/50'
-                  )}
+                <ToggleButton
+                  active={dividend.mode === 'cash'}
+                  onClick={() => setDividend((prev) => ({ ...prev, mode: 'cash' }))}
                 >
                   {t('activities.dividendCash')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDividendForm((prev) => ({ ...prev, mode: 'units' }))}
-                  className={cn(
-                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-                    dividendForm.mode === 'units'
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:bg-accent/50'
-                  )}
+                </ToggleButton>
+                <ToggleButton
+                  active={dividend.mode === 'units'}
+                  onClick={() => setDividend((prev) => ({ ...prev, mode: 'units' }))}
                 >
                   {t('activities.dividendUnits')}
-                </button>
+                </ToggleButton>
               </div>
 
-              {dividendForm.mode === 'cash' ? (
+              {dividend.mode === 'cash' ? (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="dividend-amount">{t('activities.amount')}</Label>
@@ -380,33 +424,21 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                       type="number"
                       step="any"
                       min="0"
-                      value={dividendForm.amount}
+                      value={dividend.amount}
                       onChange={(event) =>
-                        setDividendForm((prev) => ({ ...prev, amount: event.target.value }))
+                        setDividend((prev) => ({ ...prev, amount: event.target.value }))
                       }
-                      disabled={isRegisteringActivity}
+                      disabled={disabled}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dividend-currency">{t('activities.currency')}</Label>
-                    <Select
-                      value={dividendForm.currency}
-                      onValueChange={(value) =>
-                        setDividendForm((prev) => ({ ...prev, currency: value }))
-                      }
-                    >
-                      <SelectTrigger id="dividend-currency">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CURRENCY_OPTIONS.map((currency) => (
-                          <SelectItem key={currency} value={currency}>
-                            {currency}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <CurrencySelect
+                    id="dividend-currency"
+                    value={dividend.currency}
+                    onChange={(value) =>
+                      setDividend((prev) => ({ ...prev, currency: value }))
+                    }
+                    disabled={disabled}
+                  />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
@@ -417,11 +449,11 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                       type="number"
                       step="any"
                       min="0"
-                      value={dividendForm.quantity}
+                      value={dividend.quantity}
                       onChange={(event) =>
-                        setDividendForm((prev) => ({ ...prev, quantity: event.target.value }))
+                        setDividend((prev) => ({ ...prev, quantity: event.target.value }))
                       }
-                      disabled={isRegisteringActivity}
+                      disabled={disabled}
                     />
                   </div>
                   <div className="space-y-2">
@@ -431,14 +463,14 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
                       type="number"
                       step="any"
                       min="0"
-                      value={dividendForm.referenceUnitPrice}
+                      value={dividend.referenceUnitPrice}
                       onChange={(event) =>
-                        setDividendForm((prev) => ({
+                        setDividend((prev) => ({
                           ...prev,
                           referenceUnitPrice: event.target.value,
                         }))
                       }
-                      disabled={isRegisteringActivity}
+                      disabled={disabled}
                     />
                   </div>
                 </div>
@@ -453,7 +485,7 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
               value={comment}
               onChange={(event) => setComment(event.target.value)}
               maxLength={MAX_COMMENT_LENGTH}
-              disabled={isRegisteringActivity}
+              disabled={disabled}
               placeholder={t('activities.commentPlaceholder')}
             />
           </div>
@@ -464,17 +496,17 @@ export const RecordActivityDialog = memo(function RecordActivityDialog({
             type="button"
             variant="ghost"
             onClick={() => handleOpenChange(false)}
-            disabled={isRegisteringActivity}
+            disabled={disabled}
           >
             {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={!isValid || isRegisteringActivity}
+            disabled={!isValid || disabled}
             className="min-h-10 font-semibold"
           >
-            {isRegisteringActivity ? (
+            {disabled ? (
               <Loader2 className="size-5 animate-spin" aria-hidden="true" />
             ) : (
               t('common:actions.save')

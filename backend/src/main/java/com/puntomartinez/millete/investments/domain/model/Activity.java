@@ -39,7 +39,7 @@ public final class Activity {
         validateCreatedAt(createdAt);
         validateModifiedAt(modifiedAt);
         validateOrderingKey(orderingKey);
-        validateDetails(details);
+        validateDetails(type, details);
 
         this.id = id;
         this.userId = userId;
@@ -127,7 +127,7 @@ public final class Activity {
 
         validateOccurredAt(newOccurredAt);
         validateOrderingKey(newOrderingKey);
-        validateDetails(newDetails);
+        validateDetails(this.type, newDetails);
 
         if (newOccurredAt.equals(this.occurredAt)) {
             if (newOrderingKey != this.orderingKey) {
@@ -143,7 +143,7 @@ public final class Activity {
             }
         }
 
-        validateDetailsForCurrentType(newDetails);
+        validateDetailsForCurrentType(this.type, newDetails);
 
         this.occurredAt = newOccurredAt;
         this.orderingKey = newOrderingKey;
@@ -203,6 +203,7 @@ public final class Activity {
     }
 
     private void validateDetails(
+            ActivityType type,
             ActivityDetails details
     ) {
         if (details == null) {
@@ -211,10 +212,11 @@ public final class Activity {
             );
         }
 
-        validateDetailsForCurrentType(details);
+        validateDetailsForCurrentType(type, details);
     }
 
     private void validateDetailsForCurrentType(
+            ActivityType type,
             ActivityDetails details
     ) {
         boolean valid;

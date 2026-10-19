@@ -7,15 +7,45 @@ import type {
   DividendUnitsDetails,
   ExchangeActivityDetails,
   OpeningPositionDetails,
+  Position,
   SplitActivityDetails,
   TradeActivityDetails,
 } from './types';
 
+/**
+ * Estado de confianza de una posición. Una posición puede tener varias banderas
+ * a la vez (p. ej. "Estimado" + "Historial incompleto").
+ */
+export type PositionFlag =
+  | 'CALCULATED'
+  | 'ESTIMATED'
+  | 'HISTORY_INCOMPLETE'
+  | 'MANUAL_PRICE'
+  | 'NOT_CALCULABLE';
+
+export function getPositionFlags(position: Position): PositionFlag[] {
+  const flags: PositionFlag[] = [];
+  if (!position.calculable) flags.push('NOT_CALCULABLE');
+  if (position.historyIncomplete) flags.push('HISTORY_INCOMPLETE');
+  if (position.estimated) flags.push('ESTIMATED');
+  if (position.calculable && position.assetReference.kind === 'USER') {
+    flags.push('MANUAL_PRICE');
+  }
+  if (flags.length === 0) flags.push('CALCULATED');
+  return flags;
+}
+
+export function isSameAssetReference(
+  a: AssetReference | null | undefined,
+  b: AssetReference | null | undefined,
+): boolean {
+  return a != null && b != null && a.kind === b.kind && a.id === b.id;
+}
+
 export function formatActivityDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
-    const date = new Date(iso);
-    return date.toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -54,11 +84,11 @@ export function describeActivityDetails(
     case 'BUY':
     case 'SELL': {
       const trade = details as TradeActivityDetails;
-      return `${trade.quantity} × ${formatNumber(trade.unitPrice)} ${trade.currency}`;
+      return `${formatQuantity(trade.quantity)} × ${formatNumber(trade.unitPrice)} ${trade.currency}`;
     }
     case 'DIVIDEND': {
       if (isDividendUnits(details)) {
-        return `${details.quantity} acciones`;
+        return `${formatQuantity(details.quantity)} acciones`;
       }
       const cash = details as CashActivityDetails;
       return `${formatNumber(cash.amount)} ${cash.currency}`;
@@ -79,7 +109,7 @@ export function describeActivityDetails(
     }
     case 'OPENING_POSITION': {
       const opening = details as OpeningPositionDetails;
-      return `${opening.quantity} × ${formatNumber(opening.acquisitionCost)} ${opening.currency}`;
+      return `${formatQuantity(opening.quantity)} × ${formatNumber(opening.acquisitionCost)} ${opening.currency}`;
     }
     default:
       return '';
@@ -119,12 +149,17 @@ export function formatQuantity(value: number | null | undefined): string {
   }).format(value);
 }
 
+/** El valor llega ya en puntos porcentuales (12.34 = 12,34 %). */
 export function formatPercentage(
   value: number | null | undefined,
 ): string {
   if (value == null || Number.isNaN(value)) return '—';
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(2)}%`;
+  const formatted = new Intl.NumberFormat(undefined, {
+    signDisplay: 'exceptZero',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+  return `${formatted} %`;
 }
 
 export function assetReferenceToParams(reference: AssetReference): {
@@ -177,4 +212,10 @@ export function getPerformanceRange(
 
 export function getActivityAssetLabel(activity: Activity): string {
   return activity.assetName || activity.assetSymbol || '—';
+}
+
+/** Valor para <input type="datetime-local"> expresado en hora local (no UTC). */
+export function toLocalDateTimeInput(date: Date): string {
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }

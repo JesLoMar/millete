@@ -4,10 +4,12 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Coins,
-  Landmark,
-  Scissors,
-  Repeat,
   Flag,
+  Landmark,
+  Lock,
+  Repeat,
+  Scissors,
+  type LucideIcon,
 } from 'lucide-react';
 import {
   Table,
@@ -29,29 +31,17 @@ interface ActivityHistoryProps {
   activities: Activity[];
 }
 
-function getActivityIcon(type: ActivityType) {
-  switch (type) {
-    case 'BUY':
-      return ArrowDownLeft;
-    case 'SELL':
-      return ArrowUpRight;
-    case 'DIVIDEND':
-      return Coins;
-    case 'DEPOSIT':
-    case 'OPENING_CASH':
-      return Landmark;
-    case 'WITHDRAW':
-      return Landmark;
-    case 'OPENING_POSITION':
-      return Flag;
-    case 'SPLIT':
-      return Scissors;
-    case 'EXCHANGE':
-      return Repeat;
-    default:
-      return Landmark;
-  }
-}
+const ACTIVITY_ICON: Record<ActivityType, LucideIcon> = {
+  BUY: ArrowDownLeft,
+  SELL: ArrowUpRight,
+  DIVIDEND: Coins,
+  DEPOSIT: Landmark,
+  WITHDRAW: Landmark,
+  OPENING_CASH: Landmark,
+  OPENING_POSITION: Flag,
+  SPLIT: Scissors,
+  EXCHANGE: Repeat,
+};
 
 function getActivityBadgeVariant(
   type: ActivityType,
@@ -73,8 +63,8 @@ function getActivityBadgeVariant(
 
 function ActivityRow({ activity }: { activity: Activity }) {
   const { t } = useTranslation('investments');
-  const Icon = getActivityIcon(activity.type);
-  const badgeVariant = getActivityBadgeVariant(activity.type);
+  const Icon = ACTIVITY_ICON[activity.type] ?? Landmark;
+  const isLinked = activity.linkedTransactionId != null;
 
   return (
     <TableRow>
@@ -94,9 +84,23 @@ function ActivityRow({ activity }: { activity: Activity }) {
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant={badgeVariant}>
-          {t(`activities.types.${activity.type}`)}
-        </Badge>
+        <div className="flex flex-col items-start gap-1">
+          <Badge variant={getActivityBadgeVariant(activity.type)}>
+            {t(`activities.types.${activity.type}`)}
+          </Badge>
+          {isLinked && (
+            <span
+              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
+              title={t('activities.linkedHint', {
+                defaultValue:
+                  'Vinculada a una transacción. Se modifica desde Transacciones.',
+              })}
+            >
+              <Lock className="size-3" aria-hidden="true" />
+              {t('activities.linked', { defaultValue: 'Vinculada a transacciones' })}
+            </span>
+          )}
+        </div>
       </TableCell>
       <TableCell className="text-right text-sm">
         {describeActivityDetails(activity.type, activity.details)}
@@ -116,9 +120,7 @@ export const ActivityHistory = memo(function ActivityHistory({
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <p className="text-sm text-muted-foreground">
-          {t('activities.empty')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('activities.empty')}</p>
       </div>
     );
   }
@@ -129,12 +131,8 @@ export const ActivityHistory = memo(function ActivityHistory({
         <TableRow>
           <TableHead>{t('activities.asset')}</TableHead>
           <TableHead>{t('activities.type')}</TableHead>
-          <TableHead className="text-right">
-            {t('activities.details')}
-          </TableHead>
-          <TableHead className="text-right">
-            {t('activities.comment')}
-          </TableHead>
+          <TableHead className="text-right">{t('activities.details')}</TableHead>
+          <TableHead className="text-right">{t('activities.comment')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

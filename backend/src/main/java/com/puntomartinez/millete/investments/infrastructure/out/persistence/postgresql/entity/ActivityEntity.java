@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -58,6 +59,7 @@ public class ActivityEntity {
             nullable = false,
             columnDefinition = "JSONB"
     )
+    @ColumnTransformer(write = "CAST(? AS JSONB)")
     private String details;
 
     @Column(name = "comment", length = 500)

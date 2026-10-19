@@ -17,9 +17,6 @@ import type {
   UserAsset,
 } from '../types';
 
-// ------------------------------------------------------------
-// Portfolio
-// ------------------------------------------------------------
 export function useCurrentPortfolio(enabled: boolean = true) {
   const [asOf] = useState(() => new Date().toISOString());
 
@@ -32,9 +29,6 @@ export function useCurrentPortfolio(enabled: boolean = true) {
   });
 }
 
-// ------------------------------------------------------------
-// Holdings (el backend devuelve PaginatedResponseDTO)
-// ------------------------------------------------------------
 export function useHoldings(enabled: boolean = true) {
   const query = useQuery({
     queryKey: INVESTMENT_QUERY_KEYS.holdings,
@@ -51,22 +45,20 @@ export function useHoldings(enabled: boolean = true) {
   };
 }
 
-// ------------------------------------------------------------
-// Activities
-// ------------------------------------------------------------
-export function useActivities(params: ListActivitiesParams = {}) {
+export function useActivities(
+  params: ListActivitiesParams = {},
+  enabled: boolean = true,
+) {
   return useQuery<ActivityPage>({
     queryKey: [...INVESTMENT_QUERY_KEYS.activities, params],
     queryFn: ({ signal }) =>
       investmentsService.listActivities({ size: 50, ...params }, signal),
+    enabled,
     staleTime: 15_000,
     retry: 1,
   });
 }
 
-// ------------------------------------------------------------
-// Performance
-// ------------------------------------------------------------
 export function usePerformance(periodKey: string, enabled: boolean = true) {
   const range = useMemo(() => getPerformanceRange(periodKey), [periodKey]);
 
@@ -79,9 +71,6 @@ export function usePerformance(periodKey: string, enabled: boolean = true) {
   });
 }
 
-// ------------------------------------------------------------
-// Closed lots (el backend devuelve PaginatedResponseDTO)
-// ------------------------------------------------------------
 export function useClosedLots(enabled: boolean = true) {
   const [range] = useState(() => {
     const to = new Date().toISOString();
@@ -105,9 +94,6 @@ export function useClosedLots(enabled: boolean = true) {
   };
 }
 
-// ------------------------------------------------------------
-// Shared assets (devuelve array directo)
-// ------------------------------------------------------------
 export function useSharedAssets(params: { search?: string } = {}) {
   return useQuery<SharedAsset[]>({
     queryKey: [...INVESTMENT_QUERY_KEYS.sharedAssets, params.search],
@@ -117,9 +103,6 @@ export function useSharedAssets(params: { search?: string } = {}) {
   });
 }
 
-// ------------------------------------------------------------
-// User assets (devuelve array directo)
-// ------------------------------------------------------------
 export function useUserAssets(enabled: boolean = true) {
   return useQuery<UserAsset[]>({
     queryKey: INVESTMENT_QUERY_KEYS.userAssets,
@@ -130,9 +113,6 @@ export function useUserAssets(enabled: boolean = true) {
   });
 }
 
-// ------------------------------------------------------------
-// Sectors
-// ------------------------------------------------------------
 export function useSectors(enabled: boolean = true) {
   return useQuery<Sector[]>({
     queryKey: INVESTMENT_QUERY_KEYS.sectors,
@@ -143,11 +123,8 @@ export function useSectors(enabled: boolean = true) {
   });
 }
 
-// ------------------------------------------------------------
-// Tracking
-// ------------------------------------------------------------
 export function useInvestmentTracking() {
-  return useQuery<InvestmentTrackingSettings | null>({
+  return useQuery<InvestmentTrackingSettings>({
     queryKey: INVESTMENT_QUERY_KEYS.tracking,
     queryFn: ({ signal }) => investmentsService.getTracking(signal),
     staleTime: 5 * 60_000,
@@ -155,9 +132,6 @@ export function useInvestmentTracking() {
   });
 }
 
-// ------------------------------------------------------------
-// Health
-// ------------------------------------------------------------
 export function useInvestmentHealth(enabled: boolean = false) {
   return useQuery<HealthReport>({
     queryKey: INVESTMENT_QUERY_KEYS.health,

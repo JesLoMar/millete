@@ -1,7 +1,9 @@
+import axios from 'axios';
 import { apiClient } from '@/shared/api/axiosClient';
 import type {
   Activity,
   ActivityPage,
+  CashActivityDetails,
   ClosedLot,
   ConfigureTrackingRequest,
   CreateUserAssetRequest,
@@ -20,16 +22,13 @@ import type {
   RestoreLedgerRequest,
   Sector,
   SharedAsset,
+  TradeActivityDetails,
   UpdateUserAssetRequest,
   UserAsset,
 } from '../types';
 
 const BASE = '/investments';
 
-/**
- * Shape genérico de las respuestas paginadas del backend.
- * Coincide con `PaginatedResponseDTO<T>` de Spring.
- */
 export interface PaginatedResponse<T> {
   content: T[];
   currentPage: number;
@@ -40,15 +39,59 @@ export interface PaginatedResponse<T> {
   last: boolean;
 }
 
-/** Genera una clave de idempotencia para las actividades */
-function generateIdempotencyKey(): string {
-  return crypto.randomUUID();
+/**
+ * La clave se genera una vez por formulario (en el diálogo) para que un reintento
+ * tras error de red no duplique la operación en backend.
+ */
+function resolveIdempotencyKey(payload: RegisterActivityRequest): string {
+  return payload.idempotencyKey ?? crypto.randomUUID();
+}
+
+async function postTrade(
+  side: 'buy' | 'sell',
+  payload: RegisterActivityRequest,
+): Promise<Activity> {
+  const details = payload.details as TradeActivityDetails;
+  const { data } = await apiClient.post<Activity>(
+    `${BASE}/activities/${side}`,
+    {
+      occurredAt: payload.occurredAt,
+      assetReference: payload.assetReference,
+      quantity: details.quantity,
+      unitPrice: details.unitPrice,
+      settlementCurrency: details.currency,
+      comment: payload.comment,
+    },
+    {
+      headers: { 'Idempotency-Key': resolveIdempotencyKey(payload) },
+      skipGlobalErrorNotify: true,
+    },
+  );
+  return data;
+}
+
+async function postCash(
+  path: 'deposits' | 'withdrawals',
+  payload: RegisterActivityRequest,
+): Promise<Activity> {
+  const details = payload.details as CashActivityDetails;
+  const { data } = await apiClient.post<Activity>(
+    `${BASE}/activities/${path}`,
+    {
+      occurredAt: payload.occurredAt,
+      amount: details.amount,
+      currency: details.currency,
+      comment: payload.comment,
+    },
+    {
+      headers: { 'Idempotency-Key': resolveIdempotencyKey(payload) },
+      skipGlobalErrorNotify: true,
+    },
+  );
+  return data;
 }
 
 export const investmentsService = {
-  // ----------------------------------------------------------
-  // Portfolio → /api/v1/investments/portfolio
-  // ----------------------------------------------------------
   getPortfolio: async (
     asOf: string,
     signal?: AbortSignal,
@@ -71,9 +114,6 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Holdings → /api/v1/investments/holdings
-  // ----------------------------------------------------------
   getHoldings: async (
     params?: { assetKind?: string; assetId?: string; page?: number; size?: number },
     signal?: AbortSignal,
@@ -99,9 +139,6 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Activities → /api/v1/investments/activities
-  // ----------------------------------------------------------
   listActivities: async (
     params: ListActivitiesParams = {},
     signal?: AbortSignal,
@@ -113,77 +150,14 @@ export const investmentsService = {
     return data;
   },
 
-  registerBuy: async (payload: RegisterActivityRequest) => {
-    const { data } = await apiClient.post<Activity>(
-      `${BASE}/activities/buy`,
-      {
-        occurredAt: payload.occurredAt,
-        assetReference: payload.assetReference,
-        quantity: (payload.details as any).quantity,
-        unitPrice: (payload.details as any).unitPrice,
-        settlementCurrency: (payload.details as any).currency,
-        comment: payload.comment,
-      },
-      {
-        headers: { 'Idempotency-Key': generateIdempotencyKey() },
-        skipGlobalErrorNotify: true,
-      },
-    );
-    return data;
-  },
-
-  registerSell: async (payload: RegisterActivityRequest) => {
-    const { data } = await apiClient.post<Activity>(
-      `${BASE}/activities/sell`,
-      {
-        occurredAt: payload.occurredAt,
-        assetReference: payload.assetReference,
-        quantity: (payload.details as any).quantity,
-        unitPrice: (payload.details as any).unitPrice,
-        settlementCurrency: (payload.details as any).currency,
-        comment: payload.comment,
-      },
-      {
-        headers: { 'Idempotency-Key': generateIdempotencyKey() },
-        skipGlobalErrorNotify: true,
-      },
-    );
-    return data;
-  },
-
-  registerDeposit: async (payload: RegisterActivityRequest) => {
-    const { data } = await apiClient.post<Activity>(
-      `${BASE}/activities/deposits`,
-      {
-        occurredAt: payload.occurredAt,
-        amount: (payload.details as any).amount,
-        currency: (payload.details as any).currency,
-        comment: payload.comment,
-      },
-      {
-        headers: { 'Idempotency-Key': generateIdempotencyKey() },
-        skipGlobalErrorNotify: true,
-      },
-    );
-    return data;
-  },
-
-  registerWithdrawal: async (payload: RegisterActivityRequest) => {
-    const { data } = await apiClient.post<Activity>(
-      `${BASE}/activities/withdrawals`,
-      {
-        occurredAt: payload.occurredAt,
-        amount: (payload.details as any).amount,
-        currency: (payload.details as any).currency,
-        comment: payload.comment,
-      },
-      {
-        headers: { 'Idempotency-Key': generateIdempotencyKey() },
-        skipGlobalErrorNotify: true,
-      },
-    );
-    return data;
-  },
+  // Operaciones soportadas por el formulario actual.
+  // Pendiente en backend/servicio: DIVIDEND, SPLIT, EXCHANGE, OPENING_POSITION, OPENING_CASH.
+  registerBuy: (payload: RegisterActivityRequest) => postTrade('buy', payload),
+  registerSell: (payload: RegisterActivityRequest) => postTrade('sell', payload),
+  registerDeposit: (payload: RegisterActivityRequest) =>
+    postCash('deposits', payload),
+  registerWithdrawal: (payload: RegisterActivityRequest) =>
+    postCash('withdrawals', payload),
 
   editActivity: async (id: string, payload: EditActivityRequest) => {
     const { data } = await apiClient.patch<Activity>(
@@ -194,23 +168,17 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Performance → /api/v1/investments/performance
-  // ----------------------------------------------------------
   getPerformance: async (
     params: GetPerformanceParams,
     signal?: AbortSignal,
   ): Promise<Performance> => {
-    const { data } = await apiClient.get<Performance>(
-      `${BASE}/performance`,
-      { params, signal },
-    );
+    const { data } = await apiClient.get<Performance>(`${BASE}/performance`, {
+      params,
+      signal,
+    });
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Shared assets → /api/v1/investments/shared-assets
-  // ----------------------------------------------------------
   listSharedAssets: async (
     params: { search?: string } = {},
     signal?: AbortSignal,
@@ -222,9 +190,6 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Sectors → /api/v1/investments/sectors
-  // ----------------------------------------------------------
   getSectors: async (signal?: AbortSignal): Promise<Sector[]> => {
     const { data } = await apiClient.get<Sector[]>(`${BASE}/sectors`, {
       signal,
@@ -232,9 +197,6 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // User assets → /api/v1/investments/user-assets
-  // ----------------------------------------------------------
   listUserAssets: async (
     params: { search?: string } = {},
     signal?: AbortSignal,
@@ -276,18 +238,24 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Tracking → /api/v1/investments/tracking
-  // ----------------------------------------------------------
-  getTracking: async (signal?: AbortSignal) => {
+  /**
+   * Solo un 404 significa "tracking no configurado". Cualquier otro error (red, 500)
+   * se propaga para que la UI no confunda una caída del servicio con una configuración vacía.
+   */
+  getTracking: async (
+    signal?: AbortSignal,
+  ): Promise<InvestmentTrackingSettings> => {
     try {
       const { data } = await apiClient.get<InvestmentTrackingSettings>(
         `${BASE}/tracking`,
         { signal, skipGlobalErrorNotify: true },
       );
       return data;
-    } catch {
-      return null;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return { configured: false, trackingStartAt: null };
+      }
+      throw error;
     }
   },
 
@@ -300,9 +268,6 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Health → /api/v1/investments/health
-  // ----------------------------------------------------------
   getHealth: async (signal?: AbortSignal): Promise<HealthReport> => {
     const { data } = await apiClient.get<HealthReport>(`${BASE}/health`, {
       signal,
@@ -310,24 +275,19 @@ export const investmentsService = {
     return data;
   },
 
-  // ----------------------------------------------------------
-  // Market data → /api/v1/investments/market-data/refresh
-  // ----------------------------------------------------------
   refreshMarketData: async (
     from: string,
     to: string,
-    currencyPairs: string[] = [],
-  ): Promise<void> => {
-    await apiClient.post(
+    currencies: string[] = [],
+  ): Promise<MarketDataRefreshResult> => {
+    const { data } = await apiClient.post<MarketDataRefreshResult>(
       `${BASE}/market-data/refresh`,
-      { from, to, currencyPairs },
+      { from, to, currencyPairs: currencies },
       { skipGlobalErrorNotify: true },
     );
+    return data;
   },
 
-  // ----------------------------------------------------------
-  // Ledger snapshot → /api/v1/investments/ledger
-  // ----------------------------------------------------------
   getLedgerSnapshot: async (signal?: AbortSignal) => {
     const { data } = await apiClient.get<InvestmentLedgerSnapshotResponse>(
       `${BASE}/ledger/snapshot`,

@@ -41,9 +41,8 @@ export function useInvestmentMutations() {
     );
   };
 
-  // ----------------------------------------------------------
-  // Actividades (rutas específicas por tipo)
-  // ----------------------------------------------------------
+  // ── Activities ────────────────────────────────────────────────────────────
+
   const registerActivity = useMutation({
     mutationFn: async (payload: RegisterActivityRequest) => {
       switch (payload.type) {
@@ -52,12 +51,12 @@ export function useInvestmentMutations() {
         case 'SELL':
           return investmentsService.registerSell(payload);
         case 'DEPOSIT':
-        case 'OPENING_CASH':
           return investmentsService.registerDeposit(payload);
         case 'WITHDRAW':
           return investmentsService.registerWithdrawal(payload);
         default:
-          throw new Error(`Tipo de actividad no soportado: ${payload.type}`);
+          // Sin endpoint en el servicio todavía: falla de forma explícita.
+          throw new Error(`Tipo de actividad no soportado todavía: ${payload.type}`);
       }
     },
     onSuccess: async () => {
@@ -81,9 +80,8 @@ export function useInvestmentMutations() {
     },
   });
 
-  // ----------------------------------------------------------
-  // Activos del usuario
-  // ----------------------------------------------------------
+  // ── User assets ───────────────────────────────────────────────────────────
+
   const createUserAsset = useMutation({
     mutationFn: (payload: CreateUserAssetRequest) =>
       investmentsService.createUserAsset(payload),
@@ -122,9 +120,46 @@ export function useInvestmentMutations() {
     },
   });
 
-  // ----------------------------------------------------------
-  // Tracking
-  // ----------------------------------------------------------
+  // ── Market data ───────────────────────────────────────────────────────────
+  // Invalida portfolio, rendimiento y salud: sin esto, los precios refrescados
+  // no se reflejaban hasta el siguiente refetch.
+
+  const refreshMarketData = useMutation({
+    mutationFn: ({ currencies }: { currencies: string[] }) => {
+      const to = new Date();
+      const from = new Date(to);
+      from.setDate(from.getDate() - 7);
+      return investmentsService.refreshMarketData(
+        from.toISOString(),
+        to.toISOString(),
+        currencies,
+      );
+    },
+    onSuccess: async (result) => {
+      if (result.failures.length > 0) {
+        notify.error(
+          t('alerts.marketDataPartial', {
+            count: result.failures.length,
+            defaultValue:
+              'No se pudieron actualizar {{count}} precios. Revisa los activos afectados.',
+          }),
+        );
+      } else {
+        notify.success(
+          t('alerts.marketDataRefreshed', {
+            count: result.updatedPrices + result.updatedFxRates,
+          }),
+        );
+      }
+      await invalidateAll();
+    },
+    onError: (error) => {
+      notify.error(getErrorMessage(error, t('alerts.marketDataRefreshError')));
+    },
+  });
+
+  // ── Tracking ──────────────────────────────────────────────────────────────
+
   const configureTracking = useMutation({
     mutationFn: (payload: ConfigureTrackingRequest) =>
       investmentsService.configureTracking(payload),
@@ -144,12 +179,14 @@ export function useInvestmentMutations() {
     createUserAsset,
     updateUserAsset,
     registerPrice,
+    refreshMarketData,
     configureTracking,
     isRegisteringActivity: registerActivity.isPending,
     isEditingActivity: editActivity.isPending,
     isCreatingAsset: createUserAsset.isPending,
     isUpdatingAsset: updateUserAsset.isPending,
     isRegisteringPrice: registerPrice.isPending,
+    isRefreshingMarketData: refreshMarketData.isPending,
     isConfiguringTracking: configureTracking.isPending,
   };
 }

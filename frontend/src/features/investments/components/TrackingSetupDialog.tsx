@@ -19,26 +19,26 @@ interface TrackingSetupDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function todayLocalDate(): string {
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60_000;
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
 export const TrackingSetupDialog = memo(function TrackingSetupDialog({
   open,
   onOpenChange,
 }: TrackingSetupDialogProps) {
   const { t } = useTranslation('investments');
-  const { configureTracking, isConfiguringTracking } =
-    useInvestmentMutations();
+  const { configureTracking, isConfiguringTracking } = useInvestmentMutations();
 
-  const [trackingStartAt, setTrackingStartAt] = useState(() =>
-    new Date().toISOString().slice(0, 10),
-  );
+  const [trackingStartAt, setTrackingStartAt] = useState(todayLocalDate);
 
   const handleSubmit = () => {
+    // Medianoche local del día elegido, no medianoche UTC (que cae en otro día en algunas zonas).
     configureTracking.mutate(
-      {
-        trackingStartAt: new Date(trackingStartAt).toISOString(),
-      },
-      {
-        onSuccess: () => onOpenChange(false),
-      },
+      { trackingStartAt: new Date(`${trackingStartAt}T00:00:00`).toISOString() },
+      { onSuccess: () => onOpenChange(false) },
     );
   };
 
@@ -47,22 +47,25 @@ export const TrackingSetupDialog = memo(function TrackingSetupDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('tracking.setupTitle')}</DialogTitle>
-          <DialogDescription>
-            {t('tracking.setupDescription')}
-          </DialogDescription>
+          <DialogDescription>{t('tracking.setupDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="tracking-start">
-            {t('tracking.startDate')}
-          </Label>
+          <Label htmlFor="tracking-start">{t('tracking.startDate')}</Label>
           <Input
             id="tracking-start"
             type="date"
             value={trackingStartAt}
+            max={todayLocalDate()}
             onChange={(event) => setTrackingStartAt(event.target.value)}
             disabled={isConfiguringTracking}
           />
+          <p className="text-xs text-muted-foreground">
+            {t('tracking.setupNotice', {
+              defaultValue:
+                'El efectivo gestionado empieza en esta fecha. Las operaciones anteriores pueden reconstruir posiciones, pero no forman parte del efectivo.',
+            })}
+          </p>
         </div>
 
         <DialogFooter>
