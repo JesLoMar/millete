@@ -136,10 +136,15 @@ export function useInvestmentMutations() {
       );
     },
     onSuccess: async (result) => {
-      if (result.failures.length > 0) {
+      // El backend responde 200 sin cuerpo: result puede venir vacío.
+      const failures = result?.failures ?? [];
+      const updated =
+        (result?.updatedPrices ?? 0) + (result?.updatedFxRates ?? 0);
+
+      if (failures.length > 0) {
         notify.error(
           t('alerts.marketDataPartial', {
-            count: result.failures.length,
+            count: failures.length,
             defaultValue:
               'No se pudieron actualizar {{count}} precios. Revisa los activos afectados.',
           }),
@@ -147,7 +152,7 @@ export function useInvestmentMutations() {
       } else {
         notify.success(
           t('alerts.marketDataRefreshed', {
-            count: result.updatedPrices + result.updatedFxRates,
+            count: updated,
           }),
         );
       }

@@ -5,6 +5,7 @@ import com.puntomartinez.millete.investments.domain.ports.out.AssetPriceReposito
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.AssetPriceEntity;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.AssetPriceEntityMapper;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.repository.JpaAssetPriceRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public final class AssetPricePostgresAdapter
+public class AssetPricePostgresAdapter
         implements AssetPriceRepository {
 
     private final JpaAssetPriceRepository repository;
@@ -28,6 +29,7 @@ public final class AssetPricePostgresAdapter
     }
 
     @Override
+    @Transactional
     public void saveAll(
             List<AssetPrice> prices
     ) {

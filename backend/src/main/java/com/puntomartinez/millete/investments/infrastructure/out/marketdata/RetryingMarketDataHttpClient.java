@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.investments.infrastructure.out.marketdata;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;

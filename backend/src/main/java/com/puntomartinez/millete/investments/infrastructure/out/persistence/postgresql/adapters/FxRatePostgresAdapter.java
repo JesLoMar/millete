@@ -2,6 +2,7 @@ package com.puntomartinez.millete.investments.infrastructure.out.persistence.pos
 
 import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
 import com.puntomartinez.millete.investments.domain.model.FxRate;
+import org.springframework.transaction.annotation.Transactional;
 import com.puntomartinez.millete.investments.domain.ports.out.FxRateRepository;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.entity.FxRateEntity;
 import com.puntomartinez.millete.investments.infrastructure.out.persistence.postgresql.mappers.FxRateEntityMapper;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public final class FxRatePostgresAdapter
+public class FxRatePostgresAdapter
         implements FxRateRepository {
 
     private final JpaFxRateRepository repository;
@@ -28,6 +29,7 @@ public final class FxRatePostgresAdapter
     }
 
     @Override
+    @Transactional
     public void saveAll(
             List<FxRate> rates
     ) {

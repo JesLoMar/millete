@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.investments.infrastructure.out.marketdata;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.puntomartinez.millete.investments.domain.model.AssetPrice;
 import com.puntomartinez.millete.investments.domain.model.AssetType;
 import com.puntomartinez.millete.investments.domain.model.FxRate;

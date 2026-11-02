@@ -1,6 +1,6 @@
 package com.puntomartinez.millete.investments.infrastructure.out.marketdata;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.puntomartinez.millete.investments.domain.model.AssetPrice;
 import com.puntomartinez.millete.investments.domain.model.AssetType;
 import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
@@ -57,15 +57,10 @@ final class FinnhubMarketDataAdapter
         );
     }
 
-    @Override
-    public boolean supports(
-            SharedAsset asset
-    ) {
-        return switch (asset.getType()) {
-            case STOCK, ETF -> true;
-            case CRYPTO, FUND, REAL_ESTATE, OTHER -> false;
-        };
-    }
+       @Override
+   public boolean supports(SharedAsset asset) {
+       return false;
+   }
 
     @Override
     public boolean supportsFxRates() {

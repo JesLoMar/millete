@@ -280,10 +280,22 @@ export const investmentsService = {
     to: string,
     currencies: string[] = [],
   ): Promise<MarketDataRefreshResult> => {
+    // El primer código es la moneda local. El backend espera pares BASE/QUOTE.
+    const [localCurrency, ...others] = currencies;
+    const currencyPairs = localCurrency
+      ? others
+          .filter((code) => code !== localCurrency)
+          .map((code) => `${code}/${localCurrency}`)
+      : [];
+
     const { data } = await apiClient.post<MarketDataRefreshResult>(
       `${BASE}/market-data/refresh`,
-      { from, to, currencyPairs: currencies },
-      { skipGlobalErrorNotify: true },
+      { from, to, currencyPairs },
+      {
+        skipGlobalErrorNotify: true,
+        // El refresh pide precios a proveedores con límite de frecuencia y tarda varios minutos.
+        timeout: 5 * 60 * 1000,
+      },
     );
     return data;
   },
