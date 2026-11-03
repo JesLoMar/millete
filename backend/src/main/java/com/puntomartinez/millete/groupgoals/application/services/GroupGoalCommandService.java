@@ -1,5 +1,6 @@
 package com.puntomartinez.millete.groupgoals.application.services;
 
+import com.puntomartinez.millete.groupgoals.domain.model.ContributionBalance;
 import com.puntomartinez.millete.groupgoals.domain.model.ContributionType;
 import com.puntomartinez.millete.groupgoals.domain.model.DistributionMode;
 import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
@@ -208,6 +209,16 @@ public class GroupGoalCommandService implements
     ) {
         getActiveGoal(goalId);
         requireActiveMember(goalId, userId);
+
+        ContributionBalance balance = goalContributionRepository
+                .sumByGoalIdAndUserId(goalId, userId)
+                .map(totals -> ContributionBalance.of(
+                        totals.totalDeposits(),
+                        totals.totalWithdrawals()
+                ))
+                .orElseGet(ContributionBalance::empty);
+
+        balance.ensureCanWithdraw(command.amount());
 
         GoalContribution contribution = GoalContribution.create(
                 timeProvider,

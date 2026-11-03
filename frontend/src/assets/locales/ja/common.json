@@ -70,5 +70,6 @@
   "errors": {
     "default": "予期しないエラーが発生しました。もう一度お試しください。",
     "noPermission": "この操作を実行する権限がありません"
-  }
+  },
+  "showingInterval": "{{total}} 件中 {{from}}-{{to}} 件を表示"
 }

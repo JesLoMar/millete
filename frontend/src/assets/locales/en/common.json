@@ -70,5 +70,6 @@
   "errors": {
     "default": "Unexpected error. Please try again.",
     "noPermission": "You do not have permission to perform this action"
-  }
+  },
+  "showingInterval": "Showing {{from}}-{{to}} of {{total}}"
 }

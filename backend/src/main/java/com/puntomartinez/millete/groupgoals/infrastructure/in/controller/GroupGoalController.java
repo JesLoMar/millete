@@ -520,6 +520,7 @@ public class GroupGoalController {
                 contribution.getUserId(),
                 userName,
                 contribution.getAmount(),
+                contribution.getType(),
                 contribution.getDate()
         );
     }

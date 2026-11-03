@@ -3,88 +3,75 @@ import { apiClient } from '@/shared/api/axiosClient';
 import type {
   Activity,
   ActivityPage,
-  CashActivityDetails,
-  ClosedLot,
+  AssetPricePage,
+  AssetPricesParams,
+  CashBalances,
+  ClosedLotPage,
   ConfigureTrackingRequest,
+  CreateHoldingRequest,
   CreateUserAssetRequest,
   EditActivityRequest,
-  GetPerformanceParams,
+  FxRatePage,
+  FxRatesParams,
   HealthReport,
   Holding,
-  InvestmentLedgerSnapshotResponse,
+  HoldingPage,
+  InvestmentLedgerSnapshot,
   InvestmentTrackingSettings,
   ListActivitiesParams,
-  MarketDataRefreshResult,
+  ListHoldingsParams,
   Performance,
+  PeriodParams,
   Portfolio,
+  RefreshMarketDataRequest,
   RegisterActivityRequest,
   RegisterUserAssetPriceRequest,
-  RestoreLedgerRequest,
+  ReplaceHoldingHistoryRequest,
   Sector,
   SharedAsset,
-  TradeActivityDetails,
   UpdateUserAssetRequest,
   UserAsset,
+  UserAssetPrice,
 } from '../types';
 
 const BASE = '/investments';
 
-export interface PaginatedResponse<T> {
-  content: T[];
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  first: boolean;
-  last: boolean;
+interface CashBalancesResponse {
+  balances: CashBalances;
 }
 
-/**
- * La clave se genera una vez por formulario (en el diálogo) para que un reintento
- * tras error de red no duplique la operación en backend.
- */
-function resolveIdempotencyKey(payload: RegisterActivityRequest): string {
-  return payload.idempotencyKey ?? crypto.randomUUID();
-}
-
-async function postTrade(
-  side: 'buy' | 'sell',
+function activityIdempotencyKey(
   payload: RegisterActivityRequest,
-): Promise<Activity> {
-  const details = payload.details as TradeActivityDetails;
-  const { data } = await apiClient.post<Activity>(
-    `${BASE}/activities/${side}`,
-    {
-      occurredAt: payload.occurredAt,
-      assetReference: payload.assetReference,
-      quantity: details.quantity,
-      unitPrice: details.unitPrice,
-      settlementCurrency: details.currency,
-      comment: payload.comment,
-    },
-    {
-      headers: { 'Idempotency-Key': resolveIdempotencyKey(payload) },
-      skipGlobalErrorNotify: true,
-    },
-  );
-  return data;
+): string {
+  return payload.idempotencyKey || crypto.randomUUID();
 }
 
-async function postCash(
-  path: 'deposits' | 'withdrawals',
-  payload: RegisterActivityRequest,
+function withoutIdempotency<T extends { idempotencyKey?: string }>(
+  payload: T,
+): Omit<T, 'idempotencyKey'> {
+  const rest = { ...payload };
+  delete rest.idempotencyKey;
+  return rest;
+}
+
+function withoutDividendMode<T extends { dividendMode?: string }>(
+  payload: T,
+): Omit<T, 'dividendMode'> {
+  const rest = { ...payload };
+  delete rest.dividendMode;
+  return rest;
+}
+
+async function postActivity(
+  path: string,
+  body: unknown,
+  idempotencyKey: string,
 ): Promise<Activity> {
-  const details = payload.details as CashActivityDetails;
   const { data } = await apiClient.post<Activity>(
     `${BASE}/activities/${path}`,
+    body,
     {
-      occurredAt: payload.occurredAt,
-      amount: details.amount,
-      currency: details.currency,
-      comment: payload.comment,
-    },
-    {
-      headers: { 'Idempotency-Key': resolveIdempotencyKey(payload) },
+      headers: { 'Idempotency-Key': idempotencyKey },
       skipGlobalErrorNotify: true,
     },
   );
@@ -96,31 +83,66 @@ export const investmentsService = {
     asOf: string,
     signal?: AbortSignal,
   ): Promise<Portfolio> => {
-    const { data } = await apiClient.get<Portfolio>(`${BASE}/portfolio`, {
-      params: { asOf },
-      signal,
-    });
+    const { data } = await apiClient.get<Portfolio>(
+      `${BASE}/portfolio`,
+      { params: { asOf }, signal },
+    );
     return data;
   },
 
   getInvestmentCash: async (
     asOf: string,
     signal?: AbortSignal,
-  ): Promise<{ balances: unknown[] }> => {
-    const { data } = await apiClient.get(`${BASE}/cash`, {
-      params: { asOf },
-      signal,
-    });
+  ): Promise<CashBalances> => {
+    const { data } = await apiClient.get<CashBalancesResponse>(
+      `${BASE}/cash`,
+      { params: { asOf }, signal },
+    );
+    return data.balances;
+  },
+
+  listHoldings: async (
+    params: ListHoldingsParams = {},
+    signal?: AbortSignal,
+  ): Promise<HoldingPage> => {
+    const { data } = await apiClient.get<HoldingPage>(
+      `${BASE}/holdings`,
+      { params, signal },
+    );
     return data;
   },
 
-  getHoldings: async (
-    params?: { assetKind?: string; assetId?: string; page?: number; size?: number },
+  getActiveHolding: async (
+    assetKind: string,
+    assetId: string,
     signal?: AbortSignal,
-  ): Promise<PaginatedResponse<Holding>> => {
-    const { data } = await apiClient.get<PaginatedResponse<Holding>>(
+  ): Promise<Holding> => {
+    const { data } = await apiClient.get<Holding>(
+      `${BASE}/holdings/active`,
+      { params: { assetKind, assetId }, signal },
+    );
+    return data;
+  },
+
+  createHolding: async (
+    payload: CreateHoldingRequest,
+  ): Promise<Holding> => {
+    const { data } = await apiClient.post<Holding>(
       `${BASE}/holdings`,
-      { params, signal },
+      payload,
+      { skipGlobalErrorNotify: true },
+    );
+    return data;
+  },
+
+  replaceHoldingHistory: async (
+    holdingId: string,
+    payload: ReplaceHoldingHistoryRequest,
+  ): Promise<Activity[]> => {
+    const { data } = await apiClient.post<Activity[]>(
+      `${BASE}/holdings/${holdingId}/history`,
+      payload,
+      { skipGlobalErrorNotify: true },
     );
     return data;
   },
@@ -129,10 +151,10 @@ export const investmentsService = {
     from: string,
     to: string,
     page: number = 0,
-    size: number = 200,
+    size: number = 50,
     signal?: AbortSignal,
-  ): Promise<PaginatedResponse<ClosedLot>> => {
-    const { data } = await apiClient.get<PaginatedResponse<ClosedLot>>(
+  ): Promise<ClosedLotPage> => {
+    const { data } = await apiClient.get<ClosedLotPage>(
       `${BASE}/lots/closed`,
       { params: { from, to, page, size }, signal },
     );
@@ -143,23 +165,80 @@ export const investmentsService = {
     params: ListActivitiesParams = {},
     signal?: AbortSignal,
   ): Promise<ActivityPage> => {
-    const { data } = await apiClient.get<ActivityPage>(`${BASE}/activities`, {
-      params,
-      signal,
-    });
+    const { data } = await apiClient.get<ActivityPage>(
+      `${BASE}/activities`,
+      { params, signal },
+    );
     return data;
   },
 
-  // Operaciones soportadas por el formulario actual.
-  // Pendiente en backend/servicio: DIVIDEND, SPLIT, EXCHANGE, OPENING_POSITION, OPENING_CASH.
-  registerBuy: (payload: RegisterActivityRequest) => postTrade('buy', payload),
-  registerSell: (payload: RegisterActivityRequest) => postTrade('sell', payload),
-  registerDeposit: (payload: RegisterActivityRequest) =>
-    postCash('deposits', payload),
-  registerWithdrawal: (payload: RegisterActivityRequest) =>
-    postCash('withdrawals', payload),
+  /**
+   * Envía cualquier operación creable al endpoint correspondiente.
+   * El backend devuelve 201 con la Activity creada.
+   */
+  registerActivity: async (
+    payload: RegisterActivityRequest,
+  ): Promise<Activity> => {
+    const idempotencyKey = activityIdempotencyKey(payload);
 
-  editActivity: async (id: string, payload: EditActivityRequest) => {
+    switch (payload.type) {
+      case 'BUY':
+        return postActivity(
+          'buy',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+      case 'SELL':
+        return postActivity(
+          'sell',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+      case 'DEPOSIT':
+        return postActivity(
+          'deposits',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+      case 'WITHDRAW':
+        return postActivity(
+          'withdrawals',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+      case 'DIVIDEND':
+        if (payload.dividendMode === 'CASH') {
+          return postActivity(
+            'dividends',
+            withoutDividendMode(withoutIdempotency(payload)),
+            idempotencyKey,
+          );
+        }
+
+        return postActivity(
+          'dividends/in-kind',
+          withoutDividendMode(withoutIdempotency(payload)),
+          idempotencyKey,
+        );
+      case 'EXCHANGE':
+        return postActivity(
+          'exchanges',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+      case 'SPLIT':
+        return postActivity(
+          'splits',
+          withoutIdempotency(payload),
+          idempotencyKey,
+        );
+    }
+  },
+
+  editActivity: async (
+    id: string,
+    payload: EditActivityRequest,
+  ): Promise<Activity> => {
     const { data } = await apiClient.patch<Activity>(
       `${BASE}/activities/${id}`,
       payload,
@@ -169,15 +248,17 @@ export const investmentsService = {
   },
 
   getPerformance: async (
-    params: GetPerformanceParams,
+    params: PeriodParams,
     signal?: AbortSignal,
   ): Promise<Performance> => {
-    const { data } = await apiClient.get<Performance>(`${BASE}/performance`, {
-      params,
-      signal,
-    });
+    const { data } = await apiClient.get<Performance>(
+      `${BASE}/performance`,
+      { params, signal },
+    );
     return data;
   },
+
+  // ── Assets ────────────────────────────────────────────────────────────
 
   listSharedAssets: async (
     params: { search?: string } = {},
@@ -190,10 +271,14 @@ export const investmentsService = {
     return data;
   },
 
-  getSectors: async (signal?: AbortSignal): Promise<Sector[]> => {
-    const { data } = await apiClient.get<Sector[]>(`${BASE}/sectors`, {
-      signal,
-    });
+  getSharedAsset: async (
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<SharedAsset> => {
+    const { data } = await apiClient.get<SharedAsset>(
+      `${BASE}/shared-assets/${id}`,
+      { signal },
+    );
     return data;
   },
 
@@ -208,7 +293,20 @@ export const investmentsService = {
     return data;
   },
 
-  createUserAsset: async (payload: CreateUserAssetRequest) => {
+  getUserAsset: async (
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<UserAsset> => {
+    const { data } = await apiClient.get<UserAsset>(
+      `${BASE}/user-assets/${id}`,
+      { signal },
+    );
+    return data;
+  },
+
+  createUserAsset: async (
+    payload: CreateUserAssetRequest,
+  ): Promise<UserAsset> => {
     const { data } = await apiClient.post<UserAsset>(
       `${BASE}/user-assets`,
       payload,
@@ -217,7 +315,10 @@ export const investmentsService = {
     return data;
   },
 
-  updateUserAsset: async (id: string, payload: UpdateUserAssetRequest) => {
+  updateUserAsset: async (
+    id: string,
+    payload: UpdateUserAssetRequest,
+  ): Promise<UserAsset> => {
     const { data } = await apiClient.put<UserAsset>(
       `${BASE}/user-assets/${id}`,
       payload,
@@ -229,8 +330,8 @@ export const investmentsService = {
   registerUserAssetPrice: async (
     assetId: string,
     payload: RegisterUserAssetPriceRequest,
-  ) => {
-    const { data } = await apiClient.post(
+  ): Promise<UserAssetPrice> => {
+    const { data } = await apiClient.post<UserAssetPrice>(
       `${BASE}/user-assets/${assetId}/prices`,
       payload,
       { skipGlobalErrorNotify: true },
@@ -238,10 +339,51 @@ export const investmentsService = {
     return data;
   },
 
-  /**
-   * Solo un 404 significa "tracking no configurado". Cualquier otro error (red, 500)
-   * se propaga para que la UI no confunda una caída del servicio con una configuración vacía.
-   */
+  getSectors: async (signal?: AbortSignal): Promise<Sector[]> => {
+    const { data } = await apiClient.get<Sector[]>(
+      `${BASE}/sectors`,
+      { signal },
+    );
+    return data;
+  },
+
+  // ── Market data ───────────────────────────────────────────────────────
+
+  getAssetPrices: async (
+    sharedAssetId: string,
+    params: AssetPricesParams,
+    signal?: AbortSignal,
+  ): Promise<AssetPricePage> => {
+    const { data } = await apiClient.get<AssetPricePage>(
+      `${BASE}/shared-assets/${sharedAssetId}/prices`,
+      { params, signal },
+    );
+    return data;
+  },
+
+  getFxRates: async (
+    params: FxRatesParams,
+    signal?: AbortSignal,
+  ): Promise<FxRatePage> => {
+    const { data } = await apiClient.get<FxRatePage>(
+      `${BASE}/fx-rates`,
+      { params, signal },
+    );
+    return data;
+  },
+
+  refreshMarketData: async (
+    payload: RefreshMarketDataRequest,
+  ): Promise<void> => {
+    await apiClient.post(`${BASE}/market-data/refresh`, payload, {
+      skipGlobalErrorNotify: true,
+      // El refresh consulta proveedores externos y puede tardar varios minutos.
+      timeout: 5 * 60 * 1000,
+    });
+  },
+
+  // ── Tracking / health ─────────────────────────────────────────────────
+
   getTracking: async (
     signal?: AbortSignal,
   ): Promise<InvestmentTrackingSettings> => {
@@ -259,58 +401,42 @@ export const investmentsService = {
     }
   },
 
-  configureTracking: async (payload: ConfigureTrackingRequest) => {
-    const { data } = await apiClient.post<InvestmentTrackingSettings>(
-      `${BASE}/tracking`,
-      payload,
-      { skipGlobalErrorNotify: true },
-    );
-    return data;
+  configureTracking: async (
+    payload: ConfigureTrackingRequest,
+  ): Promise<void> => {
+    await apiClient.post(`${BASE}/tracking`, payload, {
+      skipGlobalErrorNotify: true,
+    });
   },
 
   getHealth: async (signal?: AbortSignal): Promise<HealthReport> => {
-    const { data } = await apiClient.get<HealthReport>(`${BASE}/health`, {
-      signal,
-    });
-    return data;
-  },
-
-  refreshMarketData: async (
-    from: string,
-    to: string,
-    currencies: string[] = [],
-  ): Promise<MarketDataRefreshResult> => {
-    // El primer código es la moneda local. El backend espera pares BASE/QUOTE.
-    const [localCurrency, ...others] = currencies;
-    const currencyPairs = localCurrency
-      ? others
-          .filter((code) => code !== localCurrency)
-          .map((code) => `${code}/${localCurrency}`)
-      : [];
-
-    const { data } = await apiClient.post<MarketDataRefreshResult>(
-      `${BASE}/market-data/refresh`,
-      { from, to, currencyPairs },
-      {
-        skipGlobalErrorNotify: true,
-        // El refresh pide precios a proveedores con límite de frecuencia y tarda varios minutos.
-        timeout: 5 * 60 * 1000,
-      },
+    const { data } = await apiClient.get<HealthReport>(
+      `${BASE}/health`,
+      { signal },
     );
     return data;
   },
 
-  getLedgerSnapshot: async (signal?: AbortSignal) => {
-    const { data } = await apiClient.get<InvestmentLedgerSnapshotResponse>(
+  // ── Ledger snapshot ───────────────────────────────────────────────────
+
+  getLedgerSnapshot: async (
+    signal?: AbortSignal,
+  ): Promise<InvestmentLedgerSnapshot> => {
+    const { data } = await apiClient.get<InvestmentLedgerSnapshot>(
       `${BASE}/ledger/snapshot`,
       { signal },
     );
     return data;
   },
 
-  restoreLedger: async (payload: RestoreLedgerRequest) => {
-    await apiClient.post(`${BASE}/ledger/restore`, payload, {
+  restoreLedger: async (
+    snapshot: InvestmentLedgerSnapshot,
+  ): Promise<void> => {
+    await apiClient.post(`${BASE}/ledger/restore`, snapshot, {
       skipGlobalErrorNotify: true,
     });
   },
 };
+
+// Reexport local para que los componentes no dependan del tipo del servicio.
+export type { Holding };

@@ -70,5 +70,6 @@
   "errors": {
     "default": "Erro inesperado. Tente novamente.",
     "noPermission": "Você não tem permissão para realizar esta ação"
-  }
+  },
+  "showingInterval": "A mostrar {{from}}-{{to}} de {{total}}"
 }

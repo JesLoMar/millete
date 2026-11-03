@@ -1,143 +1,320 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import {
+  keepPreviousData,
+  useQuery,
+} from '@tanstack/react-query';
 import { investmentsService } from '../services/investments.service';
 import { INVESTMENT_QUERY_KEYS } from '../constants';
-import { getPerformanceRange } from '../utils';
+import { assetKey } from '../utils';
 import type {
-  ActivityPage,
-  ClosedLot,
+  AssetCatalogEntry,
+  AssetPricesParams,
+  AssetReference,
+  ClosedLotPage,
+  FxRatePage,
+  FxRatesParams,
   HealthReport,
-  Holding,
+  HoldingPage,
+  InvestmentLedgerSnapshot,
   InvestmentTrackingSettings,
   ListActivitiesParams,
+  ListHoldingsParams,
   Performance,
+  PeriodParams,
   Portfolio,
   Sector,
   SharedAsset,
   UserAsset,
 } from '../types';
 
-export function useCurrentPortfolio(enabled: boolean = true) {
-  const [asOf] = useState(() => new Date().toISOString());
-
+export function usePortfolio(
+  asOf: string,
+  enabled: boolean = true,
+) {
   return useQuery<Portfolio>({
     queryKey: [...INVESTMENT_QUERY_KEYS.portfolio, asOf],
-    queryFn: ({ signal }) => investmentsService.getPortfolio(asOf, signal),
+    queryFn: ({ signal }) =>
+      investmentsService.getPortfolio(asOf, signal),
     enabled,
     staleTime: 30_000,
     retry: 1,
   });
 }
 
-export function useHoldings(enabled: boolean = true) {
-  const query = useQuery({
-    queryKey: INVESTMENT_QUERY_KEYS.holdings,
+export function useInvestmentCash(
+  asOf: string,
+  enabled: boolean = true,
+) {
+  return useQuery({
+    queryKey: ['investmentCash', asOf],
     queryFn: ({ signal }) =>
-      investmentsService.getHoldings({ size: 200 }, signal),
+      investmentsService.getInvestmentCash(asOf, signal),
     enabled,
     staleTime: 30_000,
     retry: 1,
   });
-
-  return {
-    ...query,
-    holdings: (query.data?.content ?? []) as Holding[],
-  };
 }
 
 export function useActivities(
   params: ListActivitiesParams = {},
-  enabled: boolean = true,
 ) {
-  return useQuery<ActivityPage>({
+  return useQuery({
     queryKey: [...INVESTMENT_QUERY_KEYS.activities, params],
     queryFn: ({ signal }) =>
-      investmentsService.listActivities({ size: 50, ...params }, signal),
-    enabled,
+      investmentsService.listActivities(params, signal),
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
-    retry: 1,
   });
 }
 
-export function usePerformance(periodKey: string, enabled: boolean = true) {
-  const range = useMemo(() => getPerformanceRange(periodKey), [periodKey]);
-
-  return useQuery<Performance>({
-    queryKey: [...INVESTMENT_QUERY_KEYS.performance, periodKey],
-    queryFn: ({ signal }) => investmentsService.getPerformance(range, signal),
-    enabled,
-    staleTime: 60_000,
-    retry: 1,
-  });
-}
-
-export function useClosedLots(enabled: boolean = true) {
-  const [range] = useState(() => {
-    const to = new Date().toISOString();
-    const from = new Date();
-    from.setFullYear(from.getFullYear() - 1);
-    return { from: from.toISOString(), to };
-  });
-
-  const query = useQuery({
-    queryKey: [...INVESTMENT_QUERY_KEYS.closedLots, range.from],
+export function useHoldings(
+  params: ListHoldingsParams = {},
+  enabled: boolean = true,
+) {
+  return useQuery<HoldingPage>({
+    queryKey: [...INVESTMENT_QUERY_KEYS.holdings, params],
     queryFn: ({ signal }) =>
-      investmentsService.getClosedLots(range.from, range.to, 0, 200, signal),
+      investmentsService.listHoldings(params, signal),
     enabled,
-    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+  });
+}
+
+export function useClosedLots(
+  from: string,
+  to: string,
+  page: number,
+  size: number,
+  enabled: boolean = true,
+) {
+  return useQuery<ClosedLotPage>({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.closedLots,
+      from,
+      to,
+      page,
+      size,
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.getClosedLots(
+        from,
+        to,
+        page,
+        size,
+        signal,
+      ),
+    enabled: enabled && Boolean(from) && Boolean(to),
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+  });
+}
+
+export function usePerformance(
+  params: PeriodParams,
+  enabled: boolean = true,
+) {
+  return useQuery<Performance>({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.performance,
+      params.from,
+      params.to,
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.getPerformance(params, signal),
+    enabled:
+      enabled &&
+      Boolean(params.from) &&
+      Boolean(params.to) &&
+      new Date(params.from) < new Date(params.to),
+    staleTime: 30_000,
     retry: 1,
   });
+}
+
+export function useSharedAssets(search?: string) {
+  return useQuery<SharedAsset[]>({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.sharedAssets,
+      search ?? '',
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.listSharedAssets(
+        search ? { search } : {},
+        signal,
+      ),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useUserAssets(search?: string) {
+  return useQuery<UserAsset[]>({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.userAssets,
+      search ?? '',
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.listUserAssets(
+        search ? { search } : {},
+        signal,
+      ),
+    staleTime: 2 * 60_000,
+  });
+}
+
+export function useSectors() {
+  return useQuery<Sector[]>({
+    queryKey: INVESTMENT_QUERY_KEYS.sectors,
+    queryFn: ({ signal }) =>
+      investmentsService.getSectors(signal),
+    staleTime: 10 * 60_000,
+  });
+}
+
+export interface AssetCatalog {
+  entries: AssetCatalogEntry[];
+  byKey: Map<string, AssetCatalogEntry>;
+  isLoading: boolean;
+  isError: boolean;
+  getEntry: (
+    reference: AssetReference | null | undefined,
+  ) => AssetCatalogEntry | null;
+}
+
+/**
+ * Catálogo combinado de activos compartidos y propios. La API no incluye
+ * nombre/símbolo en las posiciones ni en las actividades, así que se enriquece
+ * en cliente con estas dos listas.
+ */
+export function useAssetCatalog(): AssetCatalog {
+  const sharedQuery = useSharedAssets();
+  const userQuery = useUserAssets();
+
+  const entries = useMemo<AssetCatalogEntry[]>(() => {
+    const shared = (sharedQuery.data ?? []).map<AssetCatalogEntry>(
+      (asset) => ({
+        reference: { kind: 'SHARED', id: asset.id },
+        name: asset.name,
+        symbol: asset.symbol,
+        type: asset.type,
+        sector: asset.sector,
+        currency: asset.currency,
+        isUserAsset: false,
+      }),
+    );
+
+    const user = (userQuery.data ?? []).map<AssetCatalogEntry>(
+      (asset) => ({
+        reference: { kind: 'USER', id: asset.id },
+        name: asset.name,
+        symbol: null,
+        type: asset.type,
+        sector: asset.sector,
+        currency: asset.currency,
+        isUserAsset: true,
+      }),
+    );
+
+    return [...shared, ...user];
+  }, [sharedQuery.data, userQuery.data]);
+
+  const byKey = useMemo(
+    () =>
+      new Map(
+        entries.map((entry) => [
+          assetKey(entry.reference),
+          entry,
+        ]),
+      ),
+    [entries],
+  );
 
   return {
-    ...query,
-    lots: (query.data?.content ?? []) as ClosedLot[],
+    entries,
+    byKey,
+    isLoading: sharedQuery.isLoading || userQuery.isLoading,
+    isError: sharedQuery.isError || userQuery.isError,
+    getEntry: (reference) =>
+      reference ? byKey.get(assetKey(reference)) ?? null : null,
   };
 }
 
-export function useSharedAssets(params: { search?: string } = {}) {
-  return useQuery<SharedAsset[]>({
-    queryKey: [...INVESTMENT_QUERY_KEYS.sharedAssets, params.search],
-    queryFn: ({ signal }) => investmentsService.listSharedAssets(params, signal),
-    staleTime: 5 * 60_000,
-    retry: false,
-  });
-}
-
-export function useUserAssets(enabled: boolean = true) {
-  return useQuery<UserAsset[]>({
-    queryKey: INVESTMENT_QUERY_KEYS.userAssets,
-    queryFn: ({ signal }) => investmentsService.listUserAssets({}, signal),
-    enabled,
-    staleTime: 30_000,
-    retry: false,
-  });
-}
-
-export function useSectors(enabled: boolean = true) {
-  return useQuery<Sector[]>({
-    queryKey: INVESTMENT_QUERY_KEYS.sectors,
-    queryFn: ({ signal }) => investmentsService.getSectors(signal),
-    enabled,
-    staleTime: 30 * 60_000,
-    retry: false,
-  });
-}
-
-export function useInvestmentTracking() {
+export function useTracking() {
   return useQuery<InvestmentTrackingSettings>({
     queryKey: INVESTMENT_QUERY_KEYS.tracking,
-    queryFn: ({ signal }) => investmentsService.getTracking(signal),
-    staleTime: 5 * 60_000,
+    queryFn: ({ signal }) =>
+      investmentsService.getTracking(signal),
+    staleTime: 60_000,
     retry: 1,
   });
 }
 
-export function useInvestmentHealth(enabled: boolean = false) {
+export function useHealth() {
   return useQuery<HealthReport>({
     queryKey: INVESTMENT_QUERY_KEYS.health,
-    queryFn: ({ signal }) => investmentsService.getHealth(signal),
-    enabled,
+    queryFn: ({ signal }) =>
+      investmentsService.getHealth(signal),
     staleTime: 60_000,
+    retry: 1,
+  });
+}
+
+export function useAssetPrices(
+  sharedAssetId: string | null,
+  params: AssetPricesParams,
+  enabled: boolean = true,
+) {
+  return useQuery({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.assetPrices,
+      sharedAssetId,
+      params,
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.getAssetPrices(
+        sharedAssetId as string,
+        params,
+        signal,
+      ),
+    enabled:
+      enabled &&
+      Boolean(sharedAssetId) &&
+      Boolean(params.from) &&
+      Boolean(params.to),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+}
+
+export function useFxRates(
+  params: FxRatesParams,
+  enabled: boolean = true,
+) {
+  return useQuery<FxRatePage>({
+    queryKey: [
+      ...INVESTMENT_QUERY_KEYS.fxRates,
+      params,
+    ],
+    queryFn: ({ signal }) =>
+      investmentsService.getFxRates(params, signal),
+    enabled:
+      enabled &&
+      Boolean(params.baseCurrency) &&
+      Boolean(params.quoteCurrency) &&
+      Boolean(params.from) &&
+      Boolean(params.to),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+}
+
+export function useLedgerSnapshot(enabled: boolean = false) {
+  return useQuery<InvestmentLedgerSnapshot>({
+    queryKey: INVESTMENT_QUERY_KEYS.ledger,
+    queryFn: ({ signal }) =>
+      investmentsService.getLedgerSnapshot(signal),
+    enabled,
+    staleTime: Infinity,
     retry: 1,
   });
 }

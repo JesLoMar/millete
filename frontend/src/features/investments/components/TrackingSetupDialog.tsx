@@ -1,6 +1,8 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
@@ -9,88 +11,121 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/core/dialog';
-import { Button } from '@/shared/components/core/button';
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
+
 import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
+import { isFutureDateTime, todayDateInputValue } from '../utils';
 
 interface TrackingSetupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onConfigured?: () => void;
 }
 
-function todayLocalDate(): string {
-  const now = new Date();
-  const offsetMs = now.getTimezoneOffset() * 60_000;
-  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
-}
-
-export const TrackingSetupDialog = memo(function TrackingSetupDialog({
+export function TrackingSetupDialog({
   open,
   onOpenChange,
+  onConfigured,
 }: TrackingSetupDialogProps) {
   const { t } = useTranslation('investments');
-  const { configureTracking, isConfiguringTracking } = useInvestmentMutations();
+  const { configureTracking } = useInvestmentMutations();
+  const [trackingStartAt, setTrackingStartAt] = useState(
+    todayDateInputValue,
+  );
 
-  const [trackingStartAt, setTrackingStartAt] = useState(todayLocalDate);
+  const isValid =
+    trackingStartAt.length > 0 &&
+    !isFutureDateTime(`${trackingStartAt}T00:00:00`);
 
-  const handleSubmit = () => {
-    // Medianoche local del día elegido, no medianoche UTC (que cae en otro día en algunas zonas).
-    configureTracking.mutate(
-      { trackingStartAt: new Date(`${trackingStartAt}T00:00:00`).toISOString() },
-      { onSuccess: () => onOpenChange(false) },
-    );
+  const handleSubmit = async () => {
+    if (!isValid) {
+      return;
+    }
+
+    try {
+      await configureTracking.mutateAsync({
+        // Medianoche local del día elegido, no medianoche UTC.
+        trackingStartAt: new Date(
+          `${trackingStartAt}T00:00:00`,
+        ).toISOString(),
+      });
+      onOpenChange(false);
+      onConfigured?.();
+    } catch {
+      // La mutation muestra el error y el diálogo permanece abierto.
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('tracking.setupTitle')}</DialogTitle>
-          <DialogDescription>{t('tracking.setupDescription')}</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="border-border bg-card sm:max-w-md">
+        <div className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>{t('tracking.setupTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('tracking.setupDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-2">
-          <Label htmlFor="tracking-start">{t('tracking.startDate')}</Label>
-          <Input
-            id="tracking-start"
-            type="date"
-            value={trackingStartAt}
-            max={todayLocalDate()}
-            onChange={(event) => setTrackingStartAt(event.target.value)}
-            disabled={isConfiguringTracking}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t('tracking.setupNotice', {
-              defaultValue:
-                'El efectivo gestionado empieza en esta fecha. Las operaciones anteriores pueden reconstruir posiciones, pero no forman parte del efectivo.',
-            })}
-          </p>
+          <div className="space-y-2">
+            <Label htmlFor="tracking-start">
+              {t('tracking.startDate')}
+            </Label>
+            <Input
+              id="tracking-start"
+              type="date"
+              value={trackingStartAt}
+              max={todayDateInputValue()}
+              onChange={(event) =>
+                setTrackingStartAt(event.target.value)
+              }
+              disabled={configureTracking.isPending}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('tracking.setupNotice')}
+            </p>
+          </div>
+
+          <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 text-xs text-muted-foreground">
+            <AlertTriangle
+              className="mt-0.5 size-4 shrink-0 text-warning"
+              aria-hidden="true"
+            />
+            {t('tracking.immutableWarning')}
+          </div>
+
+          {!isValid && (
+            <p className="text-sm text-destructive">
+              {t('tracking.invalidDate')}
+            </p>
+          )}
         </div>
 
         <DialogFooter>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isConfiguringTracking}
+            disabled={configureTracking.isPending}
           >
-            {t('common:actions.cancel')}
+            {t('common:cancel')}
           </Button>
           <Button
             type="button"
-            onClick={handleSubmit}
-            disabled={!trackingStartAt || isConfiguringTracking}
-            className="min-h-10 font-semibold"
+            onClick={() => void handleSubmit()}
+            disabled={!isValid || configureTracking.isPending}
           >
-            {isConfiguringTracking ? (
-              <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-            ) : (
-              t('common:actions.save')
+            {configureTracking.isPending && (
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
             )}
+            {t('tracking.configure')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-});
+}

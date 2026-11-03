@@ -41,6 +41,11 @@ interface AddContributionRequest {
   amount: number;
 }
 
+interface WithdrawContributionRequest {
+  goalId: string;
+  amount: number;
+}
+
 function getErrorMessage(
   error: unknown,
   fallback: string,
@@ -330,6 +335,37 @@ export function useGroupGoalMutations(
     },
   });
 
+  const withdrawContribution = useMutation({
+    mutationFn: ({
+      goalId,
+      amount,
+    }: WithdrawContributionRequest) =>
+      apiClient.post(
+        `/goals/${goalId}/contributions/withdraw`,
+        { amount },
+        {
+          skipGlobalErrorNotify: true,
+        },
+      ),
+
+    onSuccess: async () => {
+      await invalidateGroupGoals();
+
+      notify.success(
+        t('alerts.withdrawSuccess'),
+      );
+    },
+
+    onError: (error: unknown) => {
+      notify.error(
+        getErrorMessage(
+          error,
+          t('alerts.withdrawError'),
+        ),
+      );
+    },
+  });
+
   return {
     createGoal,
     inviteMember,
@@ -338,5 +374,6 @@ export function useGroupGoalMutations(
     updateMember,
     deleteMember,
     addContribution,
+    withdrawContribution,
   };
 }

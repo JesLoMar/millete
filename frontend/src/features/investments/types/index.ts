@@ -1,5 +1,5 @@
 // ============================================================
-// Tipos del módulo de investments — alineados con el esquema V5
+// Tipos del módulo de inversiones — alineados con la API real
 // ============================================================
 
 export type AssetReferenceKind = 'SHARED' | 'USER';
@@ -9,20 +9,26 @@ export interface AssetReference {
   id: string;
 }
 
-// --- Enums alineados con la BD V5 ---
-
 export type ActivityType =
   | 'BUY'
   | 'SELL'
   | 'DIVIDEND'
-  | 'SPLIT'
   | 'DEPOSIT'
   | 'WITHDRAW'
+  | 'SPLIT'
+  | 'EXCHANGE'
   | 'OPENING_CASH'
-  | 'OPENING_POSITION'
-  | 'EXCHANGE';
+  | 'OPENING_POSITION';
 
-/** Tipos de activo según CHECK de shared_assets / user_assets */
+export type CreatableActivityType =
+  | 'BUY'
+  | 'SELL'
+  | 'DIVIDEND'
+  | 'DEPOSIT'
+  | 'WITHDRAW'
+  | 'EXCHANGE'
+  | 'SPLIT';
+
 export type AssetType =
   | 'STOCK'
   | 'CRYPTO'
@@ -31,24 +37,16 @@ export type AssetType =
   | 'REAL_ESTATE'
   | 'OTHER';
 
-/** Sectores del catálogo asset_sectors (V5) */
-export type AssetSectorCode =
-  | 'TECHNOLOGY'
-  | 'HEALTHCARE'
-  | 'FINANCIALS'
-  | 'CONSUMER'
-  | 'INDUSTRIALS'
-  | 'ENERGY'
-  | 'UTILITIES'
-  | 'MATERIALS'
-  | 'REAL_ESTATE'
-  | 'COMMUNICATIONS'
-  | 'OTHER';
+export type AssetOrigin = 'PRE_EXISTING' | 'ACQUIRED';
 
-/** Estado de holding según CHECK de holdings (V5): solo ACTIVE o SUPERSEDED */
+export type CalculationStatus = 'CALCULABLE' | 'NOT_CALCULABLE';
+
 export type HoldingStatus = 'ACTIVE' | 'SUPERSEDED';
 
-export type LotSource = 'ACTIVITY' | 'HOLDING';
+/** Moneda en la que se introduce el precio de una compra/venta. */
+export type SettlementCurrency = 'LOCAL' | 'ASSET';
+
+export type HealthIssueSeverity = 'error' | 'warning' | 'info';
 
 // --- Value objects ---
 
@@ -57,38 +55,31 @@ export interface Money {
   currency: string;
 }
 
+export interface AppliedFxRate {
+  baseCurrency: string;
+  quoteCurrency: string;
+  rate: number;
+  source: string;
+  timestamp: string;
+}
+
 export interface Sector {
-  code: AssetSectorCode;
+  code: string;
   displayName: string;
   custom: boolean;
 }
 
-// --- Activity details (unión discriminada) ---
+// --- Activity details (respuesta plana del backend) ---
 
 export interface TradeActivityDetails {
   quantity: number;
-  unitPrice: number;
-  currency: string;
-  fees?: number;
-  settlement?: TradeSettlement;
-}
-
-export interface TradeSettlement {
-  amount: number;
-  currency: string;
-  fxRate?: number;
+  unitPrice: Money;
+  settlementAmount: Money;
+  appliedFxRate: AppliedFxRate | null;
 }
 
 export interface CashActivityDetails {
-  amount: number;
-  currency: string;
-  fxRate?: number;
-}
-
-export interface DividendUnitsDetails {
-  quantity: number;
-  referenceUnitPrice: number;
-  currency: string;
+  amount: Money;
 }
 
 export interface SplitActivityDetails {
@@ -96,26 +87,29 @@ export interface SplitActivityDetails {
 }
 
 export interface ExchangeActivityDetails {
-  fromCurrency: string;
-  toCurrency: string;
-  fromAmount: number;
-  toAmount: number;
-  fxRate: number;
+  origin: Money;
+  destination: Money;
+  appliedFxRate: AppliedFxRate | null;
 }
 
-export interface OpeningPositionDetails {
+export interface InKindDividendActivityDetails {
   quantity: number;
-  acquisitionCost: number;
-  currency: string;
+  referenceUnitPrice: Money;
 }
 
-export type ActivityDetails =
-  | TradeActivityDetails
-  | CashActivityDetails
-  | DividendUnitsDetails
-  | SplitActivityDetails
-  | ExchangeActivityDetails
-  | OpeningPositionDetails;
+export interface OpeningPositionActivityDetails {
+  quantity: number;
+  acquisitionCost: Money;
+}
+
+export interface ActivityDetails {
+  trade: TradeActivityDetails | null;
+  cash: CashActivityDetails | null;
+  split: SplitActivityDetails | null;
+  exchange: ExchangeActivityDetails | null;
+  inKindDividend: InKindDividendActivityDetails | null;
+  openingPosition: OpeningPositionActivityDetails | null;
+}
 
 // --- Entities ---
 
@@ -123,8 +117,6 @@ export interface Activity {
   id: string;
   type: ActivityType;
   assetReference: AssetReference | null;
-  assetName?: string | null;
-  assetSymbol?: string | null;
   occurredAt: string;
   createdAt: string;
   modifiedAt: string;
@@ -134,64 +126,48 @@ export interface Activity {
   linkedTransactionId: string | null;
 }
 
-export interface ActivityPage {
-  content: Activity[];
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  first: boolean;
-  last: boolean;
-}
-
 export interface Holding {
   id: string;
+  userId: string;
   assetReference: AssetReference;
-  assetName: string;
-  assetSymbol: string | null;
-  quantity: number;
-  acquisitionCost: Money;
-  status: HoldingStatus;
   snapshotAt: string;
+  quantity: number;
+  acquisitionCost: number;
+  currency: string;
+  status: HoldingStatus;
+  createdAt: string;
   supersededAt: string | null;
 }
 
 export interface ClosedLot {
-  id: string;
+  lotId: string;
   assetReference: AssetReference;
-  assetName: string;
-  assetSymbol: string | null;
   quantity: number;
-  acquiredAt: string;
+  costBasis: number;
+  costBasisCurrency: string;
+  proceeds: number;
+  proceedsCurrency: string;
+  realizedGain: number;
+  realizedGainCurrency: string;
+  openedAt: string;
   closedAt: string;
-  acquisitionCost: Money;
-  proceeds: Money;
-  realizedGain: Money;
-  realizedGainLocal: number | null;
-  holdingDays: number;
+  estimated: boolean;
+  historyIncomplete: boolean;
 }
 
 export type CashBalances = Record<string, number>;
 
 export interface Position {
   assetReference: AssetReference;
-  assetName: string;
-  assetSymbol: string | null;
-  assetSector: AssetSectorCode | null;
-  assetCurrency: string;
   quantity: number;
-  acquisitionCost: Money | null;
-  localCostBasis: number | null;
-  marketValue: Money | null;
-  localMarketValue: number | null;
+  costBasis: number | null;
+  marketValue: number | null;
   unrealizedGain: number | null;
-  unrealizedGainPercentage: number | null;
-  latestPrice: number | null;
-  priceTimestamp: string | null;
-  calculable: boolean;
-  notCalculableReason: string | null;
-  historyIncomplete: boolean;
+  valuationCurrency: string;
+  calculationStatus: CalculationStatus;
   estimated: boolean;
+  historyIncomplete: boolean;
+  unavailableReason: string | null;
 }
 
 export interface Portfolio {
@@ -203,19 +179,13 @@ export interface Portfolio {
   estimated: boolean;
 }
 
-export type PerformanceStatus =
-  | 'CALCULATED'
-  | 'NOT_CALCULABLE'
-  | 'INSUFFICIENT_DATA';
-
 export interface Performance {
-  status: PerformanceStatus;
-  unavailableReason: string | null;
   from: string;
   to: string;
   currency: string;
   openingValue: number | null;
   endingValue: number | null;
+  portfolioChange: number | null;
   openingCapital: number | null;
   contributions: number | null;
   withdrawals: number | null;
@@ -226,6 +196,8 @@ export interface Performance {
   inKindDividends: number | null;
   reconciliationDifference: number | null;
   estimated: boolean;
+  status: CalculationStatus;
+  unavailableReason: string | null;
 }
 
 export interface SharedAsset {
@@ -234,26 +206,19 @@ export interface SharedAsset {
   name: string;
   symbol: string | null;
   type: AssetType;
-  sector: Sector;
+  sector: Sector | null;
   currency: string;
-}
-
-export interface SharedAssetPage {
-  content: SharedAsset[];
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  first: boolean;
-  last: boolean;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export interface UserAsset {
   id: string;
+  userId: string;
   name: string;
   type: AssetType;
   sector: Sector | null;
-  origin: string;
+  origin: AssetOrigin;
   currency: string;
   createdAt: string;
   modifiedAt: string;
@@ -261,25 +226,18 @@ export interface UserAsset {
 
 export interface UserAssetPrice {
   id: string;
+  userAssetId: string;
   unitPrice: number;
   currency: string;
-  priceTimestamp: string;
+  timestamp: string;
 }
-
-// --- Tracking (alineado con investment_tracking_settings) ---
 
 export interface InvestmentTrackingSettings {
   configured: boolean;
   trackingStartAt: string | null;
 }
 
-export interface ConfigureTrackingRequest {
-  trackingStartAt: string;
-}
-
 // --- Health ---
-
-export type HealthIssueSeverity = 'error' | 'warning' | 'info';
 
 export interface HealthIssue {
   code: string;
@@ -295,62 +253,222 @@ export interface HealthReport {
 
 // --- Market data ---
 
-export interface MarketDataRefreshResult {
-  refreshedAt: string;
-  updatedPrices: number;
-  updatedFxRates: number;
-  failures: string[];
+export interface AssetPrice {
+  id: string;
+  sharedAssetId: string;
+  timestamp: string;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number | null;
+  adjustedClose: number | null;
+  valuationPrice: number;
+  volume: number | null;
+  currency: string;
+  source: string;
+  fetchedAt: string;
+}
+
+export interface FxRate {
+  id: string;
+  baseCurrency: string;
+  quoteCurrency: string;
+  timestamp: string;
+  rate: number;
+  source: string;
+  fetchedAt: string;
 }
 
 // --- Ledger snapshot ---
 
-export interface InvestmentLedgerSnapshotResponse {
-  snapshot: unknown;
+export interface InvestmentLedgerSnapshot {
+  version: number;
+  trackingStartAt: string;
+  userAssets: unknown[];
+  userAssetPrices: unknown[];
+  holdings: unknown[];
+  activities: unknown[];
+  audits: unknown[];
 }
 
-export interface RestoreLedgerRequest {
-  snapshot: unknown;
+// --- Paginación ---
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  first: boolean;
+  last: boolean;
 }
 
-// --- Requests ---
+export type ActivityPage = PaginatedResponse<Activity>;
+export type HoldingPage = PaginatedResponse<Holding>;
+export type ClosedLotPage = PaginatedResponse<ClosedLot>;
+export type AssetPricePage = PaginatedResponse<AssetPrice>;
+export type FxRatePage = PaginatedResponse<FxRate>;
 
-export interface RegisterActivityRequest {
-  type: ActivityType;
-  assetReference?: AssetReference | null;
-  occurredAt: string;
-  details: ActivityDetails;
+// --- Requests: activities ---
+
+export interface BuyActivityRequest {
+  occurredAt?: string;
+  assetReference: AssetReference;
+  quantity: number;
+  unitPrice: number;
+  settlementCurrency: SettlementCurrency;
   comment?: string | null;
-  idempotencyKey?: string;
+}
+
+export type SellActivityRequest = BuyActivityRequest;
+
+export interface CashDividendActivityRequest {
+  occurredAt?: string;
+  assetReference?: AssetReference | null;
+  amount: number;
+  currency: string;
+  comment?: string | null;
+}
+
+export interface InKindDividendActivityRequest {
+  occurredAt?: string;
+  assetReference: AssetReference;
+  quantity: number;
+  comment?: string | null;
+}
+
+export interface DepositActivityRequest {
+  occurredAt?: string;
+  amount: number;
+  currency: string;
+  comment?: string | null;
+}
+
+export type WithdrawalActivityRequest = DepositActivityRequest;
+
+export interface ExchangeActivityRequest {
+  occurredAt?: string;
+  amountOrigin: number;
+  currencyOrigin: string;
+  currencyDestination: string;
+  comment?: string | null;
+}
+
+export interface SplitActivityRequest {
+  occurredAt?: string;
+  assetReference: AssetReference;
+  ratio: number;
+  comment?: string | null;
+}
+
+/**
+ * Unión discriminada que usa el formulario para enviar cualquier operación
+ * al endpoint que le corresponde. La clave de idempotencia viaja en el payload
+ * para que un reintento tras un error de red no duplique la operación.
+ */
+export type RegisterActivityRequest =
+  | ({ type: 'BUY'; idempotencyKey: string } & BuyActivityRequest)
+  | ({ type: 'SELL'; idempotencyKey: string } & SellActivityRequest)
+  | ({ type: 'DEPOSIT'; idempotencyKey: string } & DepositActivityRequest)
+  | ({ type: 'WITHDRAW'; idempotencyKey: string } & WithdrawalActivityRequest)
+  | ({
+      type: 'DIVIDEND';
+      dividendMode: 'CASH';
+      idempotencyKey: string;
+    } & CashDividendActivityRequest)
+  | ({
+      type: 'DIVIDEND';
+      dividendMode: 'IN_KIND';
+      idempotencyKey: string;
+    } & InKindDividendActivityRequest)
+  | ({ type: 'EXCHANGE'; idempotencyKey: string } & ExchangeActivityRequest)
+  | ({ type: 'SPLIT'; idempotencyKey: string } & SplitActivityRequest);
+
+export type EditActivityDetailsType =
+  | 'BUY_SELL'
+  | 'CASH_DIVIDEND'
+  | 'IN_KIND_DIVIDEND'
+  | 'EXCHANGE'
+  | 'SPLIT';
+
+export interface EditActivityDetails {
+  type: EditActivityDetailsType;
+  quantity?: number;
+  unitPrice?: number;
+  settlementCurrency?: SettlementCurrency;
+  amount?: number;
+  amountOrigin?: number;
+  ratio?: number;
+  comment?: string | null;
 }
 
 export interface EditActivityRequest {
-  occurredAt?: string;
-  details?: ActivityDetails;
-  comment?: string | null;
-  reason?: string | null;
+  occurredAt: string;
+  details: EditActivityDetails;
+  reason: string;
 }
+
+// --- Requests: holdings ---
+
+export interface CreateHoldingRequest {
+  assetReference: AssetReference;
+  snapshotAt: string;
+  quantity: number;
+  acquisitionCost: number;
+}
+
+export type HistoricalActivityType =
+  | 'BUY'
+  | 'SELL'
+  | 'CASH_DIVIDEND'
+  | 'IN_KIND_DIVIDEND'
+  | 'SPLIT';
+
+export interface HistoricalActivityRequest {
+  occurredAt: string;
+  type: HistoricalActivityType;
+  quantity?: number;
+  unitPrice?: number;
+  settlementCurrency?: SettlementCurrency;
+  amount?: number;
+  currency?: string;
+  ratio?: number;
+  comment?: string | null;
+}
+
+export interface ReplaceHoldingHistoryRequest {
+  history: HistoricalActivityRequest[];
+}
+
+// --- Requests: assets ---
 
 export interface CreateUserAssetRequest {
   name: string;
   type: AssetType;
-  sectorCode?: AssetSectorCode | null;
-  sectorDisplayName?: string | null;
-  currency: string;
-  origin?: string;
+  sector: string;
+  origin: AssetOrigin;
+  initialPrice: number;
 }
 
 export interface UpdateUserAssetRequest {
-  name?: string;
-  type?: AssetType;
-  sectorCode?: AssetSectorCode | null;
-  sectorDisplayName?: string | null;
-  currency?: string;
+  name: string;
+  sector: string;
 }
 
 export interface RegisterUserAssetPriceRequest {
   unitPrice: number;
-  currency: string;
-  priceTimestamp?: string;
+}
+
+// --- Requests: tracking / market data / ledger ---
+
+export interface ConfigureTrackingRequest {
+  trackingStartAt: string;
+}
+
+export interface RefreshMarketDataRequest {
+  from: string;
+  to: string;
+  currencyPairs: string[];
 }
 
 // --- Query params ---
@@ -358,22 +476,46 @@ export interface RegisterUserAssetPriceRequest {
 export interface ListActivitiesParams {
   page?: number;
   size?: number;
+  type?: ActivityType;
+  currency?: string;
   from?: string;
   to?: string;
-  type?: ActivityType;
-  assetReferenceKind?: AssetReferenceKind;
+  assetKind?: AssetReferenceKind;
   assetId?: string;
 }
 
-export interface ListSharedAssetsParams {
-  search?: string;
-  sector?: AssetSectorCode;
-  type?: AssetType;
+export interface ListHoldingsParams {
+  page?: number;
+  size?: number;
+  assetKind?: AssetReferenceKind;
+  assetId?: string;
+}
+
+export interface PeriodParams {
+  from: string;
+  to: string;
+}
+
+export interface AssetPricesParams extends PeriodParams {
   page?: number;
   size?: number;
 }
 
-export interface GetPerformanceParams {
-  from: string;
-  to: string;
+export interface FxRatesParams extends PeriodParams {
+  baseCurrency: string;
+  quoteCurrency: string;
+  page?: number;
+  size?: number;
+}
+
+// --- UI helpers ---
+
+export interface AssetCatalogEntry {
+  reference: AssetReference;
+  name: string;
+  symbol: string | null;
+  type: AssetType | null;
+  sector: Sector | null;
+  currency: string | null;
+  isUserAsset: boolean;
 }

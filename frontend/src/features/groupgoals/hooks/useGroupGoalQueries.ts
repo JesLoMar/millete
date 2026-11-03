@@ -8,6 +8,7 @@ import {
 } from '@/shared/hooks/useServerPagination'
 
 import type {
+  ContributionType,
   GoalContribution,
   GoalListItem,
   GroupGoalDetail,
@@ -44,6 +45,7 @@ interface RawGoalContribution {
   memberName?: string
   userName?: string
   amount: number
+  type?: string
   date?: string
 }
 
@@ -53,6 +55,7 @@ interface RawPaginatedContribution {
   userName?: string
   memberName?: string
   amount: number
+  type?: string
   date?: string
 }
 
@@ -63,6 +66,14 @@ interface RawGoalListItem {
   memberCount?: number
   activeMembers?: number
   isAdmin: boolean
+}
+
+function toContributionType(
+  value: string | undefined
+): ContributionType {
+  return value === 'WITHDRAWAL'
+    ? 'WITHDRAWAL'
+    : 'DEPOSIT'
 }
 
 export function useGroupGoals() {
@@ -187,6 +198,9 @@ export function useGroupGoalDetail(
           'Member',
         amount:
           contribution.amount,
+        type: toContributionType(
+          contribution.type
+        ),
         date:
           contribution.date ?? '',
       })),
@@ -239,6 +253,9 @@ export function useGroupGoalContributions(
               '',
             amount:
               contribution.amount,
+            type: toContributionType(
+              contribution.type
+            ),
             date:
               contribution.date ?? '',
           })

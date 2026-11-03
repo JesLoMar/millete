@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useGroupGoalContributions } from '../hooks/useGroupGoalQueries'
@@ -11,11 +11,13 @@ import { formatCurrency } from '@/shared/utils/i18nFormat'
 interface ContributionHistoryProps {
   goalId: string
   onAddClick: () => void
+  onWithdrawClick: () => void
 }
 
 export function ContributionHistory({
   goalId,
   onAddClick,
+  onWithdrawClick,
 }: ContributionHistoryProps) {
   const { t } = useTranslation('groupGoals')
 
@@ -35,26 +37,45 @@ export function ContributionHistory({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-4">
         <h2 className="text-lg sm:text-xl font-serif">
           {t('groupGoals:contributionsHistory')}
         </h2>
 
-        <Button
-          onClick={onAddClick}
-          className="gap-1.5 sm:gap-2 shrink-0 text-sm"
-          size="sm"
-        >
-          <Plus className="size-3.5 sm:size-4" />
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            onClick={onWithdrawClick}
+            variant="outline"
+            className="gap-1.5 sm:gap-2 text-sm"
+            size="sm"
+          >
+            <Minus className="size-3.5 sm:size-4" aria-hidden="true" />
 
-          <span className="hidden xs:inline">
-            {t('groupGoals:addContribution')}
-          </span>
+            <span className="hidden xs:inline">
+              {t('groupGoals:withdrawContribution')}
+            </span>
 
-          <span className="xs:hidden">
-            {t('groupGoals:addContributionShort')}
-          </span>
-        </Button>
+            <span className="xs:hidden">
+              {t('groupGoals:withdrawContributionShort')}
+            </span>
+          </Button>
+
+          <Button
+            onClick={onAddClick}
+            className="gap-1.5 sm:gap-2 text-sm"
+            size="sm"
+          >
+            <Plus className="size-3.5 sm:size-4" aria-hidden="true" />
+
+            <span className="hidden xs:inline">
+              {t('groupGoals:addContribution')}
+            </span>
+
+            <span className="xs:hidden">
+              {t('groupGoals:addContributionShort')}
+            </span>
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -83,24 +104,36 @@ export function ContributionHistory({
                 </span>
               </div>
 
-              {contributions.map((contribution) => (
-                <div
-                  key={contribution.id}
-                  className="grid grid-cols-3 gap-2 sm:gap-4 items-center p-3.5 sm:p-4 hover:bg-accent/30 transition-colors border-b last:border-0"
-                >
-                  <span className="font-semibold text-sm sm:text-base truncate min-w-0">
-                    {contribution.name || t('groupGoals:member')}
-                  </span>
+              {contributions.map((contribution) => {
+                const isWithdrawal =
+                  contribution.type === 'WITHDRAWAL'
 
-                  <span className="font-bold text-sm sm:text-base text-primary text-right whitespace-nowrap tabular-nums">
-                    +{formatCurrency(contribution.amount)}
-                  </span>
+                return (
+                  <div
+                    key={contribution.id}
+                    className="grid grid-cols-3 gap-2 sm:gap-4 items-center p-3.5 sm:p-4 hover:bg-accent/30 transition-colors border-b last:border-0"
+                  >
+                    <span className="font-semibold text-sm sm:text-base truncate min-w-0">
+                      {contribution.name || t('groupGoals:member')}
+                    </span>
 
-                  <span className="text-xs sm:text-sm text-muted-foreground text-right whitespace-nowrap">
-                    {formatDate(contribution.date)}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className={`font-bold text-sm sm:text-base text-right whitespace-nowrap tabular-nums ${
+                        isWithdrawal
+                          ? 'text-destructive'
+                          : 'text-primary'
+                      }`}
+                    >
+                      {isWithdrawal ? '−' : '+'}
+                      {formatCurrency(contribution.amount)}
+                    </span>
+
+                    <span className="text-xs sm:text-sm text-muted-foreground text-right whitespace-nowrap">
+                      {formatDate(contribution.date)}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

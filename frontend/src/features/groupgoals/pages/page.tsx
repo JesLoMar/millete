@@ -9,11 +9,13 @@ import { GroupGoalDetail } from '@/features/groupgoals/components/GroupGoalDetai
 import { GroupGoalSelector } from '@/features/groupgoals/components/GroupGoalSelector'
 import { InviteMemberDialog } from '@/features/groupgoals/components/dialogs/InviteMemberDialog'
 import { UpdateGoalDialog } from '@/features/groupgoals/components/dialogs/UpdateGoalDialog'
+import { WithdrawContributionDialog } from '@/features/groupgoals/components/dialogs/WithdrawContributionDialog'
 import {
   useGroupGoalDetail,
   useGroupGoals,
 } from '@/features/groupgoals/hooks/useGroupGoalQueries'
 import { useGroupGoalMutations } from '@/features/groupgoals/hooks/useGroupGoalMutations'
+import { useProfile } from '@/features/profile/hooks/useProfile'
 import { calculateContributions } from '@/features/groupgoals/utils'
 import type {
   ContributionMember,
@@ -64,6 +66,7 @@ export const GroupGoalsPage = () => {
     isInviteOpen: false,
     isGoalEditOpen: false,
     isAddContributionOpen: false,
+    isWithdrawOpen: false,
   })
 
   const [actions, setActions] = useState({
@@ -87,6 +90,23 @@ export const GroupGoalsPage = () => {
 
   const { selectedGoal } = useGroupGoalDetail(selectedGoalId)
   const mutations = useGroupGoalMutations(selectedGoalId)
+  const { profile } = useProfile()
+
+  /**
+   * Saldo neto del usuario actual en el objetivo: lo que ha aportado menos lo
+   * que ya ha retirado. El backend no limita el importe, así que la validación
+   * vive en el diálogo.
+   */
+  const currentUserId = profile?.id
+  const myAvailableBalance = useMemo(() => {
+    if (!selectedGoal || !currentUserId) {
+      return null
+    }
+
+    const net = selectedGoal.contributionTotals[currentUserId] ?? 0
+
+    return Math.max(0, net)
+  }, [selectedGoal, currentUserId])
 
   const from =
     totalElements === 0
@@ -309,6 +329,22 @@ export const GroupGoalsPage = () => {
     }))
   }
 
+  const handleWithdrawContribution = async (
+    amount: number
+  ) => {
+    if (!selectedGoalId) return
+
+    await mutations.withdrawContribution.mutateAsync({
+      goalId: selectedGoalId,
+      amount,
+    })
+
+    setDialogs((prev) => ({
+      ...prev,
+      isWithdrawOpen: false,
+    }))
+  }
+
   const handleModeChange = (
     mode: string
   ) => {
@@ -403,6 +439,12 @@ export const GroupGoalsPage = () => {
                 setDialogs((prev) => ({
                   ...prev,
                   isAddContributionOpen: true,
+                }))
+              }
+              onWithdrawContribution={() =>
+                setDialogs((prev) => ({
+                  ...prev,
+                  isWithdrawOpen: true,
                 }))
               }
             />
@@ -575,6 +617,21 @@ export const GroupGoalsPage = () => {
         isSaving={
           mutations.addContribution.isPending
         }
+      />
+
+      <WithdrawContributionDialog
+        open={dialogs.isWithdrawOpen}
+        onOpenChange={(open) =>
+          setDialogs((prev) => ({
+            ...prev,
+            isWithdrawOpen: open,
+          }))
+        }
+        onSave={handleWithdrawContribution}
+        isSaving={
+          mutations.withdrawContribution.isPending
+        }
+        availableBalance={myAvailableBalance}
       />
     </div>
   )

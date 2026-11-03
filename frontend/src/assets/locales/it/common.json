@@ -70,5 +70,6 @@
   "errors": {
     "default": "Errore imprevisto. Riprova.",
     "noPermission": "Non disponi dei permessi per eseguire questa azione"
-  }
+  },
+  "showingInterval": "Visualizzazione di {{from}}-{{to}} su {{total}}"
 }

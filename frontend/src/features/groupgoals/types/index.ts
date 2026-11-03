@@ -19,11 +19,14 @@ export interface GoalMember {
   readonly customPercentage?: number;
 }
 
+export type ContributionType = 'DEPOSIT' | 'WITHDRAWAL';
+
 export interface GoalContribution {
   readonly id: string;
   readonly userId: string;
   readonly name: string;
   readonly amount: number;
+  readonly type: ContributionType;
   readonly date: string;
 }
 

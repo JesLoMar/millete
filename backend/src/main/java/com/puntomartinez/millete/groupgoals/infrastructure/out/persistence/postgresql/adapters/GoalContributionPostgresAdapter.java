@@ -6,6 +6,7 @@ import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHisto
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalContributionEntity;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.mappers.GoalContributionEntityMapper;
+import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.projection.ContributionTotalsProjection;
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository.JpaGoalContributionRepository;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -74,14 +76,29 @@ public class GoalContributionPostgresAdapter
     public List<MemberContributionTotals> sumByGoalId(UUID goalId) {
         return repository.sumByGoalIdGroupedByUser(goalId)
                 .stream()
-                .map(projection -> new MemberContributionTotals(
-                        projection.getUserId(),
-                        projection.getTotalDeposits(),
-                        projection.getTotalWithdrawals(),
-                        projection.getTotalDeposits()
-                                .subtract(projection.getTotalWithdrawals())
-                ))
+                .map(this::toMemberContributionTotals)
                 .toList();
+    }
+
+    @Override
+    public Optional<MemberContributionTotals> sumByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    ) {
+        return repository.sumByGoalIdAndUserId(goalId, userId)
+                .map(this::toMemberContributionTotals);
+    }
+
+    private MemberContributionTotals toMemberContributionTotals(
+            ContributionTotalsProjection projection
+    ) {
+        return new MemberContributionTotals(
+                projection.getUserId(),
+                projection.getTotalDeposits(),
+                projection.getTotalWithdrawals(),
+                projection.getTotalDeposits()
+                        .subtract(projection.getTotalWithdrawals())
+        );
     }
 
     @Override

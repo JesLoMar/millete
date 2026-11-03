@@ -30,6 +30,7 @@ interface GroupGoalDetailProps {
   onDeleteMember: (memberId: string) => void
   onModeChange: (mode: string) => void
   onAddContribution: () => void
+  onWithdrawContribution: () => void
 }
 
 export function GroupGoalDetail({
@@ -45,6 +46,7 @@ export function GroupGoalDetail({
   onDeleteMember,
   onModeChange,
   onAddContribution,
+  onWithdrawContribution,
 }: GroupGoalDetailProps) {
   const goalId = goal.id
   const { t } = useTranslation()
@@ -304,6 +306,7 @@ export function GroupGoalDetail({
       <ContributionHistory
         goalId={goalId}
         onAddClick={onAddContribution}
+        onWithdrawClick={onWithdrawContribution}
       />
     </div>
   )

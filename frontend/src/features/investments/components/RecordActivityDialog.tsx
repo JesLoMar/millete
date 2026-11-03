@@ -1,14 +1,16 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
+
+import { Button } from '@/shared/components/core/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/core/dialog';
-import { Button } from '@/shared/components/core/button';
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
 import {
@@ -19,501 +21,646 @@ import {
   SelectValue,
 } from '@/shared/components/core/select';
 import { cn } from '@/lib/utils';
+import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
+
 import {
+  CREATABLE_ACTIVITY_TYPES,
   CURRENCIES,
   MAX_COMMENT_LENGTH,
-  PRIMARY_ACTIVITY_TYPES,
 } from '../constants';
 import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
-import { formatNumber, toLocalDateTimeInput } from '../utils';
-import { AssetPicker } from './AssetPicker';
+import { useAssetCatalog } from '../hooks/useInvestmentQueries';
 import type {
-  ActivityDetails,
-  ActivityType,
   AssetReference,
+  CreatableActivityType,
   RegisterActivityRequest,
+  SettlementCurrency,
 } from '../types';
+import {
+  fromDateTimeInputValue,
+  nowDateTimeInputValue,
+  parseNumericInput,
+} from '../utils';
+import { AssetPicker } from './AssetPicker';
 
 interface RecordActivityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialType?: CreatableActivityType;
+  initialAsset?: AssetReference | null;
 }
 
-interface TradeForm {
+type DividendMode = 'CASH' | 'IN_KIND';
+
+interface FormState {
+  type: CreatableActivityType;
+  dividendMode: DividendMode;
+  asset: AssetReference | null;
+  occurredAt: string;
   quantity: string;
   unitPrice: string;
-  currency: string;
-}
-
-interface CashForm {
+  settlementCurrency: SettlementCurrency;
   amount: string;
   currency: string;
+  amountOrigin: string;
+  currencyOrigin: string;
+  currencyDestination: string;
+  ratio: string;
+  comment: string;
+  idempotencyKey: string;
 }
 
-interface DividendForm {
-  mode: 'cash' | 'units';
-  amount: string;
-  quantity: string;
-  referenceUnitPrice: string;
-  currency: string;
-}
+function createInitialState(
+  initialType: CreatableActivityType,
+  initialAsset: AssetReference | null,
+): FormState {
+  const localCurrency = getLocalCurrencyCode();
 
-const DEFAULT_CURRENCY = 'EUR';
-
-function parsePositive(value: string): number | null {
-  const parsed = parseFloat(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-/** El activo es obligatorio en compra/venta y en dividendos en acciones. En efectivo es opcional. */
-function requiresAsset(type: ActivityType, dividendMode: DividendForm['mode']): boolean {
-  if (type === 'BUY' || type === 'SELL') return true;
-  if (type === 'DIVIDEND') return dividendMode === 'units';
-  return false;
-}
-
-function createIdempotencyKey(): string {
-  return crypto.randomUUID();
-}
-
-function initialTrade(): TradeForm {
-  return { quantity: '', unitPrice: '', currency: DEFAULT_CURRENCY };
-}
-
-function initialCash(): CashForm {
-  return { amount: '', currency: DEFAULT_CURRENCY };
-}
-
-function initialDividend(): DividendForm {
   return {
-    mode: 'cash',
-    amount: '',
+    type: initialType,
+    dividendMode: 'CASH',
+    asset: initialAsset,
+    occurredAt: nowDateTimeInputValue(),
     quantity: '',
-    referenceUnitPrice: '',
-    currency: DEFAULT_CURRENCY,
+    unitPrice: '',
+    settlementCurrency: 'LOCAL',
+    amount: '',
+    currency: localCurrency,
+    amountOrigin: '',
+    currencyOrigin: localCurrency,
+    currencyDestination: 'USD',
+    ratio: '',
+    comment: '',
+    idempotencyKey: crypto.randomUUID(),
   };
 }
 
-function CurrencySelect({
-  id,
-  value,
-  onChange,
-  disabled,
-}: {
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  disabled: boolean;
-}) {
-  const { t } = useTranslation('investments');
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{t('activities.currency')}</Label>
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id={id}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {CURRENCIES.map((currency) => (
-            <SelectItem key={currency} value={currency}>
-              {currency}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
-function ToggleButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
-        active
-          ? 'border-primary bg-primary/10 text-primary'
-          : 'border-border bg-card text-muted-foreground hover:bg-accent/50',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-export const RecordActivityDialog = memo(function RecordActivityDialog({
+export function RecordActivityDialog({
   open,
   onOpenChange,
+  initialType = 'BUY',
+  initialAsset = null,
 }: RecordActivityDialogProps) {
   const { t } = useTranslation('investments');
-  const { registerActivity, isRegisteringActivity } = useInvestmentMutations();
+  const { registerActivity } = useInvestmentMutations();
+  const catalog = useAssetCatalog();
 
-  const [type, setType] = useState<ActivityType>('BUY');
-  const [assetReference, setAssetReference] = useState<AssetReference | null>(null);
-  const [occurredAt, setOccurredAt] = useState(() => toLocalDateTimeInput(new Date()));
-  const [comment, setComment] = useState('');
-  const [trade, setTrade] = useState<TradeForm>(initialTrade);
-  const [cash, setCash] = useState<CashForm>(initialCash);
-  const [dividend, setDividend] = useState<DividendForm>(initialDividend);
-  // Una clave por formulario: un reintento tras error no duplica la operación.
-  const [idempotencyKey, setIdempotencyKey] = useState(createIdempotencyKey);
-
-  const needsAsset = requiresAsset(type, dividend.mode);
-  const showAssetPicker = type === 'BUY' || type === 'SELL' || type === 'DIVIDEND';
-
-  const tradeAmount = useMemo(() => {
-    if (type !== 'BUY' && type !== 'SELL') return null;
-    const quantity = parsePositive(trade.quantity);
-    const unitPrice = parsePositive(trade.unitPrice);
-    return quantity != null && unitPrice != null ? quantity * unitPrice : null;
-  }, [type, trade.quantity, trade.unitPrice]);
-
-  const details: ActivityDetails | null = useMemo(() => {
-    switch (type) {
-      case 'BUY':
-      case 'SELL': {
-        const quantity = parsePositive(trade.quantity);
-        const unitPrice = parsePositive(trade.unitPrice);
-        if (quantity == null || unitPrice == null) return null;
-        return { quantity, unitPrice, currency: trade.currency };
-      }
-      case 'DEPOSIT':
-      case 'WITHDRAW': {
-        const amount = parsePositive(cash.amount);
-        if (amount == null) return null;
-        return { amount, currency: cash.currency };
-      }
-      case 'DIVIDEND': {
-        if (dividend.mode === 'cash') {
-          const amount = parsePositive(dividend.amount);
-          if (amount == null) return null;
-          return { amount, currency: dividend.currency };
-        }
-        const quantity = parsePositive(dividend.quantity);
-        const referenceUnitPrice = parsePositive(dividend.referenceUnitPrice);
-        if (quantity == null || referenceUnitPrice == null) return null;
-        return { quantity, referenceUnitPrice, currency: dividend.currency };
-      }
-      default:
-        return null;
-    }
-  }, [type, trade, cash, dividend]);
-
-  const isFutureDate = new Date(occurredAt).getTime() > Date.now();
-  const isValid =
-    details != null &&
-    occurredAt !== '' &&
-    !isFutureDate &&
-    (!needsAsset || assetReference != null);
-
-  const resetForm = useCallback(() => {
-    setType('BUY');
-    setAssetReference(null);
-    setOccurredAt(toLocalDateTimeInput(new Date()));
-    setComment('');
-    setTrade(initialTrade());
-    setCash(initialCash());
-    setDividend(initialDividend());
-    setIdempotencyKey(createIdempotencyKey());
-  }, []);
-
-  const handleSubmit = useCallback(() => {
-    if (!isValid || !details) return;
-
-    const payload: RegisterActivityRequest = {
-      type,
-      // Dividendo en efectivo puede llevar activo opcional; sin activo no se asigna después.
-      assetReference: showAssetPicker ? assetReference : null,
-      occurredAt: new Date(occurredAt).toISOString(),
-      details,
-      comment: comment.trim() || null,
-      idempotencyKey,
-    };
-
-    registerActivity.mutate(payload, {
-      onSuccess: () => {
-        onOpenChange(false);
-        resetForm();
-      },
-    });
-  }, [
-    isValid,
-    details,
-    type,
-    showAssetPicker,
-    assetReference,
-    occurredAt,
-    comment,
-    idempotencyKey,
-    registerActivity,
-    onOpenChange,
-    resetForm,
-  ]);
-
-  const handleOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      onOpenChange(nextOpen);
-      if (!nextOpen) resetForm();
-    },
-    [onOpenChange, resetForm],
+  const [form, setForm] = useState<FormState>(() =>
+    createInitialState(initialType, initialAsset),
   );
+  const [showValidation, setShowValidation] = useState(false);
 
-  const isCashType = type === 'DEPOSIT' || type === 'WITHDRAW';
-  const isTradeType = type === 'BUY' || type === 'SELL';
-  const disabled = isRegisteringActivity;
+  const selectedAsset = catalog.getEntry(form.asset);
+  const isDividend = form.type === 'DIVIDEND';
+  const isTrade =
+    form.type === 'BUY' || form.type === 'SELL';
+  const isCashDividend =
+    isDividend && form.dividendMode === 'CASH';
+  const isInKindDividend =
+    isDividend && form.dividendMode === 'IN_KIND';
+  const needsAsset =
+    isTrade ||
+    isInKindDividend ||
+    form.type === 'SPLIT';
+  const showsAssetPicker =
+    needsAsset || isCashDividend;
+
+  const update = (patch: Partial<FormState>) => {
+    setForm((previous) => ({ ...previous, ...patch }));
+  };
+
+  const reset = () => {
+    setForm(createInitialState('BUY', null));
+    setShowValidation(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && registerActivity.isPending) {
+      return;
+    }
+
+    if (!nextOpen) {
+      reset();
+    }
+
+    onOpenChange(nextOpen);
+  };
+
+  const quantity = parseNumericInput(form.quantity);
+  const unitPrice = parseNumericInput(form.unitPrice);
+  const amount = parseNumericInput(form.amount);
+  const amountOrigin = parseNumericInput(form.amountOrigin);
+  const ratio = parseNumericInput(form.ratio);
+
+  const currency = form.currency.trim().toUpperCase();
+  const currencyOrigin = form.currencyOrigin
+    .trim()
+    .toUpperCase();
+  const currencyDestination = form.currencyDestination
+    .trim()
+    .toUpperCase();
+
+  const isValid =
+    form.occurredAt.length > 0 &&
+    (isTrade
+      ? Boolean(form.asset) &&
+        quantity != null &&
+        quantity > 0 &&
+        unitPrice != null &&
+        unitPrice > 0
+      : isCashDividend
+        ? amount != null &&
+          amount > 0 &&
+          /^[A-Z]{3}$/.test(currency)
+        : isInKindDividend
+          ? Boolean(form.asset) &&
+            quantity != null &&
+            quantity > 0
+          : form.type === 'DEPOSIT' ||
+              form.type === 'WITHDRAW'
+            ? amount != null &&
+              amount > 0 &&
+              /^[A-Z]{3}$/.test(currency)
+            : form.type === 'EXCHANGE'
+              ? amountOrigin != null &&
+                amountOrigin > 0 &&
+                /^[A-Z]{3}$/.test(currencyOrigin) &&
+                /^[A-Z]{3}$/.test(currencyDestination) &&
+                currencyOrigin !== currencyDestination
+              : form.type === 'SPLIT'
+                ? Boolean(form.asset) &&
+                  ratio != null &&
+                  ratio > 0
+                : false);
+
+  const handleSubmit = async () => {
+    if (!isValid) {
+      setShowValidation(true);
+      return;
+    }
+
+    const occurredAt = fromDateTimeInputValue(
+      form.occurredAt,
+    );
+    const comment = form.comment.trim() || null;
+
+    let payload: RegisterActivityRequest;
+
+    if (form.type === 'BUY' || form.type === 'SELL') {
+      payload = {
+        type: form.type,
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        assetReference: form.asset as AssetReference,
+        quantity: quantity as number,
+        unitPrice: unitPrice as number,
+        settlementCurrency: form.settlementCurrency,
+        comment,
+      };
+    } else if (isCashDividend) {
+      payload = {
+        type: 'DIVIDEND',
+        dividendMode: 'CASH',
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        assetReference: form.asset,
+        amount: amount as number,
+        currency,
+        comment,
+      };
+    } else if (isInKindDividend) {
+      payload = {
+        type: 'DIVIDEND',
+        dividendMode: 'IN_KIND',
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        assetReference: form.asset as AssetReference,
+        quantity: quantity as number,
+        comment,
+      };
+    } else if (
+      form.type === 'DEPOSIT' ||
+      form.type === 'WITHDRAW'
+    ) {
+      payload = {
+        type: form.type,
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        amount: amount as number,
+        currency,
+        comment,
+      };
+    } else if (form.type === 'EXCHANGE') {
+      payload = {
+        type: 'EXCHANGE',
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        amountOrigin: amountOrigin as number,
+        currencyOrigin,
+        currencyDestination,
+        comment,
+      };
+    } else {
+      payload = {
+        type: 'SPLIT',
+        idempotencyKey: form.idempotencyKey,
+        occurredAt,
+        assetReference: form.asset as AssetReference,
+        ratio: ratio as number,
+        comment,
+      };
+    }
+
+    try {
+      await registerActivity.mutateAsync(payload);
+      reset();
+      onOpenChange(false);
+    } catch {
+      // La mutation muestra el error; mantenemos el diálogo abierto.
+    }
+  };
+
+  const localCurrency = getLocalCurrencyCode();
+  const assetCurrency =
+    selectedAsset?.currency ?? localCurrency;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('activities.recordTitle')}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="border-border bg-card sm:max-w-lg">
+        <div className="max-h-[85dvh] space-y-4 overflow-y-auto pr-1">
+          <DialogHeader>
+            <DialogTitle>{t('record.title')}</DialogTitle>
+            <DialogDescription>
+              {t('record.description')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4">
           <div className="space-y-2">
-            <Label>{t('activities.type')}</Label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {PRIMARY_ACTIVITY_TYPES.map((activityType) => (
-                <ToggleButton
-                  key={activityType}
-                  active={type === activityType}
-                  onClick={() => setType(activityType)}
-                >
-                  {t(`activities.types.${activityType}`)}
-                </ToggleButton>
-              ))}
-            </div>
+            <Label>{t('record.type')}</Label>
+            <Select
+              value={form.type}
+              onValueChange={(value) =>
+                update({
+                  type: value as CreatableActivityType,
+                })
+              }
+              disabled={registerActivity.isPending}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CREATABLE_ACTIVITY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`record.types.${type}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {showAssetPicker && (
+          {isDividend && (
+            <div className="space-y-2">
+              <Label>{t('record.dividendMode')}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    ['CASH', 'record.dividendCash'],
+                    ['IN_KIND', 'record.dividendInKind'],
+                  ] as const
+                ).map(([mode, labelKey]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() =>
+                      update({ dividendMode: mode })
+                    }
+                    disabled={registerActivity.isPending}
+                    className={cn(
+                      'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                      form.dividendMode === mode
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                    )}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showsAssetPicker && (
             <AssetPicker
-              value={assetReference}
-              onChange={setAssetReference}
-              disabled={disabled}
-              optional={!needsAsset}
+              value={form.asset}
+              onChange={(asset) => update({ asset })}
+              disabled={registerActivity.isPending}
+              optional={isCashDividend}
             />
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="activity-date">{t('activities.occurredAt')}</Label>
+            <Label htmlFor="activity-occurred-at">
+              {t('record.occurredAt')}
+            </Label>
             <Input
-              id="activity-date"
+              id="activity-occurred-at"
               type="datetime-local"
-              value={occurredAt}
-              max={toLocalDateTimeInput(new Date())}
-              onChange={(event) => setOccurredAt(event.target.value)}
-              disabled={disabled}
+              value={form.occurredAt}
+              onChange={(event) =>
+                update({ occurredAt: event.target.value })
+              }
+              disabled={registerActivity.isPending}
             />
-            {isFutureDate && (
-              <p className="text-xs text-destructive">
-                {t('activities.futureDate', {
-                  defaultValue: 'La fecha no puede ser futura.',
-                })}
-              </p>
-            )}
           </div>
 
-          {isTradeType && (
-            <div className="grid grid-cols-2 gap-3">
+          {isTrade && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="trade-quantity">{t('activities.quantity')}</Label>
+                <Label htmlFor="trade-quantity">
+                  {t('record.quantity')}
+                </Label>
                 <Input
                   id="trade-quantity"
                   type="number"
-                  step="any"
                   min="0"
-                  value={trade.quantity}
+                  step="any"
+                  value={form.quantity}
                   onChange={(event) =>
-                    setTrade((prev) => ({ ...prev, quantity: event.target.value }))
+                    update({ quantity: event.target.value })
                   }
-                  disabled={disabled}
+                  disabled={registerActivity.isPending}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="trade-price">{t('activities.unitPrice')}</Label>
+                <Label htmlFor="trade-price">
+                  {t('record.unitPrice')}
+                </Label>
                 <Input
                   id="trade-price"
                   type="number"
-                  step="any"
                   min="0"
-                  value={trade.unitPrice}
+                  step="any"
+                  value={form.unitPrice}
                   onChange={(event) =>
-                    setTrade((prev) => ({ ...prev, unitPrice: event.target.value }))
+                    update({ unitPrice: event.target.value })
                   }
-                  disabled={disabled}
+                  disabled={registerActivity.isPending}
                 />
               </div>
-              <div className="col-span-2">
-                <CurrencySelect
-                  id="trade-currency"
-                  value={trade.currency}
-                  onChange={(value) => setTrade((prev) => ({ ...prev, currency: value }))}
-                  disabled={disabled}
-                />
-              </div>
-              {tradeAmount != null && (
-                <p className="col-span-2 text-sm text-muted-foreground">
-                  {t('activities.derivedAmount', {
-                    defaultValue: 'Importe calculado: {{amount}} {{currency}}',
-                    amount: formatNumber(tradeAmount),
-                    currency: trade.currency,
-                  })}
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label>{t('record.settlementCurrency')}</Label>
+                <Select
+                  value={form.settlementCurrency}
+                  onValueChange={(value) =>
+                    update({
+                      settlementCurrency:
+                        value as SettlementCurrency,
+                    })
+                  }
+                  disabled={registerActivity.isPending}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOCAL">
+                      {t('record.localCurrency', {
+                        currency: localCurrency,
+                      })}
+                    </SelectItem>
+                    <SelectItem value="ASSET">
+                      {t('record.assetCurrency', {
+                        currency: assetCurrency,
+                      })}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {t('record.unitPriceHelp')}
                 </p>
-              )}
+              </div>
             </div>
           )}
 
-          {isCashType && (
-            <div className="grid grid-cols-2 gap-3">
+          {(isCashDividend ||
+            form.type === 'DEPOSIT' ||
+            form.type === 'WITHDRAW') && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="cash-amount">{t('activities.amount')}</Label>
+                <Label htmlFor="cash-amount">
+                  {t('record.amount')}
+                </Label>
                 <Input
                   id="cash-amount"
                   type="number"
-                  step="any"
                   min="0"
-                  value={cash.amount}
+                  step="any"
+                  value={form.amount}
                   onChange={(event) =>
-                    setCash((prev) => ({ ...prev, amount: event.target.value }))
+                    update({ amount: event.target.value })
                   }
-                  disabled={disabled}
+                  disabled={registerActivity.isPending}
                 />
               </div>
-              <CurrencySelect
-                id="cash-currency"
-                value={cash.currency}
-                onChange={(value) => setCash((prev) => ({ ...prev, currency: value }))}
-                disabled={disabled}
-              />
+
+              <div className="space-y-2">
+                <Label htmlFor="cash-currency">
+                  {t('record.currency')}
+                </Label>
+                <Input
+                  id="cash-currency"
+                  list="investment-currencies"
+                  maxLength={3}
+                  value={form.currency}
+                  onChange={(event) =>
+                    update({
+                      currency:
+                        event.target.value.toUpperCase(),
+                    })
+                  }
+                  disabled={registerActivity.isPending}
+                  className="uppercase"
+                />
+              </div>
             </div>
           )}
 
-          {type === 'DIVIDEND' && (
+          {isInKindDividend && (
+            <div className="space-y-2">
+              <Label htmlFor="in-kind-quantity">
+                {t('record.quantity')}
+              </Label>
+              <Input
+                id="in-kind-quantity"
+                type="number"
+                min="0"
+                step="any"
+                value={form.quantity}
+                onChange={(event) =>
+                  update({ quantity: event.target.value })
+                }
+                disabled={registerActivity.isPending}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('record.inKindHelp')}
+              </p>
+            </div>
+          )}
+
+          {form.type === 'EXCHANGE' && (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <ToggleButton
-                  active={dividend.mode === 'cash'}
-                  onClick={() => setDividend((prev) => ({ ...prev, mode: 'cash' }))}
-                >
-                  {t('activities.dividendCash')}
-                </ToggleButton>
-                <ToggleButton
-                  active={dividend.mode === 'units'}
-                  onClick={() => setDividend((prev) => ({ ...prev, mode: 'units' }))}
-                >
-                  {t('activities.dividendUnits')}
-                </ToggleButton>
+              <div className="space-y-2">
+                <Label htmlFor="exchange-amount">
+                  {t('record.amountOrigin')}
+                </Label>
+                <Input
+                  id="exchange-amount"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={form.amountOrigin}
+                  onChange={(event) =>
+                    update({
+                      amountOrigin: event.target.value,
+                    })
+                  }
+                  disabled={registerActivity.isPending}
+                />
               </div>
 
-              {dividend.mode === 'cash' ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="dividend-amount">{t('activities.amount')}</Label>
-                    <Input
-                      id="dividend-amount"
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={dividend.amount}
-                      onChange={(event) =>
-                        setDividend((prev) => ({ ...prev, amount: event.target.value }))
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <CurrencySelect
-                    id="dividend-currency"
-                    value={dividend.currency}
-                    onChange={(value) =>
-                      setDividend((prev) => ({ ...prev, currency: value }))
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="exchange-origin">
+                    {t('record.currencyOrigin')}
+                  </Label>
+                  <Input
+                    id="exchange-origin"
+                    list="investment-currencies"
+                    maxLength={3}
+                    value={form.currencyOrigin}
+                    onChange={(event) =>
+                      update({
+                        currencyOrigin:
+                          event.target.value.toUpperCase(),
+                      })
                     }
-                    disabled={disabled}
+                    disabled={registerActivity.isPending}
+                    className="uppercase"
                   />
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="dividend-quantity">{t('activities.quantity')}</Label>
-                    <Input
-                      id="dividend-quantity"
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={dividend.quantity}
-                      onChange={(event) =>
-                        setDividend((prev) => ({ ...prev, quantity: event.target.value }))
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dividend-price">{t('activities.referenceUnitPrice')}</Label>
-                    <Input
-                      id="dividend-price"
-                      type="number"
-                      step="any"
-                      min="0"
-                      value={dividend.referenceUnitPrice}
-                      onChange={(event) =>
-                        setDividend((prev) => ({
-                          ...prev,
-                          referenceUnitPrice: event.target.value,
-                        }))
-                      }
-                      disabled={disabled}
-                    />
-                  </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="exchange-destination">
+                    {t('record.currencyDestination')}
+                  </Label>
+                  <Input
+                    id="exchange-destination"
+                    list="investment-currencies"
+                    maxLength={3}
+                    value={form.currencyDestination}
+                    onChange={(event) =>
+                      update({
+                        currencyDestination:
+                          event.target.value.toUpperCase(),
+                      })
+                    }
+                    disabled={registerActivity.isPending}
+                    className="uppercase"
+                  />
                 </div>
-              )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                {t('record.exchangeHelp')}
+              </p>
+            </div>
+          )}
+
+          {form.type === 'SPLIT' && (
+            <div className="space-y-2">
+              <Label htmlFor="split-ratio">
+                {t('record.ratio')}
+              </Label>
+              <Input
+                id="split-ratio"
+                type="number"
+                min="0"
+                step="any"
+                value={form.ratio}
+                onChange={(event) =>
+                  update({ ratio: event.target.value })
+                }
+                disabled={registerActivity.isPending}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('record.ratioHelp')}
+              </p>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="activity-comment">{t('activities.comment')}</Label>
-            <Input
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="activity-comment">
+                {t('record.comment')}
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {form.comment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
+            <textarea
               id="activity-comment"
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
+              value={form.comment}
               maxLength={MAX_COMMENT_LENGTH}
-              disabled={disabled}
-              placeholder={t('activities.commentPlaceholder')}
+              onChange={(event) =>
+                update({ comment: event.target.value })
+              }
+              disabled={registerActivity.isPending}
+              rows={3}
+              placeholder={t('record.commentPlaceholder')}
+              className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
             />
           </div>
+
+          {showValidation && !isValid && (
+            <p className="text-sm text-destructive">
+              {t('record.requiredFields')}
+            </p>
+          )}
+
+          <datalist id="investment-currencies">
+            {CURRENCIES.map((code) => (
+              <option key={code} value={code} />
+            ))}
+          </datalist>
         </div>
 
         <DialogFooter>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => handleOpenChange(false)}
-            disabled={disabled}
+            disabled={registerActivity.isPending}
           >
-            {t('common:actions.cancel')}
+            {t('common:cancel')}
           </Button>
           <Button
             type="button"
-            onClick={handleSubmit}
-            disabled={!isValid || disabled}
-            className="min-h-10 font-semibold"
+            onClick={() => void handleSubmit()}
+            disabled={registerActivity.isPending}
           >
-            {disabled ? (
-              <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-            ) : (
-              t('common:actions.save')
+            {registerActivity.isPending && (
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
             )}
+            {t('record.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-});
+}

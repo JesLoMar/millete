@@ -4,6 +4,7 @@ import com.puntomartinez.millete.groupgoals.domain.model.GoalContribution;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.GetContributionHistoryUseCase.PaginatedContributions;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface GoalContributionRepository {
@@ -19,6 +20,11 @@ public interface GoalContributionRepository {
     long countByGoalId(UUID goalId);
 
     List<MemberContributionTotals> sumByGoalId(UUID goalId);
+
+    Optional<MemberContributionTotals> sumByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    );
 
     void deactivateByGoalId(UUID goalId);
 

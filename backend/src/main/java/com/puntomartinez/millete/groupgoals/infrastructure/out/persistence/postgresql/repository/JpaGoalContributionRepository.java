@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -37,6 +38,22 @@ public interface JpaGoalContributionRepository
             """)
     List<ContributionTotalsProjection> sumByGoalIdGroupedByUser(
             @Param("goalId") UUID goalId
+    );
+
+    @Query("""
+            SELECT
+                c.userId AS userId,
+                COALESCE(SUM(CASE WHEN c.type = 'DEPOSIT' THEN c.amount ELSE 0 END), 0) AS totalDeposits,
+                COALESCE(SUM(CASE WHEN c.type = 'WITHDRAWAL' THEN c.amount ELSE 0 END), 0) AS totalWithdrawals
+            FROM GoalContributionEntity c
+            WHERE c.goalId = :goalId
+              AND c.userId = :userId
+              AND c.active = true
+            GROUP BY c.userId
+            """)
+    Optional<ContributionTotalsProjection> sumByGoalIdAndUserId(
+            @Param("goalId") UUID goalId,
+            @Param("userId") UUID userId
     );
 
     @Modifying
