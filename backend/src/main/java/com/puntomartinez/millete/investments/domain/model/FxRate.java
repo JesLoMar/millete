@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.investments.domain.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -54,5 +55,30 @@ public record FxRate(
         }
 
         source = source.trim();
+    }
+
+    /**
+     * Devuelve el mismo tipo de cambio expresado en sentido inverso.
+     *
+     * Si este FX representa 1 unidad de {@code baseCurrency} en unidades de
+     * {@code quoteCurrency}, el resultado representa 1 unidad de
+     * {@code quoteCurrency} en unidades de {@code baseCurrency}. Sirve para
+     * reutilizar un FX guardado como USD/EUR cuando la operación necesita
+     * EUR/USD.
+     */
+    public FxRate inverse() {
+        return new FxRate(
+                id,
+                quoteCurrency,
+                baseCurrency,
+                timestamp,
+                BigDecimal.ONE.divide(
+                        rate,
+                        12,
+                        RoundingMode.HALF_UP
+                ),
+                source,
+                fetchedAt
+        );
     }
 }

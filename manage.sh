@@ -106,6 +106,37 @@ case "$1" in
         fi
         echo "Done. All scripts are now in Unix format."
         ;;
+    generate-seed)
+        shift
+        if ! command -v node >/dev/null 2>&1; then
+            echo "ERROR: Node.js is required to generate the seed."
+            exit 1
+        fi
+        node scripts/market-data/generate-crypto-seed.mjs "$@"
+        ;;
+    seed-prices)
+        FILE="${2:-scripts/market-data/seeds/crypto-prices-2024-11-04_2026-11-04.sql}"
+        if [ ! -f "$FILE" ]; then
+            echo "ERROR: Seed file not found: $FILE"
+            echo "Generate it with: sh manage.sh generate-seed"
+            exit 1
+        fi
+        echo "Starting PostgreSQL..."
+        docker compose up -d postgres
+        echo "Waiting for PostgreSQL..."
+        ATTEMPTS=0
+        until docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; do
+            ATTEMPTS=$((ATTEMPTS + 1))
+            if [ "$ATTEMPTS" -ge 30 ]; then
+                echo "ERROR: PostgreSQL did not become ready in time."
+                exit 1
+            fi
+            sleep 1
+        done
+        echo "Importing $FILE ..."
+        docker compose exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$FILE"
+        echo "Seed imported successfully."
+        ;;
     clean-all)
         echo "WARNING: This operation will permanently delete ALL containers, volumes, and backups."
         echo -n "Type 'DELETE' to confirm destruction: "
@@ -135,6 +166,8 @@ case "$1" in
         echo "  init            - Bootstrap volumes and host directory permissions"
         echo "  create-app-user - Create millete_app user in existing database"
         echo "  fix-scripts     - Convert script line endings to Unix format"
+        echo "  generate-seed   - Generate the historical crypto price seed (requires Node.js)"
+        echo "  seed-prices [f] - Import a price seed SQL file into the database"
         echo "  clean-all       - WIPE everything (Containers, volumes, and backups)"
         ;;
 esac

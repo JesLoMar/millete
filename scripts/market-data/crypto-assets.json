@@ -1,0 +1,881 @@
+{
+  "description": "Catálogo de criptomonedas del seed de precios en USD. Generado desde shared_assets (type=CRYPTO) el 2026-11-04.",
+  "baseCurrency": "USD",
+  "assets": [
+    {
+      "stableCatalogId": "CRYPTO:aave",
+      "name": "Aave",
+      "symbol": "AAVE",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "AAVEUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:cardano",
+      "name": "Cardano",
+      "symbol": "ADA",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ADAUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:arbitrum",
+      "name": "Arbitrum",
+      "symbol": "ARB",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ARBUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:aster-2",
+      "name": "Aster",
+      "symbol": "ASTER",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ASTERUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:avalanche-2",
+      "name": "Avalanche",
+      "symbol": "AVAX",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "AVAXUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:bitcoin-cash",
+      "name": "Bitcoin Cash",
+      "symbol": "BCH",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "BCHUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:bitget-token",
+      "name": "Bitget Token",
+      "symbol": "BGB",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "BGB-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:binancecoin",
+      "name": "BNB",
+      "symbol": "BNB",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "BNBUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:bitcoin",
+      "name": "Bitcoin",
+      "symbol": "BTC",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "BTCUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:bitway",
+      "name": "Bitway",
+      "symbol": "BTW",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "coingecko",
+          "id": "bitway",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:canton-network",
+      "name": "Canton",
+      "symbol": "CC",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "coingecko",
+          "id": "canton-network",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:crypto-com-chain",
+      "name": "Cronos",
+      "symbol": "CRO",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "CRO-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:dogecoin",
+      "name": "Dogecoin",
+      "symbol": "DOGE",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "DOGEUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:polkadot",
+      "name": "Polkadot",
+      "symbol": "DOT",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "DOTUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:ethena",
+      "name": "Ethena",
+      "symbol": "ENA",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ENAUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:ethereum",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ETHUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:the-open-network",
+      "name": "Gram (prev. Toncoin)",
+      "symbol": "GRAM",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "GRAM-USD",
+          "quoteCurrency": "USD"
+        },
+        {
+          "provider": "binance",
+          "pair": "GRAMUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:hedera-hashgraph",
+      "name": "Hedera",
+      "symbol": "HBAR",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "HBARUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:htx-dao",
+      "name": "HTX DAO",
+      "symbol": "HTX",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "HTX-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:hyperliquid",
+      "name": "Hyperliquid",
+      "symbol": "HYPE",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "HYPE32196-USD",
+          "quoteCurrency": "USD"
+        },
+        {
+          "provider": "binance",
+          "pair": "HYPEUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:internet-computer",
+      "name": "Internet Computer",
+      "symbol": "ICP",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ICPUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:leo-token",
+      "name": "LEO Token",
+      "symbol": "LEO",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "LEO-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:chainlink",
+      "name": "Chainlink",
+      "symbol": "LINK",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "LINKUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:litecoin",
+      "name": "Litecoin",
+      "symbol": "LTC",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "LTCUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:memecore",
+      "name": "MemeCore",
+      "symbol": "M",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "gate",
+          "pair": "M_USDT",
+          "quoteCurrency": "USDT"
+        },
+        {
+          "provider": "mexc",
+          "pair": "MUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:mantle",
+      "name": "Mantle",
+      "symbol": "MNT",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "bybit",
+          "pair": "MNTUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:morpho",
+      "name": "Morpho",
+      "symbol": "MORPHO",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "MORPHOUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:near",
+      "name": "NEAR Protocol",
+      "symbol": "NEAR",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "NEARUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:okb",
+      "name": "OKB",
+      "symbol": "OKB",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "OKB-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:ondo-finance",
+      "name": "Ondo",
+      "symbol": "ONDO",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ONDOUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:pax-gold",
+      "name": "PAX Gold",
+      "symbol": "PAXG",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "PAXGUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:pepe",
+      "name": "Pepe",
+      "symbol": "PEPE",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "PEPEUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:pump-fun",
+      "name": "Pump.fun",
+      "symbol": "PUMP",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "PUMPUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:quant-network",
+      "name": "Quant",
+      "symbol": "QNT",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "QNTUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:rain",
+      "name": "Rain",
+      "symbol": "RAIN",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "coingecko",
+          "id": "rain",
+          "quoteCurrency": "USD"
+        },
+        {
+          "provider": "mexc",
+          "pair": "RAINUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:shiba-inu",
+      "name": "Shiba Inu",
+      "symbol": "SHIB",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "SHIBUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:sky",
+      "name": "Sky",
+      "symbol": "SKY",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "SKYUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:solana",
+      "name": "Solana",
+      "symbol": "SOL",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "SOLUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:sui",
+      "name": "Sui",
+      "symbol": "SUI",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "SUIUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:bittensor",
+      "name": "Bittensor",
+      "symbol": "TAO",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "TAOUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:tron",
+      "name": "TRON",
+      "symbol": "TRX",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "TRXUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:uniswap",
+      "name": "Uniswap",
+      "symbol": "UNI",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "UNIUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:whitebit",
+      "name": "WhiteBIT Coin",
+      "symbol": "WBT",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "WBT-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:worldcoin-wld",
+      "name": "Worldcoin",
+      "symbol": "WLD",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "WLDUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:world-liberty-financial",
+      "name": "World Liberty Financial",
+      "symbol": "WLFI",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "WLFIUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:tether-gold",
+      "name": "Tether Gold",
+      "symbol": "XAUT",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "XAUT-USD",
+          "quoteCurrency": "USD"
+        },
+        {
+          "provider": "binance",
+          "pair": "XAUTUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:stellar",
+      "name": "Stellar",
+      "symbol": "XLM",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "XLMUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:monero",
+      "name": "Monero",
+      "symbol": "XMR",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "yahoo",
+          "ticker": "XMR-USD",
+          "quoteCurrency": "USD"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:ripple",
+      "name": "XRP",
+      "symbol": "XRP",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "XRPUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    },
+    {
+      "stableCatalogId": "CRYPTO:zcash",
+      "name": "Zcash",
+      "symbol": "ZEC",
+      "type": "CRYPTO",
+      "currency": "USD",
+      "sectorCode": "CRYPTO",
+      "sectorDisplayName": "Cripto",
+      "sectorCustom": false,
+      "sources": [
+        {
+          "provider": "binance",
+          "pair": "ZECUSDT",
+          "quoteCurrency": "USDT"
+        }
+      ]
+    }
+  ]
+}

@@ -596,6 +596,15 @@ public class EditActivityService
                         quoteCurrency,
                         at
                 )
+                .or(() ->
+                        fxRates
+                                .findLatestAt(
+                                        quoteCurrency,
+                                        baseCurrency,
+                                        at
+                                )
+                                .map(FxRate::inverse)
+                )
                 .orElseThrow(() ->
                         new IllegalStateException(
                                 "No existe un tipo de cambio histórico disponible entre "
