@@ -25,7 +25,12 @@ public final class EditSavingsGoalExtractionMapper {
         var target =
                 new EditSavingsGoalData.SavingsGoalTarget(
                         null,
-                        normalizeNullable(dto.targetName())
+                        normalizeNullable(dto.targetName()),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
                 );
 
         var changes =

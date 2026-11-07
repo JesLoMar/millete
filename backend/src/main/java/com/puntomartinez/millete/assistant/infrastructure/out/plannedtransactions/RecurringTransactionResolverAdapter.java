@@ -104,13 +104,16 @@ public final class RecurringTransactionResolverAdapter
                         transaction.getDescription(),
                         transaction.getAmount(),
                         categoryName,
+                        transaction.getCategoryId(),
                         toAssistantFrequencyType(
                                 transaction.getFrequencyType()
                         ),
                         transaction.getFrequencyInterval(),
                         toAssistantTransactionType(
                                 transaction.getType()
-                        )
+                        ),
+                        transaction.getStartDate(),
+                        transaction.getEndDate()
                 );
 
         return RecurringTransactionResolution.found(

@@ -1,19 +1,24 @@
-# Seed de precios históricos
+# Seeds de precios históricos
 
-Genera e importa un archivo SQL con precios diarios de las criptomonedas del
-catálogo. El mismo mecanismo está preparado para reutilizarse con acciones y
-ETFs más adelante.
+Genera e importa archivos SQL con precios diarios de las criptomonedas del
+catálogo y con tipos de cambio diarios (`fx_rates`). El mismo mecanismo está
+preparado para reutilizarse con acciones y ETFs más adelante.
 
 ## Contenido
 
 | Archivo | Descripción |
 |---|---|
 | `crypto-assets.json` | Manifiesto de los 50 activos `CRYPTO` del catálogo, con `stable_catalog_id`, metadatos y fuentes ordenadas por preferencia. |
+| `fx-pairs.json` | Manifiesto de los pares FX del seed (`EUR/USD`, `USD/EUR`, `JPY/USD`, `USD/JPY`) y sus fuentes Yahoo. |
 | `lib/providers.mjs` | Adaptadores de Binance, Yahoo Finance, Bybit, Gate, MEXC y CoinGecko. |
 | `lib/seed-builder.mjs` | Mezcla de fuentes, normalización a USD (USDT ≈ USD), generación de SQL e informe de cobertura. |
+| `lib/fx-seed-builder.mjs` | Validación del manifiesto FX, generación de SQL de `fx_rates` e informe de cobertura. |
 | `generate-crypto-seed.mjs` | CLI del seed de criptomonedas. |
+| `generate-fx-seed.mjs` | CLI del seed de tipos de cambio. |
 | `seeds/crypto-prices-2024-11-04_2026-11-04.sql` | Seed generado para el rango solicitado. |
 | `seeds/crypto-prices-2024-11-04_2026-11-04-coverage.md` | Informe de cobertura por activo y fuente. |
+| `seeds/fx-rates-2026-01-01_2026-11-07.sql` | Seed de tipos de cambio generado con Yahoo Finance. |
+| `seeds/fx-rates-2026-01-01_2026-11-07-coverage.md` | Informe de cobertura por par FX. |
 
 ## Requisitos
 
@@ -57,6 +62,64 @@ Salida por defecto:
 ```text
 scripts/market-data/seeds/crypto-prices-<desde>_<hasta>.sql
 scripts/market-data/seeds/crypto-prices-<desde>_<hasta>-coverage.md
+```
+
+## Seed de tipos de cambio
+
+Genera `fx_rates` con los pares definidos en `fx-pairs.json`:
+
+```bash
+node scripts/market-data/generate-fx-seed.mjs
+```
+
+Opciones:
+
+```text
+--from YYYY-MM-DD   Fecha inicial (por defecto 2026-01-01)
+--to YYYY-MM-DD     Fecha final (por defecto 2026-11-07)
+--manifest <ruta>   Manifiesto de pares
+--out <ruta>        Archivo SQL de salida
+-h, --help          Ayuda
+```
+
+Ejemplo:
+
+```bash
+node scripts/market-data/generate-fx-seed.mjs \
+  --from 2026-01-01 --to 2026-11-07 \
+  --out scripts/market-data/seeds/fx-rates-2026-01-01_2026-11-07.sql
+```
+
+Salida por defecto:
+
+```text
+scripts/market-data/seeds/fx-rates-<desde>_<hasta>.sql
+scripts/market-data/seeds/fx-rates-<desde>_<hasta>-coverage.md
+```
+
+Cada fila es un par directo `BASE/QUOTE` descargado de Yahoo (`EURUSD=X`,
+`USDEUR=X`, `JPYUSD=X`, `USDJPY=X`) y se guarda con fuente `SEED_YAHOO`. El
+`rate` significa "1 unidad de BASE = rate unidades de QUOTE". La cobertura ronda
+el 71 % porque el mercado de divisas cierra sábados y domingos: no se inventan
+tipos para los fines de semana.
+
+Yahoo no necesita clave. Finnhub ya no se usa para FX: su endpoint
+`forex/candle` es de pago y responde `403` con el plan gratuito.
+
+El SQL de FX:
+
+- Abre una transacción (`BEGIN`/`COMMIT`) y comprueba que exista `fx_rates`.
+- Inserta con `ON CONFLICT (base_currency, quote_currency, rate_timestamp,
+  source) DO NOTHING`, por lo que se puede ejecutar varias veces.
+- Usa `gen_random_uuid()` para los identificadores.
+- Etiqueta la fuente como `SEED_YAHOO` y fija `fetched_at` al final del rango.
+- No guarda inversos derivados: cada par del manifiesto se descarga directo.
+- Se puede borrar con `DELETE FROM fx_rates WHERE source LIKE 'SEED%';`.
+
+Para importarlo:
+
+```bash
+sh manage.sh seed-prices scripts/market-data/seeds/fx-rates-2026-01-01_2026-11-07.sql
 ```
 
 ## Importar
@@ -133,8 +196,9 @@ backend aplica el flujo `LOCAL -> USD -> cripto`:
   fecha de la operación y calcula el precio unitario en USD.
 - La cantidad de cripto se valora con el precio del activo en USD.
 
-El seed **no** incluye `fx_rates`. Para que la conversión funcione, el usuario
-debe ejecutar el refresco de market data de la aplicación con el par
+El seed de criptos **no** incluye `fx_rates`; para eso está el seed de tipos de
+cambio (`generate-fx-seed.mjs`). Para que la conversión funcione, importa ese
+seed o ejecuta el refresco de market data de la aplicación con el par
 `LOCAL/USD` (por ejemplo `EUR/USD`). Sin ese FX, el backend rechaza la compra
 con un error claro en lugar de inventar un tipo de cambio.
 
@@ -193,8 +257,9 @@ Generación del 2026-11-04:
   pago; el generador recorta automáticamente sin clave.
 - Las fuentes en USDT se guardan como USD 1:1. Es una aproximación suficiente
   para precios históricos, no un tipo de cambio contable.
-- El seed no incluye `fx_rates`: la conversión `LOCAL -> USD` se resuelve con
-  los FX que obtiene el refresco de market data de la aplicación.
+- El seed de criptos no incluye `fx_rates`: la conversión `LOCAL -> USD` se
+  resuelve con el seed de tipos de cambio o con los FX que obtiene el refresco
+  de market data de la aplicación.
 - La primera vela de una fuente con apertura de subasta anómala (≥2x o ≤0,5x
   del cierre) usa el cierre del día. Evita valores como el primer precio de
   MEXC para RAIN (0,0001 frente a 0,0032 de cierre).

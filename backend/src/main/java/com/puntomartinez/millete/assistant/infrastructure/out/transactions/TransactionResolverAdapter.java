@@ -158,6 +158,7 @@ public final class TransactionResolverAdapter
                         : categoryNames.get(
                                 transaction.getCategoryId()
                         ),
+                transaction.getCategoryId(),
                 transaction.getDate(),
                 toAssistantTransactionType(
                         transaction.getType()

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -21,12 +21,14 @@ interface SavingsGoalEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   goal: SavingsGoal | null;
+  notice?: ReactNode;
 }
 
 export function SavingsGoalEditDialog({
   open,
   onOpenChange,
   goal,
+  notice,
 }: SavingsGoalEditDialogProps) {
   const { t } = useTranslation('savingsGoals');
 
@@ -63,6 +65,8 @@ export function SavingsGoalEditDialog({
               {t('editGoalTitle')}
             </DialogTitle>
           </DialogHeader>
+
+          {notice}
 
           {goal && (
             <SavingsGoalForm

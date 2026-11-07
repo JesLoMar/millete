@@ -208,9 +208,9 @@ El puerto de salida es `MarketDataProviderPort`. La implementación activa es
 
 | Fuente | `supports(asset)` | `supportsFxRates()` | Requisitos |
 |---|---|---|---|
-| `YahooFinanceMarketDataAdapter` | `STOCK`, `ETF` | `false` | Ninguno (endpoint no oficial) |
+| `YahooFinanceMarketDataAdapter` | `STOCK`, `ETF` | `true` | Ninguno (endpoint no oficial) |
 | `CoinGeckoMarketDataAdapter` | `CRYPTO` | `false` | `COINGECKO_API_KEY` + `COINGECKO_ID_MAP` |
-| `FinnhubMarketDataAdapter` | **siempre `false`** | `true` | `FINNHUB_API_KEY` |
+| `FinnhubMarketDataAdapter` | **siempre `false`** | `false` | `FINNHUB_API_KEY` (sin uso práctico) |
 
 #### Yahoo Finance
 
@@ -221,6 +221,12 @@ El puerto de salida es `MarketDataProviderPort`. La implementación activa es
 - La divisa del precio se toma de la divisa declarada en el `SharedAsset`; Yahoo
   no convierte. Si el activo está mal declarado (p. ej. un valor en USD marcado
   como EUR), la valoración será incorrecta y la salud no lo detectará.
+- **Tipos de cambio:** usa el símbolo `BASEQUOTE=X` (p. ej. `EURUSD=X`,
+  `JPYUSD=X`). Yahoo resuelve el par directo, por lo que el `rate` guardado es
+  "1 unidad de BASE = rate unidades de QUOTE". No necesita clave y sustituye a
+  Finnhub como única fuente FX (`supportsFxRates() == true`).
+- El cierre diario de Yahoo para divisas viene fechado a las 00:00 UTC; no hay
+  velas de sábado ni domingo.
 
 #### CoinGecko
 
@@ -235,21 +241,18 @@ El puerto de salida es `MarketDataProviderPort`. La implementación activa es
 
 #### Finnhub
 
-- Implementa velas de acciones (`/stock/candle`) **y** divisas
-  (`/forex/candle`), pero `supports(asset)` devuelve `false`: en la práctica
-  **solo se usa para FX**.
-- `GET {base}/forex/candle?symbol=OANDA:BASE_QUOTE&resolution=D&from=&to=`
-- Cabecera `X-Finnhub-Token`.
-- Exige `FINNHUB_API_KEY`; si falta y se piden pares, lanza excepción.
-- Los pares se escriben `BASE/QUOTE` (p. ej. `USD/EUR`). El `rate` guardado es
-  "1 unidad de BASE = rate unidades de QUOTE".
+- Finnhub **no se usa**: `supports(asset)` y `supportsFxRates()` devuelven
+  `false`. Su endpoint de FX (`/forex/candle`) es de pago y responde `403` con el
+  plan gratuito, por eso los tipos de cambio los sirve Yahoo Finance.
+- El código de velas de acciones (`/stock/candle`) queda como referencia para
+  una futura fuente alternativa; hoy es inalcanzable desde el composite.
 
 ### 4.2 Selección y errores del composite
 
 - Para cada `SharedAsset` debe existir **exactamente una** fuente que lo soporte.
   Si hay cero o más de una, lanza `IllegalStateException` y el refresh falla.
 - Para FX debe existir **exactamente una** fuente con `supportsFxRates=true`.
-  Hoy solo Finnhub cumple.
+  Hoy solo Yahoo Finance cumple.
 - Si en `shared_assets` se inserta por SQL un tipo distinto de `STOCK`, `ETF` o
   `CRYPTO` (la tabla lo permite, el dominio no), ningún proveedor lo soportará y
   el refresh fallará.
@@ -465,6 +468,24 @@ Sin embargo, las consultas de cartera, caja y rentabilidad **vuelven a ejecutar
 el replay en memoria** para el instante solicitado; en el código actual las
 proyecciones persistidas no son la fuente de lectura de esas consultas.
 
+### 8.2 Liquidación de compras y ventas
+
+El precio de una compra o venta se introduce **siempre en la divisa del activo**
+(`SharedAsset.currency` / `UserAsset.currency`; p. ej. USD para cripto). El
+importe se calcula como `cantidad × precio` en esa divisa y, si difiere de la
+divisa local del usuario, se convierte con el FX histórico
+(`assetCurrency → localCurrency`) para liquidar contra la caja local:
+
+- Una **compra** descuenta el importe convertido de la caja en divisa local.
+- Una **venta** suma el importe convertido a la caja en divisa local.
+- Si el importe a pagar supera el saldo local disponible, el replay rechaza la
+  operación con `CASH_NEGATIVE` y el mensaje
+  "El valor a pagar es mayor que el saldo disponible".
+
+El campo `settlementCurrency` ya no se usa al crear ni editar compras/ventas;
+se conserva en las actividades históricas y en el flujo de reconstrucción de
+posiciones iniciales (`holdings/{id}/history`).
+
 ---
 
 ## 9. Salud de los datos
@@ -555,8 +576,8 @@ Todos derivan el usuario de `JwtUser`; ninguno acepta `userId` por parámetro.
 3. **CoinGecko no funciona sin configuración explícita.** Sin
    `COINGECKO_API_KEY` y `COINGECKO_ID_MAP`, cualquier activo `CRYPTO` aborta el
    refresh completo.
-4. **Finnhub solo aporta FX.** Su código de velas de acciones es inalcanzable
-   porque `supports(asset)` devuelve `false`.
+4. **Finnhub no aporta nada.** `supports(asset)` y `supportsFxRates()` devuelven
+   `false`: ni precios de acciones ni FX. Los tipos de cambio los sirve Yahoo.
 5. **El refresh es global y todo-o-nada.** Un activo problemático o un proveedor
    caído impide guardar los precios del resto y evita el refresco de FX.
 6. **Huecos históricos.** El scheduler solo cubre 5 días; tras una parada larga
@@ -588,11 +609,11 @@ Todos derivan el usuario de `JwtUser`; ninguno acepta `userId` por parámetro.
 | "El catálogo compartido está vacío" | `SELECT count(*) FROM shared_assets;`. No hay UI de alta: insertar filas o seed. |
 | Refresh `502` con "COINGECKO_API_KEY is required" | Definir `COINGECKO_API_KEY` y `COINGECKO_ID_MAP`. |
 | Refresh `502` con "No CoinGecko ID is configured" | El ticker del `SharedAsset` no está en `COINGECKO_ID_MAP`. |
-| Refresh `502` con "FINNHUB_API_KEY is required" | Hay pares FX y falta la key. |
+| Refresh `502` con "FINNHUB_API_KEY is required" | Ya no aplica a FX: Yahoo no necesita clave. Si aparece, hay código antiguo desplegado. |
 | No se actualizan precios | Catálogo vacío, proveedor caído, o tipos no soportados (`FUND`, etc.). |
 | `PRICE_MISSING` | No hay precio `<= now`; lanzar refresh con un rango que cubra la fecha. |
 | `PRICE_STALE` | Última vela demasiado antigua; revisar fin de semana/festivo o refresh. |
-| `FX_MISSING` / `FX_STALE` | Añadir el par `BASE/QUOTE` en el refresh manual y configurar Finnhub. |
+| `FX_MISSING` / `FX_STALE` | Añadir el par `BASE/QUOTE` en el refresh manual (Yahoo) o importar el seed de `fx_rates`. |
 | `TRANSFER_OUT_OF_SYNC` | Depósito/retirada sin transacción vinculada. |
 | Restore falla por `SharedAsset` | Crear primero los `SharedAsset` con el mismo `stable_catalog_id`. |
 | Cartera "No calculable" | Falta precio, divisa del precio distinta o falta FX. |

@@ -1,4 +1,9 @@
-import { useId, useRef, useState } from 'react';
+import {
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCcw } from 'lucide-react';
 
@@ -36,6 +41,16 @@ interface FormState {
   frequencyInterval: string;
   startDate: string;
   endDate: string;
+}
+
+export type NewRecurringTransactionInitialValues =
+  Partial<FormState>;
+
+interface NewRecurringTransactionDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialValues?: NewRecurringTransactionInitialValues;
+  notice?: ReactNode;
 }
 
 const INITIAL_FORM: FormState = {
@@ -161,13 +176,26 @@ function RecurringSaveButton({
   );
 }
 
-export function NewRecurringTransactionDialog() {
+export function NewRecurringTransactionDialog({
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  initialValues,
+  notice,
+}: NewRecurringTransactionDialogProps = {}) {
   const { t } = useTranslation(['transactions', 'common']);
   const { createRecurring, isCreating } =
     useTransactionMutations();
 
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...INITIAL_FORM,
+    ...initialValues,
+  }));
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen =
+    controlledOnOpenChange ?? setInternalOpen;
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -251,23 +279,25 @@ export function NewRecurringTransactionDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          aria-label={t('transactions:recurring.newTitle')}
-          className="h-9 gap-2 border-border bg-card px-3 text-xs font-semibold transition-colors hover:bg-background sm:h-10 sm:px-4 sm:text-sm"
-        >
-          <RefreshCcw size={15} aria-hidden="true" />
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            aria-label={t('transactions:recurring.newTitle')}
+            className="h-9 gap-2 border-border bg-card px-3 text-xs font-semibold transition-colors hover:bg-background sm:h-10 sm:px-4 sm:text-sm"
+          >
+            <RefreshCcw size={15} aria-hidden="true" />
 
-          <span className="hidden xs:inline">
-            {t('transactions:recurring.label')}
-          </span>
+            <span className="hidden xs:inline">
+              {t('transactions:recurring.label')}
+            </span>
 
-          <span className="xs:hidden">
-            {t('transactions:recurring.shortLabel')}
-          </span>
-        </Button>
-      </DialogTrigger>
+            <span className="xs:hidden">
+              {t('transactions:recurring.shortLabel')}
+            </span>
+          </Button>
+        </DialogTrigger>
+      )}
 
       <DialogContent
         className="border-border bg-card sm:max-w-125"
@@ -282,6 +312,8 @@ export function NewRecurringTransactionDialog() {
               {t('transactions:recurring.newTitle')}
             </DialogTitle>
           </DialogHeader>
+
+          {notice}
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">

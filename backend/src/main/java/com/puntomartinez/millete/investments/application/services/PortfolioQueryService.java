@@ -688,9 +688,14 @@ public class PortfolioQueryService implements
 
         if (direct.isPresent()) {
             return Optional.of(
-                    money.multiply(
-                            direct.get().rate(),
-                            AMOUNT_SCALE
+                    new Money(
+                            money.amount().multiply(
+                                    direct.get().rate()
+                            ).setScale(
+                                    AMOUNT_SCALE,
+                                    RoundingMode.HALF_UP
+                            ),
+                            localCurrency
                     )
             );
         }
@@ -704,9 +709,13 @@ public class PortfolioQueryService implements
 
         if (inverse.isPresent()) {
             return Optional.of(
-                    money.divide(
-                            inverse.get().rate(),
-                            AMOUNT_SCALE
+                    new Money(
+                            money.amount().divide(
+                                    inverse.get().rate(),
+                                    AMOUNT_SCALE,
+                                    RoundingMode.HALF_UP
+                            ),
+                            localCurrency
                     )
             );
         }

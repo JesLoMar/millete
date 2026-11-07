@@ -1,11 +1,18 @@
 package com.puntomartinez.millete.assistant.domain.model.interpretation;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
 public record SavingsGoalCandidate(
         UUID id,
-        String name
+        String name,
+        BigDecimal targetAmount,
+        BigDecimal currentAmount,
+        SavingsGoalPriority priority,
+        LocalDate deadline,
+        String link
 ) {
 
     public SavingsGoalCandidate {
@@ -24,5 +31,20 @@ public record SavingsGoalCandidate(
                     "name cannot be blank"
             );
         }
+
+        Objects.requireNonNull(
+                targetAmount,
+                "targetAmount cannot be null"
+        );
+
+        Objects.requireNonNull(
+                currentAmount,
+                "currentAmount cannot be null"
+        );
+
+        Objects.requireNonNull(
+                priority,
+                "priority cannot be null"
+        );
     }
 }

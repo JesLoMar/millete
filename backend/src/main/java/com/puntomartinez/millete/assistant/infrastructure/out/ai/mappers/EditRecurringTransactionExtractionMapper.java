@@ -39,6 +39,7 @@ public final class EditRecurringTransactionExtractionMapper {
 
         return new EditRecurringTransactionData(
                 new EditRecurringTransactionData.RecurringTransactionTarget(
+                        null,
                         normalizeNullable(
                                 dto.target().description()
                         ),
@@ -48,6 +49,7 @@ public final class EditRecurringTransactionExtractionMapper {
                         normalizeNullable(
                                 dto.target().categoryName()
                         ),
+                        null,
                         parseFrequencyType(
                                 dto.target().frequencyType()
                         ),
@@ -56,7 +58,9 @@ public final class EditRecurringTransactionExtractionMapper {
                         ),
                         parseTransactionType(
                                 dto.target().type()
-                        )
+                        ),
+                        null,
+                        null
                 ),
                 new EditRecurringTransactionData.RecurringTransactionChanges(
                         parseRequiredChange(

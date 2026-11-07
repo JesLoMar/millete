@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type ReactNode,
 } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,15 @@ import { ColorPicker } from './ColorPicker';
 interface AddCategoryDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  initialValues?: AddCategoryInitialValues;
+  notice?: ReactNode;
+}
+
+export interface AddCategoryInitialValues {
+  name?: string;
+  description?: string;
+  color?: string;
+  budgetLimit?: string;
 }
 
 interface CategoryFormState {
@@ -46,17 +56,21 @@ interface CategoryFormState {
   error: string | null;
 }
 
-const createInitialFormState = (): CategoryFormState => ({
-  name: '',
-  description: '',
-  color: CATEGORY_COLORS[0],
-  budgetLimit: '',
+const createInitialFormState = (
+  initialValues?: AddCategoryInitialValues,
+): CategoryFormState => ({
+  name: initialValues?.name ?? '',
+  description: initialValues?.description ?? '',
+  color: initialValues?.color ?? CATEGORY_COLORS[0],
+  budgetLimit: initialValues?.budgetLimit ?? '',
   error: null,
 });
 
 export function AddCategoryDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  initialValues,
+  notice,
 }: AddCategoryDialogProps = {}) {
   const { t } = useTranslation(['categories', 'common']);
 
@@ -64,8 +78,8 @@ export function AddCategoryDialog({
     useCategoryMutations();
 
   const [internalOpen, setInternalOpen] = useState(false);
-  const [form, setForm] = useState<CategoryFormState>(
-    createInitialFormState,
+  const [form, setForm] = useState<CategoryFormState>(() =>
+    createInitialFormState(initialValues),
   );
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,11 +97,11 @@ export function AddCategoryDialog({
   // a parent controls `open` and closes the dialog directly.
   useEffect(() => {
     if (previousOpenRef.current && !open) {
-      setForm(createInitialFormState());
+      setForm(createInitialFormState(initialValues));
     }
 
     previousOpenRef.current = open;
-  }, [open]);
+  }, [open, initialValues]);
 
   const setOpen = (value: boolean) => {
     if (isControlled) {
@@ -205,6 +219,8 @@ export function AddCategoryDialog({
               {t('categories:newTitle')}
             </DialogTitle>
           </DialogHeader>
+
+          {notice}
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">

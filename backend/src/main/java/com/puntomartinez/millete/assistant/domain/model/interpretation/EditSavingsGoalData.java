@@ -24,7 +24,12 @@ public record EditSavingsGoalData(
 
     public record SavingsGoalTarget(
             UUID id,
-            String name
+            String name,
+            BigDecimal targetAmount,
+            BigDecimal currentAmount,
+            SavingsGoalPriority priority,
+            LocalDate deadline,
+            String link
     ) {
 
         public boolean hasCriteria() {

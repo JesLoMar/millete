@@ -13,13 +13,6 @@ import {
 } from '@/shared/components/core/dialog';
 import { Input } from '@/shared/components/core/input';
 import { Label } from '@/shared/components/core/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/core/select';
 import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
 
 import {
@@ -32,7 +25,6 @@ import type {
   Activity,
   EditActivityDetailsType,
   EditActivityRequest,
-  SettlementCurrency,
 } from '../types';
 import {
   formatQuantity,
@@ -84,14 +76,7 @@ export function EditActivityDialog({
   const detailsType = getDetailsType(activity);
   const entry = catalog.getEntry(activity.assetReference);
   const localCurrency = getLocalCurrencyCode();
-
-  const initialSettlementCurrency: SettlementCurrency =
-    activity.details.trade &&
-    entry?.currency &&
-    activity.details.trade.unitPrice.currency ===
-      entry.currency
-      ? 'ASSET'
-      : 'LOCAL';
+  const assetCurrency = entry?.currency ?? localCurrency;
 
   const [occurredAt, setOccurredAt] = useState(() =>
     toDateTimeInputValue(activity.occurredAt),
@@ -108,8 +93,6 @@ export function EditActivityDialog({
       ? String(activity.details.trade.unitPrice.amount)
       : '',
   );
-  const [settlementCurrency, setSettlementCurrency] =
-    useState<SettlementCurrency>(initialSettlementCurrency);
   const [amount, setAmount] = useState(() =>
     activity.details.cash
       ? String(activity.details.cash.amount.amount)
@@ -176,7 +159,6 @@ export function EditActivityDialog({
         type: 'BUY_SELL',
         quantity: parsedQuantity as number,
         unitPrice: parsedUnitPrice as number,
-        settlementCurrency,
         comment: normalizedComment,
       };
     } else if (detailsType === 'CASH_DIVIDEND') {
@@ -271,7 +253,9 @@ export function EditActivityDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-unit-price">
-                  {t('record.unitPrice')}
+                  {t('record.unitPriceWithCurrency', {
+                    currency: assetCurrency,
+                  })}
                 </Label>
                 <Input
                   id="edit-unit-price"
@@ -285,35 +269,12 @@ export function EditActivityDialog({
                   disabled={editActivity.isPending}
                 />
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>{t('record.settlementCurrency')}</Label>
-                <Select
-                  value={settlementCurrency}
-                  onValueChange={(value) =>
-                    setSettlementCurrency(
-                      value as SettlementCurrency,
-                    )
-                  }
-                  disabled={editActivity.isPending}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOCAL">
-                      {t('record.localCurrency', {
-                        currency: localCurrency,
-                      })}
-                    </SelectItem>
-                    <SelectItem value="ASSET">
-                      {t('record.assetCurrency', {
-                        currency:
-                          entry?.currency ?? localCurrency,
-                      })}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <p className="text-xs text-muted-foreground sm:col-span-2">
+                {t('record.unitPriceHelp', {
+                  assetCurrency,
+                  localCurrency,
+                })}
+              </p>
             </div>
           )}
 

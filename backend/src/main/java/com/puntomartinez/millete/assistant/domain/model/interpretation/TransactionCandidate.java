@@ -10,6 +10,7 @@ public record TransactionCandidate(
         String description,
         BigDecimal amount,
         String categoryName,
+        UUID categoryId,
         LocalDate date,
         TransactionType type
 ) {

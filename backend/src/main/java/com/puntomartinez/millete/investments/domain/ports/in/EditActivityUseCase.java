@@ -1,7 +1,6 @@
 package com.puntomartinez.millete.investments.domain.ports.in;
 
 import com.puntomartinez.millete.investments.domain.model.Activity;
-import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,7 +27,6 @@ public interface EditActivityUseCase {
     record BuySellDetails(
             BigDecimal quantity,
             BigDecimal unitPrice,
-            SettlementCurrency settlementCurrency,
             String comment
     ) implements ActivityEditDetails {
     }

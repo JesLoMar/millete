@@ -27,6 +27,7 @@ public record EditTransactionData(
             String description,
             BigDecimal amount,
             String categoryName,
+            UUID categoryId,
             LocalDate date,
             TransactionType type
     ) {
@@ -62,6 +63,7 @@ public record EditTransactionData(
             FieldChange<String> description,
             FieldChange<BigDecimal> amount,
             FieldChange<String> categoryName,
+            FieldChange<UUID> categoryId,
             FieldChange<TransactionType> type
     ) {
 
@@ -82,6 +84,11 @@ public record EditTransactionData(
             );
 
             Objects.requireNonNull(
+                    categoryId,
+                    "categoryId change cannot be null"
+            );
+
+            Objects.requireNonNull(
                     type,
                     "type change cannot be null"
             );
@@ -91,11 +98,13 @@ public record EditTransactionData(
             return description.specified()
                     || amount.specified()
                     || categoryName.specified()
+                    || categoryId.specified()
                     || type.specified();
         }
 
         public static TransactionChanges empty() {
             return new TransactionChanges(
+                    FieldChange.unchanged(),
                     FieldChange.unchanged(),
                     FieldChange.unchanged(),
                     FieldChange.unchanged(),

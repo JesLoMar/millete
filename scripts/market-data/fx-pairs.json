@@ -1,0 +1,33 @@
+{
+  "description": "Pares de divisas del seed de tipos de cambio (fx_rates).",
+  "pairs": [
+    {
+      "base": "EUR",
+      "quote": "USD",
+      "sources": [
+        { "provider": "yahoo", "ticker": "EURUSD=X" }
+      ]
+    },
+    {
+      "base": "USD",
+      "quote": "EUR",
+      "sources": [
+        { "provider": "yahoo", "ticker": "USDEUR=X" }
+      ]
+    },
+    {
+      "base": "JPY",
+      "quote": "USD",
+      "sources": [
+        { "provider": "yahoo", "ticker": "JPYUSD=X" }
+      ]
+    },
+    {
+      "base": "USD",
+      "quote": "JPY",
+      "sources": [
+        { "provider": "yahoo", "ticker": "USDJPY=X" }
+      ]
+    }
+  ]
+}

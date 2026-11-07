@@ -226,8 +226,7 @@ public final class PortfolioReplay {
                 if (cashTracked) {
                     subtractCash(
                             cashBalances,
-                            details.settlement().amount(),
-                            activity
+                            details.settlement().amount()
                     );
                 }
 
@@ -306,8 +305,7 @@ public final class PortfolioReplay {
 
                     subtractCash(
                             cashBalances,
-                            details.amount(),
-                            activity
+                            details.amount()
                     );
                 }
             }
@@ -333,8 +331,7 @@ public final class PortfolioReplay {
 
                     subtractCash(
                             cashBalances,
-                            details.origin(),
-                            activity
+                            details.origin()
                     );
 
                     addCash(
@@ -620,8 +617,7 @@ public final class PortfolioReplay {
 
     private static void subtractCash(
             Map<CurrencyCode, Money> cashBalances,
-            Money money,
-            Activity activity
+            Money money
     ) {
         Money current =
                 cashBalances.getOrDefault(
@@ -638,10 +634,7 @@ public final class PortfolioReplay {
             throw new LedgerIntegrityException(
                     "CASH_NEGATIVE",
                     money.currency().value(),
-                    "El saldo de "
-                            + money.currency().value()
-                            + " sería negativo en la Activity "
-                            + activity.getId()
+                    "El valor a pagar es mayor que el saldo disponible"
             );
         }
 

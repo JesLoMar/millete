@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 
@@ -21,9 +21,18 @@ import { useTransactionMutations } from '../../hooks/useTransactionMutation';
 import { CategorySelect } from '../CategorySelect';
 import { TypeToggle } from '../TypeToggle';
 
+export interface NewTransactionInitialValues {
+  description?: string;
+  category?: string;
+  amount?: string;
+  type?: TransactionType;
+}
+
 interface NewTransactionDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  initialValues?: NewTransactionInitialValues;
+  notice?: ReactNode;
 }
 
 interface FormState {
@@ -43,6 +52,8 @@ const INITIAL_FORM: FormState = {
 export function NewTransactionDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  initialValues,
+  notice,
 }: NewTransactionDialogProps = {}) {
   const { t } = useTranslation([
     'transactions',
@@ -53,7 +64,10 @@ export function NewTransactionDialog({
     useTransactionMutations();
 
   const [internalOpen, setInternalOpen] = useState(false);
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...INITIAL_FORM,
+    ...initialValues,
+  }));
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -143,6 +157,8 @@ export function NewTransactionDialog({
               {t('newTitle')}
             </DialogTitle>
           </DialogHeader>
+
+          {notice}
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">

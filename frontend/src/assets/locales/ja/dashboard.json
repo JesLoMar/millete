@@ -105,6 +105,63 @@
     "exportingAria": "データをエクスポートしています。お待ちください",
     "groupLabel": "クイックアクション"
   },
+  "assistant": {
+    "title": "AIアシスタント",
+    "subtitle": "やりたいことを入力すると、保存前に確認できるフォームを用意します。",
+    "placeholder": "例：「昨日食料品に23.50使った」",
+    "submit": "解釈する",
+    "interpreting": "解釈中...",
+    "examplesLabel": "例",
+    "examples": {
+      "expense": "昨日食料品に23.50使った",
+      "recurring": "毎月Netflixに15.99払っている",
+      "savings": "旅行のために3,000貯めたい",
+      "contribution": "旅行の貯金目標に200追加して",
+      "category": "ペットというカテゴリを予算100で作成して"
+    },
+    "errors": {
+      "empty": "まずやりたいことを入力してください。",
+      "unknown": "リクエストを理解できませんでした。言い方を変えてみてください。",
+      "unsupported": "この操作はまだアシスタントで準備できません。",
+      "generic": "アシスタントは現在利用できません。しばらくしてからもう一度お試しください。"
+    },
+    "notice": {
+      "reviewTitle": "保存前に確認",
+      "reviewDescription": "アシスタントがこのフォームを入力しました。内容を確認し、必要に応じて修正してから確定してください。",
+      "missingTitle": "不足しているデータ",
+      "missingDescription": "アシスタントが入力できなかった項目: {{fields}}。",
+      "unresolvedTitle": "解決できない参照",
+      "unresolvedDescription": "見つからない、または特定できない項目: {{entities}}。",
+      "defaultsDescription": "次の項目に既定値が適用されました: {{fields}}。"
+    },
+    "fields": {
+      "name": "名前",
+      "description": "説明",
+      "amount": "金額",
+      "categoryName": "カテゴリ",
+      "color": "色",
+      "target": "対象",
+      "changes": "変更",
+      "frequencyType": "頻度",
+      "frequencyInterval": "間隔",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "targetAmount": "目標金額",
+      "deadline": "期限",
+      "priority": "優先度",
+      "link": "リンク"
+    },
+    "entityTypes": {
+      "CATEGORY": "カテゴリ",
+      "TRANSACTION": "取引",
+      "RECURRING_TRANSACTION": "定期取引",
+      "SAVINGS_GOAL": "貯金目標"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "見つかりません",
+      "AMBIGUOUS": "曖昧です"
+    }
+  },
   "importModal": {
     "title": "データをインポート",
     "description": "取引履歴が含まれるJSONファイルをドラッグしてください",

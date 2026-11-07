@@ -105,6 +105,63 @@
     "exportingAria": "Esportazione dati, attendere",
     "groupLabel": "Azioni rapide"
   },
+  "assistant": {
+    "title": "Assistente IA",
+    "subtitle": "Descrivi cosa vuoi fare e prepareremo il modulo da controllare prima di salvare.",
+    "placeholder": "es. «Ieri ho speso 23,50 per la spesa»",
+    "submit": "Interpreta",
+    "interpreting": "Interpretazione...",
+    "examplesLabel": "Esempi",
+    "examples": {
+      "expense": "Ieri ho speso 23,50 per la spesa",
+      "recurring": "Ogni mese pago 15,99 per Netflix",
+      "savings": "Voglio risparmiare 3.000 per un viaggio",
+      "contribution": "Aggiungi 200 al mio obiettivo viaggio",
+      "category": "Crea una categoria Animali con 100 di budget"
+    },
+    "errors": {
+      "empty": "Scrivi prima cosa vuoi fare.",
+      "unknown": "Non ho capito la richiesta. Prova a riformularla.",
+      "unsupported": "L'assistente non può ancora preparare questa azione.",
+      "generic": "L'assistente non è disponibile in questo momento. Riprova tra poco."
+    },
+    "notice": {
+      "reviewTitle": "Controlla prima di salvare",
+      "reviewDescription": "L'assistente ha compilato questo modulo. Verifica i dati e modifica ciò che serve prima di confermare.",
+      "missingTitle": "Dati mancanti",
+      "missingDescription": "L'assistente non è riuscito a compilare: {{fields}}.",
+      "unresolvedTitle": "Riferimenti non risolti",
+      "unresolvedDescription": "Non trovato o non identificato: {{entities}}.",
+      "defaultsDescription": "Sono stati applicati valori predefiniti a: {{fields}}."
+    },
+    "fields": {
+      "name": "nome",
+      "description": "descrizione",
+      "amount": "importo",
+      "categoryName": "categoria",
+      "color": "colore",
+      "target": "obiettivo",
+      "changes": "modifiche",
+      "frequencyType": "frequenza",
+      "frequencyInterval": "intervallo",
+      "startDate": "data di inizio",
+      "endDate": "data di fine",
+      "targetAmount": "importo obiettivo",
+      "deadline": "scadenza",
+      "priority": "priorità",
+      "link": "link"
+    },
+    "entityTypes": {
+      "CATEGORY": "categoria",
+      "TRANSACTION": "transazione",
+      "RECURRING_TRANSACTION": "transazione ricorrente",
+      "SAVINGS_GOAL": "obiettivo di risparmio"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "non trovato",
+      "AMBIGUOUS": "ambiguo"
+    }
+  },
   "importModal": {
     "title": "Importa dati",
     "description": "Trascina un file JSON con le tue transazioni",

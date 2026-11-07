@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from '@tanstack/react-query';
 
 import { toast } from 'sonner';
@@ -22,6 +23,22 @@ import type {
 } from '../types';
 
 const SAVINGS_GOALS_QUERY_KEY = 'savings-goals';
+
+const DASHBOARD_METRICS_QUERY_KEY = [
+  'dashboardMetrics',
+] as const;
+
+const invalidateSavingsGoalQueries = (
+  queryClient: QueryClient,
+) =>
+  Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: [SAVINGS_GOALS_QUERY_KEY],
+    }),
+    queryClient.invalidateQueries({
+      queryKey: DASHBOARD_METRICS_QUERY_KEY,
+    }),
+  ]);
 
 const SERVER_SIZE = 45;
 const DISPLAY_SIZE = 9;
@@ -86,9 +103,7 @@ export const useCreateSavingsGoal = () => {
     onSuccess: () => {
       toast.success(t('alerts.createSuccess'));
 
-      return queryClient.invalidateQueries({
-        queryKey: [SAVINGS_GOALS_QUERY_KEY],
-      });
+      return invalidateSavingsGoalQueries(queryClient);
     },
 
     onError: () => {
@@ -117,9 +132,7 @@ export const useUpdateSavingsGoal = () => {
     onSuccess: () => {
       toast.success(t('alerts.updateSuccess'));
 
-      return queryClient.invalidateQueries({
-        queryKey: [SAVINGS_GOALS_QUERY_KEY],
-      });
+      return invalidateSavingsGoalQueries(queryClient);
     },
 
     onError: () => {
@@ -139,9 +152,7 @@ export const useDeleteSavingsGoal = () => {
     onSuccess: () => {
       toast.success(t('alerts.deleteSuccess'));
 
-      return queryClient.invalidateQueries({
-        queryKey: [SAVINGS_GOALS_QUERY_KEY],
-      });
+      return invalidateSavingsGoalQueries(queryClient);
     },
 
     onError: () => {
@@ -166,9 +177,7 @@ export const useAddContribution = () => {
     onSuccess: () => {
       toast.success(t('alerts.contributionSuccess'));
 
-      return queryClient.invalidateQueries({
-        queryKey: [SAVINGS_GOALS_QUERY_KEY],
-      });
+      return invalidateSavingsGoalQueries(queryClient);
     },
 
     onError: () => {
@@ -193,9 +202,7 @@ export const useWithdrawFromGoal = () => {
     onSuccess: () => {
       toast.success(t('alerts.withdrawSuccess'));
 
-      return queryClient.invalidateQueries({
-        queryKey: [SAVINGS_GOALS_QUERY_KEY],
-      });
+      return invalidateSavingsGoalQueries(queryClient);
     },
 
     onError: () => {

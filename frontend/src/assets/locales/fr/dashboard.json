@@ -105,6 +105,63 @@
     "exportingAria": "Exportation des données, veuillez patienter",
     "groupLabel": "Actions rapides"
   },
+  "assistant": {
+    "title": "Assistant IA",
+    "subtitle": "Décrivez ce que vous voulez faire et nous préparerons le formulaire à vérifier avant l'enregistrement.",
+    "placeholder": "ex. « J'ai dépensé 23,50 en courses hier »",
+    "submit": "Interpréter",
+    "interpreting": "Interprétation...",
+    "examplesLabel": "Exemples",
+    "examples": {
+      "expense": "J'ai dépensé 23,50 en courses hier",
+      "recurring": "Chaque mois je paie 15,99 pour Netflix",
+      "savings": "Je veux épargner 3 000 pour un voyage",
+      "contribution": "Ajoute 200 à mon objectif voyage",
+      "category": "Crée une catégorie Animaux avec 100 de budget"
+    },
+    "errors": {
+      "empty": "Écrivez d'abord ce que vous voulez faire.",
+      "unknown": "Je n'ai pas compris la demande. Essayez de la reformuler.",
+      "unsupported": "L'assistant ne peut pas encore préparer cette action.",
+      "generic": "L'assistant n'est pas disponible pour le moment. Réessayez dans un instant."
+    },
+    "notice": {
+      "reviewTitle": "Vérifier avant d'enregistrer",
+      "reviewDescription": "L'assistant a rempli ce formulaire. Vérifiez les données et ajustez ce qui est nécessaire avant de confirmer.",
+      "missingTitle": "Données manquantes",
+      "missingDescription": "L'assistant n'a pas pu remplir : {{fields}}.",
+      "unresolvedTitle": "Références non résolues",
+      "unresolvedDescription": "Introuvable ou non identifié : {{entities}}.",
+      "defaultsDescription": "Des valeurs par défaut ont été appliquées à : {{fields}}."
+    },
+    "fields": {
+      "name": "nom",
+      "description": "description",
+      "amount": "montant",
+      "categoryName": "catégorie",
+      "color": "couleur",
+      "target": "cible",
+      "changes": "modifications",
+      "frequencyType": "fréquence",
+      "frequencyInterval": "intervalle",
+      "startDate": "date de début",
+      "endDate": "date de fin",
+      "targetAmount": "montant cible",
+      "deadline": "échéance",
+      "priority": "priorité",
+      "link": "lien"
+    },
+    "entityTypes": {
+      "CATEGORY": "catégorie",
+      "TRANSACTION": "transaction",
+      "RECURRING_TRANSACTION": "transaction récurrente",
+      "SAVINGS_GOAL": "objectif d'épargne"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "introuvable",
+      "AMBIGUOUS": "ambigu"
+    }
+  },
   "importModal": {
     "title": "Importer des données",
     "description": "Glissez un fichier JSON contenant vos transactions",

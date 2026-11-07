@@ -114,6 +114,14 @@ case "$1" in
         fi
         node scripts/market-data/generate-crypto-seed.mjs "$@"
         ;;
+    generate-fx-seed)
+        shift
+        if ! command -v node >/dev/null 2>&1; then
+            echo "ERROR: Node.js is required to generate the seed."
+            exit 1
+        fi
+        node scripts/market-data/generate-fx-seed.mjs "$@"
+        ;;
     seed-prices)
         FILE="${2:-scripts/market-data/seeds/crypto-prices-2024-11-04_2026-11-04.sql}"
         if [ ! -f "$FILE" ]; then
@@ -167,6 +175,7 @@ case "$1" in
         echo "  create-app-user - Create millete_app user in existing database"
         echo "  fix-scripts     - Convert script line endings to Unix format"
         echo "  generate-seed   - Generate the historical crypto price seed (requires Node.js)"
+        echo "  generate-fx-seed - Generate the historical FX rate seed (requires Node.js)"
         echo "  seed-prices [f] - Import a price seed SQL file into the database"
         echo "  clean-all       - WIPE everything (Containers, volumes, and backups)"
         ;;

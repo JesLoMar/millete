@@ -7,7 +7,6 @@ import com.puntomartinez.millete.investments.domain.model.AssetReference;
 import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
 import com.puntomartinez.millete.investments.domain.model.FxRate;
 import com.puntomartinez.millete.investments.domain.model.Money;
-import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 import com.puntomartinez.millete.investments.domain.model.TradeActivityDetails;
 import com.puntomartinez.millete.investments.domain.model.TradeSettlement;
 import com.puntomartinez.millete.investments.domain.model.UserAsset;
@@ -90,7 +89,6 @@ public class TradeActivityService
                 command.assetReference(),
                 command.quantity(),
                 command.unitPrice(),
-                command.settlementCurrency(),
                 command.comment(),
                 idempotencyKey
         );
@@ -110,7 +108,6 @@ public class TradeActivityService
                 command.assetReference(),
                 command.quantity(),
                 command.unitPrice(),
-                command.settlementCurrency(),
                 command.comment(),
                 idempotencyKey
         );
@@ -123,7 +120,6 @@ public class TradeActivityService
             AssetReference assetReference,
             BigDecimal quantity,
             BigDecimal inputUnitPrice,
-            SettlementCurrency settlementCurrency,
             String comment,
             String idempotencyKey
     ) {
@@ -137,7 +133,6 @@ public class TradeActivityService
                 assetReference,
                 quantity,
                 inputUnitPrice,
-                settlementCurrency,
                 comment
         );
 
@@ -181,12 +176,6 @@ public class TradeActivityService
             );
         }
 
-        if (settlementCurrency == null) {
-            throw new InvalidInputException(
-                    "La moneda de liquidación es obligatoria."
-            );
-        }
-
         Instant occurredAt = requestedOccurredAt == null
                 ? time.now()
                 : requestedOccurredAt;
@@ -205,10 +194,8 @@ public class TradeActivityService
                 );
 
         TradeData tradeData = createTradeData(
-                type,
                 quantity,
                 inputUnitPrice,
-                settlementCurrency,
                 assetCurrency,
                 localCurrency,
                 occurredAt
@@ -248,56 +235,32 @@ public class TradeActivityService
     }
 
     private TradeData createTradeData(
-            ActivityType type,
             BigDecimal quantity,
             BigDecimal inputUnitPrice,
-            SettlementCurrency settlementCurrency,
             CurrencyCode assetCurrency,
             CurrencyCode localCurrency,
             Instant occurredAt
     ) {
-        CurrencyCode settlementCurrencyCode =
-                settlementCurrency == SettlementCurrency.LOCAL
-                        ? localCurrency
-                        : assetCurrency;
-
-        Money inputUnitPriceMoney = new Money(
+        /*
+         * El precio se introduce siempre en la divisa del activo.
+         * El importe de la operación se calcula en esa misma divisa y,
+         * si la divisa local es distinta, se convierte con el tipo de
+         * cambio histórico para liquidar contra la caja local.
+         */
+        Money assetUnitPrice = new Money(
                 inputUnitPrice,
-                settlementCurrencyCode
+                assetCurrency
         );
 
-        Money settlementAmount = inputUnitPriceMoney.multiply(
+        Money amountInAssetCurrency = assetUnitPrice.multiply(
                 quantity,
                 AMOUNT_SCALE
         );
 
-        Money assetUnitPrice;
+        Money settlementAmount = amountInAssetCurrency;
         AppliedFxRate appliedFxRate = null;
 
-        if (settlementCurrency == SettlementCurrency.ASSET
-                || assetCurrency.equals(localCurrency)) {
-
-            assetUnitPrice = new Money(
-                    inputUnitPrice,
-                    assetCurrency
-            );
-
-        } else if (type == ActivityType.BUY) {
-
-            FxRate fx = getFxRate(
-                    localCurrency,
-                    assetCurrency,
-                    occurredAt
-            );
-
-            appliedFxRate = toAppliedFxRate(fx);
-
-            assetUnitPrice = inputUnitPriceMoney.multiply(
-                    fx.rate(),
-                    AMOUNT_SCALE
-            );
-
-        } else {
+        if (!assetCurrency.equals(localCurrency)) {
 
             FxRate fx = getFxRate(
                     assetCurrency,
@@ -307,9 +270,14 @@ public class TradeActivityService
 
             appliedFxRate = toAppliedFxRate(fx);
 
-            assetUnitPrice = inputUnitPriceMoney.divide(
+            Money convertedAmount = amountInAssetCurrency.multiply(
                     fx.rate(),
                     AMOUNT_SCALE
+            );
+
+            settlementAmount = new Money(
+                    convertedAmount.amount(),
+                    localCurrency
             );
         }
 
@@ -423,7 +391,6 @@ public class TradeActivityService
             AssetReference assetReference,
             BigDecimal quantity,
             BigDecimal unitPrice,
-            SettlementCurrency settlementCurrency,
             String comment
     ) {
         StringBuilder value = new StringBuilder();
@@ -438,7 +405,6 @@ public class TradeActivityService
                 : assetReference.id());
         append(value, quantity);
         append(value, unitPrice);
-        append(value, settlementCurrency);
         append(value, comment);
 
         try {

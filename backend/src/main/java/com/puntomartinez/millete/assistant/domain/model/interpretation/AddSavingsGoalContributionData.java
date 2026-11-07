@@ -18,7 +18,9 @@ public record AddSavingsGoalContributionData(
 
     public record SavingsGoalTarget(
             UUID id,
-            String name
+            String name,
+            BigDecimal targetAmount,
+            BigDecimal currentAmount
     ) {
     }
 }

@@ -32,7 +32,9 @@ public final class AddSavingsGoalContributionExtractionMapper {
         var target =
                 new AddSavingsGoalContributionData.SavingsGoalTarget(
                         null,
-                        normalizeNullable(dto.targetName())
+                        normalizeNullable(dto.targetName()),
+                        null,
+                        null
                 );
 
         return new AddSavingsGoalContributionData(

@@ -105,6 +105,63 @@
     "exportingAria": "Daten werden exportiert, bitte warten",
     "groupLabel": "Schnellzugriff"
   },
+  "assistant": {
+    "title": "KI-Assistent",
+    "subtitle": "Beschreibe, was du tun möchtest, und wir bereiten das Formular zur Prüfung vor.",
+    "placeholder": "z. B. „Gestern 23,50 für Lebensmittel ausgegeben“",
+    "submit": "Interpretieren",
+    "interpreting": "Wird interpretiert...",
+    "examplesLabel": "Beispiele",
+    "examples": {
+      "expense": "Gestern habe ich 23,50 für Lebensmittel ausgegeben",
+      "recurring": "Jeden Monat zahle ich 15,99 für Netflix",
+      "savings": "Ich möchte 3.000 für eine Reise sparen",
+      "contribution": "Füge 200 zu meinem Reiseziel hinzu",
+      "category": "Erstelle eine Kategorie Haustiere mit 100 Budget"
+    },
+    "errors": {
+      "empty": "Schreibe zuerst, was du tun möchtest.",
+      "unknown": "Ich konnte die Anfrage nicht verstehen. Formuliere sie bitte neu.",
+      "unsupported": "Der Assistent kann diese Aktion noch nicht vorbereiten.",
+      "generic": "Der Assistent ist gerade nicht verfügbar. Bitte versuche es gleich noch einmal."
+    },
+    "notice": {
+      "reviewTitle": "Vor dem Speichern prüfen",
+      "reviewDescription": "Der Assistent hat dieses Formular ausgefüllt. Prüfe die Daten und passe an, was nötig ist, bevor du bestätigst.",
+      "missingTitle": "Fehlende Angaben",
+      "missingDescription": "Der Assistent konnte nicht ausfüllen: {{fields}}.",
+      "unresolvedTitle": "Nicht aufgelöste Verweise",
+      "unresolvedDescription": "Nicht gefunden oder identifiziert: {{entities}}.",
+      "defaultsDescription": "Standardwerte wurden angewendet für: {{fields}}."
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "amount": "Betrag",
+      "categoryName": "Kategorie",
+      "color": "Farbe",
+      "target": "Ziel",
+      "changes": "Änderungen",
+      "frequencyType": "Häufigkeit",
+      "frequencyInterval": "Intervall",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "targetAmount": "Zielbetrag",
+      "deadline": "Frist",
+      "priority": "Priorität",
+      "link": "Link"
+    },
+    "entityTypes": {
+      "CATEGORY": "Kategorie",
+      "TRANSACTION": "Transaktion",
+      "RECURRING_TRANSACTION": "wiederkehrende Transaktion",
+      "SAVINGS_GOAL": "Sparziel"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "nicht gefunden",
+      "AMBIGUOUS": "mehrdeutig"
+    }
+  },
   "importModal": {
     "title": "Daten importieren",
     "description": "Ziehen Sie eine JSON-Datei mit Ihren Transaktionen hierher",

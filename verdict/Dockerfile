@@ -8,8 +8,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
+# httpx is imported at runtime by verdict.models but is not declared in its
+# serve/onnx extras upstream, so it must be installed explicitly.
 RUN pip install --no-cache-dir \
-    "verdictml[serve,onnx] @ git+https://github.com/Manavarya09/verdict"
+    "verdictml[serve,onnx] @ git+https://github.com/Manavarya09/verdict" \
+    "httpx>=0.27"
 
 EXPOSE 8002
 

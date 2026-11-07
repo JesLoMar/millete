@@ -34,7 +34,6 @@ import type {
   AssetReference,
   CreatableActivityType,
   RegisterActivityRequest,
-  SettlementCurrency,
 } from '../types';
 import {
   fromDateTimeInputValue,
@@ -59,7 +58,6 @@ interface FormState {
   occurredAt: string;
   quantity: string;
   unitPrice: string;
-  settlementCurrency: SettlementCurrency;
   amount: string;
   currency: string;
   amountOrigin: string;
@@ -83,7 +81,6 @@ function createInitialState(
     occurredAt: nowDateTimeInputValue(),
     quantity: '',
     unitPrice: '',
-    settlementCurrency: 'LOCAL',
     amount: '',
     currency: localCurrency,
     amountOrigin: '',
@@ -214,7 +211,6 @@ export function RecordActivityDialog({
         assetReference: form.asset as AssetReference,
         quantity: quantity as number,
         unitPrice: unitPrice as number,
-        settlementCurrency: form.settlementCurrency,
         comment,
       };
     } else if (isCashDividend) {
@@ -395,7 +391,9 @@ export function RecordActivityDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="trade-price">
-                  {t('record.unitPrice')}
+                  {t('record.unitPriceWithCurrency', {
+                    currency: assetCurrency,
+                  })}
                 </Label>
                 <Input
                   id="trade-price"
@@ -410,38 +408,12 @@ export function RecordActivityDialog({
                 />
               </div>
 
-              <div className="space-y-2 sm:col-span-2">
-                <Label>{t('record.settlementCurrency')}</Label>
-                <Select
-                  value={form.settlementCurrency}
-                  onValueChange={(value) =>
-                    update({
-                      settlementCurrency:
-                        value as SettlementCurrency,
-                    })
-                  }
-                  disabled={registerActivity.isPending}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOCAL">
-                      {t('record.localCurrency', {
-                        currency: localCurrency,
-                      })}
-                    </SelectItem>
-                    <SelectItem value="ASSET">
-                      {t('record.assetCurrency', {
-                        currency: assetCurrency,
-                      })}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {t('record.unitPriceHelp')}
-                </p>
-              </div>
+              <p className="text-xs text-muted-foreground sm:col-span-2">
+                {t('record.unitPriceHelp', {
+                  assetCurrency,
+                  localCurrency,
+                })}
+              </p>
             </div>
           )}
 

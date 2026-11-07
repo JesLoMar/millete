@@ -13,7 +13,6 @@ import com.puntomartinez.millete.investments.domain.model.DividendUnitsDetails;
 import com.puntomartinez.millete.investments.domain.model.ExchangeActivityDetails;
 import com.puntomartinez.millete.investments.domain.model.FxRate;
 import com.puntomartinez.millete.investments.domain.model.Money;
-import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 import com.puntomartinez.millete.investments.domain.model.SplitActivityDetails;
 import com.puntomartinez.millete.investments.domain.model.TradeActivityDetails;
 import com.puntomartinez.millete.investments.domain.model.TradeSettlement;
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -242,12 +240,6 @@ public class EditActivityService
                                 )
                         );
 
-        if (details.settlementCurrency() == null) {
-            throw new InvalidInputException(
-                    "La moneda de liquidación es obligatoria."
-            );
-        }
-
         if (details.quantity() == null
                 || details.quantity().signum() <= 0) {
             throw new InvalidInputException(
@@ -268,68 +260,41 @@ public class EditActivityService
 
         AppliedFxRate appliedFxRate =
                 resolveTradeFx(
-                        type,
                         activity,
                         currentDetails,
-                        details.settlementCurrency(),
                         assetCurrency,
                         localCurrency,
                         newOccurredAt
                 );
 
-        CurrencyCode settlementCurrency =
-                details.settlementCurrency()
-                        == SettlementCurrency.LOCAL
-                        ? localCurrency
-                        : assetCurrency;
-
-        Money settlementUnitPrice =
+        /*
+         * El precio se introduce siempre en la divisa del activo y el
+         * importe de la operación se liquida en la divisa local.
+         */
+        Money assetUnitPrice =
                 new Money(
                         details.unitPrice(),
-                        settlementCurrency
+                        assetCurrency
                 );
 
-        Money settlementAmount =
-                settlementUnitPrice.multiply(
+        Money amountInAssetCurrency =
+                assetUnitPrice.multiply(
                         details.quantity(),
                         AMOUNT_SCALE
                 );
 
-        Money assetUnitPrice;
-
-        if (details.settlementCurrency()
-                == SettlementCurrency.ASSET) {
-
-            assetUnitPrice =
-                    new Money(
-                            details.unitPrice(),
-                            assetCurrency
-                    );
-
-        } else if (assetCurrency.equals(localCurrency)) {
-
-            assetUnitPrice =
-                    new Money(
-                            details.unitPrice(),
-                            assetCurrency
-                    );
-
-        } else if (type == ActivityType.BUY) {
-
-            assetUnitPrice =
-                    settlementUnitPrice.multiply(
-                            appliedFxRate.rate(),
-                            AMOUNT_SCALE
-                    );
-
-        } else {
-
-            assetUnitPrice =
-                    settlementUnitPrice.divide(
-                            appliedFxRate.rate(),
-                            AMOUNT_SCALE
-                    );
-        }
+        Money settlementAmount =
+                appliedFxRate == null
+                        ? amountInAssetCurrency
+                        : new Money(
+                                amountInAssetCurrency
+                                        .multiply(
+                                                appliedFxRate.rate(),
+                                                AMOUNT_SCALE
+                                        )
+                                        .amount(),
+                                localCurrency
+                        );
 
         TradeSettlement settlement =
                 new TradeSettlement(
@@ -348,32 +313,15 @@ public class EditActivityService
     }
 
     private AppliedFxRate resolveTradeFx(
-            ActivityType type,
             Activity activity,
             TradeActivityDetails currentDetails,
-            SettlementCurrency settlementCurrency,
             CurrencyCode assetCurrency,
             CurrencyCode localCurrency,
             Instant newOccurredAt
     ) {
-        if (settlementCurrency
-                == SettlementCurrency.ASSET) {
-            return null;
-        }
-
         if (assetCurrency.equals(localCurrency)) {
             return null;
         }
-
-        CurrencyCode expectedBase =
-                type == ActivityType.BUY
-                        ? localCurrency
-                        : assetCurrency;
-
-        CurrencyCode expectedQuote =
-                type == ActivityType.BUY
-                        ? assetCurrency
-                        : localCurrency;
 
         boolean occurredAtUnchanged =
                 newOccurredAt.equals(
@@ -388,23 +336,23 @@ public class EditActivityService
         if (occurredAtUnchanged
                 && existingFx != null
                 && existingFx.baseCurrency()
-                .equals(expectedBase)
+                .equals(assetCurrency)
                 && existingFx.quoteCurrency()
-                .equals(expectedQuote)) {
+                .equals(localCurrency)) {
 
             return existingFx;
         }
 
         FxRate fxRate =
                 findFxRate(
-                        expectedBase,
-                        expectedQuote,
+                        assetCurrency,
+                        localCurrency,
                         newOccurredAt
                 );
 
         return new AppliedFxRate(
-                expectedBase,
-                expectedQuote,
+                assetCurrency,
+                localCurrency,
                 fxRate.rate(),
                 fxRate.source(),
                 fxRate.timestamp()

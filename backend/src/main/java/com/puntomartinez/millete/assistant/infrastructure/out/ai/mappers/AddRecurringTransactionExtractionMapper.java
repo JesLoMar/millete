@@ -80,6 +80,7 @@ public final class AddRecurringTransactionExtractionMapper {
                 description,
                 dto.amount(),
                 categoryName,
+                null,
                 frequencyType,
                 frequencyInterval,
                 startDate,

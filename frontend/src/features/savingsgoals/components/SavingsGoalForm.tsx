@@ -42,21 +42,38 @@ export interface SavingsGoalFormValues {
   link?: string;
 }
 
-function getInitialForm(goal?: SavingsGoal | null): FormState {
+export interface SavingsGoalFormInitialValues {
+  name?: string;
+  targetAmount?: number;
+  priority?: Priority;
+  deadline?: string;
+  link?: string;
+}
+
+function getInitialForm(
+  goal?: SavingsGoal | null,
+  initialValues?: SavingsGoalFormInitialValues,
+): FormState {
   return {
-    name: goal?.name ?? '',
+    name: initialValues?.name ?? goal?.name ?? '',
     targetAmount:
-      goal?.targetAmount !== undefined
-        ? String(goal.targetAmount)
-        : '',
-    priority: goal?.priority ?? 'MEDIUM',
-    deadline: toDateInputValue(goal?.deadline),
-    link: goal?.link ?? '',
+      initialValues?.targetAmount !== undefined
+        ? String(initialValues.targetAmount)
+        : goal?.targetAmount !== undefined
+          ? String(goal.targetAmount)
+          : '',
+    priority:
+      initialValues?.priority ?? goal?.priority ?? 'MEDIUM',
+    deadline:
+      initialValues?.deadline ??
+      toDateInputValue(goal?.deadline),
+    link: initialValues?.link ?? goal?.link ?? '',
   };
 }
 
 interface SavingsGoalFormProps {
   initialGoal?: SavingsGoal | null;
+  initialValues?: SavingsGoalFormInitialValues;
   minTargetAmount?: number;
   isSubmitting: boolean;
   submitLabel: string;
@@ -67,6 +84,7 @@ interface SavingsGoalFormProps {
 
 export function SavingsGoalForm({
   initialGoal,
+  initialValues,
   minTargetAmount = 0,
   isSubmitting,
   submitLabel,
@@ -77,7 +95,7 @@ export function SavingsGoalForm({
   const { t } = useTranslation(['savingsGoals', 'common']);
 
   const [form, setForm] = useState<FormState>(() =>
-    getInitialForm(initialGoal),
+    getInitialForm(initialGoal, initialValues),
   );
   const [submitted, setSubmitted] = useState(false);
   const [linkTouched, setLinkTouched] = useState(false);

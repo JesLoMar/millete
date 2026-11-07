@@ -3,7 +3,6 @@ package com.puntomartinez.millete.investments.infrastructure.out.marketdata;
 import tools.jackson.databind.JsonNode;
 import com.puntomartinez.millete.investments.domain.model.AssetPrice;
 import com.puntomartinez.millete.investments.domain.model.AssetType;
-import com.puntomartinez.millete.investments.domain.model.CurrencyCode;
 import com.puntomartinez.millete.investments.domain.model.FxRate;
 import com.puntomartinez.millete.investments.domain.model.SharedAsset;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
@@ -21,8 +20,11 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * Finnhub daily candles for stocks and ETFs,
- * and historical foreign-exchange pairs.
+ * Velas diarias de acciones y ETFs desde Finnhub.
+ *
+ * Los tipos de cambio ya no se piden a Finnhub: su endpoint {@code forex/candle}
+ * es de pago y devuelve 403 con el plan gratuito. Los sirve
+ * {@link YahooFinanceMarketDataAdapter}.
  */
 @Component
 final class FinnhubMarketDataAdapter
@@ -64,7 +66,7 @@ final class FinnhubMarketDataAdapter
 
     @Override
     public boolean supportsFxRates() {
-        return true;
+        return false;
     }
 
     @Override
@@ -173,111 +175,17 @@ final class FinnhubMarketDataAdapter
         return List.copyOf(result);
     }
 
+    /**
+     * Finnhub no es fuente de tipos de cambio: {@code forex/candle} requiere un
+     * plan de pago. El proveedor de FX es Yahoo Finance.
+     */
     @Override
     public List<FxRate> fetchFxRates(
             List<String> currencyPairs,
             Instant from,
             Instant to
     ) {
-        if (currencyPairs.isEmpty()) {
-            return List.of();
-        }
-
-        requireApiKey();
-
-        List<FxRate> result =
-                new ArrayList<>();
-
-        for (String pair : currencyPairs) {
-            String[] currencies =
-                    pair.toUpperCase(Locale.ROOT)
-                            .split("/");
-
-            if (currencies.length != 2
-                    || currencies[0].equals(currencies[1])) {
-                throw new IllegalArgumentException(
-                        "FX pair must use "
-                                + "BASE/QUOTE currency codes"
-                );
-            }
-
-            String base =
-                    currencies[0];
-
-            String quote =
-                    currencies[1];
-
-            URI uri =
-                    uri(
-                            "forex/candle",
-                            "OANDA:"
-                                    + base
-                                    + "_"
-                                    + quote,
-                            from,
-                            to
-                    );
-
-            JsonNode candles =
-                    http.get(
-                            uri,
-                            "X-Finnhub-Token",
-                            apiKey,
-                            PROVIDER
-                    );
-
-            if (isNoData(candles)) {
-                continue;
-            }
-
-            Instant fetchedAt =
-                    time.now();
-
-            JsonNode timestamps =
-                    candles.path("t");
-
-            for (
-                    int index = 0;
-                    index < timestamps.size();
-                    index++
-            ) {
-                Instant timestamp =
-                        Instant.ofEpochSecond(
-                                timestamps
-                                        .get(index)
-                                        .asLong()
-                        );
-
-                if (timestamp.isBefore(from)
-                        || timestamp.isAfter(to)) {
-                    continue;
-                }
-
-                BigDecimal rate =
-                        decimalAt(
-                                candles.path("c"),
-                                index
-                        );
-
-                if (rate != null
-                        && rate.signum() > 0) {
-
-                    result.add(
-                            new FxRate(
-                                    UUID.randomUUID(),
-                                    CurrencyCode.of(base),
-                                    CurrencyCode.of(quote),
-                                    timestamp,
-                                    rate,
-                                    PROVIDER,
-                                    fetchedAt
-                            )
-                    );
-                }
-            }
-        }
-
-        return List.copyOf(result);
+        return List.of();
     }
 
     private URI uri(
@@ -351,7 +259,7 @@ final class FinnhubMarketDataAdapter
         if (apiKey.isBlank()) {
             throw new MarketDataProviderException(
                     "FINNHUB_API_KEY is required to refresh "
-                            + "stock and ETF prices and FX rates"
+                            + "stock and ETF prices"
             );
         }
     }

@@ -316,7 +316,6 @@ export interface BuyActivityRequest {
   assetReference: AssetReference;
   quantity: number;
   unitPrice: number;
-  settlementCurrency: SettlementCurrency;
   comment?: string | null;
 }
 
@@ -395,7 +394,6 @@ export interface EditActivityDetails {
   type: EditActivityDetailsType;
   quantity?: number;
   unitPrice?: number;
-  settlementCurrency?: SettlementCurrency;
   amount?: number;
   amountOrigin?: number;
   ratio?: number;

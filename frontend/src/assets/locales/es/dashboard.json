@@ -105,6 +105,63 @@
     "exportingAria": "Exportando datos, espere",
     "groupLabel": "Acciones rápidas"
   },
+  "assistant": {
+    "title": "Asistente IA",
+    "subtitle": "Describe lo que quieres hacer y prepararemos el formulario para que lo revises antes de guardar.",
+    "placeholder": "p. ej. «Ayer gasté 23,50 en la compra»",
+    "submit": "Interpretar",
+    "interpreting": "Interpretando...",
+    "examplesLabel": "Ejemplos",
+    "examples": {
+      "expense": "Ayer gasté 23,50 en la compra",
+      "recurring": "Cada mes pago 15,99 por Netflix",
+      "savings": "Quiero ahorrar 3.000 para un viaje",
+      "contribution": "Aporta 200 a mi meta del viaje",
+      "category": "Crea una categoría Mascotas con 100 de presupuesto"
+    },
+    "errors": {
+      "empty": "Escribe primero lo que quieres hacer.",
+      "unknown": "No he entendido la petición. Prueba a reformularla.",
+      "unsupported": "El asistente todavía no puede preparar esta acción.",
+      "generic": "El asistente no está disponible ahora mismo. Inténtalo de nuevo en un momento."
+    },
+    "notice": {
+      "reviewTitle": "Revisa antes de guardar",
+      "reviewDescription": "El asistente ha rellenado este formulario. Comprueba los datos y ajusta lo que necesites antes de confirmar.",
+      "missingTitle": "Datos incompletos",
+      "missingDescription": "El asistente no pudo rellenar: {{fields}}.",
+      "unresolvedTitle": "Referencias sin resolver",
+      "unresolvedDescription": "No se encontró o identificó: {{entities}}.",
+      "defaultsDescription": "Se aplicaron valores por defecto en: {{fields}}."
+    },
+    "fields": {
+      "name": "nombre",
+      "description": "descripción",
+      "amount": "importe",
+      "categoryName": "categoría",
+      "color": "color",
+      "target": "objetivo",
+      "changes": "cambios",
+      "frequencyType": "frecuencia",
+      "frequencyInterval": "intervalo",
+      "startDate": "fecha de inicio",
+      "endDate": "fecha de fin",
+      "targetAmount": "importe objetivo",
+      "deadline": "fecha límite",
+      "priority": "prioridad",
+      "link": "enlace"
+    },
+    "entityTypes": {
+      "CATEGORY": "categoría",
+      "TRANSACTION": "transacción",
+      "RECURRING_TRANSACTION": "transacción recurrente",
+      "SAVINGS_GOAL": "meta de ahorro"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "no encontrada",
+      "AMBIGUOUS": "ambigua"
+    }
+  },
   "importModal": {
     "title": "Importar datos",
     "description": "Arrastra un archivo JSON con tus transacciones",

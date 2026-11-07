@@ -3,6 +3,7 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -31,11 +32,14 @@ interface ContributionModalProps {
   onSubmit: (amount: number) => void;
   goal: SavingsGoal | null;
   isSubmitting: boolean;
+  initialAmount?: number | string;
+  notice?: ReactNode;
 }
 
 interface ContributionFormProps {
   goal: SavingsGoal;
   isSubmitting: boolean;
+  defaultAmount?: number | string;
   inputRef: React.Ref<HTMLInputElement>;
   onSubmit: (amount: number) => void;
   onCancel: () => void;
@@ -44,13 +48,16 @@ interface ContributionFormProps {
 function ContributionForm({
   goal,
   isSubmitting,
+  defaultAmount,
   inputRef,
   onSubmit,
   onCancel,
 }: ContributionFormProps) {
   const { t } = useTranslation('savingsGoals');
 
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(() =>
+    defaultAmount !== undefined ? String(defaultAmount) : '',
+  );
   const [submitted, setSubmitted] = useState(false);
 
   const inputId = useId();
@@ -149,6 +156,8 @@ export const ContributionModal = ({
   onSubmit,
   goal,
   isSubmitting,
+  initialAmount,
+  notice,
 }: ContributionModalProps) => {
   const { t } = useTranslation(['savingsGoals', 'common']);
 
@@ -176,10 +185,13 @@ export const ContributionModal = ({
           </DialogTitle>
         </DialogHeader>
 
+        {notice}
+
         {goal && (
           <ContributionForm
             goal={goal}
             isSubmitting={isSubmitting}
+            defaultAmount={initialAmount}
             inputRef={inputRef}
             onSubmit={onSubmit}
             onCancel={onClose}

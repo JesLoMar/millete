@@ -1,4 +1,9 @@
-import { useId, useRef, useState } from 'react';
+import {
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Spinner } from '@/shared/components/Spinner';
@@ -22,6 +27,7 @@ interface EditTransactionDialogProps {
   transaction: Transaction | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  notice?: ReactNode;
 }
 
 interface FormState {
@@ -49,6 +55,7 @@ export function EditTransactionDialog({
   transaction,
   open,
   onOpenChange,
+  notice,
 }: EditTransactionDialogProps) {
   const { t } = useTranslation(['transactions', 'common']);
   const { updateTransaction, isUpdating } =
@@ -117,6 +124,8 @@ export function EditTransactionDialog({
               {t('transactions:editTitle')}
             </DialogTitle>
           </DialogHeader>
+
+          {notice}
 
           <div className="space-y-4 py-2 sm:py-4">
             <div className="space-y-2">

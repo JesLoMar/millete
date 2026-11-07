@@ -1,7 +1,9 @@
 package com.puntomartinez.millete.assistant.domain.model.interpretation;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 
 public record EditRecurringTransactionData(
         RecurringTransactionTarget target,
@@ -38,12 +40,16 @@ public record EditRecurringTransactionData(
     }
 
     public record RecurringTransactionTarget(
+            UUID id,
             String description,
             BigDecimal amount,
             String categoryName,
+            UUID categoryId,
             FrequencyType frequencyType,
             Integer frequencyInterval,
-            TransactionType type
+            TransactionType type,
+            LocalDate startDate,
+            LocalDate endDate
     ) {
     }
 

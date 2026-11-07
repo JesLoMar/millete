@@ -105,6 +105,63 @@
     "exportingAria": "Exporting data, please wait",
     "groupLabel": "Quick actions"
   },
+  "assistant": {
+    "title": "AI assistant",
+    "subtitle": "Describe what you want to do and we'll prepare the form for you to review before saving.",
+    "placeholder": "e.g. \"Spent 23.50 on groceries yesterday\"",
+    "submit": "Interpret",
+    "interpreting": "Interpreting...",
+    "examplesLabel": "Examples",
+    "examples": {
+      "expense": "I spent 23.50 on groceries yesterday",
+      "recurring": "Every month I pay 15.99 for Netflix",
+      "savings": "I want to save 3,000 for a trip",
+      "contribution": "Add 200 to my trip savings goal",
+      "category": "Create a Pets category with a 100 budget"
+    },
+    "errors": {
+      "empty": "Write what you want to do first.",
+      "unknown": "I couldn't understand the request. Try rephrasing it.",
+      "unsupported": "The assistant can't prepare this action yet.",
+      "generic": "The assistant is not available right now. Please try again in a moment."
+    },
+    "notice": {
+      "reviewTitle": "Review before saving",
+      "reviewDescription": "The assistant filled in this form for you. Check the data and adjust anything you need before confirming.",
+      "missingTitle": "Missing data",
+      "missingDescription": "The assistant couldn't fill: {{fields}}.",
+      "unresolvedTitle": "Unresolved references",
+      "unresolvedDescription": "Could not find or identify: {{entities}}.",
+      "defaultsDescription": "Default values were applied to: {{fields}}."
+    },
+    "fields": {
+      "name": "name",
+      "description": "description",
+      "amount": "amount",
+      "categoryName": "category",
+      "color": "color",
+      "target": "target",
+      "changes": "changes",
+      "frequencyType": "frequency",
+      "frequencyInterval": "interval",
+      "startDate": "start date",
+      "endDate": "end date",
+      "targetAmount": "target amount",
+      "deadline": "deadline",
+      "priority": "priority",
+      "link": "link"
+    },
+    "entityTypes": {
+      "CATEGORY": "category",
+      "TRANSACTION": "transaction",
+      "RECURRING_TRANSACTION": "recurring transaction",
+      "SAVINGS_GOAL": "savings goal"
+    },
+    "entityStatus": {
+      "NOT_FOUND": "not found",
+      "AMBIGUOUS": "ambiguous"
+    }
+  },
   "importModal": {
     "title": "Import data",
     "description": "Drag a JSON file with your transactions here",

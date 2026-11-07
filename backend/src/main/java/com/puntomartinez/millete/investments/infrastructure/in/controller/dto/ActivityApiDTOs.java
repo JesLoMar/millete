@@ -2,7 +2,6 @@ package com.puntomartinez.millete.investments.infrastructure.in.controller.dto;
 
 import com.puntomartinez.millete.investments.domain.model.ActivityType;
 import com.puntomartinez.millete.investments.domain.model.AssetReferenceKind;
-import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -58,9 +57,6 @@ public final class ActivityApiDTOs {
             @DecimalMin("0.000000000001")
             BigDecimal unitPrice,
 
-            @NotNull
-            SettlementCurrency settlementCurrency,
-
             @Size(max = 500)
             String comment
     ) {
@@ -86,9 +82,6 @@ public final class ActivityApiDTOs {
             @NotNull
             @DecimalMin("0.000000000001")
             BigDecimal unitPrice,
-
-            @NotNull
-            SettlementCurrency settlementCurrency,
 
             @Size(max = 500)
             String comment
@@ -269,8 +262,6 @@ public final class ActivityApiDTOs {
 
             @DecimalMin("0.000000000001")
             BigDecimal unitPrice,
-
-            SettlementCurrency settlementCurrency,
 
             @DecimalMin("0.000000000001")
             BigDecimal amount,

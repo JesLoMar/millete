@@ -2,7 +2,6 @@ package com.puntomartinez.millete.investments.domain.ports.in;
 
 import com.puntomartinez.millete.investments.domain.model.Activity;
 import com.puntomartinez.millete.investments.domain.model.AssetReference;
-import com.puntomartinez.millete.investments.domain.model.SettlementCurrency;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -21,7 +20,6 @@ public interface RecordSellUseCase {
             AssetReference assetReference,
             BigDecimal quantity,
             BigDecimal unitPrice,
-            SettlementCurrency settlementCurrency,
             String comment
     ) {
     }

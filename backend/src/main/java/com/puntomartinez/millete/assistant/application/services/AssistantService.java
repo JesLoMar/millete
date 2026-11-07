@@ -400,6 +400,7 @@ public class AssistantService
                                 resolvedTransaction.description(),
                                 resolvedTransaction.amount(),
                                 resolvedTransaction.categoryName(),
+                                resolvedTransaction.categoryId(),
                                 resolvedTransaction.date(),
                                 resolvedTransaction.type()
                         ),
@@ -491,6 +492,7 @@ public class AssistantService
                         normalizedData.description(),
                         normalizedData.amount(),
                         resolvedCategory.name(),
+                        resolvedCategory.id(),
                         normalizedData.frequencyType(),
                         normalizedData.frequencyInterval(),
                         normalizedData.startDate(),
@@ -609,12 +611,16 @@ public class AssistantService
 
         var resolvedTarget =
                 new EditRecurringTransactionData.RecurringTransactionTarget(
+                        resolvedTransaction.id(),
                         resolvedTransaction.description(),
                         resolvedTransaction.amount(),
                         resolvedTransaction.categoryName(),
+                        resolvedTransaction.categoryId(),
                         resolvedTransaction.frequencyType(),
                         resolvedTransaction.frequencyInterval(),
-                        resolvedTransaction.type()
+                        resolvedTransaction.type(),
+                        resolvedTransaction.startDate(),
+                        resolvedTransaction.endDate()
                 );
 
         var resolvedData =
@@ -747,7 +753,12 @@ public class AssistantService
         var resolvedTarget =
                 new EditSavingsGoalData.SavingsGoalTarget(
                         goal.id(),
-                        goal.name()
+                        goal.name(),
+                        goal.targetAmount(),
+                        goal.currentAmount(),
+                        goal.priority(),
+                        goal.deadline(),
+                        goal.link()
                 );
 
         var resolvedData =
@@ -829,7 +840,9 @@ public class AssistantService
         var resolvedTarget =
                 new AddSavingsGoalContributionData.SavingsGoalTarget(
                         goal.id(),
-                        goal.name()
+                        goal.name(),
+                        goal.targetAmount(),
+                        goal.currentAmount()
                 );
 
         var resolvedData =
@@ -947,6 +960,7 @@ public class AssistantService
                 data.description(),
                 data.amount(),
                 data.categoryName(),
+                data.categoryId(),
                 data.frequencyType(),
                 frequencyInterval,
                 startDate,
@@ -970,7 +984,13 @@ public class AssistantService
 
         if (categoryChange.value() == null) {
             return new ResolvedCategoryChange(
-                    changes,
+                    new EditTransactionData.TransactionChanges(
+                            changes.description(),
+                            changes.amount(),
+                            changes.categoryName(),
+                            FieldChange.clear(),
+                            changes.type()
+                    ),
                     null
             );
         }
@@ -1001,6 +1021,9 @@ public class AssistantService
                         changes.amount(),
                         FieldChange.set(
                                 resolvedCategory.name()
+                        ),
+                        FieldChange.set(
+                                resolvedCategory.id()
                         ),
                         changes.type()
                 );

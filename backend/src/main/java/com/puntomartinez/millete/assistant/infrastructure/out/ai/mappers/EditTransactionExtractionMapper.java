@@ -44,6 +44,7 @@ public final class EditTransactionExtractionMapper {
                         normalizeNullable(
                                 dto.target().categoryName()
                         ),
+                        null,
                         parseDate(
                                 dto.target().date()
                         ),
@@ -85,6 +86,7 @@ public final class EditTransactionExtractionMapper {
                         descriptionChange,
                         amountChange,
                         categoryChange,
+                        FieldChange.unchanged(),
                         typeChange
                 )
         );

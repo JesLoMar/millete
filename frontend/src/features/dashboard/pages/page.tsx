@@ -16,6 +16,7 @@ import { TopNav } from '@/shared/components/TopNav'
 
 import { NewTransactionDialog } from '@/features/transactions/components/dialogs/NewTransactionDialog'
 import { AddCategoryDialog } from '@/features/categories/components/AddCategoryDialog'
+import { AssistantCard } from '@/features/assistant/components/AssistantCard'
 
 import { BudgetBars } from '../components/BudgetBars'
 import { CategoryDonut } from '../components/CategoryDonut'
@@ -226,6 +227,22 @@ export const DashboardPage = () => {
             onPeriodChange={handlePeriodChange}
             defaultPeriod={period}
           />
+
+          <m.div
+            className="mb-6"
+            variants={{
+              hidden: {
+                opacity: 0,
+                y: -20,
+              },
+              visible: {
+                opacity: 1,
+                y: 0,
+              },
+            }}
+          >
+            <AssistantCard />
+          </m.div>
 
           <m.div
             className="mb-6"

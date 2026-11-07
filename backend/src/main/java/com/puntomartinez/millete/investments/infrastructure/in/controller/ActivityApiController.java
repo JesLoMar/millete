@@ -98,7 +98,6 @@ public class ActivityApiController {
                         assetReference(request.assetReference()),
                         request.quantity(),
                         request.unitPrice(),
-                        request.settlementCurrency(),
                         request.comment()
                 ),
                 idempotencyKey
@@ -122,7 +121,6 @@ public class ActivityApiController {
                         assetReference(request.assetReference()),
                         request.quantity(),
                         request.unitPrice(),
-                        request.settlementCurrency(),
                         request.comment()
                 ),
                 idempotencyKey
@@ -351,7 +349,6 @@ public class ActivityApiController {
                     new EditActivityUseCase.BuySellDetails(
                             request.quantity(),
                             request.unitPrice(),
-                            request.settlementCurrency(),
                             request.comment()
                     );
 

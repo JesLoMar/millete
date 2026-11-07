@@ -1,6 +1,7 @@
 package com.puntomartinez.millete.assistant.infrastructure.out.savingsgoals;
 
 import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalCandidate;
+import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalPriority;
 import com.puntomartinez.millete.assistant.domain.model.interpretation.SavingsGoalResolution;
 import com.puntomartinez.millete.assistant.domain.ports.out.SavingsGoalResolver;
 import com.puntomartinez.millete.savingsgoals.domain.model.SavingsGoal;
@@ -109,7 +110,14 @@ public class SavingsGoalResolverAdapter
     ) {
         return new SavingsGoalCandidate(
                 goal.getId(),
-                goal.getName()
+                goal.getName(),
+                goal.getTargetAmount(),
+                goal.getCurrentAmount(),
+                SavingsGoalPriority.valueOf(
+                        goal.getPriority().name()
+                ),
+                goal.getDeadline(),
+                goal.getLink()
         );
     }
 
