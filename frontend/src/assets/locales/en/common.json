@@ -1,18 +1,17 @@
 {
   "actions": {
     "save": "Save",
-    "saving": "Saving...",
+    "saving": "Saving…",
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
-    "deleting": "Deleting...",
+    "deleting": "Deleting…",
     "add": "Add",
     "accept": "Accept",
-    "welcome": "Successful login",
     "reject": "Reject",
     "close": "Close",
-    "search": "Search by name...",
-    "searchDesc": "Search by description...",
+    "search": "Search by name…",
+    "searchDesc": "Search by description…",
     "back": "Back",
     "continue": "Continue",
     "create": "Create",
@@ -23,14 +22,15 @@
     "export": "Export",
     "import": "Import",
     "send": "Send",
-    "retry": "Retry"
+    "retry": "Retry",
+    "view": "View"
   },
   "status": {
-    "loading": "Loading...",
-    "loadingSession": "Loading session...",
+    "loading": "Loading…",
+    "loadingSession": "Loading session…",
     "error": "Error",
     "empty": "No data available",
-    "processing": "Processing...",
+    "processing": "Processing…",
     "connectionError": "Could not reach the server. Check your connection."
   },
   "entities": {
@@ -71,5 +71,8 @@
     "default": "Unexpected error. Please try again.",
     "noPermission": "You do not have permission to perform this action"
   },
-  "showingInterval": "Showing {{from}}-{{to}} of {{total}}"
+  "showingInterval": "Showing {{from}}-{{to}} of {{total}}",
+  "alerts": {
+    "loginSuccess": "Logged in successfully"
+  }
 }

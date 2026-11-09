@@ -451,7 +451,7 @@ export function EditActivityDialog({
             onClick={() => onOpenChange(false)}
             disabled={editActivity.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"
@@ -464,7 +464,7 @@ export function EditActivityDialog({
                 aria-hidden="true"
               />
             )}
-            {t('common:save')}
+            {t('common:actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

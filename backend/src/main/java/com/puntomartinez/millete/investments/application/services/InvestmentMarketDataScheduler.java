@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +19,6 @@ public final class InvestmentMarketDataScheduler {
             LoggerFactory.getLogger(
                     InvestmentMarketDataScheduler.class
             );
-
-    private static final Duration REFRESH_WINDOW =
-            Duration.ofDays(5);
 
     private final RefreshMarketDataUseCase refreshMarketData;
     private final TimeProvider time;
@@ -52,14 +48,9 @@ public final class InvestmentMarketDataScheduler {
         Instant to =
                 time.now();
 
-        Instant from =
-                to.minus(
-                        REFRESH_WINDOW
-                );
-
         RefreshMarketDataUseCase.RefreshMarketDataCommand command =
                 new RefreshMarketDataUseCase.RefreshMarketDataCommand(
-                        from,
+                        null,
                         to,
                         currencyPairs
                 );
@@ -71,16 +62,14 @@ public final class InvestmentMarketDataScheduler {
 
             log.debug(
                     "Investment market data refreshed successfully "
-                            + "from {} to {}",
-                    from,
+                            + "from the last stored entry to {}",
                     to
             );
 
         } catch (RuntimeException exception) {
             log.error(
                     "Scheduled investment market-data refresh failed "
-                            + "from {} to {}",
-                    from,
+                            + "up to {}",
                     to,
                     exception
             );

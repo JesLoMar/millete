@@ -73,8 +73,8 @@
     "title": "Stato del budget",
     "empty": "Nessun budget configurato",
     "overLimit": "Limite superato!",
-    "remaining": "Ti rimangono {{amount}} €",
-    "exceededBy": "Superato di {{amount}} €"
+    "remaining": "Ti rimangono {{amount}}",
+    "exceededBy": "Superato di {{amount}}"
   },
   "transactions": {
     "title": "Ultime transazioni",
@@ -88,15 +88,15 @@
     "title": "Obiettivi di risparmio attivi",
     "empty": "Nessun obiettivo di risparmio configurato",
     "completed": "Completato!",
-    "remaining": "Mancano {{amount}} €"
+    "remaining": "Mancano {{amount}}"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Importa dati",
-    "importing": "Importazione...",
+    "importing": "Importazione…",
     "exportData": "Esporta dati",
-    "exporting": "Esportazione...",
+    "exporting": "Esportazione…",
     "addExpenseAria": "Aggiungi nuova transazione",
     "createCategoryAria": "Crea nuova categoria",
     "importDataAria": "Importa dati da file",
@@ -110,7 +110,7 @@
     "subtitle": "Descrivi cosa vuoi fare e prepareremo il modulo da controllare prima di salvare.",
     "placeholder": "es. «Ieri ho speso 23,50 per la spesa»",
     "submit": "Interpreta",
-    "interpreting": "Interpretazione...",
+    "interpreting": "Interpretazione…",
     "examplesLabel": "Esempi",
     "examples": {
       "expense": "Ieri ho speso 23,50 per la spesa",
@@ -171,7 +171,7 @@
     "invalidJson": "Il file JSON non è valido",
     "invalidContent": "Il contenuto del file non è valido",
     "fileInput": "Seleziona file JSON",
-    "importing": "Importazione dati...",
+    "importing": "Importazione dati…",
     "success": "Dati importati correttamente",
     "importError": "Errore durante l'importazione del file",
     "close": "$t(common:actions.close)"
@@ -183,8 +183,6 @@
     "errorFormat": "Formato di file non valido"
   },
   "export": {
-    "success": "Copia di backup esportata correttamente",
-    "error": "Errore durante l'esportazione dei dati",
     "title": "Esporta dati",
     "configTitle": "Configura esportazione",
     "formatJSON": "JSON",
@@ -196,13 +194,15 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Report finanziario stilizzato",
     "entity": "Tipo di dati",
-    "selectEntity": "Seleziona tipo...",
+    "selectEntity": "Seleziona tipo…",
     "period": "Periodo",
     "period1m": "Ultimo mese",
     "period3m": "Ultimi 3 mesi",
     "period6m": "Ultimi 6 mesi",
     "period1y": "Ultimo anno",
     "periodAll": "Tutto",
-    "action": "Esporta"
+    "action": "Esporta",
+    "success": "Copia di backup esportata correttamente",
+    "error": "Errore durante l'esportazione dei dati"
   }
 }

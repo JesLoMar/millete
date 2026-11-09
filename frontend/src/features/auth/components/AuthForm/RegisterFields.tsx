@@ -51,7 +51,7 @@ export function RegisterFields({
           <User className="size-4" />
           {t('auth:form.fields.username.label')}
           <span className="text-xs text-muted-foreground">
-            ({t('auth:form.optional')})
+            ({t('common:prompts.optional')})
           </span>
         </Label>
 
@@ -96,7 +96,7 @@ export function RegisterFields({
           <Mail className="size-4" />
           {t('auth:form.fields.identifier.register')}
           <span className="text-xs text-muted-foreground">
-            ({t('auth:form.optional')})
+            ({t('common:prompts.optional')})
           </span>
         </Label>
 

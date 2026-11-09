@@ -177,6 +177,9 @@ volver a importar.
   precios vivos de la aplicación.
 - Fija `fetched_at` al final del rango (`2026-11-04T00:00:00Z`) para que una
   actualización viva posterior tenga prioridad.
+- Tras importar, el botón **Actualizar datos de mercado** descarga desde la
+  última entrada guardada de cada serie hasta la fecha actual; no hace falta
+  indicar fechas.
 - Solo inserta precios si el activo existente está en la misma divisa
   (`sa.currency = ...`). Si el activo ya existe en otra divisa, sus precios se
   omiten.

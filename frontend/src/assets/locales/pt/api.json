@@ -1,10 +1,11 @@
 {
   "errors": {
     "default": "Erro inesperado no servidor.",
-    "status_401": "Sua sessão expirou. Por favor, faça login novamente.",
-    "status_403": "Você não tem as permissões necessárias para esta seção.",
-    "status_404": "O recurso solicitado não está disponível.",
-    "status_500": "Problema interno do servidor. Tente novamente mais tarde.",
-    "timeout": "A requisição demorou muito tempo para responder."
+    "timeout": "A requisição demorou muito tempo para responder.",
+    "status401": "Sua sessão expirou. Por favor, faça login novamente.",
+    "status403": "Não tem as permissões necessárias para esta secção.",
+    "status404": "O recurso solicitado não está disponível.",
+    "status409": "Conflito: o recurso já existe ou a operação não é válida no estado atual.",
+    "status500": "Problema interno do servidor. Tente novamente mais tarde."
   }
 }

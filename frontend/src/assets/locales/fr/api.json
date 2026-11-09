@@ -1,10 +1,11 @@
 {
   "errors": {
     "default": "Erreur inattendue du serveur.",
-    "status_401": "Votre session a expiré. Veuillez vous reconnecter.",
-    "status_403": "Vous ne disposez pas des autorisations nécessaires pour cette section.",
-    "status_404": "La ressource demandée n'est pas disponible.",
-    "status_500": "Problème interne du serveur. Veuillez réessayer plus tard.",
-    "timeout": "La demande a mis trop de temps à répondre."
+    "timeout": "La demande a mis trop de temps à répondre.",
+    "status401": "Votre session a expiré. Veuillez vous reconnecter.",
+    "status403": "Vous ne disposez pas des autorisations nécessaires pour cette section.",
+    "status404": "La ressource demandée n'est pas disponible.",
+    "status409": "Conflit : la ressource existe déjà ou l'opération n'est pas valide dans l'état actuel.",
+    "status500": "Problème interne du serveur. Veuillez réessayer plus tard."
   }
 }

@@ -1,10 +1,11 @@
 {
   "errors": {
     "default": "Unerwarteter Serverfehler.",
-    "status_401": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
-    "status_403": "Sie haben nicht die erforderlichen Berechtigungen für diesen Bereich.",
-    "status_404": "Die angeforderte Ressource ist nicht verfügbar.",
-    "status_500": "Internes Serverproblem. Bitte versuchen Sie es später noch einmal.",
-    "timeout": "Die Antwortzeit der Anfrage wurde überschritten."
+    "timeout": "Die Antwortzeit der Anfrage wurde überschritten.",
+    "status401": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "status403": "Sie haben nicht die erforderlichen Berechtigungen für diesen Bereich.",
+    "status404": "Die angeforderte Ressource ist nicht verfügbar.",
+    "status409": "Konflikt: Die Ressource existiert bereits oder die Aktion ist im aktuellen Zustand nicht möglich.",
+    "status500": "Internes Serverproblem. Bitte versuchen Sie es später noch einmal."
   }
 }

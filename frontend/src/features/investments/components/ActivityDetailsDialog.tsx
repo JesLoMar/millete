@@ -316,7 +316,7 @@ export function ActivityDetailsDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            {t('common:close')}
+            {t('common:actions.close')}
           </Button>
           {isActivityEditable(activity) &&
             !activity.linkedTransactionId && (
@@ -328,7 +328,7 @@ export function ActivityDetailsDialog({
                   className="size-4"
                   aria-hidden="true"
                 />
-                {t('common:edit')}
+                {t('common:actions.edit')}
               </Button>
             )}
         </DialogFooter>

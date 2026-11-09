@@ -1,9 +1,9 @@
 {
   "metrics": {
-    "balance": "Balance Total",
+    "balance": "Balance total",
     "income": "Ingresos del {{period}}",
     "expenses": "Gastos del {{period}}",
-    "savings": "Ahorro Total",
+    "savings": "Ahorro total",
     "vsLastWeek": "vs. semana anterior",
     "vsLastMonth": "vs. mes anterior",
     "vsLastYear": "vs. año anterior",
@@ -51,7 +51,7 @@
     }
   },
   "chart": {
-    "title": "Histórico de Gastos",
+    "title": "Histórico de gastos",
     "empty": "Sin gastos en este período",
     "showingLast": "Últimos {{count}}",
     "periodLabel": {
@@ -65,19 +65,19 @@
     }
   },
   "donut": {
-    "title": "Gasto por Categoría",
+    "title": "Gasto por categoría",
     "total": "Total",
     "empty": "Sin gastos en este período"
   },
   "budget": {
-    "title": "Estado del Presupuesto",
+    "title": "Estado del presupuesto",
     "empty": "No hay presupuestos configurados",
     "overLimit": "¡Límite superado!",
-    "remaining": "Te quedan {{amount}} €",
-    "exceededBy": "Excedido por {{amount}} €"
+    "remaining": "Te quedan {{amount}}",
+    "exceededBy": "Excedido por {{amount}}"
   },
   "transactions": {
-    "title": "Últimas Transacciones",
+    "title": "Últimas transacciones",
     "viewAll": "Ver todas",
     "empty": "No hay transacciones recientes",
     "expense": "Gasto",
@@ -85,18 +85,18 @@
     "moreOptions": "Más opciones"
   },
   "goals": {
-    "title": "Metas de Ahorro Activas",
+    "title": "Metas de ahorro activas",
     "empty": "No hay metas de ahorro configuradas",
     "completed": "¡Completado!",
-    "remaining": "Faltan {{amount}} €"
+    "remaining": "Quedan {{amount}}"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Importar datos",
-    "importing": "Importando...",
+    "importing": "Importando…",
     "exportData": "Exportar datos",
-    "exporting": "Exportando...",
+    "exporting": "Exportando…",
     "addExpenseAria": "Añadir nueva transacción",
     "createCategoryAria": "Crear nueva categoría",
     "importDataAria": "Importar datos desde archivo",
@@ -110,7 +110,7 @@
     "subtitle": "Describe lo que quieres hacer y prepararemos el formulario para que lo revises antes de guardar.",
     "placeholder": "p. ej. «Ayer gasté 23,50 en la compra»",
     "submit": "Interpretar",
-    "interpreting": "Interpretando...",
+    "interpreting": "Interpretando…",
     "examplesLabel": "Ejemplos",
     "examples": {
       "expense": "Ayer gasté 23,50 en la compra",
@@ -171,7 +171,7 @@
     "invalidJson": "El archivo JSON no es válido",
     "invalidContent": "El contenido del archivo no es válido",
     "fileInput": "Seleccionar archivo JSON",
-    "importing": "Importando datos...",
+    "importing": "Importando datos…",
     "success": "Datos importados correctamente",
     "importError": "Error al importar el archivo",
     "close": "$t(common:actions.close)"
@@ -194,7 +194,7 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Informe financiero estilado",
     "entity": "Tipo de datos",
-    "selectEntity": "Seleccionar tipo...",
+    "selectEntity": "Seleccionar tipo…",
     "period": "Período",
     "period1m": "Último mes",
     "period3m": "Últimos 3 meses",

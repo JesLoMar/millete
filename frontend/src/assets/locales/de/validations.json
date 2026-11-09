@@ -1,14 +1,11 @@
 {
-  "required": "Erforderliches Feld",
-  "invalid_email": "Das E-Mail-Format ist ungültig",
-  "invalid_number": "Geben Sie eine gültige Nummer ein",
-  "min_length": "Es muss mindestens {{min}} Zeichen lang sein",
-  "max_length": "Es darf maximal {{max}} Zeichen lang sein",
-  "min_value": "Der Mindestwert ist {{min}}",
-  "max_value": "Der Höchstwert ist {{max}}",
-  "positive_number": "Es muss eine positive Zahl sein",
-  "invalid_url": "Ungültige URL",
-  "auth": {
-    "invalid_credentials": "Ungültige Anmeldedaten. Bitte versuchen Sie es erneut."
-  }
+  "required": "Pflichtfeld",
+  "invalidEmail": "Das E-Mail-Format ist ungültig",
+  "invalidNumber": "Geben Sie eine gültige Nummer ein",
+  "minLength": "Es muss mindestens {{min}} Zeichen lang sein",
+  "maxLength": "Es darf maximal {{max}} Zeichen lang sein",
+  "minValue": "Der Mindestwert ist {{min}}",
+  "maxValue": "Der Höchstwert ist {{max}}",
+  "positiveNumber": "Es muss eine positive Zahl sein",
+  "invalidUrl": "Ungültige URL"
 }

@@ -1,18 +1,17 @@
 {
   "actions": {
     "save": "Salva",
-    "saving": "Salvataggio...",
+    "saving": "Salvataggio…",
     "cancel": "Annulla",
     "edit": "Modifica",
     "delete": "Elimina",
-    "deleting": "Eliminazione...",
+    "deleting": "Eliminazione…",
     "add": "Aggiungi",
     "accept": "Accetta",
-    "welcome": "Accesso effettuato con successo",
     "reject": "Rifiuta",
     "close": "Chiudi",
-    "search": "Cerca per nome...",
-    "searchDesc": "Cerca per descrizione...",
+    "search": "Cerca per nome…",
+    "searchDesc": "Cerca per descrizione…",
     "back": "Indietro",
     "continue": "Continua",
     "create": "Crea",
@@ -23,14 +22,15 @@
     "export": "Esporta",
     "import": "Importa",
     "send": "Invia",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "view": "Visualizza"
   },
   "status": {
-    "loading": "Caricamento...",
-    "loadingSession": "Caricamento sessione...",
+    "loading": "Caricamento…",
+    "loadingSession": "Caricamento sessione…",
     "error": "Errore",
     "empty": "Nessun dato disponibile",
-    "processing": "Elaborazione...",
+    "processing": "Elaborazione…",
     "connectionError": "Impossibile raggiungere il server. Controlla la tua connessione."
   },
   "entities": {
@@ -50,7 +50,7 @@
   },
   "prompts": {
     "deleteTitle": "Elimina {{item}}",
-    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "deleteConfirm": "Sei sicuro di voler eliminare «{{name}}»? Questa azione non può essere annullata.",
     "noData": "Nessun dato disponibile",
     "comingSoon": "Prossimamente",
     "optional": "opzionale"
@@ -71,5 +71,8 @@
     "default": "Errore imprevisto. Riprova.",
     "noPermission": "Non disponi dei permessi per eseguire questa azione"
   },
-  "showingInterval": "Visualizzazione di {{from}}-{{to}} su {{total}}"
+  "showingInterval": "Visualizzazione di {{from}}-{{to}} su {{total}}",
+  "alerts": {
+    "loginSuccess": "Accesso effettuato"
+  }
 }

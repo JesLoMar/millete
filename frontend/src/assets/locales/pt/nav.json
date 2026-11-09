@@ -1,17 +1,17 @@
 {
-  "user": "Usuário",
+  "user": "Utilizador",
   "changeLanguage": "Alterar idioma",
   "guest": "Convidado",
   "goToDashboard": "Ir para o dashboard",
-  "userMenu": "Menu de usuário",
-  "profile": "Meu Perfil",
+  "userMenu": "Menu de utilizador",
+  "profile": "O meu perfil",
   "logout": "Sair",
   "logoutSuccess": "Sessão encerrada com sucesso",
   "mainNav": "Navegação principal",
   "bottomNav": "Navegação secundária",
-  "open": "Abrir Menu",
-  "close": "Fechar Menu",
-  "noItems": "Nenhuma seção disponível",
+  "open": "Abrir menu",
+  "close": "Fechar menu",
+  "noItems": "Nenhuma secção disponível",
   "mobileTitle": "Millete",
   "dashboard": "$t(common:entities.dashboard)",
   "transactions": "$t(common:entities.transactions)",
@@ -23,14 +23,6 @@
   "errors": {
     "featureComingSoon": "{{feature}} estará disponível em breve",
     "languageChangeFailed": "Erro ao alterar o idioma"
-  },
-  "languages": {
-    "es": "Espanhol",
-    "en": "Inglês",
-    "fr": "Francês",
-    "de": "Alemão",
-    "it": "Italiano",
-    "pt": "Português"
   },
   "theme": {
     "selector": "Seletor de tema",

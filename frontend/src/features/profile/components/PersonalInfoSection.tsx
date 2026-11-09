@@ -108,7 +108,7 @@ export function PersonalInfoSection() {
     >
       {isLoading ? (
         <div className="text-sm text-muted-foreground">
-          {t('common:loading')}
+          {t('common:status.loading')}
         </div>
       ) : isEditing ? (
         <div className="space-y-4">

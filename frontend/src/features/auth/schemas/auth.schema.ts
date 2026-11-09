@@ -5,7 +5,7 @@ export const PASSWORD_MIN_LENGTH = 8;
 export const passwordSchema = z
   .string()
   .min(PASSWORD_MIN_LENGTH, {
-    message: 'validations:min_length',
+    message: 'validations:minLength',
   });
 
 const authFormFieldsSchema = z.object({
@@ -33,7 +33,7 @@ export const registerSchema = authFormFieldsSchema
       !!data.usernameRegistro?.trim() ||
       !!data.emailRegistro?.trim(),
     {
-      message: 'auth.form.error.usernameRequired',
+      message: 'auth:form.error.usernameRequired',
       path: ['usernameRegistro'],
     },
   )
@@ -49,7 +49,7 @@ export const registerSchema = authFormFieldsSchema
       return emailRegex.test(data.emailRegistro.trim());
     },
     {
-      message: 'validations:invalid_email',
+      message: 'validations:invalidEmail',
       path: ['emailRegistro'],
     },
   );

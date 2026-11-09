@@ -73,8 +73,8 @@
     "title": "Budget Status",
     "empty": "No budgets configured",
     "overLimit": "Limit exceeded!",
-    "remaining": "You have {{amount}} € left",
-    "exceededBy": "Exceeded by {{amount}} €"
+    "remaining": "You have {{amount}} left",
+    "exceededBy": "Exceeded by {{amount}}"
   },
   "transactions": {
     "title": "Latest Transactions",
@@ -88,15 +88,15 @@
     "title": "Active Savings Goals",
     "empty": "No savings goals configured",
     "completed": "Completed!",
-    "remaining": "{{amount}} € remaining"
+    "remaining": "{{amount}} remaining"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Import data",
-    "importing": "Importing...",
+    "importing": "Importing…",
     "exportData": "Export data",
-    "exporting": "Exporting...",
+    "exporting": "Exporting…",
     "addExpenseAria": "Add new transaction",
     "createCategoryAria": "Create new category",
     "importDataAria": "Import data from file",
@@ -110,7 +110,7 @@
     "subtitle": "Describe what you want to do and we'll prepare the form for you to review before saving.",
     "placeholder": "e.g. \"Spent 23.50 on groceries yesterday\"",
     "submit": "Interpret",
-    "interpreting": "Interpreting...",
+    "interpreting": "Interpreting…",
     "examplesLabel": "Examples",
     "examples": {
       "expense": "I spent 23.50 on groceries yesterday",
@@ -171,7 +171,7 @@
     "invalidJson": "The JSON file is invalid",
     "invalidContent": "The file content is invalid",
     "fileInput": "Select JSON file",
-    "importing": "Importing data...",
+    "importing": "Importing data…",
     "success": "Data imported successfully",
     "importError": "Error importing file",
     "close": "$t(common:actions.close)"
@@ -194,7 +194,7 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Styled financial report",
     "entity": "Data type",
-    "selectEntity": "Select type...",
+    "selectEntity": "Select type…",
     "period": "Period",
     "period1m": "Last month",
     "period3m": "Last 3 months",

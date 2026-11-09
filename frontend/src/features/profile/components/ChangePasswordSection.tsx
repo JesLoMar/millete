@@ -48,7 +48,7 @@ export function ChangePasswordSection() {
       !passwordSchema.safeParse(newPassword).success
     ) {
       setValidationError(
-        t('validations:min_length', {
+        t('validations:minLength', {
           min: PASSWORD_MIN_LENGTH,
         }),
       );

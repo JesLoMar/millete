@@ -17,7 +17,7 @@ export function AuthToggle({
     <div
       className="flex w-fit rounded-2xl border border-border/50 bg-secondary/50 p-2 backdrop-blur-sm"
       role="tablist"
-      aria-label={t('auth:form.toggle.label')}
+      aria-label={t('form.toggle.label')}
     >
       <button
         type="button"

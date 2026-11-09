@@ -18,7 +18,8 @@
     "cancel": "Annuler",
     "edit": "Modifier",
     "success": "Profil mis à jour avec succès",
-    "error": "Erreur lors de la mise à jour du profil"
+    "error": "Erreur lors de la mise à jour du profil",
+    "identifierRequired": "Saisissez un nom d'utilisateur ou une adresse e-mail."
   },
   "changePassword": {
     "title": "Changer le mot de passe",
@@ -66,14 +67,15 @@
     "close": "Fermer",
     "closeAll": "Fermer toutes les autres sessions",
     "confirmTitle": "Fermer la session",
-    "confirmDescription": "Êtes-vous sûr de vouloir fermer cette session ?",
+    "confirmDescription": "Êtes-vous sûr de vouloir fermer cette session ?",
     "confirmAllTitle": "Fermer toutes les sessions",
-    "confirmAllDescription": "Toutes les sessions sauf la session actuelle seront fermées. Continuer ?",
+    "confirmAllDescription": "Toutes les sessions sauf la session actuelle seront fermées. Continuer ?",
     "success": "Session fermée avec succès",
     "successAll": "Toutes les autres sessions ont été fermées",
     "error": "Erreur lors de la gestion des sessions",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "Aucune session active."
   },
   "deleteAccount": {
     "title": "Zone de danger",

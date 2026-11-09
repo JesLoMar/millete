@@ -73,7 +73,7 @@ export const useRegisterMutation = (
 
       if (!identifier) {
         throw new Error(
-          t('auth:errors.no_identifier'),
+          t('auth:errors.noIdentifier'),
         );
       }
 
@@ -121,7 +121,7 @@ export const useRegisterMutation = (
         loginData: result.response,
         queryClient,
         successMessage: t(
-          'auth:alerts.register_success',
+          'auth:alerts.registerSuccess',
         ),
       });
     },
@@ -129,7 +129,7 @@ export const useRegisterMutation = (
     onError: (error: unknown) => {
       const message = getErrorMessage(
         error,
-        t('auth:errors.register_failed'),
+        t('auth:errors.registerFailed'),
       );
 
       notify.error(message);

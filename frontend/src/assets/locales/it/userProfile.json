@@ -12,13 +12,14 @@
     "title": "Informazioni personali",
     "description": "I tuoi dati di base dell'account",
     "username": "Nome utente",
-    "email": "Indirizzo e-mail",
+    "email": "Indirizzo email",
     "currentPassword": "Password attuale",
     "save": "Salva modifiche",
     "cancel": "Annulla",
     "edit": "Modifica",
     "success": "Profilo aggiornato con successo",
-    "error": "Errore durante l'aggiornamento del profilo"
+    "error": "Errore durante l'aggiornamento del profilo",
+    "identifierRequired": "Inserisci un nome utente o un indirizzo email."
   },
   "changePassword": {
     "title": "Cambia password",
@@ -73,7 +74,8 @@
     "successAll": "Tutte le altre sessioni sono state chiuse",
     "error": "Errore nella gestione delle sessioni",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "Nessuna sessione attiva."
   },
   "deleteAccount": {
     "title": "Zona di pericolo",

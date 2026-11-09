@@ -18,7 +18,8 @@
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "success": "Profil erfolgreich aktualisiert",
-    "error": "Fehler beim Aktualisieren des Profils"
+    "error": "Fehler beim Aktualisieren des Profils",
+    "identifierRequired": "Geben Sie einen Benutzernamen oder eine E-Mail-Adresse ein."
   },
   "changePassword": {
     "title": "Passwort ändern",
@@ -73,7 +74,8 @@
     "successAll": "Alle anderen Sitzungen wurden geschlossen",
     "error": "Fehler bei der Sitzungsverwaltung",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "Keine aktiven Sitzungen."
   },
   "deleteAccount": {
     "title": "Gefahrenzone",

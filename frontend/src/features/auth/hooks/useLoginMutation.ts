@@ -33,14 +33,14 @@ export const useLoginMutation = () => {
         login,
         loginData,
         queryClient,
-        successMessage: t('common:actions.welcome'),
+        successMessage: t('common:alerts.loginSuccess'),
       });
     },
 
     onError: (error: ApiError) => {
       const errorMessage =
         error.response?.data?.message ||
-        t('auth:errors.login_failed');
+        t('auth:errors.loginFailed');
 
       notify.error(errorMessage);
     },

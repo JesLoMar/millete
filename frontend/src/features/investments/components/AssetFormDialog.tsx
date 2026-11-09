@@ -273,7 +273,7 @@ export function AssetFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

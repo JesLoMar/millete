@@ -1,9 +1,9 @@
 {
   "metrics": {
-    "balance": "Saldo Total",
+    "balance": "Saldo total",
     "income": "Receitas do período {{period}}",
     "expenses": "Despesas do período {{period}}",
-    "savings": "Poupança Total",
+    "savings": "Poupança total",
     "vsLastWeek": "vs. semana anterior",
     "vsLastMonth": "vs. mês anterior",
     "vsLastYear": "vs. ano anterior",
@@ -51,8 +51,8 @@
     }
   },
   "chart": {
-    "title": "Histórico de Gastos",
-    "empty": "Sem gastos neste período",
+    "title": "Histórico de despesas",
+    "empty": "Sem despesas neste período",
     "showingLast": "Últimos {{count}}",
     "periodLabel": {
       "week": "Últimos 7 dias",
@@ -65,19 +65,19 @@
     }
   },
   "donut": {
-    "title": "Gasto por Categoria",
+    "title": "Despesas por categoria",
     "total": "Total",
-    "empty": "Sem gastos neste período"
+    "empty": "Sem despesas neste período"
   },
   "budget": {
-    "title": "Estado do Orçamento",
+    "title": "Estado do orçamento",
     "empty": "Nenhum orçamento configurado",
     "overLimit": "Limite ultrapassado!",
-    "remaining": "Restam {{amount}} €",
-    "exceededBy": "Excedido em {{amount}} €"
+    "remaining": "Restam {{amount}}",
+    "exceededBy": "Excedido em {{amount}}"
   },
   "transactions": {
-    "title": "Últimas Transações",
+    "title": "Últimas transações",
     "viewAll": "Ver todas",
     "empty": "Nenhuma transação recente",
     "expense": "Despesa",
@@ -85,32 +85,32 @@
     "moreOptions": "Mais opções"
   },
   "goals": {
-    "title": "Metas de Poupança Ativas",
+    "title": "Metas de poupança ativas",
     "empty": "Nenhuma meta de poupança configurada",
     "completed": "Concluído!",
-    "remaining": "Faltam {{amount}} €"
+    "remaining": "Faltam {{amount}}"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Importar dados",
-    "importing": "Importando...",
+    "importing": "A importar…",
     "exportData": "Exportar dados",
-    "exporting": "Exportando...",
+    "exporting": "A exportar…",
     "addExpenseAria": "Adicionar nova transação",
     "createCategoryAria": "Criar nova categoria",
-    "importDataAria": "Importar dados de um arquivo",
-    "importingAria": "Importando dados, aguarde",
+    "importDataAria": "Importar dados de um ficheiro",
+    "importingAria": "A importar dados, aguarde",
     "exportDataAria": "Exportar cópia de segurança",
-    "exportingAria": "Exportando dados, aguarde",
+    "exportingAria": "A exportar dados, aguarde",
     "groupLabel": "Ações rápidas"
   },
   "assistant": {
     "title": "Assistente de IA",
-    "subtitle": "Descreve o que queres fazer e preparamos o formulário para reveres antes de guardar.",
+    "subtitle": "Descreva o que pretende fazer e preparamos o formulário para rever antes de guardar.",
     "placeholder": "ex.: «Gastei 23,50 em compras ontem»",
     "submit": "Interpretar",
-    "interpreting": "A interpretar...",
+    "interpreting": "A interpretar…",
     "examplesLabel": "Exemplos",
     "examples": {
       "expense": "Gastei 23,50 em compras ontem",
@@ -120,7 +120,7 @@
       "category": "Cria uma categoria Animais com 100 de orçamento"
     },
     "errors": {
-      "empty": "Escreve primeiro o que queres fazer.",
+      "empty": "Escreva primeiro o que pretende fazer.",
       "unknown": "Não percebi o pedido. Tenta reformulá-lo.",
       "unsupported": "O assistente ainda não consegue preparar esta ação.",
       "generic": "O assistente não está disponível neste momento. Tenta novamente daqui a pouco."
@@ -164,31 +164,29 @@
   },
   "importModal": {
     "title": "Importar dados",
-    "description": "Arraste um arquivo JSON com suas transações",
-    "dropHere": "Solte seu arquivo aqui ou clique para selecionar",
-    "onlyJson": "Apenas arquivos .json",
-    "jsonOnly": "Apenas arquivos JSON são suportados",
-    "invalidJson": "O arquivo JSON não é válido",
-    "invalidContent": "O conteúdo do arquivo não é válido",
-    "fileInput": "Selecionar arquivo JSON",
-    "importing": "Importando dados...",
+    "description": "Arraste um ficheiro JSON com suas transações",
+    "dropHere": "Solte seu ficheiro aqui ou clique para selecionar",
+    "onlyJson": "Apenas ficheiros.json",
+    "jsonOnly": "Apenas ficheiros JSON são suportados",
+    "invalidJson": "O ficheiro JSON não é válido",
+    "invalidContent": "O conteúdo do ficheiro não é válido",
+    "fileInput": "Selecionar ficheiro JSON",
+    "importing": "A importar dados…",
     "success": "Dados importados com sucesso",
-    "importError": "Erro ao importar o arquivo",
+    "importError": "Erro ao importar o ficheiro",
     "close": "$t(common:actions.close)"
   },
   "import": {
     "success": "Dados importados com sucesso",
-    "errorGeneric": "Erro ao importar o arquivo",
-    "errorProperty": "Você não tem permissão para importar",
-    "errorFormat": "Formato de arquivo inválido"
+    "errorGeneric": "Erro ao importar o ficheiro",
+    "errorProperty": "Não tem permissão para importar",
+    "errorFormat": "Formato de ficheiro inválido"
   },
   "export": {
-    "success": "Cópia de segurança exportada com sucesso",
-    "error": "Erro ao exportar os dados",
     "title": "Exportar dados",
     "configTitle": "Configurar exportação",
     "formatJSON": "JSON",
-    "formatJSONDesc": "Exporta todos os seus dados de usuário",
+    "formatJSONDesc": "Exporta todos os seus dados de utilizador",
     "formatZIP": "ZIP",
     "formatZIPDesc": "Todos os CSVs num único ficheiro",
     "formatCSV": "CSV",
@@ -196,13 +194,15 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Relatório financeiro estilizado",
     "entity": "Tipo de dados",
-    "selectEntity": "Selecionar tipo...",
+    "selectEntity": "Selecionar tipo…",
     "period": "Período",
     "period1m": "Último mês",
     "period3m": "Últimos 3 meses",
     "period6m": "Últimos 6 meses",
     "period1y": "Último ano",
     "periodAll": "Tudo",
-    "action": "Exportar"
+    "action": "Exportar",
+    "success": "Cópia de segurança exportada com sucesso",
+    "error": "Erro ao exportar os dados"
   }
 }

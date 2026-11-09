@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Loader2, Plus, X } from 'lucide-react';
+import { AlertTriangle, Info, Loader2, Plus, X } from 'lucide-react';
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
@@ -17,13 +17,7 @@ import { Label } from '@/shared/components/core/label';
 
 import { CURRENCIES } from '../constants';
 import { useInvestmentMutations } from '../hooks/useInvestmentMutations';
-import {
-  endOfDateInputValue,
-  fromDateInputValue,
-  getMarketDataDefaultRange,
-  isValidCurrencyCode,
-  toDateInputValue,
-} from '../utils';
+import { isValidCurrencyCode } from '../utils';
 
 interface MarketDataRefreshDialogProps {
   localCurrency: string;
@@ -60,17 +54,6 @@ export function MarketDataRefreshDialog({
   const { t } = useTranslation('investments');
   const { refreshMarketData } = useInvestmentMutations();
 
-  const defaultRange = useMemo(
-    () => getMarketDataDefaultRange(30),
-    [],
-  );
-
-  const [from, setFrom] = useState(
-    toDateInputValue(defaultRange.from),
-  );
-  const [to, setTo] = useState(
-    toDateInputValue(defaultRange.to),
-  );
   const [pairs, setPairs] = useState<string[]>(() =>
     initialPairs(localCurrency, assetCurrencies),
   );
@@ -79,11 +62,6 @@ export function MarketDataRefreshDialog({
     localCurrency,
   );
   const [pairError, setPairError] = useState(false);
-
-  const isRangeValid =
-    from.length > 0 &&
-    to.length > 0 &&
-    new Date(from).getTime() < new Date(to).getTime();
 
   const normalizedBase = baseCurrency.trim().toUpperCase();
   const normalizedQuote = quoteCurrency
@@ -119,14 +97,8 @@ export function MarketDataRefreshDialog({
   };
 
   const handleSubmit = async () => {
-    if (!isRangeValid) {
-      return;
-    }
-
     try {
       await refreshMarketData.mutateAsync({
-        from: fromDateInputValue(from),
-        to: endOfDateInputValue(to),
         currencyPairs: pairs,
       });
       onOpenChange(false);
@@ -146,42 +118,13 @@ export function MarketDataRefreshDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="market-from">
-                {t('common.from')}
-              </Label>
-              <Input
-                id="market-from"
-                type="date"
-                value={from}
-                max={to}
-                onChange={(event) =>
-                  setFrom(event.target.value)
-                }
-                disabled={refreshMarketData.isPending}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="market-to">
-                {t('common.to')}
-              </Label>
-              <Input
-                id="market-to"
-                type="date"
-                value={to}
-                min={from}
-                onChange={(event) => setTo(event.target.value)}
-                disabled={refreshMarketData.isPending}
-              />
-            </div>
+          <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+            <Info
+              className="mt-0.5 size-4 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            {t('marketData.autoRange')}
           </div>
-
-          {!isRangeValid && (
-            <p className="text-sm text-destructive">
-              {t('marketData.invalidRange')}
-            </p>
-          )}
 
           <div className="space-y-2">
             <Label>{t('marketData.currencyPairs')}</Label>
@@ -296,12 +239,12 @@ export function MarketDataRefreshDialog({
             onClick={() => onOpenChange(false)}
             disabled={refreshMarketData.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"
             onClick={() => void handleSubmit()}
-            disabled={!isRangeValid || refreshMarketData.isPending}
+            disabled={refreshMarketData.isPending}
           >
             {refreshMarketData.isPending && (
               <Loader2

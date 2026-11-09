@@ -224,8 +224,8 @@ export function AuthForm() {
             role="alert"
           >
             {mode === 'login'
-              ? t('auth:errors.login_failed')
-              : t('auth:errors.register_failed')}
+              ? t('auth:errors.loginFailed')
+              : t('auth:errors.registerFailed')}
           </p>
         )}
       </form>

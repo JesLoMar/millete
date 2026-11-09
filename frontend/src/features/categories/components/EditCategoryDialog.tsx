@@ -212,7 +212,7 @@ export function EditCategoryDialog({
                   {t('categories:descriptionLabel')}
 
                   <span className="ml-1 text-xs text-muted-foreground">
-                    ({t('auth:form.optional')})
+                    ({t('common:prompts.optional')})
                   </span>
                 </Label>
 
@@ -247,7 +247,7 @@ export function EditCategoryDialog({
                 {t('categories:budgetLabel')}
 
                 <span className="ml-1 text-xs text-muted-foreground">
-                  ({t('auth:form.optional')})
+                  ({t('common:prompts.optional')})
                 </span>
               </Label>
 

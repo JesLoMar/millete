@@ -4,13 +4,13 @@
   "guest": "Invitado",
   "goToDashboard": "Ir al dashboard",
   "userMenu": "Menú de usuario",
-  "profile": "Mi Perfil",
-  "logout": "Cerrar Sesión",
+  "profile": "Mi perfil",
+  "logout": "Cerrar sesión",
   "logoutSuccess": "Sesión cerrada correctamente",
   "mainNav": "Navegación principal",
   "bottomNav": "Navegación secundaria",
-  "open": "Abrir Menú",
-  "close": "Cerrar Menú",
+  "open": "Abrir menú",
+  "close": "Cerrar menú",
   "noItems": "No hay secciones disponibles",
   "mobileTitle": "Millete",
   "dashboard": "$t(common:entities.dashboard)",
@@ -23,14 +23,6 @@
   "errors": {
     "featureComingSoon": "{{feature}} estará disponible próximamente",
     "languageChangeFailed": "Error al cambiar el idioma"
-  },
-  "languages": {
-    "es": "Español",
-    "en": "Inglés",
-    "fr": "Francés",
-    "de": "Alemán",
-    "it": "Italiano",
-    "pt": "Portugués"
   },
   "theme": {
     "selector": "Selector de tema",

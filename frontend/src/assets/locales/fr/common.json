@@ -1,18 +1,17 @@
 {
   "actions": {
     "save": "Enregistrer",
-    "saving": "Enregistrement...",
+    "saving": "Enregistrement…",
     "cancel": "Annuler",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "deleting": "Suppression...",
+    "deleting": "Suppression…",
     "add": "Ajouter",
     "accept": "Accepter",
-    "welcome": "Connexion réussie",
     "reject": "Refuser",
     "close": "Fermer",
-    "search": "Rechercher par nom...",
-    "searchDesc": "Rechercher par description...",
+    "search": "Rechercher par nom…",
+    "searchDesc": "Rechercher par description…",
     "back": "Retour",
     "continue": "Continuer",
     "create": "Créer",
@@ -23,14 +22,15 @@
     "export": "Exporter",
     "import": "Importer",
     "send": "Envoyer",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "view": "Voir"
   },
   "status": {
-    "loading": "Chargement...",
-    "loadingSession": "Chargement de la session...",
+    "loading": "Chargement…",
+    "loadingSession": "Chargement de la session…",
     "error": "Erreur",
     "empty": "Aucune donnée disponible",
-    "processing": "Traitement...",
+    "processing": "Traitement…",
     "connectionError": "Impossible de contacter le serveur. Vérifiez votre connexion."
   },
   "entities": {
@@ -50,7 +50,7 @@
   },
   "prompts": {
     "deleteTitle": "Supprimer {{item}}",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer « {{name}} » ? Cette action est irréversible.",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer « {{name}} » ? Cette action est irréversible.",
     "noData": "Aucune donnée disponible",
     "comingSoon": "Bientôt disponible",
     "optional": "optionnel"
@@ -71,5 +71,8 @@
     "default": "Erreur inattendue. Veuillez réessayer.",
     "noPermission": "Vous n'avez pas l'autorisation d'effectuer cette action"
   },
-  "showingInterval": "Affichage de {{from}}-{{to}} sur {{total}}"
+  "showingInterval": "Affichage de {{from}}-{{to}} sur {{total}}",
+  "alerts": {
+    "loginSuccess": "Connexion réussie"
+  }
 }

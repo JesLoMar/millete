@@ -91,7 +91,7 @@ export function TimezoneSection() {
           <Label htmlFor={timezoneId}>{t('timezone.label')}</Label>
           {isLoading ? (
             <div className="text-sm text-muted-foreground">
-              {t('common:loading')}
+              {t('common:status.loading')}
             </div>
           ) : (
             <select

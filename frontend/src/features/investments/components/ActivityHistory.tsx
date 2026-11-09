@@ -341,7 +341,7 @@ export function ActivityHistory() {
               aria-hidden="true"
             />
             <span className="sr-only">
-              {t('common.loading')}
+              {t('common:status.loading')}
             </span>
           </div>
         ) : query.isError ? (
@@ -355,7 +355,7 @@ export function ActivityHistory() {
               size="sm"
               onClick={() => void query.refetch()}
             >
-              {t('common:retry')}
+              {t('common:actions.retry')}
             </Button>
           </div>
         ) : activities.length === 0 ? (
@@ -551,7 +551,7 @@ export function ActivityHistory() {
                                     )
                                   }
                                   aria-label={t(
-                                    'common:edit',
+                                    'common:actions.edit',
                                   )}
                                 >
                                   <Pencil

@@ -167,18 +167,22 @@ export function BudgetBars({
                   >
                     {isOverLimit
                       ? t('dashboard:budget.exceededBy', {
-                          amount: Math.max(
-                            percentageValue > 100
-                              ? budget.spent - adjustedLimit
-                              : 0,
-                            0,
-                          ).toFixed(2),
+                          amount: formatCurrency(
+                            Math.max(
+                              percentageValue > 100
+                                ? budget.spent - adjustedLimit
+                                : 0,
+                              0,
+                            ),
+                          ),
                         })
                       : t('dashboard:budget.remaining', {
-                          amount: Math.max(
-                            adjustedLimit - budget.spent,
-                            0,
-                          ).toFixed(2),
+                          amount: formatCurrency(
+                            Math.max(
+                              adjustedLimit - budget.spent,
+                              0,
+                            ),
+                          ),
                         })}
                   </div>
                 </div>

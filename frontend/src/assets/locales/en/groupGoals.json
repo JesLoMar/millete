@@ -5,7 +5,7 @@
   "createFirst": "Create my first group goal",
   "createNew": "Create new group goal",
   "create": "$t(common:actions.create)",
-  "redirectingToLogin": "Redirecting to login...",
+  "redirectingToLogin": "Redirecting to login…",
   "createTitle": "Create New Group Goal",
   "createDesc": "Define the name, monthly target and distribution mode",
   "familyName": "Group goal name",
@@ -93,7 +93,7 @@
   "invalidToken": "Invalid invitation",
   "invitationAccepted": "You have successfully joined the group goal!",
   "invitationError": "Error processing the invitation",
-  "processingInvitation": "Processing invitation...",
+  "processingInvitation": "Processing invitation…",
   "welcome": "Welcome to the group goal!",
   "goToFamily": "Go to my group goal",
   "error": "$t(common:status.error)",
@@ -121,5 +121,6 @@
   },
   "invitationRejected": "Invitation declined",
   "invitationRejectedMessage": "You've declined the invitation. You won't join this group goal.",
-  "rejectError": "Error declining the invitation"
+  "rejectError": "Error declining the invitation",
+  "loadingContributions": "Loading contributions…"
 }

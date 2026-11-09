@@ -73,8 +73,8 @@
     "title": "予算の状況",
     "empty": "予算が設定されていません",
     "overLimit": "上限超過！",
-    "remaining": "残り {{amount}} €",
-    "exceededBy": "{{amount}} € 超過"
+    "remaining": "残り {{amount}}",
+    "exceededBy": "{{amount}} 超過"
   },
   "transactions": {
     "title": "最近の取引",
@@ -88,15 +88,15 @@
     "title": "進行中の貯金目標",
     "empty": "貯金目標が設定されていません",
     "completed": "達成！",
-    "remaining": "あと {{amount}} €"
+    "remaining": "あと {{amount}}"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "データをインポート",
-    "importing": "インポート中...",
+    "importing": "インポート中…",
     "exportData": "データをエクスポート",
-    "exporting": "エクスポート中...",
+    "exporting": "エクスポート中…",
     "addExpenseAria": "新しい取引を追加",
     "createCategoryAria": "新しいカテゴリを作成",
     "importDataAria": "ファイルからデータをインポート",
@@ -110,7 +110,7 @@
     "subtitle": "やりたいことを入力すると、保存前に確認できるフォームを用意します。",
     "placeholder": "例：「昨日食料品に23.50使った」",
     "submit": "解釈する",
-    "interpreting": "解釈中...",
+    "interpreting": "解釈中…",
     "examplesLabel": "例",
     "examples": {
       "expense": "昨日食料品に23.50使った",
@@ -129,10 +129,10 @@
       "reviewTitle": "保存前に確認",
       "reviewDescription": "アシスタントがこのフォームを入力しました。内容を確認し、必要に応じて修正してから確定してください。",
       "missingTitle": "不足しているデータ",
-      "missingDescription": "アシスタントが入力できなかった項目: {{fields}}。",
+      "missingDescription": "アシスタントが入力できなかった項目：{{fields}}。",
       "unresolvedTitle": "解決できない参照",
-      "unresolvedDescription": "見つからない、または特定できない項目: {{entities}}。",
-      "defaultsDescription": "次の項目に既定値が適用されました: {{fields}}。"
+      "unresolvedDescription": "見つからない、または特定できない項目：{{entities}}。",
+      "defaultsDescription": "次の項目に既定値が適用されました：{{fields}}。"
     },
     "fields": {
       "name": "名前",
@@ -171,7 +171,7 @@
     "invalidJson": "無効なJSONファイルです",
     "invalidContent": "ファイルの内容が無効です",
     "fileInput": "JSONファイルを選択",
-    "importing": "データをインポート中...",
+    "importing": "データをインポート中…",
     "success": "データが正常にインポートされました",
     "importError": "ファイルのインポート中にエラーが発生しました",
     "close": "$t(common:actions.close)"
@@ -183,8 +183,6 @@
     "errorFormat": "無効なファイル形式です"
   },
   "export": {
-    "success": "バックアップが正常にエクスポートされました",
-    "error": "データのエクスポート中にエラーが発生しました",
     "title": "データをエクスポート",
     "configTitle": "エクスポート設定",
     "formatJSON": "JSON",
@@ -196,13 +194,15 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "スタイル付き財務レポート",
     "entity": "データの種類",
-    "selectEntity": "種類を選択...",
+    "selectEntity": "種類を選択…",
     "period": "期間",
     "period1m": "先月",
     "period3m": "過去3か月",
     "period6m": "過去6か月",
     "period1y": "過去1年",
     "periodAll": "すべて",
-    "action": "エクスポート"
+    "action": "エクスポート",
+    "success": "バックアップが正常にエクスポートされました",
+    "error": "データのエクスポート中にエラーが発生しました"
   }
 }

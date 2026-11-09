@@ -788,7 +788,7 @@ export function ReplaceHoldingHistoryDialog({
             onClick={() => onOpenChange(false)}
             disabled={replaceHoldingHistory.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

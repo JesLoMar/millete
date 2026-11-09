@@ -18,7 +18,8 @@
     "cancel": "Cancelar",
     "edit": "Editar",
     "success": "Perfil actualizado correctamente",
-    "error": "Error al actualizar el perfil"
+    "error": "Error al actualizar el perfil",
+    "identifierRequired": "Introduce un nombre de usuario o un correo electrónico."
   },
   "changePassword": {
     "title": "Cambiar contraseña",
@@ -73,7 +74,8 @@
     "successAll": "Todas las demás sesiones han sido cerradas",
     "error": "Error al gestionar sesiones",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "No hay sesiones activas."
   },
   "deleteAccount": {
     "title": "Zona de peligro",

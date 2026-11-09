@@ -1,8 +1,8 @@
 {
   "metrics": {
     "balance": "Solde total",
-    "income": "Revenus de la période : {{period}}",
-    "expenses": "Dépenses de la période : {{period}}",
+    "income": "Revenus de la période : {{period}}",
+    "expenses": "Dépenses de la période : {{period}}",
     "savings": "Épargne totale",
     "vsLastWeek": "vs. semaine précédente",
     "vsLastMonth": "vs. mois précédent",
@@ -72,9 +72,9 @@
   "budget": {
     "title": "État du budget",
     "empty": "Aucun budget configuré",
-    "overLimit": "Limite dépassée !",
-    "remaining": "Il vous reste {{amount}} €",
-    "exceededBy": "Dépassé de {{amount}} €"
+    "overLimit": "Limite dépassée !",
+    "remaining": "Il vous reste {{amount}}",
+    "exceededBy": "Dépassé de {{amount}}"
   },
   "transactions": {
     "title": "Dernières transactions",
@@ -87,16 +87,16 @@
   "goals": {
     "title": "Objectifs d'épargne actifs",
     "empty": "Aucun objectif d'épargne configuré",
-    "completed": "Terminé !",
-    "remaining": "Encore {{amount}} € requis"
+    "completed": "Terminé !",
+    "remaining": "Encore {{amount}} requis"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Importer des données",
-    "importing": "Importation...",
+    "importing": "Importation…",
     "exportData": "Exporter des données",
-    "exporting": "Exportation...",
+    "exporting": "Exportation…",
     "addExpenseAria": "Ajouter une nouvelle transaction",
     "createCategoryAria": "Créer une nouvelle catégorie",
     "importDataAria": "Importer des données depuis un fichier",
@@ -108,9 +108,9 @@
   "assistant": {
     "title": "Assistant IA",
     "subtitle": "Décrivez ce que vous voulez faire et nous préparerons le formulaire à vérifier avant l'enregistrement.",
-    "placeholder": "ex. « J'ai dépensé 23,50 en courses hier »",
+    "placeholder": "ex. « J'ai dépensé 23,50 en courses hier »",
     "submit": "Interpréter",
-    "interpreting": "Interprétation...",
+    "interpreting": "Interprétation…",
     "examplesLabel": "Exemples",
     "examples": {
       "expense": "J'ai dépensé 23,50 en courses hier",
@@ -129,10 +129,10 @@
       "reviewTitle": "Vérifier avant d'enregistrer",
       "reviewDescription": "L'assistant a rempli ce formulaire. Vérifiez les données et ajustez ce qui est nécessaire avant de confirmer.",
       "missingTitle": "Données manquantes",
-      "missingDescription": "L'assistant n'a pas pu remplir : {{fields}}.",
+      "missingDescription": "L'assistant n'a pas pu remplir : {{fields}}.",
       "unresolvedTitle": "Références non résolues",
-      "unresolvedDescription": "Introuvable ou non identifié : {{entities}}.",
-      "defaultsDescription": "Des valeurs par défaut ont été appliquées à : {{fields}}."
+      "unresolvedDescription": "Introuvable ou non identifié : {{entities}}.",
+      "defaultsDescription": "Des valeurs par défaut ont été appliquées à : {{fields}}."
     },
     "fields": {
       "name": "nom",
@@ -171,7 +171,7 @@
     "invalidJson": "Le fichier JSON n'est pas valide",
     "invalidContent": "Le contenu du fichier n'est pas valide",
     "fileInput": "Sélectionner un fichier JSON",
-    "importing": "Importation des données...",
+    "importing": "Importation des données…",
     "success": "Données importées avec succès",
     "importError": "Erreur lors de l'importation du fichier",
     "close": "$t(common:actions.close)"
@@ -183,8 +183,6 @@
     "errorFormat": "Format de fichier non valide"
   },
   "export": {
-    "success": "Copie de sauvegarde exportée avec succès",
-    "error": "Erreur lors de l'exportation des données",
     "title": "Exporter les données",
     "configTitle": "Configurer l'exportation",
     "formatJSON": "JSON",
@@ -196,13 +194,15 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Rapport financier stylisé",
     "entity": "Type de données",
-    "selectEntity": "Sélectionner le type...",
+    "selectEntity": "Sélectionner le type…",
     "period": "Période",
     "period1m": "Dernier mois",
     "period3m": "3 derniers mois",
     "period6m": "6 derniers mois",
     "period1y": "Dernière année",
     "periodAll": "Tout",
-    "action": "Exporter"
+    "action": "Exporter",
+    "success": "Copie de sauvegarde exportée avec succès",
+    "error": "Erreur lors de l'exportation des données"
   }
 }

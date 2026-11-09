@@ -18,7 +18,8 @@
     "cancel": "キャンセル",
     "edit": "編集",
     "success": "プロフィールが正常に更新されました",
-    "error": "プロフィールの更新に失敗しました"
+    "error": "プロフィールの更新に失敗しました",
+    "identifierRequired": "ユーザー名またはメールアドレスを入力してください。"
   },
   "changePassword": {
     "title": "パスワード変更",
@@ -73,7 +74,8 @@
     "successAll": "他のすべてのセッションが終了しました",
     "error": "セッションの管理中にエラーが発生しました",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "有効なセッションはありません。"
   },
   "deleteAccount": {
     "title": "危険地帯",

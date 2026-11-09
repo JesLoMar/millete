@@ -302,7 +302,8 @@ variables de entorno con *relaxed binding*.
 `InvestmentMarketDataScheduler`:
 
 - `@Scheduled(fixedDelay = refresh-interval-ms, initialDelay = initial-delay-ms)`.
-- Ventana fija de **5 días** hacia atrás desde `TimeProvider.now()`.
+- Envía `from = null` y `to = TimeProvider.now()`; el rango real lo calcula el
+  servicio **por serie**, desde su última entrada guardada hasta ahora.
 - Usa los `currency-pairs` configurados.
 - Captura cualquier `RuntimeException` y solo lo registra como error: **no
   relanza**, por lo que el scheduler sigue vivo.
@@ -311,16 +312,26 @@ variables de entorno con *relaxed binding*.
 
 `MarketDataRefreshService.refresh(command)`:
 
-1. Valida `from < to`, `to` no nulo y `currencyPairs` no nulo.
-2. Carga **todos** los `SharedAsset`.
-3. Pide precios de todos ellos en una sola llamada al composite.
-4. Valida que cada precio corresponda a un activo solicitado y que su divisa
+1. Valida el command. `from` y `to` son opcionales; si llegan ambos, exige
+   `from < to`. `currencyPairs` no puede ser nulo.
+2. Acota `to` a `TimeProvider.now()`.
+3. Para cada `SharedAsset`, calcula su `from` con la última entrada de
+   `asset_prices` (`findLatestAt`) y pide solo esa serie al proveedor.
+4. Para cada par FX, calcula su `from` con `findLatestAt` sobre `fx_rates`.
+5. Valida que cada precio corresponda a un activo solicitado y que su divisa
    coincida con la del activo.
-5. Guarda con upsert.
-6. Si hay pares, pide y valida FX y los guarda.
+6. Guarda con upsert.
 
-Si un proveedor falla, **toda la operación de precios se aborta** y no se
-intenta FX. No hay guardado parcial por activo.
+Reglas del rango automático:
+
+- `from = último timestamp guardado` (o `command.from()` si es posterior).
+- Si la serie no tiene datos, se usa `command.from()` o, en su defecto, los
+  **últimos 30 días**.
+- El rango se recorta a un máximo de **365 días** hacia atrás por petición.
+- Si la serie ya está al día (`from >= to`), se omite sin llamar al proveedor.
+
+Si un proveedor falla, la excepción se propaga y **toda la operación se
+aborta**: no hay guardado parcial por activo.
 
 ### 6.2 Manual
 
@@ -330,7 +341,15 @@ intenta FX. No hay guardado parcial por activo.
 | `GET` | `/api/v1/investments/shared-assets/{id}/prices?from=&to=&page=&size=` | página de precios |
 | `GET` | `/api/v1/investments/fx-rates?baseCurrency=&quoteCurrency=&from=&to=&page=&size=` | página de tipos |
 
-Body del refresh:
+Body del refresh (recomendado, sin fechas):
+
+```json
+{
+  "currencyPairs": ["USD/EUR"]
+}
+```
+
+También se acepta un rango explícito para backfill:
 
 ```json
 {
@@ -340,8 +359,10 @@ Body del refresh:
 }
 ```
 
-- `from` y `to` son obligatorios; `currencyPairs` es obligatorio (puede ser
-  `[]`), máximo 100 elementos y 20 caracteres por par.
+- `from` y `to` son **opcionales**; si se omiten, el rango es automático desde
+  la última entrada guardada de cada serie hasta hoy.
+- `currencyPairs` es obligatorio (puede ser `[]`), máximo 100 elementos y 20
+  caracteres por par.
 - Un fallo de proveedor se traduce a **`502 Bad Gateway`** con el mensaje del
   proveedor. Una entrada inválida, a `400`.
 - No hay límite de rango ni de número de peticiones por usuario.
@@ -350,7 +371,8 @@ Body del refresh:
 
 En la interfaz, `MarketDataRefreshDialog`:
 
-- Rango inicial: **últimos 30 días** (distinto de los 5 días del scheduler).
+- No pide fechas: muestra un aviso de que se descargará desde la última entrada
+  guardada hasta hoy.
 - Permite añadir pares `BASE/QUOTE`.
 - Avisa de que la consulta a proveedores externos puede tardar varios minutos.
 
@@ -368,10 +390,12 @@ duplicarlos. Lo mismo aplica a FX en su repositorio.
 
 ### 6.4 Huecos históricos
 
-El scheduler solo pide los últimos 5 días en cada ejecución. Si la aplicación
-está apagada más de 5 días, al arrancar **no rellena automáticamente el hueco**;
-solo cubrirá desde `ahora - 5 días`. Para backfill hay que usar el refresh manual
-con un rango mayor. Tampoco se rellena automáticamente desde `trackingStartAt`.
+Al arrancar, el scheduler ya no usa una ventana fija de 5 días: pide desde la
+última entrada guardada de cada serie (hasta un máximo de 365 días por
+petición), por lo que rellena automáticamente los huecos recientes tras una
+parada. Para huecos anteriores a ese límite o para forzar un rango concreto hay
+que usar el refresh manual con `from`/`to`. Tampoco se rellena automáticamente
+desde `trackingStartAt`.
 
 ---
 
@@ -580,8 +604,8 @@ Todos derivan el usuario de `JwtUser`; ninguno acepta `userId` por parámetro.
    `false`: ni precios de acciones ni FX. Los tipos de cambio los sirve Yahoo.
 5. **El refresh es global y todo-o-nada.** Un activo problemático o un proveedor
    caído impide guardar los precios del resto y evita el refresco de FX.
-6. **Huecos históricos.** El scheduler solo cubre 5 días; tras una parada larga
-   no hay backfill automático.
+6. **Huecos históricos antiguos.** El rango automático se limita a 365 días por
+   petición; para huecos anteriores hay que usar el refresh manual con fechas.
 7. **Proceso secuencial y lento.** Rate limit por petición y hasta 3 intentos;
    un catálogo grande puede tardar minutos.
 8. **`asOf` congelado al montar la página.** Los valores no se actualizan solos
@@ -611,7 +635,7 @@ Todos derivan el usuario de `JwtUser`; ninguno acepta `userId` por parámetro.
 | Refresh `502` con "No CoinGecko ID is configured" | El ticker del `SharedAsset` no está en `COINGECKO_ID_MAP`. |
 | Refresh `502` con "FINNHUB_API_KEY is required" | Ya no aplica a FX: Yahoo no necesita clave. Si aparece, hay código antiguo desplegado. |
 | No se actualizan precios | Catálogo vacío, proveedor caído, o tipos no soportados (`FUND`, etc.). |
-| `PRICE_MISSING` | No hay precio `<= now`; lanzar refresh con un rango que cubra la fecha. |
+| `PRICE_MISSING` | No hay precio `<= now`; lanzar refresh (el rango automático parte de la última entrada). |
 | `PRICE_STALE` | Última vela demasiado antigua; revisar fin de semana/festivo o refresh. |
 | `FX_MISSING` / `FX_STALE` | Añadir el par `BASE/QUOTE` en el refresh manual (Yahoo) o importar el seed de `fx_rates`. |
 | `TRANSFER_OUT_OF_SYNC` | Depósito/retirada sin transacción vinculada. |

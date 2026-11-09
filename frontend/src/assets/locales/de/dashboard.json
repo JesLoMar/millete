@@ -73,8 +73,8 @@
     "title": "Budgetstatus",
     "empty": "Keine Budgets eingerichtet",
     "overLimit": "Limit überschritten!",
-    "remaining": "Sie haben noch {{amount}} € übrig",
-    "exceededBy": "Überschritten um {{amount}} €"
+    "remaining": "Sie haben noch {{amount}} übrig",
+    "exceededBy": "Überschritten um {{amount}}"
   },
   "transactions": {
     "title": "Letzte Transaktionen",
@@ -88,15 +88,15 @@
     "title": "Aktive Sparziele",
     "empty": "Keine Sparziele eingerichtet",
     "completed": "Abgeschlossen!",
-    "remaining": "Es fehlen noch {{amount}} €"
+    "remaining": "Es fehlen noch {{amount}}"
   },
   "quickActions": {
     "addExpense": "$t(common:actions.add) $t(common:entities.transaction)",
     "createCategory": "$t(common:actions.create) $t(common:entities.category)",
     "importData": "Daten importieren",
-    "importing": "Wird importiert...",
+    "importing": "Wird importiert…",
     "exportData": "Daten exportieren",
-    "exporting": "Wird exportiert...",
+    "exporting": "Wird exportiert…",
     "addExpenseAria": "Neue Transaktion hinzufügen",
     "createCategoryAria": "Neue Kategorie erstellen",
     "importDataAria": "Daten aus Datei importieren",
@@ -107,10 +107,10 @@
   },
   "assistant": {
     "title": "KI-Assistent",
-    "subtitle": "Beschreibe, was du tun möchtest, und wir bereiten das Formular zur Prüfung vor.",
+    "subtitle": "Beschreiben Sie, was Sie tun möchten, und wir bereiten das Formular zur Prüfung vor.",
     "placeholder": "z. B. „Gestern 23,50 für Lebensmittel ausgegeben“",
     "submit": "Interpretieren",
-    "interpreting": "Wird interpretiert...",
+    "interpreting": "Wird interpretiert…",
     "examplesLabel": "Beispiele",
     "examples": {
       "expense": "Gestern habe ich 23,50 für Lebensmittel ausgegeben",
@@ -120,14 +120,14 @@
       "category": "Erstelle eine Kategorie Haustiere mit 100 Budget"
     },
     "errors": {
-      "empty": "Schreibe zuerst, was du tun möchtest.",
+      "empty": "Schreiben Sie zuerst, was Sie tun möchten.",
       "unknown": "Ich konnte die Anfrage nicht verstehen. Formuliere sie bitte neu.",
       "unsupported": "Der Assistent kann diese Aktion noch nicht vorbereiten.",
-      "generic": "Der Assistent ist gerade nicht verfügbar. Bitte versuche es gleich noch einmal."
+      "generic": "Der Assistent ist gerade nicht verfügbar. Bitte versuchen Sie es gleich noch einmal."
     },
     "notice": {
       "reviewTitle": "Vor dem Speichern prüfen",
-      "reviewDescription": "Der Assistent hat dieses Formular ausgefüllt. Prüfe die Daten und passe an, was nötig ist, bevor du bestätigst.",
+      "reviewDescription": "Der Assistent hat dieses Formular ausgefüllt. Prüfen Sie die Daten und passen Sie an, was nötig ist, bevor Sie bestätigen.",
       "missingTitle": "Fehlende Angaben",
       "missingDescription": "Der Assistent konnte nicht ausfüllen: {{fields}}.",
       "unresolvedTitle": "Nicht aufgelöste Verweise",
@@ -171,7 +171,7 @@
     "invalidJson": "Die JSON-Datei ist ungültig",
     "invalidContent": "Der Dateiinhalt ist ungültig",
     "fileInput": "JSON-Datei auswählen",
-    "importing": "Daten werden importiert...",
+    "importing": "Daten werden importiert…",
     "success": "Daten erfolgreich importiert",
     "importError": "Fehler beim Importieren der Datei",
     "close": "$t(common:actions.close)"
@@ -186,7 +186,7 @@
     "title": "Daten exportieren",
     "configTitle": "Export konfigurieren",
     "formatJSON": "JSON",
-    "formatJSONDesc": "Exportiert alle deine Benutzerdaten",
+    "formatJSONDesc": "Exportiert alle Ihre Benutzerdaten",
     "formatZIP": "ZIP",
     "formatZIPDesc": "Alle CSVs in einer einzigen Datei",
     "formatCSV": "CSV",
@@ -194,7 +194,7 @@
     "formatPDF": "PDF",
     "formatPDFDesc": "Gestalteter Finanzbericht",
     "entity": "Datentyp",
-    "selectEntity": "Typ auswählen...",
+    "selectEntity": "Typ auswählen…",
     "period": "Zeitraum",
     "period1m": "Letzter Monat",
     "period3m": "Letzte 3 Monate",

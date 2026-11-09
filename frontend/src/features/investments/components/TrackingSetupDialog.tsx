@@ -109,7 +109,7 @@ export function TrackingSetupDialog({
             onClick={() => onOpenChange(false)}
             disabled={configureTracking.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

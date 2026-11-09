@@ -190,7 +190,7 @@ export function CreateHoldingDialog({
             onClick={() => onOpenChange(false)}
             disabled={createHolding.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

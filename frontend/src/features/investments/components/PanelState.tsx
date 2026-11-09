@@ -33,7 +33,7 @@ export function PanelState({
           className="size-7 animate-spin text-muted-foreground"
           aria-hidden="true"
         />
-        <span className="sr-only">{t('common.loading')}</span>
+        <span className="sr-only">{t('common:status.loading')}</span>
       </div>
     );
   }

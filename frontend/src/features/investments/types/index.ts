@@ -464,9 +464,9 @@ export interface ConfigureTrackingRequest {
 }
 
 export interface RefreshMarketDataRequest {
-  from: string;
-  to: string;
   currencyPairs: string[];
+  from?: string;
+  to?: string;
 }
 
 // --- Query params ---

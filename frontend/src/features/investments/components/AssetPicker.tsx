@@ -124,7 +124,7 @@ export function AssetPicker({
           {label ?? t('common.asset')}
           {optional && (
             <span className="text-xs font-normal text-muted-foreground">
-              ({t('common.optional')})
+              ({t('common:prompts.optional')})
             </span>
           )}
         </Label>
@@ -205,7 +205,7 @@ export function AssetPicker({
           <div className="max-h-44 overflow-y-auto rounded-md border border-border">
             {isLoading ? (
               <p className="p-3 text-sm text-muted-foreground">
-                {t('common.loading')}
+                {t('common:status.loading')}
               </p>
             ) : options.length === 0 ? (
               <p className="p-3 text-sm text-muted-foreground">

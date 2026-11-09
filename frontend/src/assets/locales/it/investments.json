@@ -65,7 +65,7 @@
   "assets": {
     "title": "Attivi",
     "description": "Strumenti del catalogo condiviso e attivi creati da te.",
-    "searchPlaceholder": "Cerca per nome...",
+    "searchPlaceholder": "Cerca per nome…",
     "newAsset": "Nuovo attivo",
     "loadError": "Impossibile caricare gli attivi.",
     "sector": "Settore",
@@ -174,13 +174,11 @@
     "custom": "Personalizzato",
     "date": "Data",
     "from": "Da",
-    "loading": "Caricamento...",
     "modifiedAt": "Modificato",
     "noAssetsFound": "Nessun attivo trovato.",
     "none": "Nessuno",
-    "optional": "opzionale",
     "quantity": "Quantità",
-    "searchAssets": "Cerca attivi...",
+    "searchAssets": "Cerca attivi…",
     "status": "Stato",
     "to": "Fino al",
     "type": "Tipo",
@@ -191,7 +189,7 @@
     "description": "Le modifiche vengono registrate e il portafoglio viene ricostruito.",
     "currentQuantity": "Quantità attuale: {{quantity}}",
     "reason": "Motivo della modifica",
-    "reasonPlaceholder": "Spiega perché modifichi questa operazione...",
+    "reasonPlaceholder": "Spiega perché modifichi questa operazione…",
     "requiredFields": "Completa i campi obbligatori e il motivo.",
     "currencyImmutable": "La valuta di questa operazione non può essere modificata.",
     "auditHelp": "Ogni modifica conserva uno storico con i valori precedenti e nuovi."
@@ -204,7 +202,7 @@
     "unavailable": "Impossibile controllare i tuoi dati in questo momento.",
     "loadError": "Impossibile caricare il report di stato.",
     "recheck": "Controlla di nuovo",
-    "moreIssues": "e altri {{count}} avviso/i",
+    "moreIssues": "e altre {{count}} anomalie",
     "openStatus": "Vedi in Stato",
     "severities": {
       "error": "Errore",
@@ -279,7 +277,7 @@
       "amount": "Importo",
       "ratio": "Rapporto",
       "comment": "Commento",
-      "commentPlaceholder": "Nota opzionale...",
+      "commentPlaceholder": "Nota opzionale…",
       "removeRow": "Rimuovi operazione",
       "inKindPriceHint": "Deve esistere un prezzo di mercato per la data del dividendo.",
       "summaryTitle": "Ricostruzione",
@@ -326,10 +324,9 @@
   "marketData": {
     "title": "Dati di mercato",
     "description": "Aggiorna i prezzi degli attivi condivisi e i tassi di cambio.",
-    "statusHint": "I prezzi si aggiornano automaticamente, ma puoi forzare un aggiornamento per un periodo specifico.",
+    "statusHint": "I prezzi si aggiornano automaticamente. Puoi forzare un aggiornamento dall'ultima voce salvata fino a oggi.",
+    "autoRange": "I dati verranno scaricati dall'ultima voce salvata di ogni serie fino a oggi.",
     "refresh": "Aggiorna dati di mercato",
-    "from": "Da",
-    "to": "Fino al",
     "currencyPairs": "Coppie di valute",
     "noPairs": "Nessuna coppia selezionata. Verranno aggiornati solo i prezzi di mercato.",
     "baseCurrency": "Base",
@@ -338,7 +335,6 @@
     "removePair": "Rimuovi {{pair}}",
     "invalidPair": "Inserisci due codici valuta diversi di 3 lettere.",
     "pairsHelp": "Formato: base/quotata. Per esempio: USD/EUR.",
-    "invalidRange": "La data iniziale deve essere precedente a quella finale.",
     "slowWarning": "Interrogare fornitori esterni può richiedere diversi minuti. Tieni questa pagina aperta fino al termine."
   },
   "performance": {
@@ -367,11 +363,11 @@
     "unavailable": "Dati insufficienti per calcolare il rendimento.",
     "loadError": "Impossibile caricare il rendimento.",
     "periods": {
-      "oneMonth": "1M",
-      "threeMonths": "3M",
-      "sixMonths": "6M",
-      "yearToDate": "YTD",
-      "oneYear": "1A",
+      "oneMonth": "1 mese",
+      "threeMonths": "3 mesi",
+      "sixMonths": "6 mesi",
+      "yearToDate": "Dall'inizio dell'anno",
+      "oneYear": "1 anno",
       "all": "Tutto"
     }
   },
@@ -432,7 +428,7 @@
     "ratio": "Rapporto del frazionamento",
     "ratioHelp": "Per esempio, 2 per un frazionamento 2 a 1.",
     "comment": "Commento",
-    "commentPlaceholder": "Nota opzionale su questa operazione...",
+    "commentPlaceholder": "Nota opzionale su questa operazione…",
     "requiredFields": "Completa i campi obbligatori.",
     "submit": "Registra operazione",
     "types": {

@@ -1,22 +1,22 @@
 {
   "steps": {
     "title": "Primeiros passos",
-    "subtitle": "Comece a gerenciar suas finanças em menos de 5 minutos com o nosso guia rápido.",
+    "subtitle": "Comece a gerir suas finanças em menos de 5 minutos com o nosso guia rápido.",
     "items": [
       {
         "number": "01",
         "title": "Crie sua conta",
-        "description": "Apenas senha e nome de usuário e/ou e-mail"
+        "description": "Apenas palavra-passe e nome de utilizador e/ou e-mail"
       },
       {
         "number": "02",
         "title": "Crie sua primeira categoria",
-        "description": "Defina categorias personalizadas para organizar suas despesas (ex. Alimentação, Transporte, Lazer, Receitas...)."
+        "description": "Defina categorias personalizadas para organizar suas despesas (ex. Alimentação, Transporte, Lazer, Receitas…)."
       },
       {
         "number": "03",
-        "title": "Registre suas despesas",
-        "description": "Adicione transações a partir da seção dedicada ou facilmente através do dashboard."
+        "title": "Registe suas despesas",
+        "description": "Adicione transações a partir da secção dedicada ou facilmente através do dashboard."
       }
     ]
   },

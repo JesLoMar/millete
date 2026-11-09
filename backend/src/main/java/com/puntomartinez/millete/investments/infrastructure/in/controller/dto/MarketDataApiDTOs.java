@@ -61,10 +61,8 @@ public final class MarketDataApiDTOs {
      */
 
     public record RefreshMarketDataRequestDTO(
-            @NotNull
             Instant from,
 
-            @NotNull
             Instant to,
 
             @NotNull

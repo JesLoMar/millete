@@ -1,18 +1,17 @@
 {
   "actions": {
     "save": "Speichern",
-    "saving": "Wird gespeichert...",
+    "saving": "Wird gespeichert…",
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "deleting": "Wird gelöscht...",
+    "deleting": "Wird gelöscht…",
     "add": "Hinzufügen",
     "accept": "Akzeptieren",
-    "welcome": "Erfolgreiche Anmeldung",
     "reject": "Ablehnen",
     "close": "Schließen",
-    "search": "Nach Name suchen...",
-    "searchDesc": "Nach Beschreibung suchen...",
+    "search": "Nach Name suchen…",
+    "searchDesc": "Nach Beschreibung suchen…",
     "back": "Zurück",
     "continue": "Weiter",
     "create": "Erstellen",
@@ -23,14 +22,15 @@
     "export": "Exportieren",
     "import": "Importieren",
     "send": "Senden",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "view": "Ansehen"
   },
   "status": {
-    "loading": "Wird geladen...",
-    "loadingSession": "Sitzung wird geladen...",
+    "loading": "Wird geladen…",
+    "loadingSession": "Sitzung wird geladen…",
     "error": "Fehler",
     "empty": "Keine Daten verfügbar",
-    "processing": "Wird verarbeitet...",
+    "processing": "Wird verarbeitet…",
     "connectionError": "Der Server konnte nicht erreicht werden. Bitte überprüfen Sie Ihre Verbindung."
   },
   "entities": {
@@ -50,7 +50,7 @@
   },
   "prompts": {
     "deleteTitle": "{{item}} löschen",
-    "deleteConfirm": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirm": "Sind Sie sicher, dass Sie „{{name}}“ löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "noData": "Keine Daten verfügbar",
     "comingSoon": "Demnächst",
     "optional": "optional"
@@ -71,5 +71,8 @@
     "default": "Unerwarteter Fehler. Versuchen Sie es erneut.",
     "noPermission": "Sie haben keine Berechtigung, diese Aktion auszuführen"
   },
-  "showingInterval": "{{from}}-{{to}} von {{total}}"
+  "showingInterval": "{{from}}-{{to}} von {{total}}",
+  "alerts": {
+    "loginSuccess": "Erfolgreich angemeldet"
+  }
 }

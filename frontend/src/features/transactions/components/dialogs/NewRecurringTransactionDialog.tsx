@@ -8,8 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { RefreshCcw } from 'lucide-react';
 
 import { Spinner } from '@/shared/components/Spinner';
-import { Button } from '@/shared/components/core/button';
-import {
+import { Button } from '@/shared/components/core/button';import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -26,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/core/select';
+import { formatCurrency } from '@/shared/utils/i18nFormat';
 
 import { FREQUENCY_TYPES } from '../../constants';
 import { useTransactionMutations } from '../../hooks/useTransactionMutation';
@@ -137,8 +137,8 @@ function RecurringTransactionSummary({
 
       <p className="leading-relaxed">
         {t('recurring.summaryText', {
-          description: description || '...',
-          amount: amount || '0',
+          description: description || '…',
+          amount: formatCurrency(Number(amount) || 0),
           frequency,
           type: frequencyUnit,
           start,
@@ -489,7 +489,7 @@ export function NewRecurringTransactionDialog({
                 >
                   {t('transactions:recurring.endDate')}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    ({t('transactions:recurring.optional')})
+                    ({t('common:prompts.optional')})
                   </span>
                 </Label>
 

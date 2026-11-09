@@ -99,7 +99,7 @@ export function RegisterAssetPriceDialog({
             onClick={() => onOpenChange(false)}
             disabled={registerUserAssetPrice.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

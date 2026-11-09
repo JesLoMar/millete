@@ -24,14 +24,6 @@
     "featureComingSoon": "{{feature}} sera disponible prochainement",
     "languageChangeFailed": "Erreur lors du changement de langue"
   },
-  "languages": {
-    "es": "Espagnol",
-    "en": "Anglais",
-    "fr": "Français",
-    "de": "Allemand",
-    "it": "Italien",
-    "pt": "Portugais"
-  },
   "theme": {
     "selector": "Sélecteur de thème",
     "palette": "Palette de couleurs",

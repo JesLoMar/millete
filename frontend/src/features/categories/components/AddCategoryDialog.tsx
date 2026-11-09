@@ -254,7 +254,7 @@ export function AddCategoryDialog({
                   {t('categories:description')}
 
                   <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    ({t('categories:optional')})
+                    ({t('common:prompts.optional')})
                   </span>
                 </Label>
 

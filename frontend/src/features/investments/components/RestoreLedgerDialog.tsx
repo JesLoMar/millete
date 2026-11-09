@@ -209,7 +209,7 @@ export function RestoreLedgerDialog({
             onClick={() => onOpenChange(false)}
             disabled={restoreLedger.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

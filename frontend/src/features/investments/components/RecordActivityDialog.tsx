@@ -616,7 +616,7 @@ export function RecordActivityDialog({
             onClick={() => handleOpenChange(false)}
             disabled={registerActivity.isPending}
           >
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="button"

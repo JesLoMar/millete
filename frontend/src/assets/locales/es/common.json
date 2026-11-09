@@ -1,18 +1,17 @@
 {
   "actions": {
     "save": "Guardar",
-    "saving": "Guardando...",
+    "saving": "Guardando…",
     "cancel": "Cancelar",
     "edit": "Editar",
     "delete": "Eliminar",
-    "deleting": "Eliminando...",
+    "deleting": "Eliminando…",
     "add": "Añadir",
     "accept": "Aceptar",
-    "welcome": "Inicio de sesión exitoso",
     "reject": "Rechazar",
     "close": "Cerrar",
-    "search": "Buscar por nombre...",
-    "searchDesc": "Buscar por descripción...",
+    "search": "Buscar por nombre…",
+    "searchDesc": "Buscar por descripción…",
     "back": "Volver",
     "continue": "Continuar",
     "create": "Crear",
@@ -23,14 +22,15 @@
     "export": "Exportar",
     "import": "Importar",
     "send": "Enviar",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "view": "Ver"
   },
   "status": {
-    "loading": "Cargando...",
-    "loadingSession": "Cargando sesión...",
+    "loading": "Cargando…",
+    "loadingSession": "Cargando sesión…",
     "error": "Error",
     "empty": "No hay datos disponibles",
-    "processing": "Procesando...",
+    "processing": "Procesando…",
     "connectionError": "No se pudo conectar con el servidor. Comprueba tu conexión."
   },
   "entities": {
@@ -71,5 +71,8 @@
     "default": "Error inesperado. Inténtalo de nuevo.",
     "noPermission": "No tienes permisos para realizar esta acción"
   },
-  "showingInterval": "Mostrando {{from}}-{{to}} de {{total}}"
+  "showingInterval": "Mostrando {{from}}-{{to}} de {{total}}",
+  "alerts": {
+    "loginSuccess": "Sesión iniciada correctamente"
+  }
 }

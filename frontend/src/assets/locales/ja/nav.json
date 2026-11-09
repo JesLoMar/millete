@@ -24,14 +24,6 @@
     "featureComingSoon": "{{feature}} は近日公開予定です",
     "languageChangeFailed": "言語の変更に失敗しました"
   },
-  "languages": {
-    "es": "スペイン語",
-    "en": "英語",
-    "fr": "フランス語",
-    "de": "ドイツ語",
-    "it": "イタリア語",
-    "pt": "ポルトガル語"
-  },
   "theme": {
     "selector": "テーマ選択",
     "palette": "カラーパレット",

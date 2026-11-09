@@ -121,13 +121,13 @@ apiClient.interceptors.response.use(
         i18n.t('api:errors.default');
       let description = '';
       if (status === 403) {
-        description = i18n.t('api:errors.status_403');
+        description = i18n.t('api:errors.status403');
       } else if (status === 404) {
-        description = i18n.t('api:errors.status_404');
+        description = i18n.t('api:errors.status404');
       } else if (status === 409) {
-        description = i18n.t('api:errors.status_409');
+        description = i18n.t('api:errors.status409');
       } else if (status >= 500) {
-        description = i18n.t('api:errors.status_500');
+        description = i18n.t('api:errors.status500');
       } else if (error.code === 'ECONNABORTED') {
         description = i18n.t('api:errors.timeout');
       }

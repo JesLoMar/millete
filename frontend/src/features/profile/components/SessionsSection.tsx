@@ -40,7 +40,7 @@ export function SessionsSection() {
     >
       {isLoading ? (
         <div className="text-sm text-muted-foreground">
-          {t('common:loading')}
+          {t('common:status.loading')}
         </div>
       ) : (
         <div className="space-y-4">

@@ -1,14 +1,11 @@
 {
-  "required": "Campo richiesto",
-  "invalid_email": "Il formato dell'email non è valido",
-  "invalid_number": "Inserisci un numero valido",
-  "min_length": "Deve avere almeno {{min}} caratteri",
-  "max_length": "Deve avere al massimo {{max}} caratteri",
-  "min_value": "Il valore minimo è {{min}}",
-  "max_value": "Il valore massimo es {{max}}",
-  "positive_number": "Deve essere un numero positivo",
-  "invalid_url": "URL non valido",
-  "auth": {
-    "invalid_credentials": "Credenziali non valide. Per favore, riprova."
-  }
+  "required": "Campo obbligatorio",
+  "invalidEmail": "Il formato dell'email non è valido",
+  "invalidNumber": "Inserisci un numero valido",
+  "minLength": "Deve avere almeno {{min}} caratteri",
+  "maxLength": "Deve avere al massimo {{max}} caratteri",
+  "minValue": "Il valore minimo è {{min}}",
+  "maxValue": "Il valore massimo è {{max}}",
+  "positiveNumber": "Deve essere un numero positivo",
+  "invalidUrl": "URL non valido"
 }

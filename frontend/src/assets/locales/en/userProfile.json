@@ -18,7 +18,8 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "success": "Profile updated successfully",
-    "error": "Error updating profile"
+    "error": "Error updating profile",
+    "identifierRequired": "Enter a username or email address."
   },
   "changePassword": {
     "title": "Change password",
@@ -73,7 +74,8 @@
     "successAll": "All other sessions have been closed",
     "error": "Error managing sessions",
     "web": "Web",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "empty": "No active sessions."
   },
   "deleteAccount": {
     "title": "Danger Zone",
