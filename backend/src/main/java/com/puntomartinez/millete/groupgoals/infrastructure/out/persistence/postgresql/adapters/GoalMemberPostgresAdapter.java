@@ -42,6 +42,16 @@ public class GoalMemberPostgresAdapter implements GoalMemberRepository {
     }
 
     @Override
+    public Optional<GoalMember> findActiveByGoalIdAndUserIdForUpdate(
+            UUID goalId,
+            UUID userId
+    ) {
+        return jpaRepository
+                .findByGoalIdAndUserIdAndActiveTrue(goalId, userId)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<GoalMember> findById(UUID id) {
         return jpaRepository
                 .findById(id)

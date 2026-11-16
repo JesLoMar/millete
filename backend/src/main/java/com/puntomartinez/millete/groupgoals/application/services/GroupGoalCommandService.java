@@ -209,6 +209,12 @@ public class GroupGoalCommandService implements
     ) {
         getActiveGoal(goalId);
         requireActiveMember(goalId, userId);
+        GoalMember lockedMember = goalMemberRepository
+                .findActiveByGoalIdAndUserIdForUpdate(goalId, userId)
+                .orElseThrow(() -> new ForbiddenOperationException(
+                        "No perteneces a este objetivo"
+                ));
+        requireActiveMember(lockedMember);
 
         ContributionBalance balance = goalContributionRepository
                 .sumByGoalIdAndUserId(goalId, userId)
@@ -292,6 +298,10 @@ public class GroupGoalCommandService implements
                         )
                 );
 
+        requireActiveMember(member);
+    }
+
+    private void requireActiveMember(GoalMember member) {
         if (!member.isActive()) {
             throw new ForbiddenOperationException(
                     "No perteneces a este objetivo"

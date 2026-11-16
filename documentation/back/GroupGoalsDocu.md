@@ -35,4 +35,6 @@ La persona creadora obtiene rol `ADMIN`. Actualizar/eliminar meta, actualizar/el
 
 La creación acepta `name` (obligatorio, máximo 100), `monthlyTarget` (obligatorio, mínimo 0.01) y `distributionMode` obligatorio. `POST /contributions` recibe importe y registra tipo `DEPOSIT`, responde `201`; `/contributions/withdraw` recibe importe mínimo 0.01, exige saldo neto suficiente, registra `WITHDRAWAL` y responde `200`. La historia pagina con tamaño por defecto 60. `POST /leave` desactiva la membresía, no borra meta ni historial, y aplica regla del último administrador.
 
+Las retiradas serializan la validación de saldo por miembro mediante un bloqueo de escritura sobre su fila activa de membresía. El bloqueo se obtiene antes de consultar las aportaciones y se mantiene hasta completar la transacción; así, una retirada concurrente vuelve a calcular el saldo después de que la anterior confirme.
+
 Los adaptadores persisten meta, miembros, invitaciones y movimientos de contribución en tablas separadas; V5 hace `monthly_target` obligatorio, elimina tokens de invitación y restringe `goal_contributions.type` a `DEPOSIT` y `WITHDRAWAL`.

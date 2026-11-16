@@ -1,6 +1,8 @@
 package com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.repository;
 
 import com.puntomartinez.millete.groupgoals.infrastructure.out.persistence.postgresql.entity.GoalMemberEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +21,12 @@ public interface JpaGoalMemberRepository
     Optional<GoalMemberEntity> findByIdAndActiveTrue(UUID id);
 
     Optional<GoalMemberEntity> findByGoalIdAndUserId(
+            UUID goalId,
+            UUID userId
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<GoalMemberEntity> findByGoalIdAndUserIdAndActiveTrue(
             UUID goalId,
             UUID userId
     );

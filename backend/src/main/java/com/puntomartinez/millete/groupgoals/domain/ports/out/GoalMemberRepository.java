@@ -17,6 +17,11 @@ public interface GoalMemberRepository {
             UUID userId
     );
 
+    Optional<GoalMember> findActiveByGoalIdAndUserIdForUpdate(
+            UUID goalId,
+            UUID userId
+    );
+
     List<GoalMember> findActiveByUserId(UUID userId);
 
     List<GoalMember> findActiveByGoalId(UUID goalId);

@@ -9,17 +9,20 @@ import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalUnitRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.InvalidInputException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +48,9 @@ class GroupGoalCommandServiceTest {
     @Mock
     private GoalInvitationRepository goalInvitationRepository;
 
+    @Mock
+    private TimeProvider timeProvider;
+
     @InjectMocks
     private GroupGoalCommandService service;
 
@@ -52,11 +58,16 @@ class GroupGoalCommandServiceTest {
     private final UUID otherUserId = UUID.randomUUID();
     private final UUID goalId = UUID.randomUUID();
 
+    @BeforeEach
+    void setUpTimeProvider() {
+        lenient().when(timeProvider.now()).thenReturn(Instant.now());
+    }
+
     private GoalUnit createActiveGoal() {
         return GoalUnit.reconstitute(
                 goalId, "Family trip", new BigDecimal("300.00"),
                 DistributionMode.EQUITATIVE,
-                LocalDateTime.now(), LocalDateTime.now(), true
+                Instant.now(), Instant.now(), true
         );
     }
 
@@ -64,8 +75,8 @@ class GroupGoalCommandServiceTest {
         return GoalMember.reconstitute(
                 UUID.randomUUID(), goalId, userId,
                 GoalRole.ADMIN, new BigDecimal("2000.00"), null,
-                LocalDateTime.now(), LocalDateTime.now(),
-                LocalDateTime.now(), true
+                Instant.now(), Instant.now(),
+                Instant.now(), true
         );
     }
 
@@ -73,8 +84,8 @@ class GroupGoalCommandServiceTest {
         return GoalMember.reconstitute(
                 UUID.randomUUID(), goalId, memberUserId,
                 GoalRole.MEMBER, new BigDecimal("2000.00"), null,
-                LocalDateTime.now(), LocalDateTime.now(),
-                LocalDateTime.now(), true
+                Instant.now(), Instant.now(),
+                Instant.now(), true
         );
     }
 
@@ -350,7 +361,7 @@ class GroupGoalCommandServiceTest {
         void shouldThrowWhenMemberIsNotActive() {
             GoalUnit goal = createActiveGoal();
             GoalMember inactiveMember = createRegularMember(userId);
-            inactiveMember.deactivate();
+            inactiveMember.deactivate(mock(com.puntomartinez.millete.shared.domain.ports.out.TimeProvider.class));
 
             when(goalUnitRepository.findById(goalId))
                     .thenReturn(Optional.of(goal));
@@ -382,6 +393,12 @@ class GroupGoalCommandServiceTest {
                     .thenReturn(Optional.of(goal));
             when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId))
                     .thenReturn(Optional.of(member));
+            when(goalMemberRepository.findActiveByGoalIdAndUserIdForUpdate(goalId, userId))
+                    .thenReturn(Optional.of(member));
+            when(goalContributionRepository.sumByGoalIdAndUserId(goalId, userId))
+                    .thenReturn(Optional.of(new GoalContributionRepository.MemberContributionTotals(
+                            userId, new BigDecimal("100.00"), BigDecimal.ZERO,
+                            new BigDecimal("100.00"))));
             when(goalContributionRepository.save(any(GoalContribution.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
 
@@ -400,6 +417,47 @@ class GroupGoalCommandServiceTest {
             assertThat(saved.getAmount()).isEqualByComparingTo("50.00");
             assertThat(saved.getType()).isEqualTo(ContributionType.WITHDRAWAL);
             assertThat(saved.getUserId()).isEqualTo(userId);
+            InOrder order = inOrder(goalMemberRepository, goalContributionRepository);
+            order.verify(goalMemberRepository).findActiveByGoalIdAndUserIdForUpdate(goalId, userId);
+            order.verify(goalContributionRepository).sumByGoalIdAndUserId(goalId, userId);
+            order.verify(goalContributionRepository).save(any(GoalContribution.class));
+        }
+
+        @Test
+        @DisplayName("Should not persist a withdrawal exceeding the available balance")
+        void shouldLeaveContributionsUnchangedWhenWithdrawalExceedsBalance() {
+            GoalMember member = createAdminMember();
+            when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(createActiveGoal()));
+            when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId))
+                    .thenReturn(Optional.of(member));
+            when(goalMemberRepository.findActiveByGoalIdAndUserIdForUpdate(goalId, userId))
+                    .thenReturn(Optional.of(member));
+            when(goalContributionRepository.sumByGoalIdAndUserId(goalId, userId))
+                    .thenReturn(Optional.of(new GoalContributionRepository.MemberContributionTotals(
+                            userId, new BigDecimal("100.00"), new BigDecimal("30.00"),
+                            new BigDecimal("70.00"))));
+
+            assertThatThrownBy(() -> service.withdrawContribution(goalId, userId,
+                    new WithdrawContributionUseCase.WithdrawContributionCommand(
+                            new BigDecimal("71.00"))))
+                    .isInstanceOf(InvalidInputException.class);
+            verify(goalContributionRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should reject withdrawals for inactive members")
+        void shouldRejectWithdrawalWhenMemberIsInactive() {
+            GoalMember member = createRegularMember(userId);
+            member.deactivate(timeProvider);
+            when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(createActiveGoal()));
+            when(goalMemberRepository.findByGoalIdAndUserId(goalId, userId))
+                    .thenReturn(Optional.of(member));
+
+            assertThatThrownBy(() -> service.withdrawContribution(goalId, userId,
+                    new WithdrawContributionUseCase.WithdrawContributionCommand(
+                            new BigDecimal("10.00"))))
+                    .isInstanceOf(ForbiddenOperationException.class);
+            verify(goalContributionRepository, never()).save(any());
         }
     }
 
