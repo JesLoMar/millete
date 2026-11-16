@@ -416,7 +416,13 @@ public class CashActivityService implements
 
         BigDecimal localAmount =
                 amount.amount()
-                        .multiply(fxRate.rate())
+                        .multiply(
+                                toAppliedFxRate(
+                                        fxRate,
+                                        amount.currency(),
+                                        localCurrency
+                                ).rate()
+                        )
                         .setScale(
                                 MONEY_SCALE,
                                 java.math.RoundingMode.HALF_UP
