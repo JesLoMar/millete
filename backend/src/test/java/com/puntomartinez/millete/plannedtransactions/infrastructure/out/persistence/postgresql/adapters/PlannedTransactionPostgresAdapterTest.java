@@ -5,6 +5,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransac
 import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.entity.PlannedTransactionEntity;
 import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.mappers.PlannedTransactionEntityMapper;
 import com.puntomartinez.millete.plannedtransactions.infrastructure.out.persistence.postgresql.repository.JpaPlannedTransactionRepository;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,7 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,7 @@ class PlannedTransactionPostgresAdapterTest {
 
     @Mock private JpaPlannedTransactionRepository repository;
     @Mock private PlannedTransactionEntityMapper mapper;
+    @Mock private TimeProvider timeProvider;
     @InjectMocks private PlannedTransactionPostgresAdapter adapter;
 
     @SuppressWarnings("unchecked")
@@ -52,6 +54,7 @@ class PlannedTransactionPostgresAdapterTest {
 
     private PlannedTransaction domainTemplate() {
         return PlannedTransaction.create(
+                timeProvider,
                 USER_ID, CATEGORY_ID, new BigDecimal("100.00"),
                 TransactionType.EXPENSE, "Rent",
                 FrequencyType.MONTHS, 1,
@@ -70,8 +73,8 @@ class PlannedTransactionPostgresAdapterTest {
         entity.setFrequencyType("MONTHS");
         entity.setFrequencyInterval(1);
         entity.setStartDate(LocalDate.now());
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setModifiedAt(LocalDateTime.now());
+        entity.setCreatedAt(Instant.now());
+        entity.setModifiedAt(Instant.now());
         entity.setActive(true);
         entity.setFailureCount(0);
         return entity;
@@ -169,17 +172,33 @@ class PlannedTransactionPostgresAdapterTest {
         void shouldReturnBatch() {
             PlannedTransactionEntity entity = entityTemplate();
             PlannedTransaction domain = domainTemplate();
-            LocalDate today = LocalDate.now();
-
             Page<PlannedTransactionEntity> page = new PageImpl<>(List.of(entity));
-            when(repository.findByActiveTrueAndNotExpired(eq(today), any(Pageable.class)))
+            when(repository.findByActiveTrue(any(Pageable.class)))
                     .thenReturn(page);
             when(mapper.toDomain(entity)).thenReturn(domain);
 
-            List<PlannedTransaction> result = adapter.findAllActive(0, 500, today);
+            List<PlannedTransaction> result = adapter.findAllActive(0, 500);
 
             assertThat(result).containsExactly(domain);
-            verify(repository).findByActiveTrueAndNotExpired(eq(today), any(Pageable.class));
+            verify(repository).findByActiveTrue(any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Should return an active schedule even when its end date has passed")
+        void shouldReturnExpiredActiveSchedule() {
+            PlannedTransactionEntity expiredEntity = entityTemplate();
+            expiredEntity.setEndDate(LocalDate.of(2026, 1, 31));
+            PlannedTransaction expiredSchedule = domainTemplate();
+            Page<PlannedTransactionEntity> page =
+                    new PageImpl<>(List.of(expiredEntity));
+            when(repository.findByActiveTrue(any(Pageable.class)))
+                    .thenReturn(page);
+            when(mapper.toDomain(expiredEntity)).thenReturn(expiredSchedule);
+
+            List<PlannedTransaction> result = adapter.findAllActive(0, 500);
+
+            assertThat(result).containsExactly(expiredSchedule);
+            verify(repository).findByActiveTrue(any(Pageable.class));
         }
     }
 

@@ -12,7 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -106,12 +105,10 @@ public class PlannedTransactionPostgresAdapter
     @Override
     public List<PlannedTransaction> findAllActive(
             int page,
-            int size,
-            LocalDate today
+            int size
     ) {
         return repository
-                .findByActiveTrueAndNotExpired(
-                        today,
+                .findByActiveTrue(
                         PageRequest.of(
                                 page,
                                 size,

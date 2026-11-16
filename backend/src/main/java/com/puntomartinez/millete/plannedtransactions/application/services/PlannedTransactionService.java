@@ -11,6 +11,7 @@ import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTra
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
+import com.puntomartinez.millete.users.application.services.UserLocalDateService;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class PlannedTransactionService implements
     private final PlannedTransactionRepository plannedTransactionRepository;
     private final PlannedTransactionExecutionService executionService;
     private final TimeProvider timeProvider;
+    private final UserLocalDateService userLocalDateService;
 
     @Override
     public PlannedTransaction register(
@@ -70,21 +72,16 @@ public class PlannedTransactionService implements
      * líder único, etc.). En el contexto self-hosted single-instance
      * actual, 'synchronized' es suficiente.
      *
-     * TODO (Fase 9 - Scheduler multi-zona): sustituir
-     * 'timeProvider.localDateNow()' por el cálculo del día local
-     * de cada usuario según su zona horaria (UserPreferences).
      */
     @Override
     public synchronized void processScheduledTasks() {
-        LocalDate today = timeProvider.localDateNow();
         int page = 0;
 
         while (true) {
             List<PlannedTransaction> templates =
                     plannedTransactionRepository.findAllActive(
                             page,
-                            SCHEDULER_BATCH_SIZE,
-                            today
+                            SCHEDULER_BATCH_SIZE
                     );
 
             if (templates.isEmpty()) {
@@ -92,7 +89,10 @@ public class PlannedTransactionService implements
             }
 
             for (PlannedTransaction template : templates) {
-                processTemplate(template, today);
+                processTemplate(
+                        template,
+                        userLocalDateService.todayFor(template.getUserId())
+                );
             }
 
             if (templates.size() < SCHEDULER_BATCH_SIZE) {

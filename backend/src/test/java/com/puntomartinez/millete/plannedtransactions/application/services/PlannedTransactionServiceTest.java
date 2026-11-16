@@ -7,7 +7,9 @@ import com.puntomartinez.millete.plannedtransactions.domain.ports.in.UpdatePlann
 import com.puntomartinez.millete.plannedtransactions.domain.ports.out.PlannedTransactionRepository;
 import com.puntomartinez.millete.shared.domain.exception.ForbiddenOperationException;
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
+import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
+import com.puntomartinez.millete.users.application.services.UserLocalDateService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +46,12 @@ class PlannedTransactionServiceTest {
     @Mock
     private PlannedTransactionExecutionService executionService;
 
+    @Mock
+    private UserLocalDateService userLocalDateService;
+
+    @Mock
+    private TimeProvider timeProvider;
+
     @InjectMocks
     private PlannedTransactionService service;
 
@@ -53,7 +61,7 @@ class PlannedTransactionServiceTest {
                 new BigDecimal("100.00"), TransactionType.EXPENSE,
                 "Rent", FrequencyType.MONTHS, 1,
                 LocalDate.now().minusMonths(1), null,
-                LocalDateTime.now(), LocalDateTime.now(),
+                Instant.now(), Instant.now(),
                 true, null, 0
         );
     }
@@ -139,7 +147,7 @@ class PlannedTransactionServiceTest {
         @DisplayName("Should throw when template is inactive")
         void shouldThrowWhenInactive() {
             PlannedTransaction template = buildTemplate(USER_ID);
-            template.deactivate();
+            template.deactivate(timeProvider);
             when(plannedTransactionRepository.findById(template.getId()))
                     .thenReturn(Optional.of(template));
             UpdatePlannedTransactionCommand command = new UpdatePlannedTransactionCommand(
@@ -240,6 +248,76 @@ class PlannedTransactionServiceTest {
     @DisplayName("processScheduledTasks")
     class ProcessScheduledTasks {
         @Test
+        @DisplayName("Should catch up through the finite end date using each user's local day")
+        void shouldCatchUpThroughEndDate() {
+            LocalDate lastRun = LocalDate.of(2026, 1, 29);
+            LocalDate endDate = LocalDate.of(2026, 1, 31);
+            PlannedTransaction pending = PlannedTransaction.reconstitute(
+                    UUID.randomUUID(), USER_ID, CATEGORY_ID,
+                    new BigDecimal("50.00"), TransactionType.EXPENSE,
+                    "Daily", FrequencyType.DAYS, 1,
+                    LocalDate.of(2026, 1, 1), endDate,
+                    Instant.now(), Instant.now(),
+                    true, lastRun, 0
+            );
+            LocalDate userToday = LocalDate.of(2026, 2, 2);
+            when(userLocalDateService.todayFor(USER_ID)).thenReturn(userToday);
+            when(plannedTransactionRepository.findAllActive(0, 500))
+                    .thenReturn(List.of(pending));
+            doAnswer(invocation -> {
+                pending.markAsExecuted(timeProvider, invocation.getArgument(1));
+                return null;
+            }).when(executionService).execute(eq(pending), any(LocalDate.class));
+
+            service.processScheduledTasks();
+
+            verify(userLocalDateService).todayFor(USER_ID);
+            verify(executionService).execute(pending, LocalDate.of(2026, 1, 30));
+            verify(executionService).execute(pending, LocalDate.of(2026, 1, 31));
+            verify(executionService, times(2)).execute(eq(pending), any(LocalDate.class));
+            assertThat(pending.getLastExecutedDate()).isEqualTo(endDate);
+
+            service.processScheduledTasks();
+
+            verify(executionService, times(2))
+                    .execute(eq(pending), any(LocalDate.class));
+        }
+
+        @Test
+        @DisplayName("Should use each user's local date")
+        void shouldUseEachUsersLocalDate() {
+            UUID secondUserId = UUID.randomUUID();
+            PlannedTransaction first = reconstituteDaily(USER_ID);
+            PlannedTransaction second = reconstituteDaily(secondUserId);
+            LocalDate firstDay = LocalDate.of(2026, 1, 30);
+            LocalDate secondDay = LocalDate.of(2026, 2, 2);
+            when(userLocalDateService.todayFor(USER_ID)).thenReturn(firstDay);
+            when(userLocalDateService.todayFor(secondUserId)).thenReturn(secondDay);
+            when(plannedTransactionRepository.findAllActive(0, 500))
+                    .thenReturn(List.of(first, second));
+            doAnswer(invocation -> {
+                PlannedTransaction template = invocation.getArgument(0);
+                template.markAsExecuted(timeProvider, invocation.getArgument(1));
+                return null;
+            }).when(executionService).execute(any(PlannedTransaction.class), any(LocalDate.class));
+
+            service.processScheduledTasks();
+
+            verify(executionService).execute(first, firstDay);
+            verify(executionService).execute(second, secondDay);
+        }
+
+        private PlannedTransaction reconstituteDaily(UUID userId) {
+            return PlannedTransaction.reconstitute(
+                    UUID.randomUUID(), userId, CATEGORY_ID,
+                    new BigDecimal("50.00"), TransactionType.EXPENSE,
+                    "Daily", FrequencyType.DAYS, 1,
+                    LocalDate.of(2026, 1, 1), null,
+                    Instant.now(), Instant.now(), true, null, 0
+            );
+        }
+
+        @Test
         @DisplayName("Should process pending templates in batches and stop when empty")
         void shouldProcessInBatches() {
             LocalDate start = LocalDate.now().minusDays(5);
@@ -248,18 +326,19 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Daily", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, 0
             );
 
             doAnswer(invocation -> {
                 PlannedTransaction template = invocation.getArgument(0);
                 LocalDate date = invocation.getArgument(1);
-                template.markAsExecuted(date);
+                template.markAsExecuted(timeProvider, date);
                 return null;
             }).when(executionService).execute(any(PlannedTransaction.class), any(LocalDate.class));
 
-            when(plannedTransactionRepository.findAllActive(eq(0), anyInt(), any()))
+            when(userLocalDateService.todayFor(USER_ID)).thenReturn(LocalDate.now());
+            when(plannedTransactionRepository.findAllActive(eq(0), anyInt()))
                     .thenReturn(List.of(pending));
 
             service.processScheduledTasks();
@@ -271,7 +350,7 @@ class PlannedTransactionServiceTest {
         @Test
         @DisplayName("Should not invoke execution when no active templates")
         void shouldNotInvokeWhenNoActiveTemplates() {
-            when(plannedTransactionRepository.findAllActive(eq(0), anyInt(), any()))
+            when(plannedTransactionRepository.findAllActive(eq(0), anyInt()))
                     .thenReturn(Collections.emptyList());
 
             service.processScheduledTasks();
@@ -288,11 +367,12 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Fail", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, PlannedTransaction.MAX_CONSECUTIVE_FAILURES - 1
             );
 
-            when(plannedTransactionRepository.findAllActive(eq(0), anyInt(), any()))
+            when(userLocalDateService.todayFor(USER_ID)).thenReturn(LocalDate.now());
+            when(plannedTransactionRepository.findAllActive(eq(0), anyInt()))
                     .thenReturn(List.of(failingTemplate));
 
             doThrow(new RuntimeException("fail"))
@@ -313,11 +393,12 @@ class PlannedTransactionServiceTest {
                     new BigDecimal("50.00"), TransactionType.EXPENSE,
                     "Fail", FrequencyType.DAYS, 1,
                     start, null,
-                    LocalDateTime.now(), LocalDateTime.now(),
+                    Instant.now(), Instant.now(),
                     true, null, 0
             );
 
-            when(plannedTransactionRepository.findAllActive(eq(0), anyInt(), any()))
+            when(userLocalDateService.todayFor(USER_ID)).thenReturn(LocalDate.now());
+            when(plannedTransactionRepository.findAllActive(eq(0), anyInt()))
                     .thenReturn(List.of(failingTemplate));
 
             doThrow(new RuntimeException("fail"))

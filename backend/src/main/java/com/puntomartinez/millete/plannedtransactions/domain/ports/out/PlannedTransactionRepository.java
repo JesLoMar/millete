@@ -3,7 +3,6 @@ package com.puntomartinez.millete.plannedtransactions.domain.ports.out;
 import com.puntomartinez.millete.plannedtransactions.domain.model.PlannedTransaction;
 import com.puntomartinez.millete.transactions.domain.model.Transaction.TransactionType;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,8 +21,7 @@ public interface PlannedTransactionRepository {
 
     List<PlannedTransaction> findAllActive(
             int page,
-            int size,
-            LocalDate today
+            int size
     );
 
     List<PlannedTransaction> findAllByUserId(
