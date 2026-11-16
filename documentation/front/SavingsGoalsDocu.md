@@ -1,173 +1,26 @@
-# Savings Goals — Documentación técnica (Frontend)
+# Metas personales de ahorro
 
-## Estructura de archivos
+La feature lista metas personales y permite crearlas, editarlas, eliminarlas, añadir aportaciones y retirar importes.
 
-- **components/ContributionModal.tsx** — Modal para añadir contribución a una meta
-- **components/EmptyState.tsx** — Estado vacío cuando no hay metas
-- **components/SavingsGoalCard.tsx** — Tarjeta de meta de ahorro individual
-- **components/SavingsGoalDialog.tsx** — Diálogo para crear/editar meta
-- **components/SavingsGoalEditDialog.tsx** — Diálogo específico de edición
-- **hooks/useSavingsGoals.ts** — Hooks de query y mutaciones
-- **pages/page.tsx** — Página principal de metas de ahorro
-- **services/savingsGoals.service.ts** — Servicio de API
-- **types/index.ts** — Tipos y contratos de datos
+## Página y paginación
 
----
+[`pages/page.tsx`](../../frontend/src/features/savingsgoals/pages/page.tsx) compone tarjetas, formularios y diálogos de contribución/retiro. `useSavingsGoals.ts` consulta páginas del servidor; usa bloques de 45 elementos y muestra páginas de 9, con búsqueda por nombre. No hay filtro de estado en este hook actual.
 
-## pages/page.tsx
+## Operaciones
 
-Página principal de metas de ahorro personales.
+[`savingsGoals.service.ts`](../../frontend/src/features/savingsgoals/services/savingsGoals.service.ts) define la API usada por los hooks. Crear, actualizar, borrar, aportar y retirar invalidan las metas y las métricas del dashboard. Los links se normalizan antes de crear o actualizar. Los modelos actuales están en [`types/index.ts`](../../frontend/src/features/savingsgoals/types/index.ts).
 
-### Estructura
+Los campos y estados visibles se detallan en `SavingsGoalForm.tsx`, `SavingsGoalCard.tsx` y los diálogos de `components/`. La documentación se limita al comportamiento del cliente.
 
-- Cabecera con título y botón para crear nueva meta.
-- Lista de `SavingsGoalCard` en grid responsive (9 metas por página).
-- `EmptyState` cuando no hay metas.
-- Modales controlados para crear, editar y añadir contribuciones.
-- Paginación server-side: backend devuelve bloques de 45 metas; frontend muestra 9 por página.
+## Servicio, campos y estados
 
-### Estado local
+| Método | Ruta | Payload/uso |
+|---|---|---|
+| GET | `/savings-goals?page=&size=45&search=` | Busca por texto recortado; respuesta paginada de metas. |
+| POST | `/savings-goals` | `name,targetAmount,deadline?,priority,link?`. |
+| PUT | `/savings-goals/{id}` | Campos editables más `status`. |
+| DELETE | `/savings-goals/{id}` | Elimina desde la acción confirmada de UI. |
+| PATCH | `/savings-goals/{id}/contribute` | Añade importe. |
+| POST | `/savings-goals/{id}/withdraw` | Retira importe. |
 
-- `isCreateOpen`: controla el diálogo de creación.
-- `editingGoal`: meta seleccionada para edición (null si no hay).
-- `contributingGoal`: meta seleccionada para añadir contribución (null si no hay).
-- `searchTerm`: texto de búsqueda enviado al backend para filtrar por nombre.
-- Estado de paginación gestionado por `useServerPagination`.
-
----
-
-## services/savingsGoals.service.ts
-
-Servicio de API para metas de ahorro. Base URL: `/savings-goals`.
-
-| Método | Endpoint | Uso |
-|--------|----------|-----|
-| GET | /savings-goals?page=&size=&search=&status= | Listar metas del usuario paginadas |
-| GET | /savings-goals/:id | Obtener meta por ID |
-| POST | /savings-goals | Crear meta |
-| PUT | /savings-goals/:id | Actualizar meta |
-| DELETE | /savings-goals/:id | Eliminar meta |
-| PATCH | /savings-goals/:id/contribute | Añadir contribución |
-
----
-
-## hooks/useSavingsGoals.ts
-
-Centraliza las queries y mutaciones de metas de ahorro.
-
-### useSavingsGoals
-
-- Usa `useServerPagination` (server 45, display 9) para obtener metas paginadas.
-- Soporta búsqueda por nombre (`search`) y filtro por `status`.
-- **queryKey:** `['savings-goals', search, status, page]`.
-
-### useCreateSavingsGoal
-
-- Crea una meta e invalida `['savings-goals']`.
-- Toast de éxito/error con claves `savingsGoals:alerts.createSuccess` / `createError`.
-
-### useUpdateSavingsGoal
-
-- Actualiza una meta e invalida `['savings-goals']`.
-- Toast de éxito/error con claves `savingsGoals:alerts.updateSuccess` / `updateError`.
-
-### useDeleteSavingsGoal
-
-- Elimina una meta e invalida `['savings-goals']`.
-- Toast de éxito/error con claves `savingsGoals:alerts.deleteSuccess` / `deleteError`.
-
-### useAddContribution
-
-- Añade una contribución a una meta (`PATCH /savings-goals/:id/contribute`).
-- Invalida `['savings-goals']`.
-- Toast de éxito/error con claves `savingsGoals:alerts.contributionSuccess` / `contributionError`.
-
----
-
-## components/SavingsGoalCard.tsx
-
-Tarjeta de meta de ahorro individual.
-
-### Props
-
-- **goal:** SavingsGoal
-- **onEdit:** callback al editar
-- **onDelete:** callback al eliminar
-- **onContribute:** callback al añadir contribución
-
-### Secciones
-
-- Nombre de la meta y badge de prioridad (LOW/MEDIUM/HIGH).
-- Progreso visual con porcentaje completado.
-- Cantidad actual / objetivo.
-- Fecha límite (si existe).
-- Botones de acción: editar, eliminar, aportar.
-- Enlace externo (si la meta tiene `link`).
-
----
-
-## components/SavingsGoalDialog.tsx
-
-Diálogo para crear una nueva meta de ahorro.
-
-### Campos
-
-- **Nombre:** texto obligatorio.
-- **Objetivo:** numérico > 0.
-- **Fecha límite:** fecha opcional.
-- **Prioridad:** Select con LOW/MEDIUM/HIGH.
-- **Link:** enlace opcional.
-
-### Validación
-
-Botón deshabilitado si nombre vacío o objetivo ≤ 0.
-
----
-
-## components/SavingsGoalEditDialog.tsx
-
-Diálogo para editar una meta existente.
-
-### Campos
-
-Incluye los campos de creación más estado (`ACTIVE`, `PAUSED`, `COMPLETED`, `CANCELLED`).
-
-### Reinicio de estado (v0.2.0)
-
-El formulario se inicializa directamente desde la prop `goal` mediante `getInitialForm(goal)`. El componente padre (`page.tsx`) fuerza el reset completo pasando `key={selectedGoal?.id}`. Esto elimina el `useEffect` de sincronización de estado que causaba renders extra (problema reportado por react-doctor).
-
----
-
-## components/ContributionModal.tsx
-
-Modal para añadir una contribución a una meta.
-
-### Campos
-
-- **Cantidad:** numérico > 0.
-
-### Flujo
-
-Llama a `onSave(amount)`, invalida la lista y cierra el modal.
-
----
-
-## types/index.ts
-
-- **SavingsGoal:** id, userId, name, targetAmount, currentAmount, deadline?, priority, status, link?.
-- **CreateSavingsGoalDTO:** name, targetAmount, deadline?, priority, link?.
-- **UpdateSavingsGoalDTO:** name, targetAmount, deadline?, priority, status, link?.
-
----
-
-## Notas de implementación (v0.1.0)
-
-- Las metas de ahorro son personales (no compartidas).
-- Las contribuciones se acumulan en `currentAmount`.
-- El estado permite pausar, completar o cancelar metas.
-
-## Paginación server-side (v0.2.0)
-
-- La página de metas de ahorro usa `useServerPagination`: backend devuelve bloques de 45 metas y el frontend muestra 9 por página.
-- Soporta búsqueda por nombre y filtro por estado (`ACTIVE`, `PAUSED`, `COMPLETED`, `CANCELLED`) enviados al backend.
-- Prefetch automático del siguiente bloque de 45 al llegar al límite del chunk actual.
+Los tipos vigentes incluyen `targetAmount`, `currentAmount`, prioridad y estado; la fecha límite y enlace son opcionales. La UI ofrece estados ACTIVE, PAUSED, COMPLETED y CANCELLED. Los formularios validan nombre y objetivo positivo; links pasan por `normalizeHttpLink`. Tarjeta presenta progreso y acciones, y los diálogos cubren alta, edición, contribución y retiro. Mientras se carga se usa estado de carga; lista vacía tiene EmptyState. Hooks notifican éxito/error e invalidan tanto `savings-goals` como `dashboardMetrics` en las operaciones.
