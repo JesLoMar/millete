@@ -90,19 +90,9 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Resuelve la IP real del cliente.
-     *
-     * <p>Si la aplicación está detrás de un proxy inverso (nginx,
-     * Cloudflare), usa la primera entrada de X-Forwarded-For.
-     * El proxy debe estar configurado para enviar esta cabecera
-     * de forma fiable y sobreescribir cualquier valor enviado
-     * por el cliente.</p>
-     *
-     * <p>Configuración mínima de nginx:
-     * <pre>
-     * proxy_set_header X-Forwarded-For $remote_addr;
-     * </pre>
-     * </p>
+     * Devuelve la IP validada por el filtro para la petición actual o, si
+     * todavía no se procesó, la IP de conexión. Nunca confía directamente
+     * en encabezados reenviados.
      */
     public static String resolveClientIp(HttpServletRequest request) {
         Object resolved = request.getAttribute(CLIENT_IP_ATTRIBUTE);

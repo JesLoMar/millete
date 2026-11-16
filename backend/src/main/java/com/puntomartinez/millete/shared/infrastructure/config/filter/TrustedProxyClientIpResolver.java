@@ -29,18 +29,13 @@ public final class TrustedProxyClientIpResolver {
         }
 
         String[] values = forwarded.split(",", -1);
-        List<String> hops = new ArrayList<>(values.length);
-        for (String value : values) {
-            String normalized = normalize(value.trim());
-            if (normalized == null) {
+        String client = peer;
+        for (int i = values.length - 1; i >= 0 && isTrusted(client); i--) {
+            String hop = normalize(values[i].trim());
+            if (hop == null) {
                 return peer;
             }
-            hops.add(normalized);
-        }
-
-        String client = peer;
-        for (int i = hops.size() - 1; i >= 0 && isTrusted(client); i--) {
-            client = hops.get(i);
+            client = hop;
         }
         return client;
     }
