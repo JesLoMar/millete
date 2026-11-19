@@ -2,6 +2,7 @@ package com.puntomartinez.millete.users.application.services;
 
 import com.puntomartinez.millete.users.domain.model.User;
 import com.puntomartinez.millete.users.domain.ports.in.LoginUserUseCase;
+import com.puntomartinez.millete.users.domain.ports.in.ManageProfileUseCase;
 import com.puntomartinez.millete.users.domain.ports.in.RegisterUserUseCase;
 import com.puntomartinez.millete.users.domain.ports.out.PasswordHasherPort;
 import com.puntomartinez.millete.users.domain.ports.out.UserRepository;
@@ -12,7 +13,10 @@ import com.puntomartinez.millete.shared.domain.exception.ResourceAlreadyExistsEx
 import com.puntomartinez.millete.shared.domain.exception.ResourceNotFoundException;
 import com.puntomartinez.millete.shared.domain.ports.out.TimeProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -22,21 +26,25 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
     private final PasswordHasherPort passwordHasher;
     private final AccountLockService accountLockService;
     private final TimeProvider timeProvider;
+    private final ManageProfileUseCase manageProfile;
 
     private final String dummyPasswordHash;
 
     public UserService(UserRepository userRepository,
                        PasswordHasherPort passwordHasher,
                        AccountLockService accountLockService,
-                       TimeProvider timeProvider) {
+                       TimeProvider timeProvider,
+                       ManageProfileUseCase manageProfile) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.accountLockService = accountLockService;
         this.timeProvider = timeProvider;
+        this.manageProfile = manageProfile;
         this.dummyPasswordHash = passwordHasher.hashPassword(UUID.randomUUID().toString());
     }
 
     @Override
+    @Transactional
     public User register(RegisterUserCommand command) {
         if (command.rawPassword() == null
                 || command.rawPassword().length() < 8
@@ -68,7 +76,16 @@ public class UserService implements RegisterUserUseCase, LoginUserUseCase, GetUs
                 true,
                 false
         );
-        return userRepository.save(newUser);
+        User savedUser = userRepository.saveNewUser(newUser);
+        String timezone = command.timezone();
+        if (timezone == null || !ZoneId.getAvailableZoneIds().contains(timezone)) {
+            timezone = "UTC";
+        }
+        manageProfile.updatePreferences(savedUser.getId(), Map.of(
+                "localCurrency", "EUR",
+                "timezone", timezone
+        ));
+        return savedUser;
     }
 
     @Override

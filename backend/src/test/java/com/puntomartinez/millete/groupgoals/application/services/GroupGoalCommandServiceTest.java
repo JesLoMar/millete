@@ -90,6 +90,49 @@ class GroupGoalCommandServiceTest {
     }
 
     @Nested
+    @DisplayName("resetContributions")
+    class ResetContributions {
+        @BeforeEach
+        void activeGoal() {
+            when(goalUnitRepository.findById(goalId)).thenReturn(Optional.of(createActiveGoal()));
+        }
+
+        @Test
+        void adminDeletesOnlyTheSelectedGoalsMovementsAfterLocking() {
+            when(goalMemberRepository.findActiveByGoalIdAndUserIdForUpdate(goalId, userId))
+                    .thenReturn(Optional.of(createAdminMember()));
+
+            service.resetContributions(goalId, userId);
+
+            InOrder order = inOrder(goalUnitRepository, goalMemberRepository, goalContributionRepository);
+            order.verify(goalUnitRepository).lockForUpdate(goalId);
+            order.verify(goalMemberRepository).findActiveByGoalIdAndUserIdForUpdate(goalId, userId);
+            order.verify(goalContributionRepository).deleteByGoalId(goalId);
+            verifyNoMoreInteractions(goalContributionRepository);
+            verify(goalUnitRepository, never()).save(any());
+            verify(goalMemberRepository, never()).save(any());
+            verifyNoInteractions(goalInvitationRepository);
+        }
+
+        @Test
+        void memberCannotDeleteMovements() {
+            when(goalMemberRepository.findActiveByGoalIdAndUserIdForUpdate(goalId, otherUserId))
+                    .thenReturn(Optional.of(createRegularMember(otherUserId)));
+
+            assertThatThrownBy(() -> service.resetContributions(goalId, otherUserId))
+                    .isInstanceOf(ForbiddenOperationException.class);
+            verifyNoInteractions(goalContributionRepository);
+        }
+
+        @Test
+        void noActiveMembershipCannotDeleteMovements() {
+            assertThatThrownBy(() -> service.resetContributions(goalId, otherUserId))
+                    .isInstanceOf(ForbiddenOperationException.class);
+            verifyNoInteractions(goalContributionRepository);
+        }
+    }
+
+    @Nested
     @DisplayName("create")
     class Create {
 

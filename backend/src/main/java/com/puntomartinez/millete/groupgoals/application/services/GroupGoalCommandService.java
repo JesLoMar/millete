@@ -33,6 +33,7 @@ public class GroupGoalCommandService implements
         DeleteMemberUseCase,
         AddContributionUseCase,
         WithdrawContributionUseCase,
+        ResetGoalContributionsUseCase,
         LeaveGoalUseCase {
 
     private final GoalUnitRepository goalUnitRepository;
@@ -102,7 +103,7 @@ public class GroupGoalCommandService implements
     @Override
     @Transactional
     public void deleteGoalUnit(UUID goalId, UUID userId) {
-        getActiveGoal(goalId);
+        lockActiveGoal(goalId);
         requireAdmin(goalId, userId);
 
         goalUnitRepository.findById(goalId).ifPresent(goal -> {
@@ -185,7 +186,7 @@ public class GroupGoalCommandService implements
             UUID userId,
             AddContributionCommand command
     ) {
-        getActiveGoal(goalId);
+        lockActiveGoal(goalId);
         requireActiveMember(goalId, userId);
 
         GoalContribution contribution = GoalContribution.create(
@@ -207,7 +208,7 @@ public class GroupGoalCommandService implements
             UUID userId,
             WithdrawContributionCommand command
     ) {
-        getActiveGoal(goalId);
+        lockActiveGoal(goalId);
         requireActiveMember(goalId, userId);
         GoalMember lockedMember = goalMemberRepository
                 .findActiveByGoalIdAndUserIdForUpdate(goalId, userId)
@@ -236,6 +237,19 @@ public class GroupGoalCommandService implements
         );
 
         goalContributionRepository.save(contribution);
+    }
+
+    @Override
+    @Transactional
+    public void resetContributions(UUID goalId, UUID userId) {
+        lockActiveGoal(goalId);
+        GoalMember member = goalMemberRepository
+                .findActiveByGoalIdAndUserIdForUpdate(goalId, userId)
+                .orElseThrow(() -> new ForbiddenOperationException(
+                        "No tienes permisos sobre este objetivo"
+                ));
+        requireAdmin(member);
+        goalContributionRepository.deleteByGoalId(goalId);
     }
 
     @Override
@@ -273,6 +287,12 @@ public class GroupGoalCommandService implements
                 );
     }
 
+    private void lockActiveGoal(UUID goalId) {
+        // Los cambios de movimientos bloquean primero la meta y después la membresía, si procede.
+        goalUnitRepository.lockForUpdate(goalId);
+        getActiveGoal(goalId);
+    }
+
     private void requireAdmin(UUID goalId, UUID userId) {
         GoalMember member = goalMemberRepository
                 .findByGoalIdAndUserId(goalId, userId)
@@ -282,6 +302,10 @@ public class GroupGoalCommandService implements
                         )
                 );
 
+        requireAdmin(member);
+    }
+
+    private void requireAdmin(GoalMember member) {
         if (!member.isActive() || !member.isAdmin()) {
             throw new ForbiddenOperationException(
                     "Solo los administradores pueden realizar esta acción"

@@ -1,9 +1,13 @@
+x-postgres-build: &postgres-build
+  context: ./postgres
+  dockerfile: Dockerfile
+
 services:
   # =============================================
   # 1. POSTGRESQL DATABASE
   # =============================================
   postgres:
-    image: postgres:16-alpine
+    build: *postgres-build
     container_name: millete-db
     restart: unless-stopped
 
@@ -159,9 +163,11 @@ services:
       test:
         [
           "CMD",
-          "curl",
-          "-f",
-          "http://localhost:80/health"
+          "wget",
+          "-q",
+          "-O",
+          "/dev/null",
+          "http://127.0.0.1/health"
         ]
       interval: 30s
       timeout: 5s
@@ -176,7 +182,7 @@ services:
   # 4. DAILY AUTOMATIC BACKUP
   # =============================================
   db-backup:
-    image: postgres:16-alpine
+    build: *postgres-build
     container_name: millete-db-backup
     restart: unless-stopped
 

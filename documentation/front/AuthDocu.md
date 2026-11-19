@@ -25,7 +25,7 @@ Los servicios usan `POST /auth/login`, `POST /auth/register` y `GET /auth/me/top
 | Acción | Flujo |
 |---|---|
 | Login | `POST /auth/login` con `{identifier,password}`; `handlePostAuthSuccess` actualiza contexto y resuelve ruta interna mediante destino previo o parámetro redirect sanitizado. Error muestra mensaje API/fallback. |
-| Registro | `POST /auth/register` con username/email/password, seguido por login usando username preferido o email. Si el alta resulta pero login automático falla, se informa y se permite continuar con login manual. |
+| Registro | `POST /auth/register` con username/email/password y la zona horaria del navegador. La cuenta se crea con EUR como moneda local. Después se inicia sesión con el nombre de usuario o el correo; si falla el inicio automático, se informa y se permite continuar manualmente. |
 | Rehidratación | Al montar se consulta `GET /auth/me/topnav` con timeout de 6 s. Respuesta 401 se trata como sesión no autenticada; indisponibilidad marca modo offline sin borrar por ello la sesión. `retryAuth` repite la comprobación. |
 | Logout | Limpieza inmediata local, incremento de auth epoch, vaciado de React Query y `POST /auth/logout` con timeout corto; fallo de red no impide limpiar UI. |
 

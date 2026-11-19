@@ -12,6 +12,8 @@ public interface GoalUnitRepository {
 
     Optional<GoalUnit> findById(UUID id);
 
+    void lockForUpdate(UUID id);
+
     List<GoalUnit> findByIds(Collection<UUID> ids);
 
     List<GoalUnit> findByUserId(UUID userId, int page, int size);

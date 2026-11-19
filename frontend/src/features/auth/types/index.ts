@@ -7,6 +7,7 @@ export interface RegisterUserRequest {
   username: string;
   email: string;
   password: string;
+  timezone?: string;
 }
 
 export interface LoginResponse {

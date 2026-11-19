@@ -31,10 +31,13 @@ RUN pnpm run build
 # =========================================================================
 # STAGE 2: RUNTIME (Secure Rootless Nginx Server for Production)
 # =========================================================================
-FROM nginx:1.27-alpine
+FROM nginx:1.30.7-alpine3.24@sha256:bef154735288bc38d99fac41ae63730684bcc661503673a04a0f9bc526ba8598
 
-# Install utilities for debugging and healthchecking
-RUN apk add --no-cache curl
+# Require the Alpine security fixes for OpenSSL and zlib.
+RUN apk add --no-cache \
+    'libcrypto3>=3.5.9-r1' \
+    'libssl3>=3.5.9-r1' \
+    'zlib>=1.4-r0'
 
 # Create a non-root user with an explicit ID for security
 RUN addgroup -g 1001 -S millete-group && \

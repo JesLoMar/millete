@@ -17,6 +17,8 @@ El JWT se transporta en cookie configurada por `CookieAuthFactory`; la respuesta
 
 Los valores predeterminados de `CookieAuthFactory` son nombre `__Host-ms_token`, `Secure=true`, `HttpOnly=true`, `SameSite=Strict`, `Path=/` y edad máxima 86400 segundos; pueden configurarse mediante `jwt.cookie-*`. Para el prefijo `__Host-`, el constructor exige Secure y `Path=/`. `JwtAuthenticationFilter` comprueba firma/expiración y actividad de sesión en cada petición autenticada. No se deriva de la cookie una garantía general de ausencia de riesgo CSRF.
 
+El registro también admite `timezone` como campo opcional. La aplicación web envía la zona IANA del navegador. La cuenta se crea con `localCurrency: "EUR"` y esa zona horaria, o `"UTC"` si no se recibe una zona admitida. Las preferencias quedan guardadas antes del primer inicio de sesión.
+
 ## Perfil
 
 `ProfileController` expone `GET/PUT /api/v1/profile`, `PUT /password`, `GET/PUT /preferences`, `GET /sessions`, `DELETE /sessions/{sessionId}`, `DELETE /sessions` y `POST /deactivate`. Perfil modifica username/email según DTO; cambio de contraseña exige contraseña actual y nueva. Las preferencias contienen locale y zona horaria y se validan contra valores admitidos por los DTO/servicio. La identidad se extrae del principal autenticado. La consulta devuelve sesiones activas; la revocación individual y masiva responde `204`, y la desactivación responde `200` y expira la cookie. Las sesiones revocadas dejan de ser válidas al pasar por el filtro JWT.

@@ -241,6 +241,16 @@ sh manage.sh reload
 sh manage.sh backup-now
 ```
 
+**Rebuild images with current security packages:**
+```bash
+docker compose build --pull --no-cache backend frontend postgres db-backup
+```
+
+`postgres` and `db-backup` now build from the same PostgreSQL 16 Dockerfile.
+This command only builds images; it does not recreate containers or delete
+volumes. Before recreating the database service, verify a recent backup and
+test a restore in an isolated environment.
+
 **Restore from a previous backup:**
 ```bash
 sh manage.sh restore

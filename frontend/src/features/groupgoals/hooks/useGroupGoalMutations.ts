@@ -366,6 +366,20 @@ export function useGroupGoalMutations(
     },
   });
 
+  const resetContributions = useMutation({
+    mutationFn: (goalId: string) =>
+      apiClient.delete(`/goals/${goalId}/contributions`, {
+        skipGlobalErrorNotify: true,
+      }),
+    onSuccess: async () => {
+      await invalidateGroupGoals();
+      notify.success(t('resetMovementsSuccess'));
+    },
+    onError: (error: unknown) => {
+      notify.error(getErrorMessage(error, t('resetMovementsError')));
+    },
+  });
+
   return {
     createGoal,
     inviteMember,
@@ -375,5 +389,6 @@ export function useGroupGoalMutations(
     deleteMember,
     addContribution,
     withdrawContribution,
+    resetContributions,
   };
 }

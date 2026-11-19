@@ -377,8 +377,8 @@ export const investmentsService = {
   ): Promise<void> => {
     await apiClient.post(`${BASE}/market-data/refresh`, payload, {
       skipGlobalErrorNotify: true,
-      // El refresh consulta proveedores externos y puede tardar varios minutos.
-      timeout: 5 * 60 * 1000,
+      // Allow NGINX to respond after its 15-minute market refresh read timeout.
+      timeout: 16 * 60 * 1000,
     });
   },
 

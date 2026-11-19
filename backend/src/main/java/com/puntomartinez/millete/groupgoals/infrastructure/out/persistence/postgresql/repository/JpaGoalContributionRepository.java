@@ -68,4 +68,8 @@ public interface JpaGoalContributionRepository
             @Param("goalId") UUID goalId,
             @Param("modifiedAt") Instant modifiedAt
     );
+
+    @Modifying
+    @Query("DELETE FROM GoalContributionEntity c WHERE c.goalId = :goalId")
+    int deleteByGoalId(@Param("goalId") UUID goalId);
 }

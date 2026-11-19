@@ -18,6 +18,7 @@ Todas las rutas requieren autenticación y derivan el usuario de `JwtUser`.
 | `GET /{goalId}/contributions?page=0&size=60` | Historial paginado |
 | `POST /{goalId}/contributions` | Registra aportación; `201` |
 | `POST /{goalId}/contributions/withdraw` | Registra retirada; `200` |
+| `DELETE /{goalId}/contributions` | Borra definitivamente aportes y retiradas de esa meta; `204` si el solicitante es administrador activo, `403` si no tiene permiso |
 | `POST /{goalId}/leave` | Sale de la meta; `204` |
 | `GET /{goalId}/contributions/calculation` | Calcula distribución |
 | `POST /{goalId}/invitations` | Invita; `201` |
@@ -35,6 +36,6 @@ La persona creadora obtiene rol `ADMIN`. Actualizar/eliminar meta, actualizar/el
 
 La creación acepta `name` (obligatorio, máximo 100), `monthlyTarget` (obligatorio, mínimo 0.01) y `distributionMode` obligatorio. `POST /contributions` recibe importe y registra tipo `DEPOSIT`, responde `201`; `/contributions/withdraw` recibe importe mínimo 0.01, exige saldo neto suficiente, registra `WITHDRAWAL` y responde `200`. La historia pagina con tamaño por defecto 60. `POST /leave` desactiva la membresía, no borra meta ni historial, y aplica regla del último administrador.
 
-Las retiradas serializan la validación de saldo por miembro mediante un bloqueo de escritura sobre su fila activa de membresía. El bloqueo se obtiene antes de consultar las aportaciones y se mantiene hasta completar la transacción; así, una retirada concurrente vuelve a calcular el saldo después de que la anterior confirme.
+Aportar, retirar y reiniciar movimientos bloquean la fila de la meta antes de cambiar sus movimientos. Al retirar se comprueba el saldo bajo el bloqueo de la membresía; al reiniciar se verifica bajo ese bloqueo que el solicitante sea administrador activo. El reinicio deja el historial vacío y el progreso a cero sin eliminar la meta, sus miembros ni sus invitaciones.
 
 Los adaptadores persisten meta, miembros, invitaciones y movimientos de contribución en tablas separadas; V5 hace `monthly_target` obligatorio, elimina tokens de invitación y restringe `goal_contributions.type` a `DEPOSIT` y `WITHDRAWAL`.

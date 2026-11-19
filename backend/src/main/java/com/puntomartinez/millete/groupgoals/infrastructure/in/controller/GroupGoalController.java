@@ -18,6 +18,7 @@ import com.puntomartinez.millete.groupgoals.domain.ports.in.RejectInvitationUseC
 import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateGoalUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.UpdateMemberUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.in.WithdrawContributionUseCase;
+import com.puntomartinez.millete.groupgoals.domain.ports.in.ResetGoalContributionsUseCase;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.GoalContributionRepository.MemberContributionTotals;
 import com.puntomartinez.millete.groupgoals.domain.ports.out.UserLookupPort;
 import com.puntomartinez.millete.groupgoals.infrastructure.in.controller.dto.AddContributionRequestDTO;
@@ -61,6 +62,7 @@ public class GroupGoalController {
     private final DeleteMemberUseCase deleteMemberUseCase;
     private final AddContributionUseCase addContributionUseCase;
     private final WithdrawContributionUseCase withdrawContributionUseCase;
+    private final ResetGoalContributionsUseCase resetGoalContributionsUseCase;
     private final LeaveGoalUseCase leaveGoalUseCase;
     private final ListGoalsUseCase listGoalsUseCase;
     private final GetGoalDetailUseCase getGoalDetailUseCase;
@@ -80,6 +82,7 @@ public class GroupGoalController {
             DeleteMemberUseCase deleteMemberUseCase,
             AddContributionUseCase addContributionUseCase,
             WithdrawContributionUseCase withdrawContributionUseCase,
+            ResetGoalContributionsUseCase resetGoalContributionsUseCase,
             LeaveGoalUseCase leaveGoalUseCase,
             ListGoalsUseCase listGoalsUseCase,
             GetGoalDetailUseCase getGoalDetailUseCase,
@@ -98,6 +101,7 @@ public class GroupGoalController {
         this.deleteMemberUseCase = deleteMemberUseCase;
         this.addContributionUseCase = addContributionUseCase;
         this.withdrawContributionUseCase = withdrawContributionUseCase;
+        this.resetGoalContributionsUseCase = resetGoalContributionsUseCase;
         this.leaveGoalUseCase = leaveGoalUseCase;
         this.listGoalsUseCase = listGoalsUseCase;
         this.getGoalDetailUseCase = getGoalDetailUseCase;
@@ -334,6 +338,15 @@ public class GroupGoalController {
         );
 
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{goalId}/contributions")
+    public ResponseEntity<Void> resetContributions(
+            @PathVariable UUID goalId,
+            Authentication authentication
+    ) {
+        resetGoalContributionsUseCase.resetContributions(goalId, getUserId(authentication));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{goalId}/leave")

@@ -28,6 +28,8 @@ public interface GoalContributionRepository {
 
     void deactivateByGoalId(UUID goalId);
 
+    void deleteByGoalId(UUID goalId);
+
     record MemberContributionTotals(
             UUID userId,
             java.math.BigDecimal totalDeposits,

@@ -31,6 +31,7 @@ interface GroupGoalDetailProps {
   onModeChange: (mode: string) => void
   onAddContribution: () => void
   onWithdrawContribution: () => void
+  onResetContributions: () => void
 }
 
 export function GroupGoalDetail({
@@ -47,6 +48,7 @@ export function GroupGoalDetail({
   onModeChange,
   onAddContribution,
   onWithdrawContribution,
+  onResetContributions,
 }: GroupGoalDetailProps) {
   const goalId = goal.id
   const { t } = useTranslation()
@@ -302,6 +304,14 @@ export function GroupGoalDetail({
           ))}
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="flex justify-end">
+          <Button type="button" variant="outline" onClick={onResetContributions}>
+            {t('groupGoals:resetMovements')}
+          </Button>
+        </div>
+      )}
 
       <ContributionHistory
         goalId={goalId}

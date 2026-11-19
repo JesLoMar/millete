@@ -35,6 +35,11 @@ public class GoalPostgresAdapter implements GoalUnitRepository {
     }
 
     @Override
+    public void lockForUpdate(UUID id) {
+        jpaRepository.findByIdForUpdate(id);
+    }
+
+    @Override
 public List<GoalUnit> findByIds(Collection<UUID> ids) {
     if (ids == null || ids.isEmpty()) {
         return List.of();

@@ -26,6 +26,7 @@ Los hooks actuales llaman a `/goals` (no `/group-goals`) mediante `apiClient`.
 | PUT `/goals/{id}` | Solo campos cambiados entre `name`, `monthlyTarget`, `distributionMode`. |
 | PUT/DELETE `/goals/{id}/members/{memberId}` | Edita rol/salario/porcentaje o elimina miembro. |
 | POST `/goals/{id}/contributions` y `/contributions/withdraw` | `{amount}` para aportar o retirar. |
+| DELETE `/goals/{id}/contributions` | Reinicia los movimientos de esa meta tras una confirmación explícita. Solo los administradores ven el botón. El borrado es definitivo y el progreso vuelve a cero. |
 | POST `/invitations/{token}/accept` o `/reject` | Acciones usadas por página de invitación/notificaciones. |
 
 ## Validación, resultado y caché

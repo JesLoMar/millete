@@ -105,4 +105,9 @@ public class GoalContributionPostgresAdapter
     public void deactivateByGoalId(UUID goalId) {
         repository.deactivateByGoalId(goalId, timeProvider.now());
     }
+
+    @Override
+    public void deleteByGoalId(UUID goalId) {
+        repository.deleteByGoalId(goalId);
+    }
 }

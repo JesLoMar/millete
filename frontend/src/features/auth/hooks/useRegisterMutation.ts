@@ -81,6 +81,7 @@ export const useRegisterMutation = (
         username,
         email,
         password: data.password,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
 
       // A partir de aquí, el registro ya ha sido confirmado.

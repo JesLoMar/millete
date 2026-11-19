@@ -32,6 +32,12 @@ public class UserPostgresAdapter implements UserRepository {
     }
 
     @Override
+    public User saveNewUser(User user) {
+        // El historial de moneda usa JDBC y necesita que el usuario ya exista en PostgreSQL.
+        return mapper.toDomain(jpaUserRepository.saveAndFlush(mapper.toEntity(user)));
+    }
+
+    @Override
     public Optional<User> findByEmail(String email) {
         return jpaUserRepository.findByEmail(email)
                 .map(mapper::toDomain);

@@ -75,6 +75,7 @@ export const GroupGoalsPage = () => {
     editMember: null as ContributionMember | null,
     deleteMemberId: null as string | null,
     deletingMemberName: '',
+    resettingGoalId: null as string | null,
   })
 
   const { 
@@ -89,6 +90,8 @@ export const GroupGoalsPage = () => {
   } = useGroupGoals()
 
   const { selectedGoal } = useGroupGoalDetail(selectedGoalId)
+  const isResetDialogOpen =
+    selectedGoal?.isAdmin === true && selectedGoal.id === actions.resettingGoalId
   const mutations = useGroupGoalMutations(selectedGoalId)
   const { profile } = useProfile()
 
@@ -447,6 +450,9 @@ export const GroupGoalsPage = () => {
                   isWithdrawOpen: true,
                 }))
               }
+              onResetContributions={() =>
+                setActions((prev) => ({ ...prev, resettingGoalId: selectedGoal.id }))
+              }
             />
           ) : (
             <div className="flex items-center justify-center py-12">
@@ -601,6 +607,30 @@ export const GroupGoalsPage = () => {
               actions.deletingMemberName,
           }
         )}
+      />
+
+      <ConfirmDeletionDialog
+        open={isResetDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && !mutations.resetContributions.isPending) {
+            setActions((prev) => ({ ...prev, resettingGoalId: null }))
+          }
+        }}
+        itemName={selectedGoal?.name ?? ''}
+        title={t('resetMovements')}
+        description={t('resetMovementsConfirmation', { name: selectedGoal?.name ?? '' })}
+        isDeleting={mutations.resetContributions.isPending}
+        onConfirm={() => {
+          const goalId = actions.resettingGoalId
+          if (!isResetDialogOpen || !goalId || mutations.resetContributions.isPending) return
+
+          mutations.resetContributions.mutate(goalId, {
+            onSuccess: () =>
+              setActions((prev) =>
+                prev.resettingGoalId === goalId ? { ...prev, resettingGoalId: null } : prev
+              ),
+          })
+        }}
       />
 
       <AddContributionDialog

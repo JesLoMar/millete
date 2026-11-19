@@ -14,10 +14,12 @@ COPY src ./src
 RUN mvn clean package -Dmaven.test.skip=true
 
 
-FROM eclipse-temurin:25-jre-jammy
+FROM eclipse-temurin:25.0.5_8-jre-noble@sha256:3c6d7b40c2e78d4a8f4fe00af8165c706b34faf672dc21ff0924e583559ec6c2
 
 RUN apt-get update && \
     apt-get install -y curl && \
+    apt-get install -y --only-upgrade perl-base perl perl-modules-5.38 libperl5.38t64 && \
+    dpkg --compare-versions "$(dpkg-query -W -f='${Version}' perl-base)" ge 5.38.2-3.2ubuntu0.4 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r millete -g 1001 && \

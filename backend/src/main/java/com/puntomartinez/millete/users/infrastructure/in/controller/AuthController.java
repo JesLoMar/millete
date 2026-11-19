@@ -64,7 +64,8 @@ public class AuthController {
                 new RegisterUserUseCase.RegisterUserCommand(
                         request.username(),
                         request.email(),
-                        request.password()
+                        request.password(),
+                        request.timezone()
                 );
 
         User user = registerUserUseCase.register(command);
