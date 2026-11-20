@@ -65,17 +65,17 @@ export const notify = {
   success: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.success} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { id: options?.id, duration: options?.duration ?? config.success.defaultDuration }),
+    ), { ...(options?.id === undefined ? {} : { id: options.id }), duration: options?.duration ?? config.success.defaultDuration }),
   error: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.error} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { id: options?.id, duration: options?.duration ?? config.error.defaultDuration }),
+    ), { ...(options?.id === undefined ? {} : { id: options.id }), duration: options?.duration ?? config.error.defaultDuration }),
   info: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.info} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { id: options?.id, duration: options?.duration ?? config.info.defaultDuration }),
+    ), { ...(options?.id === undefined ? {} : { id: options.id }), duration: options?.duration ?? config.info.defaultDuration }),
   warning: (message: string, options?: NotifyOptions) =>
     toast.custom((t) => (
       <ToastContent styles={config.warning} message={message} description={options?.description} onClose={() => toast.dismiss(t)} />
-    ), { id: options?.id, duration: options?.duration ?? config.warning.defaultDuration }),
+    ), { ...(options?.id === undefined ? {} : { id: options.id }), duration: options?.duration ?? config.warning.defaultDuration }),
 };

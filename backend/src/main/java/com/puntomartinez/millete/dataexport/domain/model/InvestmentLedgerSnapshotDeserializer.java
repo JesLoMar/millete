@@ -27,7 +27,7 @@ public final class InvestmentLedgerSnapshotDeserializer
         }
 
         if (node.isArray()) {
-            return InvestmentLedgerSnapshot.emptyLegacy(
+            return omitLegacy(
                     node.size()
             );
         }
@@ -106,9 +106,15 @@ public final class InvestmentLedgerSnapshotDeserializer
          * ya no existe. Se contabiliza y DataImportService
          * informará de que esos registros fueron omitidos.
          */
-        return InvestmentLedgerSnapshot.emptyLegacy(
+        return omitLegacy(
                 countLegacyRecords(node)
         );
+    }
+
+    private InvestmentLedgerSnapshot omitLegacy(int recordCount) {
+        return recordCount == 0
+                ? null
+                : InvestmentLedgerSnapshot.emptyLegacy(recordCount);
     }
 
     private int countLegacyRecords(
