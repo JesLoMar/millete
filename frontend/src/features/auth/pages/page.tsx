@@ -7,6 +7,8 @@ import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { ThemeSelector } from '@/shared/components/ThemeSelector';
 import { Button } from '@/shared/components/core/button';
 
+import styles from './LoginLayout.module.css';
+
 export const LoginPage = () => {
   const { t } = useTranslation(['auth', 'common']);
   const { isLoading, isOffline, retryAuth } = useAuth();
@@ -17,7 +19,7 @@ export const LoginPage = () => {
       aria-label={t('auth:aria.pageLabel')}
     >
       <section
-        className="z-10 w-full min-w-0 max-w-5xl text-card-foreground lg:[zoom:1.125] xl:[zoom:1.25] 2xl:[zoom:1.375]"
+        className={`${styles.layout} z-10 w-full min-w-0 max-w-5xl text-card-foreground`}
         aria-label={t('auth:aria.formLabel')}
       >
         <div className="flex min-h-[calc(2.5rem+env(safe-area-inset-top))] justify-center md:min-h-10">

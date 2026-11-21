@@ -11,6 +11,7 @@ import {
 } from "@/shared/config/navigation"
 import { notify } from "@/shared/utils/notifications/notify"
 import { prefetchRoute } from "@/shared/config/routeLoaders"
+import { FloatingSidebar } from "@/shared/components/FloatingSidebar"
 
 interface SidebarProps {
   className?: string
@@ -73,6 +74,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
     }
     return location.pathname.startsWith(item.path)
   }
+  const desktopItems = [...mainItems, ...bottomItems]
 
   const sidebarContent = (
     <>
@@ -163,6 +165,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
 
   return (
     <>
+      <FloatingSidebar items={desktopItems} current={desktopItems.find(isActive)} className={className} />
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-background/50 backdrop-blur-sm md:hidden"
@@ -176,8 +179,7 @@ export function Sidebar({ className, showDisabled = true }: SidebarProps) {
           "fixed inset-y-0 left-0 z-50 w-64",
           "transition-transform duration-300 ease-in-out",
           isMobileOpen ? "translate-x-0" : "-translate-x-full",
-          "md:static md:translate-x-0 md:z-auto",
-          "md:h-[calc(100vh-4rem)] md:sticky md:top-16",
+          "md:hidden",
           className
         )}
       >

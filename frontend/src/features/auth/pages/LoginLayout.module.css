@@ -1,0 +1,25 @@
+@media (min-width: 64rem) {
+  .layout {
+    --login-scale: 1.125;
+    --container-5xl: calc(64rem * var(--login-scale));
+    --spacing: calc(0.25rem * var(--login-scale));
+    --text-xs: calc(0.75rem * var(--login-scale));
+    --text-sm: calc(0.875rem * var(--login-scale));
+    --text-base: calc(1rem * var(--login-scale));
+    --text-2xl: calc(1.5rem * var(--login-scale));
+    --text-3xl: calc(1.875rem * var(--login-scale));
+    --text-4xl: calc(2.25rem * var(--login-scale));
+  }
+}
+
+@media (min-width: 80rem) {
+  .layout {
+    --login-scale: 1.25;
+  }
+}
+
+@media (min-width: 96rem) {
+  .layout {
+    --login-scale: 1.375;
+  }
+}
