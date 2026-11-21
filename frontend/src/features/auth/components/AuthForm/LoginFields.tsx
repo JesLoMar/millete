@@ -23,10 +23,10 @@ export function LoginFields({
   const { t } = useTranslation(['auth', 'validations']);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       <Label
         htmlFor="identifier"
-        className="ml-1 text-lg text-secondary-foreground/70"
+        className="text-sm font-semibold text-foreground"
       >
         {t('auth:form.fields.identifier.login')}
       </Label>
@@ -42,7 +42,7 @@ export function LoginFields({
         disabled={disabled}
         aria-invalid={errors.identifier ? 'true' : 'false'}
         className={cn(
-          'h-14 rounded-xl border-border/50 bg-secondary/30 px-5 text-lg text-foreground transition-all focus:ring-2 focus:ring-primary/50',
+          'h-11 rounded-none border-0 border-b border-input bg-transparent px-0 text-base text-foreground shadow-none focus-visible:border-ring focus-visible:ring-0',
           errors.identifier && 'animate-shake',
         )}
         {...register('identifier')}

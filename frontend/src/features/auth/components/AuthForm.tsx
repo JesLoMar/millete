@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   useForm,
 } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight } from 'lucide-react';
 
@@ -148,89 +148,67 @@ export function AuthForm() {
     (mode === 'register' && isRegisterError);
 
   return (
-    <div className="flex w-full flex-col justify-center space-y-8 py-6 sm:space-y-12">
-      <AuthHeader />
-
-      <div className="space-y-3 sm:space-y-4">
-        <h1 className="font-serif text-4xl leading-tight text-foreground sm:text-5xl">
-          <Trans
-            i18nKey="greeting"
-            ns="auth"
-          />
-        </h1>
-      </div>
-
-      <AuthToggle
-        mode={mode}
-        onToggle={handleModeChange}
-      />
-
+    <>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-5 sm:space-y-6"
+        className="grid md:grid-cols-2"
         noValidate
       >
-        {mode === 'login' ? (
-          <LoginFields
-            register={register}
-            errors={errors}
+        <div className="min-w-0 md:border-r md:border-border">
+          <div className="flex flex-col gap-5 border-b border-border px-5 py-6 sm:px-9 md:border-b-0 md:px-10 lg:px-14">
+            <AuthHeader />
+            <AuthToggle
+              mode={mode}
+              onToggle={handleModeChange}
+            />
+          </div>
+
+          <div className="min-w-0 space-y-5 px-5 pt-8 pb-3 sm:px-9 md:px-10 md:pt-0 md:pb-7 lg:px-14">
+            <h1 className="mb-7 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl">
+              {t('greeting').replace(/<br\s*\/?>/g, ' ')}
+            </h1>
+
+            {mode === 'login' ? (
+              <LoginFields register={register} errors={errors} disabled={isPending} />
+            ) : (
+              <RegisterFields register={register} errors={errors} control={control} disabled={isPending} />
+            )}
+
+            <PasswordField
+              register={register}
+              errors={errors}
+              disabled={isPending}
+              mode={mode}
+            />
+          </div>
+        </div>
+
+        <div className="grid justify-items-center gap-3 px-5 pt-5 pb-7 sm:px-9 md:col-span-2 md:pt-0 md:pb-10">
+          <Button
+            type="submit"
             disabled={isPending}
-          />
-        ) : (
-          <RegisterFields
-            register={register}
-            errors={errors}
-            control={control}
-            disabled={isPending}
-          />
-        )}
-
-        <PasswordField
-          register={register}
-          errors={errors}
-          disabled={isPending}
-          mode={mode}
-        />
-
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="h-12 w-full bg-primary text-base font-semibold transition-all duration-200 hover:bg-primary/90 sm:h-14 sm:text-lg"
-          aria-label={
-            mode === 'login'
-              ? t('auth:submit.default')
-              : t('auth:submit.register')
-          }
-        >
-          {isPending ? (
-            <Spinner size={24} />
-          ) : (
-            <>
-              {mode === 'login'
-                ? t('auth:submit.default')
-                : t('auth:submit.register')}
-
-              <ArrowRight
-                className="ml-2 size-5"
-                aria-hidden="true"
-              />
-            </>
-          )}
-        </Button>
-
-        {hasSubmissionError && (
-          <p
-            className="text-center text-sm text-destructive"
-            role="alert"
+            className="h-12 w-full rounded-md bg-primary px-6 text-base font-semibold sm:w-auto sm:min-w-52"
+            aria-label={mode === 'login' ? t('auth:submit.default') : t('auth:submit.register')}
           >
-            {mode === 'login'
-              ? t('auth:errors.loginFailed')
-              : t('auth:errors.registerFailed')}
-          </p>
-        )}
+            {isPending ? (
+              <Spinner size={24} />
+            ) : (
+              <>
+                {mode === 'login' ? t('auth:submit.default') : t('auth:submit.register')}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </>
+            )}
+          </Button>
+
+          {hasSubmissionError && (
+            <p className="text-center text-sm text-destructive" role="alert">
+              {mode === 'login' ? t('auth:errors.loginFailed') : t('auth:errors.registerFailed')}
+            </p>
+          )}
+        </div>
       </form>
 
       <AuthFooter />
-    </div>
+    </>
   );
 }

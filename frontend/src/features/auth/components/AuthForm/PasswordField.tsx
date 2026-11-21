@@ -29,10 +29,10 @@ export function PasswordField({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       <Label
         htmlFor="password"
-        className="ml-1 text-lg text-secondary-foreground/70"
+        className="text-sm font-semibold text-foreground"
       >
         {t('auth:form.fields.password.label')}
       </Label>
@@ -48,7 +48,7 @@ export function PasswordField({
           disabled={disabled}
           aria-invalid={errors.password ? 'true' : 'false'}
           className={cn(
-            'h-14 rounded-xl border-border/50 bg-secondary/30 px-5 pr-12 text-lg text-foreground transition-all focus:ring-2 focus:ring-primary/50',
+            'h-11 rounded-none border-0 border-b border-input bg-transparent px-0 pr-12 text-base text-foreground shadow-none focus-visible:border-ring focus-visible:ring-0',
             errors.password && 'animate-shake',
           )}
           {...register('password')}
@@ -59,7 +59,7 @@ export function PasswordField({
           variant="ghost"
           size="icon"
           disabled={disabled}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute right-0 top-1/2 size-11 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           onClick={() => setShowPassword((visible) => !visible)}
         >
           {showPassword ? (

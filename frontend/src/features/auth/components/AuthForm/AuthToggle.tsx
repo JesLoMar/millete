@@ -15,7 +15,7 @@ export function AuthToggle({
 
   return (
     <div
-      className="flex w-fit rounded-2xl border border-border/50 bg-secondary/50 p-2 backdrop-blur-sm"
+      className="grid grid-cols-2 rounded-md border border-border p-1"
       role="tablist"
       aria-label={t('form.toggle.label')}
     >
@@ -25,9 +25,9 @@ export function AuthToggle({
         aria-selected={mode === 'login'}
         onClick={() => onToggle('login')}
         className={cn(
-          'rounded-xl px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all',
+          'min-h-11 min-w-0 rounded-sm px-2 py-2 text-sm font-semibold break-words transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
           mode === 'login'
-            ? 'bg-primary text-primary-foreground shadow-lg'
+            ? 'bg-primary text-primary-foreground'
             : 'text-foreground hover:text-primary',
         )}
       >
@@ -40,9 +40,9 @@ export function AuthToggle({
         aria-selected={mode === 'register'}
         onClick={() => onToggle('register')}
         className={cn(
-          'rounded-xl px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all',
+          'min-h-11 min-w-0 rounded-sm px-2 py-2 text-sm font-semibold break-words transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
           mode === 'register'
-            ? 'bg-primary text-primary-foreground shadow-lg'
+            ? 'bg-primary text-primary-foreground'
             : 'text-foreground hover:text-primary',
         )}
       >

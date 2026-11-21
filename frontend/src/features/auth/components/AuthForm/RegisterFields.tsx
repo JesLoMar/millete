@@ -25,7 +25,7 @@ export function RegisterFields({
   control,
   disabled,
 }: RegisterFieldsProps) {
-  const { t } = useTranslation(['auth', 'validations']);
+  const { t } = useTranslation(['auth', 'validations', 'common']);
 
   const usernameWatch = useWatch({
     control,
@@ -42,11 +42,11 @@ export function RegisterFields({
     !!emailWatch?.trim();
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 space-y-4 duration-300">
-      <div className="space-y-2">
+    <div className="space-y-3">
+      <div className="space-y-1.5">
         <Label
           htmlFor="usernameRegistro"
-          className="ml-1 flex items-center gap-1 text-sm text-secondary-foreground/70"
+          className="flex flex-wrap items-center gap-1 text-sm font-semibold text-foreground"
         >
           <User className="size-4" />
           {t('auth:form.fields.username.label')}
@@ -65,7 +65,7 @@ export function RegisterFields({
           disabled={disabled}
           aria-invalid={errors.usernameRegistro ? 'true' : 'false'}
           className={cn(
-            'h-12 rounded-xl border-border/50 bg-secondary/30 px-4 text-base text-foreground transition-all focus:ring-2 focus:ring-primary/50',
+            'h-11 rounded-none border-0 border-b border-input bg-transparent px-0 text-base text-foreground shadow-none focus-visible:border-ring focus-visible:ring-0',
             errors.usernameRegistro && 'animate-shake',
           )}
           {...register('usernameRegistro')}
@@ -88,10 +88,10 @@ export function RegisterFields({
         <div className="h-px flex-1 bg-border/30" />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label
           htmlFor="emailRegistro"
-          className="ml-1 flex items-center gap-1 text-sm text-secondary-foreground/70"
+          className="flex flex-wrap items-center gap-1 text-sm font-semibold text-foreground"
         >
           <Mail className="size-4" />
           {t('auth:form.fields.identifier.register')}
@@ -110,7 +110,7 @@ export function RegisterFields({
           disabled={disabled}
           aria-invalid={errors.emailRegistro ? 'true' : 'false'}
           className={cn(
-            'h-12 rounded-xl border-border/50 bg-secondary/30 px-4 text-base text-foreground transition-all focus:ring-2 focus:ring-primary/50',
+            'h-11 rounded-none border-0 border-b border-input bg-transparent px-0 text-base text-foreground shadow-none focus-visible:border-ring focus-visible:ring-0',
             errors.emailRegistro && 'animate-shake',
           )}
           {...register('emailRegistro')}
