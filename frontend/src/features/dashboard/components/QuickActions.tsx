@@ -1,7 +1,10 @@
-import { FileDown, FileUp, FolderPlus, Loader2, PlusCircle } from 'lucide-react'
+import { FileDown, FileUp, FolderPlus, Loader2, PlusCircle, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/shared/components/core/button'
+import { AssistantDialog } from '@/features/assistant/components/AssistantDialog'
+
+const actionButtonClass = 'size-11 shrink-0 rounded-full p-0 text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors duration-200 group cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
 
 interface QuickActionsProps {
   onImportClick: () => void
@@ -16,7 +19,6 @@ interface Action {
   icon: React.ComponentType<{ className?: string }>
   labelKey: string
   ariaLabelKey: string
-  color: string
   onClick?: () => void
   disabled?: boolean
   isLoading?: boolean
@@ -38,8 +40,6 @@ export function QuickActions({
       icon: PlusCircle,
       labelKey: 'dashboard:quickActions.addExpense',
       ariaLabelKey: 'dashboard:quickActions.addExpenseAria',
-      color:
-        'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground',
       onClick: onAddClick,
     },
     {
@@ -47,8 +47,6 @@ export function QuickActions({
       labelKey: 'dashboard:quickActions.createCategory',
       ariaLabelKey:
         'dashboard:quickActions.createCategoryAria',
-      color:
-        'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground',
       onClick: onAddCategoryClick,
     },
     {
@@ -59,8 +57,6 @@ export function QuickActions({
       ariaLabelKey: isImporting
         ? 'dashboard:quickActions.importingAria'
         : 'dashboard:quickActions.importDataAria',
-      color:
-        'bg-warning/10 text-warning group-hover:bg-warning group-hover:text-warning-foreground',
       onClick: onImportClick,
       disabled: isAnyLoading,
       isLoading: isImporting,
@@ -73,8 +69,6 @@ export function QuickActions({
       ariaLabelKey: isExporting
         ? 'dashboard:quickActions.exportingAria'
         : 'dashboard:quickActions.exportDataAria',
-      color:
-        'bg-chart-5/10 text-chart-5 group-hover:bg-chart-5 group-hover:text-primary-foreground',
       onClick: onExportClick,
       disabled: isAnyLoading,
       isLoading: isExporting,
@@ -87,7 +81,7 @@ export function QuickActions({
 
   return (
     <fieldset
-      className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full border-0 p-0 m-0"
+      className="flex w-full items-center gap-2 border-0 p-0 m-0"
       aria-label={String(
         t('dashboard:quickActions.groupLabel')
       )}
@@ -98,32 +92,28 @@ export function QuickActions({
           onClick={action.onClick}
           disabled={action.disabled}
           aria-label={String(t(action.ariaLabelKey))}
-          className={`
-            h-auto min-h-25 sm:min-h-28 w-full
-            flex flex-col items-center justify-center gap-2 sm:gap-2.5
-            rounded-xl border border-border/50 bg-card px-2 py-4 sm:py-5
-            hover:border-primary/30 hover:shadow-sm text-wrap whitespace-normal
-            transition-all duration-200 group cursor-pointer
-            disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-          `}
+          title={String(t(action.labelKey))}
+          className={actionButtonClass}
         >
-          <div
-            className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 shrink-0 ${action.color}`}
-          >
-            <action.icon
-              className={`size-5 sm:size-5.5 ${
-                action.isLoading ? 'animate-spin' : ''
-              }`}
-              aria-hidden="true"
-            />
-          </div>
-
-          <span className="font-medium text-xs sm:text-sm md:text-sm text-foreground text-center leading-tight w-full wrap-break-word px-1">
-            {String(t(action.labelKey))}
-          </span>
+          <action.icon
+            className={`size-5 ${
+              action.isLoading ? 'animate-spin' : ''
+            } text-primary-foreground`}
+            aria-hidden="true"
+          />
         </Button>
       ))}
+      <AssistantDialog
+        trigger={
+          <Button
+            aria-label={t('assistant.title')}
+            title={t('assistant.title')}
+            className={actionButtonClass}
+          >
+            <Sparkles className="size-5 text-primary-foreground" aria-hidden="true" />
+          </Button>
+        }
+      />
     </fieldset>
   )
 }

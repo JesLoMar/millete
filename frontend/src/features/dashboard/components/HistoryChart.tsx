@@ -49,7 +49,7 @@ export function HistoryChart({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-8 border">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-8">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-6 w-32 bg-muted rounded-full animate-pulse" />
@@ -64,7 +64,7 @@ export function HistoryChart({
 
   if (displayData.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-8 border">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-8">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-lg font-serif font-bold">
             {t('dashboard:chart.title')}
@@ -87,7 +87,7 @@ export function HistoryChart({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-8 border">
+    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-8">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:chart.title')}

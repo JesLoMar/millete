@@ -35,7 +35,7 @@ export function CategoryDonut({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-4 border">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
         <CardHeader>
           <div className="h-6 w-36 bg-muted rounded animate-pulse" />
         </CardHeader>
@@ -62,7 +62,7 @@ export function CategoryDonut({
 
   if (chartData.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-4 border">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
         <CardHeader>
           <CardTitle className="text-lg font-serif font-bold">
             {title || t('dashboard:donut.title')}
@@ -79,7 +79,7 @@ export function CategoryDonut({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-4 border">
+    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
       <CardHeader>
         <CardTitle className="text-lg font-serif font-bold">
           {title || t('dashboard:donut.title')}

@@ -37,7 +37,7 @@ export function RecentTransactions({
 
   if (loading) {
     return (
-      <Card className="col-span-1 md:col-span-7 border">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-7">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-4 w-20 bg-muted rounded animate-pulse" />
@@ -65,7 +65,7 @@ export function RecentTransactions({
   }
 
   return (
-    <Card className="col-span-1 md:col-span-7 border">
+    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-7">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:transactions.title')}

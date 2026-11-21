@@ -16,7 +16,6 @@ import { TopNav } from '@/shared/components/TopNav'
 
 import { NewTransactionDialog } from '@/features/transactions/components/dialogs/NewTransactionDialog'
 import { AddCategoryDialog } from '@/features/categories/components/AddCategoryDialog'
-import { AssistantCard } from '@/features/assistant/components/AssistantCard'
 
 import { BudgetBars } from '../components/BudgetBars'
 import { CategoryDonut } from '../components/CategoryDonut'
@@ -199,16 +198,23 @@ export const DashboardPage = () => {
   const periodName = t(
     `dashboard:header.period.${period}`
   )
+  const periodControls = (
+    <Header
+      className="lg:max-xl:[&_.no-scrollbar]:flex-wrap lg:max-xl:[&_.no-scrollbar]:gap-x-1 lg:max-xl:[&_.no-scrollbar]:gap-y-0 lg:max-xl:[&_.no-scrollbar]:text-xs lg:max-xl:[&_fieldset_button]:min-w-14 lg:max-xl:[&_fieldset_button]:px-2 lg:max-xl:[&_fieldset_button]:text-xs"
+      onPeriodChange={handlePeriodChange}
+      defaultPeriod={period}
+    />
+  )
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden pt-16">
-        <TopNav />
+      <div className="flex-1 flex min-w-0 flex-col overflow-hidden">
+        <TopNav desktopCenter={periodControls} />
 
         <m.main
-          className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8"
+          className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-20 pb-4 sm:gap-8 sm:px-6 sm:pt-22 sm:pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_clamp(15rem,18vw,21rem)] lg:grid-rows-[minmax(55dvh,auto)_auto] lg:pb-24"
           initial="hidden"
           animate="visible"
           variants={{
@@ -223,40 +229,9 @@ export const DashboardPage = () => {
             },
           }}
         >
-          <Header
-            onPeriodChange={handlePeriodChange}
-            defaultPeriod={period}
-          />
+          <div className="lg:hidden">{periodControls}</div>
 
-          <m.div
-            className="mb-6"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: -20,
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-              },
-            }}
-          >
-            <AssistantCard />
-          </m.div>
-
-          <m.div
-            className="mb-6"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: -20,
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-              },
-            }}
-          >
+          <div className="lg:fixed lg:right-6 lg:bottom-6 lg:z-40 lg:rounded-lg lg:border lg:border-border lg:bg-card lg:p-1 lg:shadow-md">
             <QuickActions
               onImportClick={() =>
                 dispatch({
@@ -280,10 +255,10 @@ export const DashboardPage = () => {
               isExporting={false}
               isImporting={ui.isImporting}
             />
-          </m.div>
+          </div>
 
           <m.div
-            className="min-h-32"
+            className="min-h-32 min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
             variants={{
               hidden: {
                 opacity: 0,
@@ -295,7 +270,7 @@ export const DashboardPage = () => {
               },
             }}
           >
-            <div className="grid grid-cols-1 min-[390px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full min-w-0">
+            <div className="grid w-full min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:gap-4 lg:grid-cols-1">
               <FormattedMetricCard
                 title={t('dashboard:metrics.balance')}
                 value={metrics.data?.balance ?? 0}
@@ -304,6 +279,7 @@ export const DashboardPage = () => {
                 color="bg-primary/10 text-primary"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
+                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
               />
 
               <FormattedMetricCard
@@ -316,6 +292,7 @@ export const DashboardPage = () => {
                 color="bg-primary/10 text-primary"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
+                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
               />
 
               <FormattedMetricCard
@@ -329,6 +306,7 @@ export const DashboardPage = () => {
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
                 invertedTrend
+                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
               />
 
               <FormattedMetricCard
@@ -339,12 +317,13 @@ export const DashboardPage = () => {
                 color="bg-warning/10 text-warning"
                 periodLabel={periodLabel}
                 loading={metrics.isLoading}
+                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
               />
             </div>
           </m.div>
 
           <m.div
-            className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6"
+            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:col-start-1 lg:row-start-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
             variants={{
               hidden: {
                 opacity: 0,
@@ -356,7 +335,7 @@ export const DashboardPage = () => {
               },
             }}
           >
-            <div className="lg:col-span-8 min-h-96">
+            <div className="min-h-96 min-w-0">
               <HistoryChart
                 period={period}
                 data={history.data}
@@ -364,7 +343,7 @@ export const DashboardPage = () => {
               />
             </div>
 
-            <div className="lg:col-span-4 min-h-96">
+            <div className="min-h-96 min-w-0">
               <CategoryDonut
                 data={categories.data}
                 loading={categories.isLoading}
@@ -373,7 +352,7 @@ export const DashboardPage = () => {
           </m.div>
 
           <m.div
-            className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6"
+            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:col-start-1 lg:row-start-2 lg:grid-cols-2"
             variants={{
               hidden: {
                 opacity: 0,
@@ -385,7 +364,7 @@ export const DashboardPage = () => {
               },
             }}
           >
-            <div className="lg:col-span-5 min-h-96">
+            <div className="min-h-96 min-w-0">
               <BudgetBars
                 data={budgets.data}
                 loading={budgets.isLoading}
@@ -393,7 +372,7 @@ export const DashboardPage = () => {
               />
             </div>
 
-            <div className="lg:col-span-7 min-h-96">
+            <div className="min-h-96 min-w-0">
               <RecentTransactions
                 data={recentTransactions.data}
                 loading={recentTransactions.isLoading}

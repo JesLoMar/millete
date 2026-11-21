@@ -1,4 +1,5 @@
 import { useCallback } from "react"
+import type { ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { User, LogOut, Menu } from "lucide-react"
@@ -19,40 +20,13 @@ import { NotificationBell } from "@/features/notifications/components/Notificati
 
 interface TopNavProps {
   className?: string
+  desktopCenter?: ReactNode
 }
 
-function getUserDisplay(
-  user: { name?: string; email?: string } | null,
-  fallbackGuest: string,
-  fallbackUser: string
-): {
-  primary: string
-  secondary: string | null
-} {
-  if (!user) {
-    return { primary: fallbackGuest, secondary: null }
-  }
-  const hasName = !!user.name
-  const hasEmail = !!user.email
-  if (hasName && hasEmail) {
-    return { primary: user.name!, secondary: user.email! }
-  }
-  if (hasName) {
-    return { primary: user.name!, secondary: null }
-  }
-  if (hasEmail) {
-    return { primary: user.email!.split("@")[0], secondary: user.email! }
-  }
-  return { primary: fallbackUser, secondary: null }
-}
-
-export function TopNav({ className }: TopNavProps) {
+export function TopNav({ className, desktopCenter }: TopNavProps) {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
   const { t } = useTranslation(['nav', 'common'])
-
-  const { primary, secondary } = getUserDisplay(user, t('guest'), t('user'))
-  const hasOnlyOneField = !secondary
 
   const handleNavigate = useCallback((path: string) => {
     navigate(path)
@@ -70,7 +44,8 @@ export function TopNav({ className }: TopNavProps) {
 
   return (
     <header className={cn(
-      "h-16 border-b bg-card/50 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between fixed top-0 left-0 w-full z-30 transition-all",
+      "h-16 bg-transparent px-4 sm:px-6 flex items-center justify-between fixed top-0 left-0 w-full z-30",
+      desktopCenter && "lg:grid lg:grid-cols-[minmax(16.5rem,1fr)_minmax(0,auto)_minmax(16.5rem,1fr)] lg:gap-4",
       className
     )}>
       <div className="flex items-center gap-2">
@@ -96,13 +71,19 @@ export function TopNav({ className }: TopNavProps) {
             className="size-9 sm:size-10 object-contain drop-shadow-[0_2px_2px_rgba(192,96,24,0.25)] hover:rotate-[5deg] transition-transform duration-200"
             aria-hidden="true"
           />
-          <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
+          <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline md:hidden">
             {t('mobileTitle')}
           </span>
         </button>
       </div>
 
-      <div className="flex items-center gap-1">
+      {desktopCenter && (
+        <div className="hidden min-w-0 lg:block">
+          {desktopCenter}
+        </div>
+      )}
+
+      <div className={cn("flex items-center gap-1", desktopCenter && "lg:justify-self-end")}>
         <LanguageSelector />
         <ThemeSelector />
         <NotificationBell />
@@ -114,23 +95,10 @@ export function TopNav({ className }: TopNavProps) {
               className="relative h-10 sm:h-auto flex items-center gap-2 px-2 sm:px-3 rounded-full sm:rounded-lg hover:bg-accent/50 transition-all py-1.5"
               aria-label={t('userMenu')}
             >
-              <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 sm:hidden">
+              <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <User size={16} aria-hidden="true" />
               </div>
 
-              <div className="hidden sm:block text-left min-w-0">
-                <p className={cn(
-                  "font-medium leading-none text-sm text-foreground",
-                  hasOnlyOneField && "text-sm"
-                )}>
-                  {primary}
-                </p>
-                {secondary && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate max-w-37.5">
-                    {secondary}
-                  </p>
-                )}
-              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">

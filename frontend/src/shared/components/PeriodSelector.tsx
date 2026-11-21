@@ -72,7 +72,7 @@ export function PeriodSelector({
     <fieldset
       ref={containerRef}
       className={cn(
-        "relative flex sm:inline-flex p-1 bg-secondary/40 backdrop-blur-md rounded-xl border border-border/40 w-full sm:w-auto min-w-0",
+        "relative flex sm:inline-flex gap-1 bg-transparent rounded-xl w-full sm:w-auto min-w-0",
         className
       )}
       aria-label={t('header.period.ariaLabel')}

@@ -41,7 +41,7 @@
       "11": "12月"
     },
     "separator": "•",
-    "dateFormat": "{{year}}年{{month}}",
+    "dateFormat": "{{year}}年{{month}}{{day}}日",
     "week": "第 {{week}} 週",
     "period": {
       "ariaLabel": "期間を選択",

@@ -46,7 +46,7 @@ export function BudgetBars({
 
   if (loading) {
     return (
-      <Card className="col-span-1 border md:col-span-5">
+      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-5">
         <CardHeader>
           <div className="h-6 w-44 animate-pulse rounded bg-muted" />
         </CardHeader>
@@ -77,7 +77,7 @@ export function BudgetBars({
   }
 
   return (
-    <Card className="col-span-1 border md:col-span-5">
+    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-5">
       <CardHeader>
         <CardTitle className="font-serif text-lg font-semibold">
           {t('dashboard:budget.title')}

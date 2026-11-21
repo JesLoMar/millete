@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/features/auth/context/AuthContext"
 import { profileService } from "@/features/profile/services/profileService"
 import type { UserPreferences } from "@/features/profile/types"
 import { PeriodSelector, type PeriodFilter } from "@/shared/components/PeriodSelector"
@@ -16,11 +15,6 @@ interface DashboardHeaderProps {
   defaultPeriod?: PeriodFilter
   hidePeriodSelector?: boolean
 }
-
-type GreetingKey =
-  | "dashboard:header.greeting.morning"
-  | "dashboard:header.greeting.afternoon"
-  | "dashboard:header.greeting.evening"
 
 const DAYS_KEYS = [
   "dashboard:header.days.0",
@@ -47,12 +41,6 @@ const MONTHS_KEYS = [
   "dashboard:header.months.11",
 ] as const
 
-function getGreetingKey(hour: number): GreetingKey {
-  if (hour < 12) return "dashboard:header.greeting.morning"
-  if (hour < 20) return "dashboard:header.greeting.afternoon"
-  return "dashboard:header.greeting.evening"
-}
-
 function getISOWeek(now: Date): number {
   const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const dayNum = date.getUTCDay() || 7
@@ -73,8 +61,6 @@ function getDateFormatter(timeZone: string): Intl.DateTimeFormat {
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
-        hour: 'numeric',
-        hourCycle: 'h23',
       })
     } catch {
       formatter = new Intl.DateTimeFormat('en-US', {
@@ -83,8 +69,6 @@ function getDateFormatter(timeZone: string): Intl.DateTimeFormat {
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
-        hour: 'numeric',
-        hourCycle: 'h23',
       })
     }
     dateFormatters.set(timeZone, formatter)
@@ -108,8 +92,8 @@ function formatDate(now: Date, timezone: string) {
     dayOfWeek: weekdayIndex[value('weekday')] ?? zonedDate.getUTCDay(),
     monthIndex: (month - 1) as 0|1|2|3|4|5|6|7|8|9|10|11,
     year,
+    day,
     week: getISOWeek(zonedDate),
-    hour: Number(value('hour')),
   }
 }
 
@@ -133,8 +117,7 @@ export function Header({
   defaultPeriod = "month",
   hidePeriodSelector = false,
 }: DashboardHeaderProps) {
-  const { t } = useTranslation(['dashboard', 'nav', 'common'])
-  const { user } = useAuth()
+  const { t } = useTranslation(['dashboard'])
   const { data: preferences } = useQuery<UserPreferences>({
     queryKey: ['preferences'],
     queryFn: profileService.getPreferences,
@@ -142,8 +125,6 @@ export function Header({
   const now = useNow()
   const timezone = preferences?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   const date = useMemo(() => formatDate(now, timezone), [now, timezone])
-  const greetingKey = getGreetingKey(date.hour)
-  const userName = user?.name || user?.email?.split("@")[0] || t('nav:guest')
 
   const handlePeriodChange = (period: PeriodFilter) => {
     onPeriodChange?.(period)
@@ -154,23 +135,20 @@ export function Header({
       "flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full min-w-0",
       className
     )}>
-      <div className="space-y-1.5 min-w-0 flex-1">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground truncate w-full">
-          {t(greetingKey)}, <span className="text-primary">{userName}</span>
-        </h1>
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 text-sm text-foreground/70 overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
           <Calendar className="size-3.5 sm:size-4 shrink-0 text-muted-foreground/80" />
-          <span className="capitalize font-medium">
-            {t(DAYS_KEYS[date.dayOfWeek])}
-          </span>
-          <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
-          <span className="capitalize font-medium">
+          <span className="font-medium">
             {t('dashboard:header.dateFormat', {
               month: t(MONTHS_KEYS[date.monthIndex]),
-              year: date.year
+              year: date.year,
+              day: date.day,
             })}
           </span>
           <span className="text-muted-foreground/30 px-0.5" aria-hidden="true">•</span>
+          <span className="capitalize font-medium">
+            {t(DAYS_KEYS[date.dayOfWeek])},
+          </span>
           <span className="font-medium">
             {t('dashboard:header.week', { week: date.week })}
           </span>

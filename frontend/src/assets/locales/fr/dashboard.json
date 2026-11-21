@@ -41,7 +41,7 @@
       "11": "décembre"
     },
     "separator": "•",
-    "dateFormat": "{{month}} {{year}}",
+    "dateFormat": "{{day}} {{month}} {{year}}",
     "week": "Semaine {{week}}",
     "period": {
       "ariaLabel": "Sélectionner la période de temps",
