@@ -6,6 +6,7 @@ import type {
   UseFormRegister,
 } from 'react-hook-form';
 
+import { PASSWORD_MIN_LENGTH } from '@/features/auth/schemas/auth.schema';
 import type { CombinedAuthFormData } from '@/features/auth/schemas/auth.schema';
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/core/button';
@@ -72,7 +73,7 @@ export function PasswordField({
 
       {errors.password?.message && (
         <p className="ml-1 text-xs text-crust">
-          {t(errors.password.message)}
+          {t(errors.password.message, { min: PASSWORD_MIN_LENGTH })}
         </p>
       )}
 

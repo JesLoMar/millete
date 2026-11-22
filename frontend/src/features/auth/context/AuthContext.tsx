@@ -30,6 +30,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isOffline: boolean;
+  isServerOffline: boolean;
   user: User | null;
   sessionId: string | null;
   login: (userData?: CurrentUserResponse) => Promise<void>;
@@ -53,6 +54,19 @@ type FetchUserResult =
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const checkServerAvailability = async (): Promise<boolean> => {
+  try {
+    const { status } = await apiClient.get('/health', {
+      timeout: 6000,
+      skipGlobalErrorNotify: true,
+      skipAuthErrorHandler: true,
+    });
+    return status === 204;
+  } catch {
+    return false;
+  }
+};
+
 const formatUser = (
   userData: CurrentUserResponse,
 ): User => ({
@@ -74,7 +88,8 @@ export const AuthProvider = ({
   const [sessionId, setSessionId] =
     useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isOffline, setIsOffline] = useState(false);
+  const [unavailable, setUnavailable] =
+    useState<'server' | 'session' | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -133,7 +148,7 @@ export const AuthProvider = ({
 
       setUser(result.user);
       setSessionId(result.sessionId);
-      setIsOffline(false);
+      setUnavailable(null);
       setIsLoading(false);
 
       sessionCache.setUser(result.user);
@@ -147,7 +162,7 @@ export const AuthProvider = ({
 
     setUser(null);
     setSessionId(null);
-    setIsOffline(false);
+    setUnavailable(null);
     setIsLoading(false);
     sessionCache.clear();
   }, []);
@@ -192,9 +207,20 @@ export const AuthProvider = ({
     const attempt = ++authAttemptRef.current;
 
     setIsLoading(true);
-    setIsOffline(false);
+    setUnavailable(null);
 
     try {
+      const serverAvailable = await checkServerAvailability();
+
+      if (attempt !== authAttemptRef.current) {
+        return;
+      }
+
+      if (!serverAvailable) {
+        setUnavailable('server');
+        return;
+      }
+
       const result = await fetchCurrentUser();
 
       if (attempt !== authAttemptRef.current) {
@@ -206,7 +232,7 @@ export const AuthProvider = ({
       } else if (result.status === 'unauthenticated') {
         clearAuthenticatedState();
       } else {
-        setIsOffline(true);
+        setUnavailable('session');
       }
     } finally {
       if (attempt === authAttemptRef.current) {
@@ -277,7 +303,7 @@ export const AuthProvider = ({
         clearAuthenticatedState();
         throw new Error('AUTH_SESSION_UNAUTHENTICATED');
       }
-      setIsOffline(true);
+      setUnavailable('session');
       throw new Error('AUTH_PROFILE_UNAVAILABLE');
     },
     [
@@ -291,7 +317,8 @@ export const AuthProvider = ({
     () => ({
       isAuthenticated: !!user,
       isLoading,
-      isOffline,
+      isOffline: unavailable !== null,
+      isServerOffline: unavailable === 'server',
       user,
       sessionId,
       login,
@@ -301,7 +328,7 @@ export const AuthProvider = ({
     }),
     [
       isLoading,
-      isOffline,
+      unavailable,
       user,
       sessionId,
       login,

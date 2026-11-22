@@ -7,11 +7,9 @@ import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { ThemeSelector } from '@/shared/components/ThemeSelector';
 import { Button } from '@/shared/components/core/button';
 
-import styles from './LoginLayout.module.css';
-
 export const LoginPage = () => {
   const { t } = useTranslation(['auth', 'common']);
-  const { isLoading, isOffline, retryAuth } = useAuth();
+  const { isLoading, isServerOffline, retryAuth } = useAuth();
 
   return (
     <main
@@ -19,7 +17,7 @@ export const LoginPage = () => {
       aria-label={t('auth:aria.pageLabel')}
     >
       <section
-        className={`${styles.layout} z-10 w-full min-w-0 max-w-5xl text-card-foreground`}
+        className="z-10 w-full min-w-0 max-w-5xl text-card-foreground"
         aria-label={t('auth:aria.formLabel')}
       >
         <div className="flex min-h-[calc(2.5rem+env(safe-area-inset-top))] justify-center md:min-h-10">
@@ -31,7 +29,7 @@ export const LoginPage = () => {
 
         <AuthForm />
 
-        {isOffline && (
+        {isServerOffline && (
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2 text-center">
             <p className="text-sm text-muted-foreground" role="status">
               {t('common:status.connectionError')}

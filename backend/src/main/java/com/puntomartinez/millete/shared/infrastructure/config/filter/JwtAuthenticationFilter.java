@@ -2,6 +2,7 @@ package com.puntomartinez.millete.shared.infrastructure.config.filter;
 
 import com.puntomartinez.millete.users.domain.ports.out.TokenProvider;
 import com.puntomartinez.millete.users.domain.ports.out.UserSessionRepository;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.HealthController;
 import com.puntomartinez.millete.shared.infrastructure.in.controller.dto.JwtUser;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Nonnull;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -55,6 +57,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.tokenProvider = tokenProvider;
         this.userSessionRepository = userSessionRepository;
         this.cookieName = cookieName;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return HttpMethod.GET.matches(request.getMethod())
+                && request.getRequestURI().equals(request.getContextPath() + HealthController.PATH);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.puntomartinez.millete.shared.infrastructure.config;
 
 import com.puntomartinez.millete.shared.infrastructure.config.filter.JwtAuthenticationFilter;
 import com.puntomartinez.millete.shared.infrastructure.config.filter.LoginRateLimitFilter;
+import com.puntomartinez.millete.shared.infrastructure.in.controller.HealthController;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +56,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(HttpMethod.GET, HealthController.PATH).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                 .anyRequest().authenticated()

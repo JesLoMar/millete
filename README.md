@@ -198,6 +198,8 @@ Open your browser and navigate to: http://localhost:3000
 
 The backend API is proxied through Nginx at `/api/v1`. You can register a new account directly from the login page.
 
+The login page checks backend availability with `GET /api/v1/health`. The endpoint returns `204 No Content` without authentication and does not check database readiness.
+
 > **First Run Note:** If the database volume already existed from a previous deployment, the application user `millete_app` may not have been created automatically. Run this command once to create it:
 > ```bash
 > sh manage.sh create-app-user
