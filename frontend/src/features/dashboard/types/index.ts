@@ -1,7 +1,8 @@
-export interface ChartDataPoint {
-  label: string
-  amount: number
-  fill?: string
+export interface HistoryPoint {
+  start: string
+  end: string
+  income: number
+  expenses: number
 }
 
 export interface CategoryData {
@@ -40,9 +41,7 @@ export interface DashboardMetrics {
 }
 
 export interface HistoryResponse {
-  period: string
-  labels: string[]
-  data: number[]
+  points: HistoryPoint[]
 }
 
 export interface CategoryItemResponse {

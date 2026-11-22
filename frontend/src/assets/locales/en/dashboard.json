@@ -51,8 +51,10 @@
     }
   },
   "chart": {
-    "title": "Expense History",
-    "empty": "No expenses in this period",
+    "title": "Income and Expense History",
+    "empty": "No history data for this period",
+    "income": "Income",
+    "expenses": "Expenses",
     "showingLast": "Last {{count}}",
     "periodLabel": {
       "week": "Last 7 days",

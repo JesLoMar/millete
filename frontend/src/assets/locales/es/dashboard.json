@@ -51,8 +51,10 @@
     }
   },
   "chart": {
-    "title": "Histórico de gastos",
-    "empty": "Sin gastos en este período",
+    "title": "Histórico de ingresos y gastos",
+    "empty": "No hay datos históricos para este período",
+    "income": "Ingresos",
+    "expenses": "Gastos",
     "showingLast": "Últimos {{count}}",
     "periodLabel": {
       "week": "Últimos 7 días",

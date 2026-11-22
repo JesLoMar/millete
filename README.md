@@ -73,6 +73,8 @@ end
 ## Key Features
 
 ### Dashboard
+The income and expense history includes today in every view: 7 calendar days, 5 Monday-to-Sunday weeks, or 12 calendar months. The current week and month show activity through today only.
+
 Get a bird's-eye view of your financial health:
 - Total balance, income, expenses, and savings with trend indicators.
 - Interactive charts for spending history, category breakdown, and budget tracking.

@@ -9,25 +9,12 @@ import type {
   BudgetsResponse,
   CategoriesResponse,
   CategoryData,
-  ChartDataPoint,
   DashboardMetrics,
+  HistoryPoint,
   HistoryResponse,
   TransactionItem,
   TransactionsResponse,
 } from '../types'
-
-function mapHistoryToChart(
-  response: HistoryResponse
-): ChartDataPoint[] {
-  if (!response.labels.length) {
-    return []
-  }
-
-  return response.labels.map((label, i) => ({
-    label,
-    amount: response.data[i] || 0,
-  }))
-}
 
 function mapCategoriesToDonut(
   response: CategoriesResponse
@@ -99,7 +86,7 @@ export function useDashboardQueries(
   const {
     data: historyData,
     isLoading: historyIsLoading,
-  } = useQuery<ChartDataPoint[]>({
+  } = useQuery<HistoryPoint[]>({
     queryKey: ['historyChart', period],
     queryFn: async () => {
       const response =
@@ -107,7 +94,7 @@ export function useDashboardQueries(
           `dashboard/history?period=${period}`
         )
 
-      return mapHistoryToChart(response.data)
+      return response.data.points ?? []
     },
     retry: 1,
     staleTime: 30_000,

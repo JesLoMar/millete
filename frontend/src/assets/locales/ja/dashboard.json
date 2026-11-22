@@ -51,8 +51,10 @@
     }
   },
   "chart": {
-    "title": "支出の履歴",
-    "empty": "この期間の支出はありません",
+    "income": "収入",
+    "expenses": "支出",
+    "title": "収入と支出の履歴",
+    "empty": "この期間の履歴データはありません",
     "showingLast": "直近の {{count}} 件",
     "periodLabel": {
       "week": "過去7日間",

@@ -51,8 +51,10 @@
     }
   },
   "chart": {
-    "title": "Historique des dépenses",
-    "empty": "Aucune dépense sur cette période",
+    "title": "Historique des revenus et des dépenses",
+    "empty": "Aucune donnée historique pour cette période",
+    "income": "Revenus",
+    "expenses": "Dépenses",
     "showingLast": "Les {{count}} derniers",
     "periodLabel": {
       "week": "7 derniers jours",

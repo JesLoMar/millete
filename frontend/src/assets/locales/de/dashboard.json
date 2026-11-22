@@ -51,8 +51,10 @@
     }
   },
   "chart": {
-    "title": "Verlauf der Ausgaben",
-    "empty": "Keine Ausgaben in diesem Zeitraum",
+    "title": "Einnahmen und Ausgaben im Verlauf",
+    "empty": "Keine Verlaufsdaten für diesen Zeitraum",
+    "income": "Einnahmen",
+    "expenses": "Ausgaben",
     "showingLast": "Letzte {{count}}",
     "periodLabel": {
       "week": "Letzte 7 Tage",
