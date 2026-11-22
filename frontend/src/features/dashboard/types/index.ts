@@ -54,6 +54,7 @@ export interface CategoryItemResponse {
 export interface CategoriesResponse {
   totalExpenses: number
   categories: CategoryItemResponse[]
+  incomeCategories?: CategoryItemResponse[]
 }
 
 export interface BudgetItemResponse {

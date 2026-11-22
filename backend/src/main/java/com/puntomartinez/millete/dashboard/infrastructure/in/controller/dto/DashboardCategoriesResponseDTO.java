@@ -5,5 +5,11 @@ import java.util.List;
 
 public record DashboardCategoriesResponseDTO(
         BigDecimal totalExpenses,
-        List<CategoryExpenseItemResponseDTO> categories
-) {}
+        List<CategoryExpenseItemResponseDTO> categories,
+        BigDecimal totalIncome,
+        List<CategoryExpenseItemResponseDTO> incomeCategories
+) {
+    public DashboardCategoriesResponseDTO(BigDecimal totalExpenses, List<CategoryExpenseItemResponseDTO> categories) {
+        this(totalExpenses, categories, BigDecimal.ZERO, List.of());
+    }
+}

@@ -9,6 +9,7 @@ import type {
   BudgetsResponse,
   CategoriesResponse,
   CategoryData,
+  CategoryItemResponse,
   DashboardMetrics,
   HistoryPoint,
   HistoryResponse,
@@ -17,19 +18,19 @@ import type {
 } from '../types'
 
 function mapCategoriesToDonut(
-  response: CategoriesResponse
+  categories: CategoryItemResponse[]
 ): CategoryData[] {
-  const hasData = response.categories.some(
+  const hasData = categories.some(
     (category) =>
       category.percentage != null &&
       category.percentage > 0
   )
 
-  if (!response.categories.length || !hasData) {
+  if (!hasData) {
     return []
   }
 
-  return response.categories.map((category, i) => ({
+  return categories.map((category, i) => ({
     category: category.name,
     value: category.percentage,
     color:
@@ -103,7 +104,7 @@ export function useDashboardQueries(
   const {
     data: categoriesData,
     isLoading: categoriesIsLoading,
-  } = useQuery<CategoryData[]>({
+  } = useQuery({
     queryKey: ['categoryStats', period],
     queryFn: async () => {
       const response =
@@ -111,7 +112,10 @@ export function useDashboardQueries(
           `dashboard/categories?period=${period}`
         )
 
-      return mapCategoriesToDonut(response.data)
+      return {
+        expenses: mapCategoriesToDonut(response.data.categories),
+        income: mapCategoriesToDonut(response.data.incomeCategories ?? []),
+      }
     },
     retry: 1,
     staleTime: 30_000,

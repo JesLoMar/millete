@@ -2,210 +2,75 @@ package com.puntomartinez.millete.dashboard.application.services;
 
 import com.puntomartinez.millete.dashboard.domain.ports.out.CategoryQueryPort;
 import com.puntomartinez.millete.dashboard.domain.ports.out.TransactionQueryPort;
-import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.DashboardCategoriesResponseDTO;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
+import com.puntomartinez.millete.dashboard.infrastructure.in.controller.dto.CategoryExpenseItemResponseDTO;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("DashboardCategoryService")
 class DashboardCategoryServiceTest {
+    @Test
+    void groupsIncomeAndExpensesIndependentlyWithoutChangingTheExpenseBreakdown() {
+        UUID user = UUID.randomUUID();
+        UUID category = UUID.randomUUID();
+        LocalDate day = LocalDate.of(2026, 11, 22);
+        LocalDate start = day.withDayOfMonth(1);
+        var transactions = mock(TransactionQueryPort.class);
+        var categories = mock(CategoryQueryPort.class);
+        var periods = mock(DashboardPeriodService.class);
+        when(periods.getDateRange("month", user)).thenReturn(new LocalDate[]{start, day});
+        when(categories.findByUserId(user)).thenReturn(List.of(
+                new CategoryQueryPort.CategoryData(category, "Main", "#000000", null)
+        ));
+        when(transactions.findByUserIdAndDateBetween(user, start, day)).thenReturn(List.of(
+                transaction(day, category, "-98", "EXPENSE"),
+                transaction(day, null, "-2", "EXPENSE"),
+                transaction(day, category, "150", "INCOME"),
+                transaction(day, null, "50", "INCOME")
+        ));
 
-    private static final UUID USER_ID = UUID.randomUUID();
-    private static final UUID CATEGORY_ID_1 = UUID.randomUUID();
-    private static final UUID CATEGORY_ID_2 = UUID.randomUUID();
+        var response = new DashboardCategoryService(transactions, categories, periods).getCategories(user, "month");
 
-    @Mock
-    private TransactionQueryPort transactionQueryPort;
-
-    @Mock
-    private CategoryQueryPort categoryQueryPort;
-
-    @Mock
-    private DashboardPeriodService dashboardPeriodService;
-
-    private DashboardCategoryService service;
-
-    @BeforeEach
-    void setUp() {
-        service = new DashboardCategoryService(
-                transactionQueryPort,
-                categoryQueryPort,
-                dashboardPeriodService
-        );
-        LocalDateTime[] range = {
-                LocalDateTime.now().minusDays(30),
-                LocalDateTime.now()
-        };
-        org.mockito.Mockito.lenient()
-                .when(dashboardPeriodService.getDateRange(any()))
-                .thenReturn(range);
+        assertThat(response.totalExpenses()).isEqualByComparingTo("100");
+        assertThat(response.categories()).extracting(CategoryExpenseItemResponseDTO::percentage).containsExactly(98.0, 2.0);
+        assertThat(response.categories()).extracting(CategoryExpenseItemResponseDTO::transactionCount).containsExactly(1, 1);
+        assertThat(response.totalIncome()).isEqualByComparingTo("200");
+        assertThat(response.incomeCategories()).extracting(CategoryExpenseItemResponseDTO::percentage)
+                .containsExactly(75.0, 25.0);
+        assertThat(response.incomeCategories()).extracting(CategoryExpenseItemResponseDTO::transactionCount)
+                .containsExactly(1, 1);
+        assertThat(response.incomeCategories()).extracting(CategoryExpenseItemResponseDTO::categoryId)
+                .containsExactly(category, null);
+        verify(transactions).findByUserIdAndDateBetween(user, start, day);
+        verify(categories).findByUserId(user);
     }
 
-    @Nested
-    @DisplayName("getCategories")
-    class GetCategories {
+    @Test
+    void returnsEmptyListsForAWindowWithoutTransactions() {
+        UUID user = UUID.randomUUID();
+        LocalDate day = LocalDate.of(2026, 11, 22);
+        var transactions = mock(TransactionQueryPort.class);
+        var categories = mock(CategoryQueryPort.class);
+        var periods = mock(DashboardPeriodService.class);
+        when(periods.getDateRange("week", user)).thenReturn(new LocalDate[]{day.minusDays(6), day});
+        when(transactions.findByUserIdAndDateBetween(user, day.minusDays(6), day)).thenReturn(List.of());
+        when(categories.findByUserId(user)).thenReturn(List.of());
 
-        @Test
-        @DisplayName("Should aggregate expenses by category")
-        void shouldAggregateExpensesByCategory() {
-            TransactionQueryPort.TransactionData tx1 =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Groceries", CATEGORY_ID_1,
-                            new BigDecimal("100.00"),
-                            LocalDateTime.now(), "EXPENSE"
-                    );
-            TransactionQueryPort.TransactionData tx2 =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Transport", CATEGORY_ID_2,
-                            new BigDecimal("50.00"),
-                            LocalDateTime.now(), "EXPENSE"
-                    );
+        var response = new DashboardCategoryService(transactions, categories, periods).getCategories(user, "week");
+        assertThat(response.totalExpenses()).isZero();
+        assertThat(response.totalIncome()).isZero();
+        assertThat(response.categories()).isEmpty();
+        assertThat(response.incomeCategories()).isEmpty();
+    }
 
-            when(transactionQueryPort.findByUserIdAndDateBetween(
-                    eq(USER_ID), any(), any()
-            )).thenReturn(List.of(tx1, tx2));
-
-            when(categoryQueryPort.findByUserId(USER_ID)).thenReturn(List.of(
-                    new CategoryQueryPort.CategoryData(
-                            CATEGORY_ID_1, "Food", "#FF0000", null
-                    ),
-                    new CategoryQueryPort.CategoryData(
-                            CATEGORY_ID_2, "Transport", "#00FF00", null
-                    )
-            ));
-
-            DashboardCategoriesResponseDTO result =
-                    service.getCategories(USER_ID, "month");
-
-            assertThat(result.totalExpenses())
-                    .isEqualByComparingTo("150.00");
-            assertThat(result.categories()).hasSize(2);
-        }
-
-        @Test
-        @DisplayName("Should group orphan transactions under Sin categoria")
-        void shouldGroupOrphanTransactions() {
-            TransactionQueryPort.TransactionData orphanTx =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Orphan", null,
-                            new BigDecimal("30.00"),
-                            LocalDateTime.now(), "EXPENSE"
-                    );
-
-            when(transactionQueryPort.findByUserIdAndDateBetween(
-                    eq(USER_ID), any(), any()
-            )).thenReturn(List.of(orphanTx));
-
-            when(categoryQueryPort.findByUserId(USER_ID))
-                    .thenReturn(Collections.emptyList());
-
-            DashboardCategoriesResponseDTO result =
-                    service.getCategories(USER_ID, "month");
-
-            assertThat(result.categories())
-                    .anySatisfy(item ->
-                            assertThat(item.name()).isEqualTo("Sin categoría")
-                    );
-        }
-
-        @Test
-        @DisplayName("Should sort categories by amount descending")
-        void shouldSortByAmountDescending() {
-            TransactionQueryPort.TransactionData tx1 =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Small", CATEGORY_ID_1,
-                            new BigDecimal("10.00"),
-                            LocalDateTime.now(), "EXPENSE"
-                    );
-            TransactionQueryPort.TransactionData tx2 =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Big", CATEGORY_ID_2,
-                            new BigDecimal("90.00"),
-                            LocalDateTime.now(), "EXPENSE"
-                    );
-
-            when(transactionQueryPort.findByUserIdAndDateBetween(
-                    eq(USER_ID), any(), any()
-            )).thenReturn(List.of(tx1, tx2));
-
-            when(categoryQueryPort.findByUserId(USER_ID)).thenReturn(List.of(
-                    new CategoryQueryPort.CategoryData(
-                            CATEGORY_ID_1, "Small", "#FF0000", null
-                    ),
-                    new CategoryQueryPort.CategoryData(
-                            CATEGORY_ID_2, "Big", "#00FF00", null
-                    )
-            ));
-
-            DashboardCategoriesResponseDTO result =
-                    service.getCategories(USER_ID, "month");
-
-            assertThat(result.categories()).isNotEmpty();
-            BigDecimal firstAmount = result.categories().get(0).amount();
-            BigDecimal lastAmount =
-                    result.categories().get(result.categories().size() - 1).amount();
-            assertThat(firstAmount).isGreaterThanOrEqualTo(lastAmount);
-        }
-
-        @Test
-        @DisplayName("Should return empty categories when no expenses")
-        void shouldReturnEmptyWhenNoExpenses() {
-            when(transactionQueryPort.findByUserIdAndDateBetween(
-                    eq(USER_ID), any(), any()
-            )).thenReturn(Collections.emptyList());
-
-            when(categoryQueryPort.findByUserId(USER_ID))
-                    .thenReturn(Collections.emptyList());
-
-            DashboardCategoriesResponseDTO result =
-                    service.getCategories(USER_ID, "month");
-
-            assertThat(result.totalExpenses())
-                    .isEqualByComparingTo(BigDecimal.ZERO);
-            assertThat(result.categories()).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Should ignore INCOME transactions")
-        void shouldIgnoreIncomeTransactions() {
-            TransactionQueryPort.TransactionData incomeTx =
-                    new TransactionQueryPort.TransactionData(
-                            UUID.randomUUID(), "Salary", CATEGORY_ID_1,
-                            new BigDecimal("2000.00"),
-                            LocalDateTime.now(), "INCOME"
-                    );
-
-            when(transactionQueryPort.findByUserIdAndDateBetween(
-                    eq(USER_ID), any(), any()
-            )).thenReturn(List.of(incomeTx));
-
-            when(categoryQueryPort.findByUserId(USER_ID)).thenReturn(List.of(
-                    new CategoryQueryPort.CategoryData(
-                            CATEGORY_ID_1, "Salary", "#FF0000", null
-                    )
-            ));
-
-            DashboardCategoriesResponseDTO result =
-                    service.getCategories(USER_ID, "month");
-
-            assertThat(result.totalExpenses())
-                    .isEqualByComparingTo(BigDecimal.ZERO);
-        }
+    private TransactionQueryPort.TransactionData transaction(LocalDate date, UUID category, String amount, String type) {
+        return new TransactionQueryPort.TransactionData(UUID.randomUUID(), type, category, new BigDecimal(amount), date, type);
     }
 }

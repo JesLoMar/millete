@@ -67,6 +67,9 @@
     }
   },
   "donut": {
+    "view": "Category breakdown",
+    "incomeTitle": "Income by Category",
+    "incomeEmpty": "No income in this period",
     "title": "Expense by Category",
     "total": "Total",
     "empty": "No expenses in this period"

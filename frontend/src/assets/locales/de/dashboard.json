@@ -67,6 +67,9 @@
     }
   },
   "donut": {
+    "view": "Auswertung nach Kategorien",
+    "incomeTitle": "Einnahmen nach Kategorie",
+    "incomeEmpty": "Keine Einnahmen in diesem Zeitraum",
     "title": "Ausgaben nach Kategorie",
     "total": "Gesamt",
     "empty": "Keine Ausgaben in diesem Zeitraum"

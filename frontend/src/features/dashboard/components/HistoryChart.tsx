@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { PeriodFilter } from '@/shared/components/PeriodSelector'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/core/card'
+import { Card, CardContent } from '@/shared/components/core/card'
 import { formatCurrency } from '@/shared/utils/i18nFormat'
 
 import type { HistoryPoint } from '../types'
@@ -21,6 +21,37 @@ const series = [
 const grid = [0, 25, 50, 75, 100]
 const asDate = (value: string) => new Date(`${value}T00:00:00Z`)
 
+function differenceBands(data: HistoryPoint[], x: (index: number) => number, y: (value: number) => number) {
+  return data.slice(1).flatMap((right, index) => {
+    const left = data[index]
+    const first = left.income - left.expenses
+    const last = right.income - right.expenses
+    if (first === 0 && last === 0) return []
+
+    const a = x(index)
+    const b = x(index + 1)
+    const band = (difference: number, points: string, part: number) => ({
+      key: `${left.start}-${part}`,
+      type: difference > 0 ? 'income' : 'expenses',
+      points,
+    })
+    const leftIncome = `${a},${y(left.income)}`
+    const leftExpenses = `${a},${y(left.expenses)}`
+    const rightIncome = `${b},${y(right.income)}`
+    const rightExpenses = `${b},${y(right.expenses)}`
+    if (first * last >= 0) {
+      return [band(first || last, `${leftIncome} ${rightIncome} ${rightExpenses} ${leftExpenses}`, 0)]
+    }
+
+    const ratio = first / (first - last)
+    const intersection = `${a + (b - a) * ratio},${y(left.income + (right.income - left.income) * ratio)}`
+    return [
+      band(first, `${leftIncome} ${intersection} ${leftExpenses}`, 0),
+      band(last, `${intersection} ${rightIncome} ${rightExpenses}`, 1),
+    ]
+  })
+}
+
 export function HistoryChart({ period, data = [], loading }: HistoryChartProps) {
   const { i18n, t } = useTranslation('dashboard')
   const [selection, setSelection] = useState<string>()
@@ -31,43 +62,25 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
   const rangeLabel = (point: HistoryPoint) =>
     longDate.formatRange(asDate(point.start), asDate(point.end))
 
-  const active = data.find((point) => point.start === selection) ?? data.at(-1)
+  const active = data.find((point) => point.start === selection)
   const peak = Math.max(1, ...data.flatMap(({ income, expenses }) => [income, expenses]))
   const magnitude = 10 ** Math.floor(Math.log10(peak))
   const step = Math.ceil(peak / (4 * magnitude) * 10) * magnitude / 10
   const max = step * 4
   const x = (index: number) => ((index + 0.5) * 100) / data.length
   const y = (value: number) => 100 - (value / max) * 100
+  const bands = differenceBands(data, x, y)
   const columns = { gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }
 
   return (
-    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-8">
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pb-3">
-        <CardTitle className="font-serif text-lg font-bold">{t('chart.title')}</CardTitle>
-        <span className="rounded-full bg-accent/30 px-3 py-1 text-xs text-muted-foreground">
-          {t(`chart.periodLabel.${period}`)}
-        </span>
-      </CardHeader>
-      <CardContent className="min-h-75 min-w-0 pt-2" aria-busy={loading}>
+    <Card className="h-full min-h-100 rounded-none border-0 bg-transparent py-3 shadow-none">
+      <CardContent className="flex min-w-0 flex-1 flex-col px-0 pt-2" aria-busy={loading} aria-label={t('chart.title')}>
         {loading ? (
-          <div className="h-64 animate-pulse rounded bg-muted/20 motion-reduce:animate-none" />
-        ) : active ? (
-          <figure className="min-w-0 space-y-4">
-            <figcaption className="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-xs tabular-nums">
-              <span className="basis-full font-medium text-muted-foreground">{rangeLabel(active)}</span>
-              {series.map((line) => (
-                <span key={line.key} className="inline-flex items-center gap-2">
-                  <svg aria-hidden="true" width="20" height="8">
-                    <path d="M0 4h20" stroke={line.stroke} strokeWidth="2"
-                      strokeDasharray={'dash' in line ? line.dash : undefined} />
-                  </svg>
-                  <span className="text-muted-foreground">{t(`chart.${line.key}`)}</span>
-                  <strong>{formatCurrency(active[line.key])}</strong>
-                </span>
-              ))}
-            </figcaption>
-            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-2 sm:gap-x-3">
-              <div aria-hidden="true" className="mr-1 flex h-44 min-w-10 flex-col justify-between text-right text-[10px] text-muted-foreground tabular-nums sm:h-52">
+          <div className="min-h-56 flex-1 animate-pulse rounded bg-muted/20 motion-reduce:animate-none" />
+        ) : data.length > 0 ? (
+          <figure className="flex min-w-0 flex-1 flex-col" aria-label={t('chart.title')}>
+            <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)] grid-rows-[minmax(14rem,1fr)_auto] gap-x-2 sm:gap-x-3">
+              <div aria-hidden="true" className="mr-1 flex min-w-10 flex-col justify-between text-right text-[10px] text-muted-foreground tabular-nums">
                 {grid.map((percent) => (
                   <div key={percent} className="h-0 whitespace-nowrap">
                     <span className="block -translate-y-1/2">
@@ -76,12 +89,18 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
                   </div>
                 ))}
               </div>
-              <div className="relative h-44 min-w-0 sm:h-52">
+              <div className="relative min-w-0">
                 <svg aria-hidden="true" className="absolute inset-0 size-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                   {grid.map((percent) => (
                     <path key={percent} d={`M0 ${percent}H100`} className="stroke-border" vectorEffect="non-scaling-stroke" />
                   ))}
-                  <path d={`M${x(data.indexOf(active))} 0V100`} className="stroke-muted-foreground/50" vectorEffect="non-scaling-stroke" />
+                  {bands.map((band) => (
+                    <polygon key={band.key} points={band.points} fillOpacity="0.2"
+                      fill={band.type === 'income' ? series[0].stroke : series[1].stroke} />
+                  ))}
+                  {active && (
+                    <path d={`M${x(data.indexOf(active))} 0V100`} className="stroke-muted-foreground/50" vectorEffect="non-scaling-stroke" />
+                  )}
                   {series.map((line) => (
                     <polyline key={line.key} fill="none" stroke={line.stroke} strokeWidth="2.5"
                       strokeDasharray={'dash' in line ? line.dash : undefined}
@@ -89,7 +108,15 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
                       points={data.map((point, i) => `${x(i)},${y(point[line.key])}`).join(' ')} />
                   ))}
                 </svg>
-                <div className="absolute inset-0 grid" style={columns}>
+                <div className="absolute inset-0 grid" style={columns}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType === 'mouse' && !event.currentTarget.contains(document.activeElement)) {
+                      setSelection(undefined)
+                    }
+                  }}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) setSelection(undefined)
+                  }}>
                   {data.map((point) => (
                     <button key={point.start} type="button"
                       aria-label={`${rangeLabel(point)}. ${series.map(({ key }) => `${t(`chart.${key}`)}: ${formatCurrency(point[key])}`).join('. ')}`}
@@ -100,6 +127,20 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
                       onClick={() => setSelection(point.start)} />
                   ))}
                 </div>
+                {active && (
+                  <div aria-hidden="true"
+                    className="pointer-events-none absolute top-2 z-10 grid w-44 -translate-x-1/2 gap-0.5 rounded-md border border-border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground tabular-nums shadow-sm"
+                    style={{ left: `clamp(5.5rem, ${x(data.indexOf(active))}%, calc(100% - 5.5rem))` }}>
+                    <span className="text-muted-foreground">{rangeLabel(active)}</span>
+                    {series.map(({ key, stroke }) => (
+                      <span key={key} className="flex items-center gap-1">
+                        <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: stroke }} />
+                        <span>{t(`chart.${key}`)}</span>
+                        <strong className="ml-auto">{formatCurrency(active[key])}</strong>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div aria-hidden="true" className="col-start-2 mt-2 grid text-center text-[10px] text-muted-foreground sm:text-xs" style={columns}>
                 {data.map((point, index) => (
@@ -111,7 +152,7 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
             </div>
           </figure>
         ) : (
-          <p className="grid min-h-64 place-items-center text-sm text-muted-foreground">{t('chart.empty')}</p>
+          <p className="grid min-h-56 flex-1 place-items-center text-sm text-muted-foreground">{t('chart.empty')}</p>
         )}
       </CardContent>
     </Card>

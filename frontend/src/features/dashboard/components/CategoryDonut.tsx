@@ -16,12 +16,17 @@ interface CategoryDonutProps {
   data?: CategoryData[]
   loading?: boolean
   title?: string
+  emptyText?: string
 }
+
+const panelClass = 'h-full min-h-80 rounded-none border-0 bg-transparent shadow-none'
+const ringSize = 'size-[clamp(9rem,min(34svh,64vw),22rem)]!'
 
 export function CategoryDonut({
   data: externalData,
   loading = false,
   title,
+  emptyText,
 }: CategoryDonutProps) {
   const { t } = useTranslation('dashboard');
 
@@ -35,13 +40,13 @@ export function CategoryDonut({
 
   if (loading) {
     return (
-      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
+      <Card className={panelClass}>
         <CardHeader>
           <div className="h-6 w-36 bg-muted rounded animate-pulse" />
         </CardHeader>
 
-        <CardContent className="h-75 flex flex-col items-center justify-center pt-0">
-          <div className="size-40 rounded-full bg-muted/20 animate-pulse" />
+        <CardContent className="flex flex-1 flex-col items-center justify-center pt-0">
+          <div className={`${ringSize} max-w-full animate-pulse rounded-full bg-muted/20 motion-reduce:animate-none`} />
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 w-full mt-4">
             {[1, 2, 3, 4].map((i) => (
@@ -62,16 +67,16 @@ export function CategoryDonut({
 
   if (chartData.length === 0) {
     return (
-      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
+      <Card className={panelClass}>
         <CardHeader>
           <CardTitle className="text-lg font-serif font-bold">
             {title || t('dashboard:donut.title')}
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="h-75 flex items-center justify-center">
+        <CardContent className="flex flex-1 items-center justify-center">
           <p className="text-sm text-muted-foreground">
-            {t('dashboard:donut.empty')}
+            {emptyText ?? t('dashboard:donut.empty')}
           </p>
         </CardContent>
       </Card>
@@ -79,14 +84,14 @@ export function CategoryDonut({
   }
 
   return (
-    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-4">
+    <Card className={panelClass}>
       <CardHeader>
         <CardTitle className="text-lg font-serif font-bold">
           {title || t('dashboard:donut.title')}
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-col items-center justify-center pt-0">
+      <CardContent className="flex flex-1 flex-col items-center justify-center pt-0">
         <ChartTooltip data={activeItem}>
           <DonutChart
             data={chartData.map((item) => ({
@@ -95,9 +100,9 @@ export function CategoryDonut({
               color: item.color,
               percentage: item.value,
             }))}
-            size={180}
-            thickness={24}
-            className="hover:cursor-pointer"
+            size={240}
+            thickness={32}
+            className={`${ringSize} max-w-full hover:cursor-pointer [&_svg]:size-full`}
             onSegmentHover={(item) =>
               setActiveItem({
                 label: item.name,

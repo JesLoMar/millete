@@ -2,15 +2,8 @@ import { useCallback, useReducer, useState } from 'react'
 import * as m from 'framer-motion/m';
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import {
-  PiggyBank,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react'
 
 import { Header, type PeriodFilter } from '@/shared/components/Header'
-import { FormattedMetricCard } from '@/shared/components/FormattedMetricCard'
 import { Sidebar } from '@/shared/components/Sidebar'
 import { TopNav } from '@/shared/components/TopNav'
 
@@ -27,6 +20,7 @@ import { RecentTransactions } from '../components/RecentTransactions'
 import { useDashboardQueries } from '../hooks/useDashboardQueries'
 
 import { apiClient } from '@/shared/api/axiosClient'
+import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat'
 import { notify } from '@/shared/utils/notifications/notify'
 
 interface UIState {
@@ -91,9 +85,17 @@ const initialUIState: UIState = {
   isAddCategoryOpen: false,
 }
 
+const metricCards = [
+  { key: 'balance', trend: 'balanceTrend' },
+  { key: 'income', trend: 'incomeTrend' },
+  { key: 'expenses', trend: 'expensesTrend' },
+  { key: 'savings', trend: 'savingsTrend' },
+] as const
+
 export const DashboardPage = () => {
   const { t } = useTranslation('dashboard')
   const [period, setPeriod] = useState<PeriodFilter>('month')
+  const [view, setView] = useState<'history' | 'categories'>('history')
   const [ui, dispatch] = useReducer(uiReducer, initialUIState)
   const queryClient = useQueryClient()
 
@@ -214,7 +216,7 @@ export const DashboardPage = () => {
         <TopNav desktopCenter={periodControls} />
 
         <m.main
-          className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-20 pb-4 sm:gap-8 sm:px-6 sm:pt-22 sm:pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_clamp(15rem,18vw,21rem)] lg:grid-rows-[minmax(55dvh,auto)_auto] lg:pb-24"
+          className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-20 pb-4 sm:gap-8 sm:px-6 sm:pt-22 sm:pb-6 lg:pb-24"
           initial="hidden"
           animate="visible"
           variants={{
@@ -257,102 +259,73 @@ export const DashboardPage = () => {
             />
           </div>
 
-          <m.div
-            className="min-h-32 min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: -20,
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-              },
-            }}
-          >
-            <div className="grid w-full min-w-0 grid-cols-1 gap-3 min-[390px]:grid-cols-2 sm:gap-4 lg:grid-cols-1">
-              <FormattedMetricCard
-                title={t('dashboard:metrics.balance')}
-                value={metrics.data?.balance ?? 0}
-                trend={metrics.data?.balanceTrend ?? 0}
-                icon={Wallet}
-                color="bg-primary/10 text-primary"
-                periodLabel={periodLabel}
-                loading={metrics.isLoading}
-                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
-              />
-
-              <FormattedMetricCard
-                title={t('dashboard:metrics.income', {
-                  period: periodName,
+          <section className="flex min-h-[calc(100svh-5.5rem)] min-w-0 flex-col">
+            {view === 'history' && (
+              <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 border-b border-border pb-2 sm:grid-cols-4 sm:gap-x-6" aria-busy={metrics.isLoading}>
+                {metricCards.map(({ key, trend }) => {
+                  const change = metrics.data?.[trend] ?? 0
+                  const favorable = key === 'expenses' ? change < 0 : change > 0
+                  const changeColor = change === 0
+                    ? 'text-muted-foreground'
+                    : favorable ? 'text-primary' : 'text-destructive'
+                  return (
+                    <div key={key} className="min-w-0">
+                      <dt className="text-xs font-medium text-muted-foreground">
+                        {t(`metrics.${key}`, { period: periodName })}
+                      </dt>
+                      <dd className="min-w-0 text-sm leading-tight font-semibold tabular-nums">
+                        {metrics.isLoading ? (
+                          <span aria-hidden="true" className="block h-8 w-24 animate-pulse rounded bg-muted/50 motion-reduce:animate-none" />
+                        ) : (
+                          <>
+                            <span className="block wrap-break-word">{formatCurrency(metrics.data?.[key] ?? 0)}</span>
+                            <span className="flex flex-wrap gap-x-1 text-[11px] font-normal">
+                              <span className={changeColor}>
+                                {formatNumber(change / 100, { style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 1 })}
+                              </span>
+                              <span className="text-muted-foreground">{periodLabel}</span>
+                            </span>
+                          </>
+                        )}
+                      </dd>
+                    </div>
+                  )
                 })}
-                value={metrics.data?.income ?? 0}
-                trend={metrics.data?.incomeTrend ?? 0}
-                icon={TrendingUp}
-                color="bg-primary/10 text-primary"
-                periodLabel={periodLabel}
-                loading={metrics.isLoading}
-                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
-              />
+              </dl>
+            )}
 
-              <FormattedMetricCard
-                title={t('dashboard:metrics.expenses', {
-                  period: periodName,
-                })}
-                value={metrics.data?.expenses ?? 0}
-                trend={metrics.data?.expensesTrend ?? 0}
-                icon={TrendingDown}
-                color="bg-destructive/10 text-destructive"
-                periodLabel={periodLabel}
-                loading={metrics.isLoading}
-                invertedTrend
-                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
-              />
+            {view === 'history' ? (
+              <div className="min-w-0 flex-1">
+                <HistoryChart period={period} data={history.data} loading={history.isLoading} />
+              </div>
+            ) : (
+              <div className="grid min-w-0 flex-1 grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+                <div className="min-w-0">
+                  <CategoryDonut data={categories.data?.income} loading={categories.isLoading}
+                    title={t('donut.incomeTitle')} emptyText={t('donut.incomeEmpty')} />
+                </div>
+                <div className="min-w-0">
+                  <CategoryDonut data={categories.data?.expenses} loading={categories.isLoading} />
+                </div>
+              </div>
+            )}
 
-              <FormattedMetricCard
-                title={t('dashboard:metrics.savings')}
-                value={metrics.data?.savings ?? 0}
-                trend={metrics.data?.savingsTrend ?? 0}
-                icon={PiggyBank}
-                color="bg-warning/10 text-warning"
-                periodLabel={periodLabel}
-                loading={metrics.isLoading}
-                className="rounded-none border-0 bg-transparent shadow-none transition-none hover:translate-y-0 hover:border-transparent hover:shadow-none"
-              />
+            <div className="flex justify-center">
+              {(['history', 'categories'] as const).map((option) => {
+                const label = t(option === 'history' ? 'chart.title' : 'donut.view')
+                return (
+                  <button key={option} type="button" aria-label={label} title={label} aria-pressed={view === option}
+                    className="group grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-ring"
+                    onClick={() => setView(option)}>
+                    <span className="size-2.5 rounded-full bg-muted-foreground/40 group-hover:bg-muted-foreground group-aria-pressed:bg-primary" />
+                  </button>
+                )
+              })}
             </div>
-          </m.div>
+          </section>
 
           <m.div
-            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:col-start-1 lg:row-start-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: -20,
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-              },
-            }}
-          >
-            <div className="min-h-96 min-w-0">
-              <HistoryChart
-                period={period}
-                data={history.data}
-                loading={history.isLoading}
-              />
-            </div>
-
-            <div className="min-h-96 min-w-0">
-              <CategoryDonut
-                data={categories.data}
-                loading={categories.isLoading}
-              />
-            </div>
-          </m.div>
-
-          <m.div
-            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:col-start-1 lg:row-start-2 lg:grid-cols-2"
+            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 lg:pr-[calc(clamp(15rem,18vw,21rem)+2rem)]"
             variants={{
               hidden: {
                 opacity: 0,

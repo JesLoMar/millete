@@ -34,25 +34,43 @@ public class DashboardCategoryService {
         LocalDate[] range =
                 dashboardPeriodService.getDateRange(period, userId);
 
-        List<TransactionQueryPort.TransactionData> expenses =
+        List<TransactionQueryPort.TransactionData> transactions =
                 transactionQueryPort.findByUserIdAndDateBetween(
                                 userId,
                                 range[0],
                                 range[1]
-                        )
-                        .stream()
-                        .filter(t -> "EXPENSE".equals(t.type()))
-                        .toList();
+                        );
 
-        BigDecimal totalExpenses = BigDecimal.ZERO;
+        Map<UUID, CategoryQueryPort.CategoryData> categoriesById =
+                categoryQueryPort.findByUserId(userId)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                CategoryQueryPort.CategoryData::id,
+                                category -> category
+                        ));
+
+        CategoryBreakdown expenses = aggregate(transactions, categoriesById, "EXPENSE");
+        CategoryBreakdown income = aggregate(transactions, categoriesById, "INCOME");
+        return new DashboardCategoriesResponseDTO(expenses.total(), expenses.items(), income.total(), income.items());
+    }
+
+    private CategoryBreakdown aggregate(
+            List<TransactionQueryPort.TransactionData> transactions,
+            Map<UUID, CategoryQueryPort.CategoryData> categoriesById,
+            String type
+    ) {
+        BigDecimal total = BigDecimal.ZERO;
         Map<UUID, BigDecimal> amountByCategory = new HashMap<>();
         Map<UUID, Integer> countByCategory = new HashMap<>();
         BigDecimal orphanAmount = BigDecimal.ZERO;
         int orphanCount = 0;
 
-        for (TransactionQueryPort.TransactionData tx : expenses) {
+        for (TransactionQueryPort.TransactionData tx : transactions) {
+            if (!type.equals(tx.type())) {
+                continue;
+            }
             BigDecimal amount = tx.amount().abs();
-            totalExpenses = totalExpenses.add(amount);
+            total = total.add(amount);
 
             if (tx.categoryId() == null) {
                 orphanAmount = orphanAmount.add(amount);
@@ -72,14 +90,6 @@ public class DashboardCategoryService {
                     Integer::sum
             );
         }
-
-        Map<UUID, CategoryQueryPort.CategoryData> categoriesById =
-                categoryQueryPort.findByUserId(userId)
-                        .stream()
-                        .collect(Collectors.toMap(
-                                CategoryQueryPort.CategoryData::id,
-                                category -> category
-                        ));
 
         List<CategoryExpenseItemResponseDTO> categoryItems =
                 new ArrayList<>();
@@ -109,7 +119,7 @@ public class DashboardCategoryService {
                             amount,
                             calculatePercentage(
                                     amount,
-                                    totalExpenses
+                                    total
                             ),
                             countByCategory.getOrDefault(
                                     categoryId,
@@ -127,7 +137,7 @@ public class DashboardCategoryService {
                             orphanAmount,
                             calculatePercentage(
                                     orphanAmount,
-                                    totalExpenses
+                                    total
                             ),
                             orphanCount
                     )
@@ -138,14 +148,10 @@ public class DashboardCategoryService {
                 (a, b) -> b.amount().compareTo(a.amount())
         );
 
-        return new DashboardCategoriesResponseDTO(
-                totalExpenses,
-                groupSmallCategories(
-                        categoryItems,
-                        totalExpenses
-                )
-        );
+        return new CategoryBreakdown(total, groupSmallCategories(categoryItems, total));
     }
+
+    private record CategoryBreakdown(BigDecimal total, List<CategoryExpenseItemResponseDTO> items) {}
 
     private double calculatePercentage(
             BigDecimal part,

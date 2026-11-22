@@ -67,6 +67,9 @@
     }
   },
   "donut": {
+    "view": "Ripartizione per categoria",
+    "incomeTitle": "Entrate per categoria",
+    "incomeEmpty": "Nessuna entrata in questo periodo",
     "title": "Spese per categoria",
     "total": "Totale",
     "empty": "Nessuna spesa in questo periodo"
