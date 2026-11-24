@@ -216,7 +216,7 @@ export const DashboardPage = () => {
         <TopNav desktopCenter={periodControls} />
 
         <m.main
-          className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-20 pb-4 sm:gap-8 sm:px-6 sm:pt-22 sm:pb-6 lg:pb-24"
+          className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-20 pb-4 sm:gap-8 sm:px-6 sm:pt-22 sm:pb-6 lg:gap-0"
           initial="hidden"
           animate="visible"
           variants={{
@@ -233,35 +233,34 @@ export const DashboardPage = () => {
         >
           <div className="lg:hidden">{periodControls}</div>
 
-          <div className="lg:fixed lg:right-6 lg:bottom-6 lg:z-40 lg:rounded-lg lg:border lg:border-border lg:bg-card lg:p-1 lg:shadow-md">
-            <QuickActions
-              onImportClick={() =>
-                dispatch({
-                  type: 'OPEN_MODAL',
-                  modal: 'import',
-                })
-              }
-              onExportClick={handleExportClick}
-              onAddClick={() =>
-                dispatch({
-                  type: 'OPEN_MODAL',
-                  modal: 'add',
-                })
-              }
-              onAddCategoryClick={() =>
-                dispatch({
-                  type: 'OPEN_MODAL',
-                  modal: 'addCategory',
-                })
-              }
-              isExporting={false}
-              isImporting={ui.isImporting}
-            />
-          </div>
-
-          <section className="flex min-h-[calc(100svh-5.5rem)] min-w-0 flex-col">
-            {view === 'history' && (
-              <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 border-b border-border pb-2 sm:grid-cols-4 sm:gap-x-6" aria-busy={metrics.isLoading}>
+          <section className="flex min-h-[calc(100svh-1.25rem)] min-w-0 flex-col sm:min-h-[calc(100svh-.75rem)] lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_clamp(13rem,15vw,18rem)] lg:grid-rows-[auto_auto] lg:gap-x-6">
+            <div className="contents lg:col-start-2 lg:row-start-1 lg:flex lg:min-w-0 lg:flex-col lg:gap-4 lg:border-s lg:border-border lg:ps-6 lg:pt-4">
+              <div className="mb-6 sm:mb-8 lg:order-2 lg:mb-0">
+                <QuickActions
+                  onImportClick={() =>
+                    dispatch({
+                      type: 'OPEN_MODAL',
+                      modal: 'import',
+                    })
+                  }
+                  onExportClick={handleExportClick}
+                  onAddClick={() =>
+                    dispatch({
+                      type: 'OPEN_MODAL',
+                      modal: 'add',
+                    })
+                  }
+                  onAddCategoryClick={() =>
+                    dispatch({
+                      type: 'OPEN_MODAL',
+                      modal: 'addCategory',
+                    })
+                  }
+                  isExporting={false}
+                  isImporting={ui.isImporting}
+                />
+              </div>
+              <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 border-b border-border pb-2 sm:grid-cols-4 sm:gap-x-6 lg:order-1 lg:grid-cols-1 lg:gap-y-4 lg:pb-5" aria-busy={metrics.isLoading}>
                 {metricCards.map(({ key, trend }) => {
                   const change = metrics.data?.[trend] ?? 0
                   const favorable = key === 'expenses' ? change < 0 : change > 0
@@ -270,16 +269,16 @@ export const DashboardPage = () => {
                     : favorable ? 'text-primary' : 'text-destructive'
                   return (
                     <div key={key} className="min-w-0">
-                      <dt className="text-xs font-medium text-muted-foreground">
+                      <dt className="text-xs font-medium text-muted-foreground lg:text-sm">
                         {t(`metrics.${key}`, { period: periodName })}
                       </dt>
-                      <dd className="min-w-0 text-sm leading-tight font-semibold tabular-nums">
+                      <dd className="min-w-0 text-sm leading-tight font-semibold tabular-nums lg:text-2xl">
                         {metrics.isLoading ? (
                           <span aria-hidden="true" className="block h-8 w-24 animate-pulse rounded bg-muted/50 motion-reduce:animate-none" />
                         ) : (
                           <>
                             <span className="block wrap-break-word">{formatCurrency(metrics.data?.[key] ?? 0)}</span>
-                            <span className="flex flex-wrap gap-x-1 text-[11px] font-normal">
+                            <span className="flex flex-wrap gap-x-1 text-[11px] font-normal lg:text-sm">
                               <span className={changeColor}>
                                 {formatNumber(change / 100, { style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 1 })}
                               </span>
@@ -292,25 +291,25 @@ export const DashboardPage = () => {
                   )
                 })}
               </dl>
-            )}
+            </div>
 
-            {view === 'history' ? (
-              <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-col lg:col-start-1 lg:row-start-1 lg:h-[clamp(25rem,60svh,42rem)]">
+              {view === 'history' ? (
                 <HistoryChart period={period} data={history.data} loading={history.isLoading} />
-              </div>
-            ) : (
-              <div className="grid min-w-0 flex-1 grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
-                <div className="min-w-0">
-                  <CategoryDonut data={categories.data?.income} loading={categories.isLoading}
-                    title={t('donut.incomeTitle')} emptyText={t('donut.incomeEmpty')} />
+              ) : (
+                <div className="grid min-w-0 flex-1 grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+                  <div className="min-w-0">
+                    <CategoryDonut data={categories.data?.income} loading={categories.isLoading}
+                      title={t('donut.incomeTitle')} emptyText={t('donut.incomeEmpty')} />
+                  </div>
+                  <div className="min-w-0">
+                    <CategoryDonut data={categories.data?.expenses} loading={categories.isLoading} />
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <CategoryDonut data={categories.data?.expenses} loading={categories.isLoading} />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center lg:col-span-2 lg:row-start-2">
               {(['history', 'categories'] as const).map((option) => {
                 const label = t(option === 'history' ? 'chart.title' : 'donut.view')
                 return (
@@ -325,7 +324,7 @@ export const DashboardPage = () => {
           </section>
 
           <m.div
-            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 lg:pr-[calc(clamp(15rem,18vw,21rem)+2rem)]"
+            className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:ms-auto lg:w-[clamp(42rem,36%,52rem)] lg:grid-cols-2 lg:gap-4"
             variants={{
               hidden: {
                 opacity: 0,
@@ -337,7 +336,7 @@ export const DashboardPage = () => {
               },
             }}
           >
-            <div className="min-h-96 min-w-0">
+            <div className="min-h-96 min-w-0 lg:min-h-0 lg:border-s lg:border-border lg:ps-4">
               <BudgetBars
                 data={budgets.data}
                 loading={budgets.isLoading}
@@ -345,7 +344,7 @@ export const DashboardPage = () => {
               />
             </div>
 
-            <div className="min-h-96 min-w-0">
+            <div className="min-h-96 min-w-0 lg:min-h-0 lg:border-s lg:border-border lg:ps-4">
               <RecentTransactions
                 data={recentTransactions.data}
                 loading={recentTransactions.isLoading}

@@ -19,6 +19,9 @@ interface BudgetBarsProps {
 }
 
 const DISPLAY_LIMIT = 5;
+const panelClass = 'rounded-none border-0 bg-transparent shadow-none lg:gap-3 lg:py-0';
+const contentClass = 'min-h-96 lg:min-h-0 lg:px-0';
+const listClass = 'space-y-4 lg:space-y-3';
 
 function getAdjustedBudgetLimit(
   budgetLimit: number | null | undefined,
@@ -46,13 +49,13 @@ export function BudgetBars({
 
   if (loading) {
     return (
-      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-5">
-        <CardHeader>
+      <Card className={panelClass}>
+        <CardHeader className="lg:px-0">
           <div className="h-6 w-44 animate-pulse rounded bg-muted" />
         </CardHeader>
 
-        <CardContent className="min-h-96">
-          <div className="space-y-4">
+        <CardContent className={contentClass}>
+          <div className={listClass}>
             {Array.from({
               length: DISPLAY_LIMIT,
             }).map((_, index) => (
@@ -77,22 +80,22 @@ export function BudgetBars({
   }
 
   return (
-    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-5">
-      <CardHeader>
+    <Card className={panelClass}>
+      <CardHeader className="lg:px-0">
         <CardTitle className="font-serif text-lg font-semibold">
           {t('dashboard:budget.title')}
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="min-h-96">
+      <CardContent className={contentClass}>
         {budgets.length === 0 ? (
-          <div className="flex min-h-72 items-center justify-center">
+          <div className="flex min-h-72 items-center justify-center lg:min-h-20">
             <p className="text-center text-sm text-muted-foreground">
               {t('dashboard:budget.empty')}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className={listClass}>
             {budgets.map((budget) => {
               const adjustedLimit = getAdjustedBudgetLimit(
                 budget.limit,
@@ -117,7 +120,7 @@ export function BudgetBars({
               return (
                 <div
                   key={budget.category}
-                  className="space-y-1.5"
+                  className="space-y-1.5 lg:space-y-1"
                 >
                   <div className="flex justify-between gap-4 text-sm">
                     <span className="truncate font-medium">
@@ -133,7 +136,7 @@ export function BudgetBars({
                     </span>
                   </div>
 
-                  <div className="relative h-3 overflow-hidden rounded-full bg-muted">
+                  <div className="relative h-3 overflow-hidden rounded-full bg-muted lg:h-2.5">
                     <m.div
                       initial={{ scaleX: 0 }}
                       animate={{

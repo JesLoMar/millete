@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { PeriodFilter } from '@/shared/components/Header'
 import { apiClient } from '@/shared/api/axiosClient'
 
-import { BUDGET_COLORS, CHART_COLORS } from '../constants'
+import { BUDGET_COLORS, CHART_COLORS, RECENT_TRANSACTION_LIMIT } from '../constants'
 import type {
   BudgetItem,
   BudgetsResponse,
@@ -146,7 +146,7 @@ export function useDashboardQueries(
     queryFn: async () => {
       const response =
         await apiClient.get<TransactionsResponse>(
-          'dashboard/recent-transactions?limit=5'
+          `dashboard/recent-transactions?limit=${RECENT_TRANSACTION_LIMIT}`
         )
 
       return response.data.transactions

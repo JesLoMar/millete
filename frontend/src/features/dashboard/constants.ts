@@ -11,6 +11,8 @@ import {
   Zap,
 } from 'lucide-react'
 
+export const RECENT_TRANSACTION_LIMIT = 6
+
 export const CHART_COLORS = [
   'hsl(var(--chart-1))',
   'hsl(var(--chart-2))',

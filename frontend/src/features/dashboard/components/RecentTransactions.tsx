@@ -2,6 +2,7 @@ import { ArrowDownRight, ArrowUpRight, ShoppingCart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { RECENT_TRANSACTION_LIMIT } from '../constants'
 import type { TransactionItem } from '../types'
 import { formatDate } from '../utils'
 
@@ -20,10 +21,14 @@ interface RecentTransactionsProps {
   limit?: number
 }
 
+const panelClass = 'rounded-none border-0 bg-transparent shadow-none lg:gap-1 lg:py-0'
+const headerClass = 'flex flex-row items-center justify-between lg:px-0'
+const rowClass = 'flex items-center gap-4 border-b p-4 lg:min-h-11 lg:gap-2 lg:px-1 lg:py-0.5'
+
 export function RecentTransactions({
   data: externalData,
   loading = false,
-  limit = 5,
+  limit = RECENT_TRANSACTION_LIMIT,
 }: RecentTransactionsProps) {
   const { t } = useTranslation('dashboard');
 
@@ -37,8 +42,8 @@ export function RecentTransactions({
 
   if (loading) {
     return (
-      <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-7">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className={panelClass}>
+        <CardHeader className={headerClass}>
           <div className="h-6 w-40 bg-muted rounded animate-pulse" />
           <div className="h-4 w-20 bg-muted rounded animate-pulse" />
         </CardHeader>
@@ -47,9 +52,9 @@ export function RecentTransactions({
           {Array.from({ length: limit }).map((_, i) => (
             <div
               key={`skeleton-${i}`}
-              className="flex items-center gap-4 p-4 border-b"
+              className={rowClass}
             >
-              <div className="size-10 rounded-full bg-muted animate-pulse" />
+              <div className="size-10 shrink-0 rounded-full bg-muted animate-pulse lg:size-8" />
 
               <div className="flex-1 space-y-2">
                 <div className="h-4 w-32 bg-muted rounded animate-pulse" />
@@ -65,8 +70,8 @@ export function RecentTransactions({
   }
 
   return (
-    <Card className="col-span-1 rounded-none border-0 bg-transparent shadow-none md:col-span-7">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className={panelClass}>
+      <CardHeader className={headerClass}>
         <CardTitle className="text-lg font-serif font-bold">
           {t('dashboard:transactions.title')}
         </CardTitle>
@@ -75,7 +80,7 @@ export function RecentTransactions({
           <button
             type="button"
             onClick={() => navigate('/transactions')}
-            className="text-sm text-primary hover:underline transition-colors"
+            className="text-sm text-primary hover:underline transition-colors lg:shrink-0 lg:text-xs"
           >
             {t('dashboard:transactions.viewAll')}
           </button>
@@ -102,10 +107,10 @@ export function RecentTransactions({
                   onClick={() =>
                     navigate(`/transactions?id=${tx.id}`)
                   }
-                  className="flex items-center gap-4 p-4 hover:bg-accent/30 transition-colors border-b last:border-0 group cursor-pointer w-full text-left"
+                  className={`${rowClass} group w-full cursor-pointer text-left transition-colors last:border-0 hover:bg-accent/30`}
                 >
-                  <div className={`p-3 rounded-full ${color}`}>
-                    <Icon className="size-5" />
+                  <div className={`rounded-full p-3 lg:shrink-0 lg:p-2 ${color}`}>
+                    <Icon className="size-5 lg:size-4" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -113,22 +118,22 @@ export function RecentTransactions({
                       {tx.description}
                     </p>
 
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">
+                    <div className="mt-0.5 flex items-center gap-2 lg:mt-0 lg:gap-1.5">
+                      <span className="text-xs text-muted-foreground lg:shrink-0">
                         {formatDate(tx.date)}
                       </span>
 
-                      <span className="size-1 rounded-full bg-border" />
+                      <span className="size-1 rounded-full bg-border lg:shrink-0" />
 
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground lg:truncate">
                         {tx.category}
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right lg:flex lg:shrink-0 lg:flex-col lg:items-end lg:gap-0.5">
                     <p
-                      className={`text-sm font-bold flex items-center gap-1 ${
+                      className={`flex items-center gap-1 text-sm font-bold lg:text-xs ${
                         isExpense
                           ? 'text-foreground'
                           : 'text-primary'
@@ -146,7 +151,7 @@ export function RecentTransactions({
 
                     <Badge
                       variant="outline"
-                      className={`mt-1 text-xs h-4 py-0 font-normal ${
+                      className={`mt-1 h-4 py-0 text-xs font-normal lg:mt-0 ${
                         isExpense
                           ? 'opacity-60'
                           : 'text-primary border-primary/30'

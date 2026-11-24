@@ -26,7 +26,7 @@ Componentes: [`frontend/src/features/dashboard/components`](../../frontend/src/f
 | `historyChart, period` | GET `/dashboard/history?period=` | labels y data para gráfico de historial. |
 | `categoryStats, period` | GET `/dashboard/categories?period=` | nombres, amounts y porcentajes para donut. |
 | `budgets, period` | GET `/dashboard/budgets?period=` | presupuesto, gasto, límite y porcentaje. |
-| `recentTransactions` | GET `/dashboard/recent-transactions?limit=5` | lista de transacciones recientes y categoría/color. |
+| `recentTransactions` | GET `/dashboard/recent-transactions?limit=6` | lista de hasta seis transacciones recientes y categoría/color. |
 
 Cambiar período vuelve a consultar las cuatro queries de período; recientes no lo usan. Cada gráfico/tarjeta recibe sus estados de carga y presenta skeleton o estado sin datos definido en su componente.
 

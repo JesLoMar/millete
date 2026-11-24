@@ -4,7 +4,22 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/components/core/button'
 import { AssistantDialog } from '@/features/assistant/components/AssistantDialog'
 
-const actionButtonClass = 'size-11 shrink-0 rounded-full p-0 text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors duration-200 group cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+const actionButtonClass = 'group h-auto min-w-0 basis-[calc((100%_-_1.5rem)/3)] cursor-pointer flex-col justify-start gap-1.5 whitespace-normal px-0 py-1 text-center text-xs leading-tight text-foreground transition-colors hover:bg-transparent hover:shadow-none'
+
+function ActionContent({ icon: Icon, label, loading }: {
+  icon: Action['icon']
+  label: string
+  loading?: boolean
+}) {
+  return (
+    <>
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-colors group-hover:bg-primary/90">
+        <Icon className={loading ? 'size-5 animate-spin motion-reduce:animate-none' : 'size-5'} aria-hidden="true" />
+      </span>
+      <span className="w-full wrap-anywhere">{label}</span>
+    </>
+  )
+}
 
 interface QuickActionsProps {
   onImportClick: () => void
@@ -81,7 +96,7 @@ export function QuickActions({
 
   return (
     <fieldset
-      className="flex w-full items-center gap-2 border-0 p-0 m-0"
+      className="mx-auto my-0 flex w-full max-w-80 min-w-0 flex-wrap justify-center gap-3 border-0 p-0"
       aria-label={String(
         t('dashboard:quickActions.groupLabel')
       )}
@@ -89,28 +104,22 @@ export function QuickActions({
       {actions.map((action) => (
         <Button
           key={action.labelKey}
+          variant="ghost"
           onClick={action.onClick}
           disabled={action.disabled}
-          aria-label={String(t(action.ariaLabelKey))}
-          title={String(t(action.labelKey))}
+          title={t(action.ariaLabelKey)}
           className={actionButtonClass}
         >
-          <action.icon
-            className={`size-5 ${
-              action.isLoading ? 'animate-spin' : ''
-            } text-primary-foreground`}
-            aria-hidden="true"
-          />
+          <ActionContent icon={action.icon} label={t(action.labelKey)} loading={action.isLoading} />
         </Button>
       ))}
       <AssistantDialog
         trigger={
           <Button
-            aria-label={t('assistant.title')}
-            title={t('assistant.title')}
+            variant="ghost"
             className={actionButtonClass}
           >
-            <Sparkles className="size-5 text-primary-foreground" aria-hidden="true" />
+            <ActionContent icon={Sparkles} label={t('assistant.title')} />
           </Button>
         }
       />
