@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowDownLeft, ArrowUpRight, Scale, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { apiClient } from '@/shared/api/axiosClient';
-import { FormattedMetricCard } from '@/shared/components/FormattedMetricCard';
+import { formatCurrency, formatNumber } from '@/shared/utils/i18nFormat';
 import type { PeriodFilter } from '@/shared/components/Header';
 
 interface TransactionMetrics {
@@ -51,49 +50,40 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
 
   const periodName = t(`dashboard:header.period.${period}`);
 
+  const items = [
+    { key: 'balance', trend: 'balanceTrend', label: t('dashboard:metrics.balance') },
+    { key: 'income', trend: 'incomeTrend', label: t('dashboard:metrics.income', { period: periodName }) },
+    { key: 'expenses', trend: 'expensesTrend', label: t('dashboard:metrics.expenses', { period: periodName }) },
+    { key: 'count', trend: 'countTrend', label: t('transactions:title') },
+  ] as const;
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <FormattedMetricCard
-        title={t('dashboard:metrics.income', { period: periodName })}
-        value={metrics?.income ?? 0}
-        trend={metrics?.incomeTrend ?? 0}
-        icon={ArrowUpRight}
-        color="bg-primary/10 text-primary"
-        periodLabel={periodLabel}
-        loading={isLoading}
-      />
-
-      <FormattedMetricCard
-        title={t('dashboard:metrics.expenses', { period: periodName })}
-        value={metrics?.expenses ?? 0}
-        trend={metrics?.expensesTrend ?? 0}
-        icon={ArrowDownLeft}
-        color="bg-destructive/10 text-destructive"
-        periodLabel={periodLabel}
-        loading={isLoading}
-        invertedTrend
-      />
-
-      <FormattedMetricCard
-        title={t('dashboard:metrics.balance')}
-        value={metrics?.balance ?? 0}
-        trend={metrics?.balanceTrend ?? 0}
-        icon={Scale}
-        color="bg-primary/10 text-primary"
-        periodLabel={periodLabel}
-        loading={isLoading}
-      />
-
-      <FormattedMetricCard
-        title={t('transactions:title')}
-        value={metrics?.count ?? 0}
-        format="number"
-        trend={metrics?.countTrend ?? 0}
-        icon={Activity}
-        color="bg-warning/10 text-warning"
-        periodLabel={periodLabel}
-        loading={isLoading}
-      />
-    </div>
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 xl:grid-cols-1" aria-busy={isLoading}>
+      {items.map(({ key, trend, label }) => {
+        const value = metrics?.[key] ?? 0;
+        const change = metrics?.[trend] ?? 0;
+        const favorable = key === 'expenses' ? change < 0 : change > 0;
+        return (
+          <div key={key} className="min-w-0">
+            <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
+            <dd className="min-w-0 text-xl leading-tight font-semibold tabular-nums xl:text-2xl">
+              {isLoading ? (
+                <span aria-hidden="true" className="block h-8 w-20 max-w-full animate-pulse rounded bg-muted/50 motion-reduce:animate-none" />
+              ) : (
+                <>
+                  <span className="block wrap-break-word">{key === 'count' ? formatNumber(value) : formatCurrency(value)}</span>
+                  <span className="flex flex-wrap gap-x-1 text-xs font-normal xl:text-sm">
+                    <span className={change === 0 ? 'text-muted-foreground' : favorable ? 'text-primary' : 'text-destructive'}>
+                      {formatNumber(change / 100, { style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 1 })}
+                    </span>
+                    <span className="text-muted-foreground">{periodLabel}</span>
+                  </span>
+                </>
+              )}
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }

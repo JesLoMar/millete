@@ -87,6 +87,7 @@ export default function InvestmentsPage() {
 
   const activeTab: InvestmentTab =
     selectedTab ?? (isConfigured ? 'portfolio' : 'assets');
+  const showAssetsLayout = activeTab === 'assets' && !trackingQuery.isLoading && !trackingQuery.isError;
 
   const showTrackingGate =
     !isConfigured && GATED_TABS.includes(activeTab);
@@ -165,6 +166,7 @@ export default function InvestmentsPage() {
             onOpenMarketDataRefresh={() =>
               setIsMarketDataOpen(true)
             }
+            status={<HealthBanner enabled={isConfigured} onOpenStatus={() => setSelectedTab('status')} />}
           />
         );
       case 'status':
@@ -184,6 +186,7 @@ export default function InvestmentsPage() {
       <div className="flex flex-1 flex-col overflow-hidden pt-16">
         <TopNav />
         <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6">
+          {!showAssetsLayout && (
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Header hidePeriodSelector />
 
@@ -213,15 +216,16 @@ export default function InvestmentsPage() {
               </Button>
             </div>
           </div>
+          )}
 
-          <div className="space-y-1">
+          {!showAssetsLayout && <div className="space-y-1">
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
               {t('title')}
             </h2>
             <p className="text-sm text-muted-foreground">
               {t('subtitle')}
             </p>
-          </div>
+          </div>}
 
           {trackingQuery.isLoading && (
             <div className="flex justify-center py-20">
@@ -257,10 +261,10 @@ export default function InvestmentsPage() {
                 onChange={setSelectedTab}
               />
 
-              <HealthBanner
+              {!showAssetsLayout && <HealthBanner
                 enabled={isConfigured}
                 onOpenStatus={() => setSelectedTab('status')}
-              />
+              />}
 
               {renderGatedContent()}
             </>

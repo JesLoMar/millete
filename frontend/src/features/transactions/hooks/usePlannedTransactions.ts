@@ -6,8 +6,10 @@ import {
   type PaginatedResponse,
 } from '@/shared/hooks/useServerPagination';
 
-const SERVER_SIZE = 50;
-const DISPLAY_SIZE = 10;
+import {
+  TRANSACTION_DISPLAY_SIZE as DISPLAY_SIZE,
+  TRANSACTION_SERVER_SIZE as SERVER_SIZE,
+} from '../constants';
 
 export interface PlannedTransaction {
   id: string;

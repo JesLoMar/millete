@@ -26,9 +26,9 @@ export function TransactionListFilters({
   const { t } = useTranslation('transactions');
 
   return (
-    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-1 sm:gap-2">
+    <div className="flex min-w-0 flex-wrap items-center gap-2">
+      <div className="flex max-w-full flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1">
           {FILTERS.map((currentFilter) => {
             const isActive = filter === currentFilter;
 
@@ -41,7 +41,7 @@ export function TransactionListFilters({
                 onClick={() => onFilterChange(currentFilter)}
                 aria-pressed={isActive}
                 className={cn(
-                  'h-7 rounded-md px-2 text-xs transition-all sm:h-8 sm:px-3 sm:text-sm',
+                  'h-8 rounded-md px-2 text-xs transition-colors',
                   isActive
                     ? 'bg-primary/20 text-primary'
                     : 'text-muted-foreground',
@@ -58,7 +58,7 @@ export function TransactionListFilters({
         </Badge>
       </div>
 
-      <div className="relative w-full sm:w-[320px]">
+      <div className="relative min-w-36 flex-1">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
@@ -69,7 +69,8 @@ export function TransactionListFilters({
           placeholder={t('search')}
           value={searchTerm}
           onChange={(event) => onSearchChange(event.target.value)}
-          className="h-9 border-border bg-card pl-10 text-sm sm:h-10"
+          aria-label={t('search')}
+          className="h-8 border-border bg-transparent pl-9 text-sm"
         />
       </div>
     </div>

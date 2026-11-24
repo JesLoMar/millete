@@ -49,7 +49,7 @@ export const TransactionListMobile = memo(function TransactionListMobile({
         return (
           <m.div
             key={tx.id}
-            className="p-4 transition-colors hover:bg-accent/30"
+            className="px-1 py-2 transition-colors hover:bg-accent/30"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -58,10 +58,10 @@ export const TransactionListMobile = memo(function TransactionListMobile({
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
-                    'shrink-0 rounded-full p-2',
+                    'shrink-0',
                     isIncome
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-destructive/10 text-destructive',
+                      ? 'text-primary'
+                      : 'text-destructive',
                   )}
                   aria-hidden="true"
                 >

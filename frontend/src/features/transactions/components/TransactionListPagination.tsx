@@ -29,7 +29,7 @@ export function TransactionListPagination({
   }
 
   return (
-    <div className="flex flex-col items-center justify-between gap-3 border-t border-border bg-background/20 px-4 py-3 sm:flex-row sm:px-6 sm:py-4">
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-1 py-2">
       <p className="text-center text-xs font-medium text-muted-foreground sm:text-left">
         {t('showingInterval', { from, to, total })}
       </p>

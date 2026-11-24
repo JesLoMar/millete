@@ -39,13 +39,13 @@ export function RecurringTransactionRow({
 
   return (
     <>
-      <div className="group hidden items-center gap-4 border-b p-4 transition-colors last:border-0 hover:bg-accent/30 sm:flex">
+      <div className="group hidden min-h-11 items-center gap-2.5 border-b border-border px-1 py-1.5 transition-colors last:border-0 hover:bg-accent/30 sm:flex">
         <div
           className={cn(
-            'shrink-0 rounded-full p-2.5',
+            'shrink-0',
             isIncome
-              ? 'bg-primary/10 text-primary'
-              : 'bg-destructive/10 text-destructive',
+              ? 'text-primary'
+              : 'text-destructive',
           )}
           aria-hidden="true"
         >
@@ -61,15 +61,20 @@ export function RecurringTransactionRow({
             {transaction.description}
           </p>
 
-          <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <Calendar
               size={12}
               className="shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
 
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs font-medium text-foreground">
               {frequency}
+            </span>
+
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Repeat size={10} className="shrink-0" aria-hidden="true" />
+              {t('recurring.nextExecution')}: {nextExecution}
             </span>
 
             <span
@@ -96,19 +101,6 @@ export function RecurringTransactionRow({
               </>
             )}
 
-            <span
-              className="size-1 rounded-full bg-border"
-              aria-hidden="true"
-            />
-
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Repeat
-                size={10}
-                className="shrink-0"
-                aria-hidden="true"
-              />
-              {nextExecution}
-            </span>
           </div>
         </div>
 
@@ -133,15 +125,15 @@ export function RecurringTransactionRow({
         />
       </div>
 
-      <div className="border-b p-4 transition-colors last:border-0 hover:bg-accent/30 sm:hidden">
+      <div className="border-b border-border px-1 py-2 transition-colors last:border-0 hover:bg-accent/30 sm:hidden">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'shrink-0 rounded-full p-2',
+                'shrink-0',
                 isIncome
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-destructive/10 text-destructive',
+                  ? 'text-primary'
+                  : 'text-destructive',
               )}
               aria-hidden="true"
             >
@@ -218,7 +210,7 @@ export function RecurringTransactionRow({
               className="shrink-0"
               aria-hidden="true"
             />
-            {nextExecution}
+            {t('recurring.nextExecution')}: {nextExecution}
           </span>
         </div>
       </div>

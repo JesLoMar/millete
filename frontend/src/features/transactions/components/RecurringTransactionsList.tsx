@@ -61,7 +61,7 @@ export function RecurringTransactionsList() {
   };
 
   if (isLoading && transactions.length === 0) {
-    return <TransactionSkeleton rows={5} />;
+    return <TransactionSkeleton rows={displaySize} />;
   }
 
   const from =
@@ -73,7 +73,7 @@ export function RecurringTransactionsList() {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-3">
       <TransactionListFilters
         filter={recurringFilter}
         searchTerm={searchTerm}
@@ -82,7 +82,7 @@ export function RecurringTransactionsList() {
         onSearchChange={setSearchTerm}
       />
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="min-w-0 border-t border-border">
         <div className="flex flex-col">
           {transactions.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">

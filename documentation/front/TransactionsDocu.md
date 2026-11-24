@@ -20,11 +20,13 @@ Componentes: [`frontend/src/features/transactions/components`](../../frontend/sr
 
 | Solicitud | Datos usados |
 |---|---|
-| GET `/transactions?page=&size=50&period=&search=&type=` | Página de `{ id, categoryId, categoryName, categoryColor, amount, date, type, description, active }`; `type` se omite para todos. Muestra 10 elementos por página. |
+| GET `/transactions?page=&size=60&period=&search=&type=` | Página de `{ id, categoryId, categoryName, categoryColor, amount, date, type, description, active }`; `type` se omite para todos. Muestra 15 elementos por página. |
 | GET `/transactions/metrics?period=` | `income`, `expenses`, `balance`, `count` y tendencias para resumen. |
 | POST `/transactions`; PUT `/transactions/{id}`; DELETE `/transactions/{id}` | `RegisterTransactionRequest` tiene categoría, importe, tipo, descripción y fecha; PUT acepta payload parcial. |
-| GET `/planned-transactions?page=&size=50&search=&type=` | Recurrentes paginadas; la lista muestra categoría, importe/tipo, frecuencia, intervalo y fechas. |
+| GET `/planned-transactions?page=&size=60&search=&type=` | Recurrentes paginadas de 15 en 15; la lista muestra categoría, importe/tipo, frecuencia, intervalo y fechas. |
 | POST `/planned-transactions`; PUT `/planned-transactions/{id}`; DELETE `/planned-transactions/{id}` | Alta/edición usa categoría, importe, tipo, descripción, frecuencia, intervalo, inicio y fin opcional. |
+
+Cada bloque del servidor contiene hasta cuatro páginas de la interfaz. Al abrir la tercera página de un bloque, se precarga el siguiente si quedan resultados.
 
 `NewTransactionDialog` valida descripción, categoría e importe positivo; traduce gasto/ingreso a signo de importe al formar payload. Edición permite categoría nula. Formularios recurrentes requieren los campos de frecuencia e inicio, con fin opcional. `CategorySelect` carga las categorías; las filas muestran color de categoría devuelto por API y alternativa visual si falta.
 

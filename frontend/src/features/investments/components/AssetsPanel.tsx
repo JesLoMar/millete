@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   LineChart,
@@ -12,6 +13,7 @@ import {
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
+import { Pagination } from '@/shared/components/Pagination';
 import {
   Card,
   CardContent,
@@ -29,6 +31,7 @@ import {
 } from '@/shared/components/core/table';
 import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
 
+import { ASSET_PAGE_SIZE } from '../constants';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import {
   useSharedAssets,
@@ -44,6 +47,28 @@ import { RegisterAssetPriceDialog } from './RegisterAssetPriceDialog';
 
 interface AssetsPanelProps {
   onOpenMarketDataRefresh: () => void;
+  status: ReactNode;
+}
+
+const CATALOG_TYPES = ['CRYPTO', 'ETF', 'STOCK'] as const;
+const panelClass = 'min-w-0 gap-3 rounded-none border-0 bg-transparent py-0 shadow-none';
+const panelHeaderClass = 'border-b border-border px-0 pb-2';
+
+function assetPage<T>(assets: T[], requestedPage: number) {
+  const total = assets.length;
+  const totalPages = Math.max(1, Math.ceil(total / ASSET_PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, totalPages - 1);
+  const offset = currentPage * ASSET_PAGE_SIZE;
+  return {
+    rows: assets.slice(offset, offset + ASSET_PAGE_SIZE),
+    pagination: {
+      currentPage,
+      totalPages,
+      from: total === 0 ? 0 : offset + 1,
+      to: Math.min(offset + ASSET_PAGE_SIZE, total),
+      total,
+    },
+  };
 }
 
 type AssetFormState =
@@ -52,12 +77,22 @@ type AssetFormState =
 
 export function AssetsPanel({
   onOpenMarketDataRefresh,
+  status,
 }: AssetsPanelProps) {
   const { t } = useTranslation('investments');
   const localCurrency = getLocalCurrencyCode();
 
   const [search, setSearch] = useState('');
+  const [userPage, setUserPage] = useState(0);
+  const [catalogPage, setCatalogPage] = useState(0);
+  const [catalogType, setCatalogType] = useState<(typeof CATALOG_TYPES)[number]>('CRYPTO');
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
+
+  function updateSearch(value: string) {
+    setSearch(value);
+    setUserPage(0);
+    setCatalogPage(0);
+  }
 
   const sharedQuery = useSharedAssets(
     debouncedSearch || undefined,
@@ -73,13 +108,16 @@ export function AssetsPanel({
   const [pricesAsset, setPricesAsset] =
     useState<SharedAsset | null>(null);
 
-  const sharedAssets = sharedQuery.data ?? [];
+  const sharedAssets = (sharedQuery.data ?? []).filter((asset) => asset.type === catalogType);
   const userAssets = userQuery.data ?? [];
+  const user = assetPage(userAssets, userPage);
+  const shared = assetPage(sharedAssets, catalogPage);
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <Card>
-        <CardContent className="space-y-4 pt-6">
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Card className={panelClass}>
+          <CardContent className="space-y-3 px-0">
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold text-foreground">
@@ -127,7 +165,7 @@ export function AssetsPanel({
               type="search"
               value={search}
               onChange={(event) =>
-                setSearch(event.target.value)
+                updateSearch(event.target.value)
               }
               placeholder={t('assets.searchPlaceholder')}
               aria-label={t('assets.searchPlaceholder')}
@@ -136,7 +174,7 @@ export function AssetsPanel({
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch('')}
+                onClick={() => updateSearch('')}
                 className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
                 aria-label={t('common.clear')}
               >
@@ -144,11 +182,14 @@ export function AssetsPanel({
               </button>
             )}
           </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <div className="min-w-0 lg:justify-self-end">{status}</div>
+      </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="border-b border-border">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)]">
+      <Card className={panelClass}>
+        <CardHeader className={panelHeaderClass}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <CardTitle>{t('assets.userTitle')}</CardTitle>
@@ -210,24 +251,21 @@ export function AssetsPanel({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-48">
+                      <TableHead>
                         {t('common.asset')}
                       </TableHead>
-                      <TableHead>{t('assets.sector')}</TableHead>
-                      <TableHead>{t('assets.origin')}</TableHead>
                       <TableHead>{t('common.currency')}</TableHead>
-                      <TableHead>{t('common.createdAt')}</TableHead>
-                      <TableHead className="w-24 text-right">
+                      <TableHead className="text-right">
                         {t('common.actions')}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {userAssets.map((asset) => (
+                    {user.rows.map((asset) => (
                       <TableRow key={asset.id}>
                         <TableCell>
                           <div className="flex min-w-0 flex-col gap-1">
-                            <span className="truncate font-medium text-foreground">
+                            <span className="whitespace-normal wrap-anywhere font-medium text-foreground">
                               {asset.name}
                             </span>
                             <div className="flex flex-wrap gap-1">
@@ -243,29 +281,18 @@ export function AssetsPanel({
                                 variant="outline"
                                 className="text-[10px]"
                               >
-                                {t('common.custom')}
+                                {t(`assets.origins.${asset.origin}`)}
                               </Badge>
                             </div>
+                            <span className="whitespace-normal text-xs text-muted-foreground">
+                              {asset.sector?.displayName ?? t('common.none')} · {formatDate(asset.createdAt)}
+                            </span>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {asset.sector?.displayName ??
-                            t('common.none')}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {t(
-                              `assets.origins.${asset.origin}`,
-                            )}
-                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">
                             {asset.currency}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {formatDate(asset.createdAt)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-1">
@@ -310,11 +337,15 @@ export function AssetsPanel({
                 </Table>
               </div>
             )}
+          <Pagination {...user.pagination}
+            onPrev={() => setUserPage(user.pagination.currentPage - 1)}
+            onNext={() => setUserPage(user.pagination.currentPage + 1)}
+          />
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="border-b border-border">
+      <Card className={`${panelClass} xl:border-s xl:border-border xl:ps-5`}>
+        <CardHeader className={panelHeaderClass}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <CardTitle>{t('assets.sharedTitle')}</CardTitle>
@@ -326,6 +357,15 @@ export function AssetsPanel({
           <p className="text-xs text-muted-foreground">
             {t('assets.sharedDescription')}
           </p>
+          <div className="flex flex-wrap gap-1">
+            {CATALOG_TYPES.map((type) => (
+              <Button key={type} variant={catalogType === type ? 'secondary' : 'ghost'} size="sm"
+                aria-pressed={catalogType === type}
+                onClick={() => { setCatalogType(type); setCatalogPage(0); }}>
+                {t(`assets.types.${type}`)}
+              </Button>
+            ))}
+          </div>
         </CardHeader>
 
         <CardContent className="px-0">
@@ -340,7 +380,7 @@ export function AssetsPanel({
             !sharedQuery.isError &&
             sharedAssets.length === 0 && (
               <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                {debouncedSearch
+                {debouncedSearch || sharedQuery.data?.length
                   ? t('assets.sharedEmptyFiltered')
                   : t('assets.sharedEmpty')}
               </p>
@@ -353,25 +393,21 @@ export function AssetsPanel({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-48">
+                      <TableHead>
                         {t('common.asset')}
                       </TableHead>
-                      <TableHead>{t('assets.sector')}</TableHead>
                       <TableHead>{t('common.currency')}</TableHead>
-                      <TableHead className="min-w-28">
-                        {t('common.status')}
-                      </TableHead>
-                      <TableHead className="w-24 text-right">
+                      <TableHead className="text-right">
                         {t('common.actions')}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sharedAssets.map((asset) => (
+                    {shared.rows.map((asset) => (
                       <TableRow key={asset.id}>
                         <TableCell>
                           <div className="flex min-w-0 flex-col gap-1">
-                            <span className="truncate font-medium text-foreground">
+                            <span className="whitespace-normal wrap-anywhere font-medium text-foreground">
                               {asset.name}
                             </span>
                             <div className="flex flex-wrap items-center gap-1">
@@ -389,20 +425,12 @@ export function AssetsPanel({
                                 )}
                               </Badge>
                             </div>
+                            {asset.sector && <span className="whitespace-normal text-xs text-muted-foreground">{asset.sector.displayName}</span>}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {asset.sector?.displayName ??
-                            t('common.none')}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">
                             {asset.currency}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {t('assets.catalogAsset')}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -432,10 +460,17 @@ export function AssetsPanel({
                 </Table>
               </div>
             )}
+          <Pagination {...shared.pagination}
+            onPrev={() => setCatalogPage(shared.pagination.currentPage - 1)}
+            onNext={() => setCatalogPage(shared.pagination.currentPage + 1)}
+          />
         </CardContent>
       </Card>
 
-      <FxRatesCard defaultBaseCurrency={localCurrency} />
+      <div className="min-w-0 xl:border-s xl:border-border xl:ps-5">
+        <FxRatesCard defaultBaseCurrency={localCurrency} />
+      </div>
+      </div>
 
       {assetForm && (
         <AssetFormDialog

@@ -133,8 +133,8 @@ export function FxRatesCard({
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b border-border">
+    <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0 shadow-none">
+      <CardHeader className="border-b border-border px-0 pb-2">
         <div className="flex items-center gap-2">
           <LineChart
             className="size-4 text-muted-foreground"
@@ -147,8 +147,12 @@ export function FxRatesCard({
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-4 pt-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_1fr_1fr] lg:items-end">
+      <CardContent className="space-y-3 px-0">
+        <details className="text-sm">
+          <summary className="cursor-pointer text-muted-foreground">
+            {t('assets.fx.pair')}: {normalizedBase}/{normalizedQuote}
+          </summary>
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2">
           <div className="space-y-2">
             <Label htmlFor="fx-base">
               {t('assets.fx.base')}
@@ -168,7 +172,7 @@ export function FxRatesCard({
             />
           </div>
 
-          <div className="flex justify-center lg:pb-1">
+          <div className="flex justify-center">
             <Button
               type="button"
               variant="outline"
@@ -202,7 +206,8 @@ export function FxRatesCard({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="col-span-3 grid grid-cols-2 gap-2">
+          <div className="min-w-0 space-y-2">
             <Label htmlFor="fx-from">{t('common.from')}</Label>
             <Input
               id="fx-from"
@@ -215,7 +220,7 @@ export function FxRatesCard({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <Label htmlFor="fx-to">{t('common.to')}</Label>
             <Input
               id="fx-to"
@@ -227,7 +232,9 @@ export function FxRatesCard({
               }}
             />
           </div>
+          </div>
         </div>
+        </details>
 
         <datalist id="investment-currencies">
           {CURRENCIES.map((code) => (
@@ -243,7 +250,7 @@ export function FxRatesCard({
           </p>
         )}
 
-        <div className="rounded-lg border border-border">
+        <div className="border-t border-border">
           <PanelState
             isLoading={
               areCurrenciesValid &&
@@ -316,9 +323,9 @@ export function FxRatesCard({
           isRangeValid &&
           totalElements > 0 && (
             <>
-              <p className="text-xs text-muted-foreground">
+              {totalPages <= 1 && <p className="text-xs text-muted-foreground">
                 {pageLabel(query.data)}
-              </p>
+              </p>}
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

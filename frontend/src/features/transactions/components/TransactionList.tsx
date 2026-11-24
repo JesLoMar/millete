@@ -90,7 +90,7 @@ export function TransactionList({ period }: TransactionListProps) {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-3">
       <TransactionListFilters
         filter={filter}
         searchTerm={searchTerm}
@@ -99,7 +99,7 @@ export function TransactionList({ period }: TransactionListProps) {
         onSearchChange={setSearchTerm}
       />
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="min-w-0 border-t border-border">
         {transactions.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">
             {hasActiveFilters

@@ -1,4 +1,4 @@
-const ITEMS_PER_PAGE = 10;
+import { TRANSACTION_DISPLAY_SIZE } from '../constants';
 
 export function TransactionListSkeleton() {
   return (
@@ -7,7 +7,7 @@ export function TransactionListSkeleton() {
       aria-hidden="true"
     >
       <div className="space-y-4 p-4 sm:p-6">
-        {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+        {Array.from({ length: TRANSACTION_DISPLAY_SIZE }).map((_, index) => (
           <div
             key={`skeleton-${index}`}
             className="flex items-center gap-3 sm:gap-4"

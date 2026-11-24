@@ -1,3 +1,7 @@
+export const TRANSACTION_DISPLAY_SIZE = 15
+// Keep each backend chunk aligned with four complete UI pages.
+export const TRANSACTION_SERVER_SIZE = TRANSACTION_DISPLAY_SIZE * 4
+
 export const FREQUENCY_TYPES = [
   { value: "DAYS", labelKey: "transactions:recurring.days" },
   { value: "WEEKS", labelKey: "transactions:recurring.weeks" },

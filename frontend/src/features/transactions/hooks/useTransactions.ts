@@ -7,11 +7,12 @@ import {
   type PaginatedResponse,
 } from '@/shared/hooks/useServerPagination';
 
-import type { Filter } from '../constants';
+import {
+  TRANSACTION_DISPLAY_SIZE as DISPLAY_SIZE,
+  TRANSACTION_SERVER_SIZE as SERVER_SIZE,
+  type Filter,
+} from '../constants';
 import type { Transaction } from '../components/types';
-
-const SERVER_SIZE = 50;
-const DISPLAY_SIZE = 10;
 
 interface TransactionApiItem {
   id: string;

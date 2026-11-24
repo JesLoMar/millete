@@ -49,17 +49,17 @@ export const TransactionListDesktop = memo(function TransactionListDesktop({
         return (
           <m.div
             key={tx.id}
-            className="group flex items-center gap-4 border-b p-4 transition-colors last:border-0 hover:bg-accent/30"
+            className="group flex min-h-11 items-center gap-2.5 border-b border-border px-1 py-1.5 transition-colors last:border-0 hover:bg-accent/30"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
           >
             <div
               className={cn(
-                'shrink-0 rounded-full p-2.5',
+                'shrink-0',
                 isIncome
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-destructive/10 text-destructive',
+                  ? 'text-primary'
+                  : 'text-destructive',
               )}
               aria-hidden="true"
             >
@@ -75,13 +75,13 @@ export const TransactionListDesktop = memo(function TransactionListDesktop({
                 {tx.description}
               </p>
 
-              <div className="mt-0.5 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
+              <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="shrink-0 text-xs text-muted-foreground">
                   {formatDate(tx.date)}
                 </span>
 
                 <span
-                  className="size-1 rounded-full bg-border"
+                  className="size-1 shrink-0 rounded-full bg-border"
                   aria-hidden="true"
                 />
 
@@ -93,7 +93,7 @@ export const TransactionListDesktop = memo(function TransactionListDesktop({
                 ) : (
                   <Badge
                     variant="outline"
-                    className="border-none text-xs font-medium"
+                    className="h-auto max-w-full whitespace-normal wrap-anywhere rounded-sm border-none px-1 text-xs font-medium"
                     style={
                       tx.categoryColor
                         ? {
