@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  LineChart,
   Pencil,
   Plus,
   RefreshCw,
@@ -37,11 +36,10 @@ import {
   useSharedAssets,
   useUserAssets,
 } from '../hooks/useInvestmentQueries';
-import type { SharedAsset, UserAsset } from '../types';
+import type { UserAsset } from '../types';
 import { formatDate } from '../utils';
 import { AssetFormDialog } from './AssetFormDialog';
 import { FxRatesCard } from './FxRatesCard';
-import { MarketPricesDialog } from './MarketPricesDialog';
 import { PanelState } from './PanelState';
 import { RegisterAssetPriceDialog } from './RegisterAssetPriceDialog';
 
@@ -51,21 +49,22 @@ interface AssetsPanelProps {
 }
 
 const CATALOG_TYPES = ['CRYPTO', 'ETF', 'STOCK'] as const;
+const CATALOG_PAGE_SIZE = 15;
 const panelClass = 'min-w-0 gap-3 rounded-none border-0 bg-transparent py-0 shadow-none';
 const panelHeaderClass = 'border-b border-border px-0 pb-2';
 
-function assetPage<T>(assets: T[], requestedPage: number) {
+function assetPage<T>(assets: T[], requestedPage: number, pageSize: number) {
   const total = assets.length;
-  const totalPages = Math.max(1, Math.ceil(total / ASSET_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const currentPage = Math.min(requestedPage, totalPages - 1);
-  const offset = currentPage * ASSET_PAGE_SIZE;
+  const offset = currentPage * pageSize;
   return {
-    rows: assets.slice(offset, offset + ASSET_PAGE_SIZE),
+    rows: assets.slice(offset, offset + pageSize),
     pagination: {
       currentPage,
       totalPages,
       from: total === 0 ? 0 : offset + 1,
-      to: Math.min(offset + ASSET_PAGE_SIZE, total),
+      to: Math.min(offset + pageSize, total),
       total,
     },
   };
@@ -105,13 +104,11 @@ export function AssetsPanel({
     useState<AssetFormState | null>(null);
   const [priceAsset, setPriceAsset] =
     useState<UserAsset | null>(null);
-  const [pricesAsset, setPricesAsset] =
-    useState<SharedAsset | null>(null);
 
   const sharedAssets = (sharedQuery.data ?? []).filter((asset) => asset.type === catalogType);
   const userAssets = userQuery.data ?? [];
-  const user = assetPage(userAssets, userPage);
-  const shared = assetPage(sharedAssets, catalogPage);
+  const user = assetPage(userAssets, userPage, ASSET_PAGE_SIZE);
+  const shared = assetPage(sharedAssets, catalogPage, CATALOG_PAGE_SIZE);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -393,20 +390,18 @@ export function AssetsPanel({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>
+                      <TableHead className="h-8 px-2">
                         {t('common.asset')}
                       </TableHead>
-                      <TableHead>{t('common.currency')}</TableHead>
-                      <TableHead className="text-right">
-                        {t('common.actions')}
-                      </TableHead>
+                      <TableHead className="h-8 px-2">{t('common.currency')}</TableHead>
+                      <TableHead className="h-8 px-2">{t('assets.sector')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {shared.rows.map((asset) => (
                       <TableRow key={asset.id}>
-                        <TableCell>
-                          <div className="flex min-w-0 flex-col gap-1">
+                        <TableCell className="px-2 py-1.5">
+                          <div className="flex min-w-0 flex-col gap-0.5 leading-tight">
                             <span className="whitespace-normal wrap-anywhere font-medium text-foreground">
                               {asset.name}
                             </span>
@@ -425,34 +420,15 @@ export function AssetsPanel({
                                 )}
                               </Badge>
                             </div>
-                            {asset.sector && <span className="whitespace-normal text-xs text-muted-foreground">{asset.sector.displayName}</span>}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-2 py-1.5">
                           <Badge variant="secondary">
                             {asset.currency}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              onClick={() =>
-                                setPricesAsset(asset)
-                              }
-                              aria-label={t(
-                                'assets.prices.action',
-                              )}
-                            >
-                              <LineChart
-                                className="size-4"
-                                aria-hidden="true"
-                              />
-                            </Button>
-                          </div>
+                        <TableCell className="whitespace-normal px-2 py-1.5 text-xs text-muted-foreground">
+                          {asset.sector?.displayName ?? t('common.none')}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -505,17 +481,6 @@ export function AssetsPanel({
         />
       )}
 
-      {pricesAsset && (
-        <MarketPricesDialog
-          key={pricesAsset.id}
-          asset={pricesAsset}
-          onOpenChange={(open) => {
-            if (!open) {
-              setPricesAsset(null);
-            }
-          }}
-        />
-      )}
     </div>
   );
 }

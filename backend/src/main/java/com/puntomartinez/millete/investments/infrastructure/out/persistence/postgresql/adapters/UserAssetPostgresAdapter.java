@@ -37,7 +37,8 @@ public final class UserAssetPostgresAdapter
         }
 
         UserAssetEntity entity = mapper.toEntity(userAsset);
-        UserAssetEntity savedEntity = repository.save(entity);
+        // El precio se inserta por JDBC y necesita que el activo ya exista en esta transacción.
+        UserAssetEntity savedEntity = repository.saveAndFlush(entity);
 
         return mapper.toDomain(savedEntity);
     }

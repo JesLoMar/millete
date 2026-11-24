@@ -42,6 +42,12 @@ interface FxRatesCardProps {
   defaultBaseCurrency: string;
 }
 
+const availableCurrencies = typeof Intl.supportedValuesOf === 'function'
+  ? Intl.supportedValuesOf('currency')
+  : CURRENCIES;
+
+const currencySelectClass = 'h-9 w-full min-w-0 truncate rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50';
+
 function defaultFrom(): string {
   return toDateInputValue(
     new Date(
@@ -57,17 +63,26 @@ function defaultTo(): string {
 export function FxRatesCard({
   defaultBaseCurrency,
 }: FxRatesCardProps) {
-  const { t } = useTranslation('investments');
+  const { t, i18n } = useTranslation('investments');
+  const initialBase = defaultBaseCurrency.trim().toUpperCase();
   const [baseCurrency, setBaseCurrency] = useState(
     defaultBaseCurrency,
   );
-  const [quoteCurrency, setQuoteCurrency] = useState('USD');
+  const [quoteCurrency, setQuoteCurrency] = useState(initialBase === 'USD' ? 'EUR' : 'USD');
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [page, setPage] = useState(0);
 
   const normalizedBase = baseCurrency.trim().toUpperCase();
   const normalizedQuote = quoteCurrency.trim().toUpperCase();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const currencyOptions = useMemo(() => {
+    const names = new Intl.DisplayNames(locale, { type: 'currency' });
+    return [...new Set([...availableCurrencies, ...CURRENCIES, normalizedBase, normalizedQuote])]
+      .filter(isValidCurrencyCode)
+      .sort()
+      .map((code) => <option key={code} value={code}>{code} — {names.of(code) ?? code}</option>);
+  }, [locale, normalizedBase, normalizedQuote]);
 
   const isRangeValid =
     from.length > 0 &&
@@ -148,28 +163,25 @@ export function FxRatesCard({
       </CardHeader>
 
       <CardContent className="space-y-3 px-0">
-        <details className="text-sm">
-          <summary className="cursor-pointer text-muted-foreground">
-            {t('assets.fx.pair')}: {normalizedBase}/{normalizedQuote}
-          </summary>
-        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2">
-          <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          {t('assets.fx.pair')}: {normalizedBase}/{normalizedQuote}
+        </p>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2">
+          <div className="min-w-0 space-y-2">
             <Label htmlFor="fx-base">
               {t('assets.fx.base')}
             </Label>
-            <Input
+            <select
               id="fx-base"
-              value={baseCurrency}
-              list="investment-currencies"
-              maxLength={3}
+              value={normalizedBase}
               onChange={(event) => {
-                setBaseCurrency(
-                  event.target.value.toUpperCase(),
-                );
+                setBaseCurrency(event.target.value);
                 resetPage();
               }}
-              className="uppercase"
-            />
+              className={currencySelectClass}
+            >
+              {currencyOptions}
+            </select>
           </div>
 
           <div className="flex justify-center">
@@ -187,60 +199,50 @@ export function FxRatesCard({
             </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <Label htmlFor="fx-quote">
               {t('assets.fx.quote')}
             </Label>
-            <Input
+            <select
               id="fx-quote"
-              value={quoteCurrency}
-              list="investment-currencies"
-              maxLength={3}
+              value={normalizedQuote}
               onChange={(event) => {
-                setQuoteCurrency(
-                  event.target.value.toUpperCase(),
-                );
+                setQuoteCurrency(event.target.value);
                 resetPage();
               }}
-              className="uppercase"
-            />
+              className={currencySelectClass}
+            >
+              {currencyOptions}
+            </select>
           </div>
 
           <div className="col-span-3 grid grid-cols-2 gap-2">
-          <div className="min-w-0 space-y-2">
-            <Label htmlFor="fx-from">{t('common.from')}</Label>
-            <Input
-              id="fx-from"
-              type="date"
-              value={from}
-              onChange={(event) => {
-                setFrom(event.target.value);
-                resetPage();
-              }}
-            />
-          </div>
-
-          <div className="min-w-0 space-y-2">
-            <Label htmlFor="fx-to">{t('common.to')}</Label>
-            <Input
-              id="fx-to"
-              type="date"
-              value={to}
-              onChange={(event) => {
-                setTo(event.target.value);
-                resetPage();
-              }}
-            />
-          </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="fx-from">{t('common.from')}</Label>
+              <Input
+                id="fx-from"
+                type="date"
+                value={from}
+                onChange={(event) => {
+                  setFrom(event.target.value);
+                  resetPage();
+                }}
+              />
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="fx-to">{t('common.to')}</Label>
+              <Input
+                id="fx-to"
+                type="date"
+                value={to}
+                onChange={(event) => {
+                  setTo(event.target.value);
+                  resetPage();
+                }}
+              />
+            </div>
           </div>
         </div>
-        </details>
-
-        <datalist id="investment-currencies">
-          {CURRENCIES.map((code) => (
-            <option key={code} value={code} />
-          ))}
-        </datalist>
 
         {(!areCurrenciesValid || !isRangeValid) && (
           <p className="text-sm text-destructive">
