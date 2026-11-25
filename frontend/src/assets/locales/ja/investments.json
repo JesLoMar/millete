@@ -380,6 +380,7 @@
     "costBasis": "取得原価",
     "positions": "ポジション",
     "noPositions": "未決済のポジションはありません。",
+    "positionNotRecorded": "未決済のポジションは登録されていません",
     "localCurrencyHint": "{{currency}} 建て",
     "costBasisHint": "取得原価ベース",
     "marketValueHint": "現在価格ベース",

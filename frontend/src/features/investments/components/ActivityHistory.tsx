@@ -441,12 +441,16 @@ export function ActivityHistory() {
                         </TableCell>
                         <TableCell>
                           <div className="flex min-w-0 flex-col">
-                            <span className="truncate font-medium text-foreground">
-                              {entry?.name ??
-                                activity.assetReference
-                                  ?.id ??
-                                t('common.none')}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="truncate font-medium text-foreground">
+                                {entry?.name ?? activity.assetReference?.id ?? t('common.none')}
+                              </span>
+                              {activity.assetReference?.kind === 'USER' && (
+                                <Badge variant="secondary" className="text-[10px]">
+                                  {t('common.custom')}
+                                </Badge>
+                              )}
+                            </div>
                             {entry?.symbol && (
                               <span className="text-xs text-muted-foreground">
                                 {entry.symbol}

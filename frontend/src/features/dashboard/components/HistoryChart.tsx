@@ -61,16 +61,32 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
   const shortDate = dateLabel(period === 'year' ? { month: 'short' } : { day: 'numeric', month: 'short' })
   const rangeLabel = (point: HistoryPoint) =>
     longDate.formatRange(asDate(point.start), asDate(point.end))
+  const isMonthly = period === 'month'
+  const weekLabel = (start: string) => {
+    const monday = asDate(start)
+    const sunday = asDate(start)
+    sunday.setUTCDate(sunday.getUTCDate() + 6)
+    return `${shortDate.format(monday)} - ${shortDate.format(sunday)}`
+  }
 
   const active = data.find((point) => point.start === selection)
   const peak = Math.max(1, ...data.flatMap(({ income, expenses }) => [income, expenses]))
   const magnitude = 10 ** Math.floor(Math.log10(peak))
   const step = Math.ceil(peak / (4 * magnitude) * 10) * magnitude / 10
   const max = step * 4
-  const x = (index: number) => ((index + 0.5) * 100) / data.length
+  const lastIndex = data.length - 1
+  const usePlotEdges = isMonthly && lastIndex > 0
+  const x = (index: number) => usePlotEdges
+    ? (index * 100) / lastIndex
+    : ((index + 0.5) * 100) / data.length
   const y = (value: number) => 100 - (value / max) * 100
   const bands = differenceBands(data, x, y)
-  const columns = { gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }
+  // The edge hit areas are half as wide so their inner boundaries stay between points.
+  const columns = {
+    gridTemplateColumns: usePlotEdges
+      ? `minmax(0, 1fr) ${lastIndex > 1 ? `repeat(${lastIndex - 1}, minmax(0, 2fr)) ` : ''}minmax(0, 1fr)`
+      : `repeat(${data.length}, minmax(0, 1fr))`,
+  }
 
   return (
     <Card className="h-full min-h-100 rounded-none border-0 bg-transparent py-3 shadow-none">
@@ -143,11 +159,17 @@ export function HistoryChart({ period, data = [], loading }: HistoryChartProps) 
                 )}
               </div>
               <div aria-hidden="true" className="col-start-2 mt-2 grid text-center text-[10px] text-muted-foreground sm:text-xs" style={columns}>
-                {data.map((point, index) => (
-                  <span key={point.start} className={data.length > 7 && index % 2 !== 0 && index !== data.length - 1 ? 'invisible truncate sm:visible' : 'truncate'}>
-                    {shortDate.format(asDate(point.start))}
-                  </span>
-                ))}
+                {data.map((point, index) => {
+                  const alignment = index === 0 ? 'text-start' : index === lastIndex ? 'text-end' : ''
+                  const visibility = data.length > 7 && index % 2 !== 0 && index !== lastIndex
+                    ? 'invisible truncate sm:visible'
+                    : 'truncate'
+                  return (
+                    <span key={point.start} className={isMonthly ? (usePlotEdges ? alignment : '') : visibility}>
+                      {isMonthly ? weekLabel(point.start) : shortDate.format(asDate(point.start))}
+                    </span>
+                  )
+                })}
               </div>
             </div>
           </figure>

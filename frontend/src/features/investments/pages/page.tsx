@@ -88,6 +88,7 @@ export default function InvestmentsPage() {
   const activeTab: InvestmentTab =
     selectedTab ?? (isConfigured ? 'portfolio' : 'assets');
   const showAssetsLayout = activeTab === 'assets' && !trackingQuery.isLoading && !trackingQuery.isError;
+  const showPortfolioLayout = activeTab === 'portfolio' && !trackingQuery.isLoading && !trackingQuery.isError;
 
   const showTrackingGate =
     !isConfigured && GATED_TABS.includes(activeTab);
@@ -98,6 +99,37 @@ export default function InvestmentsPage() {
   ) => {
     setRecordRequest({ type, asset });
   };
+
+  const refreshMarketDataButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => setIsMarketDataOpen(true)}
+      className="gap-1.5"
+    >
+      <RefreshCw className="size-4" aria-hidden="true" />
+      {t('marketData.refresh')}
+    </Button>
+  );
+  const recordActivityButton = (
+    <Button
+      type="button"
+      size="sm"
+      onClick={() => handleOpenRecord('BUY')}
+      disabled={!isConfigured}
+      className="gap-1.5"
+    >
+      <Plus className="size-4" aria-hidden="true" />
+      {t('activities.record')}
+    </Button>
+  );
+  const portfolioActions = (
+    <div className="flex shrink-0 flex-wrap items-center gap-2">
+      {recordActivityButton}
+      {refreshMarketDataButton}
+    </div>
+  );
 
   const renderGatedContent = () => {
     if (showTrackingGate) {
@@ -184,37 +216,27 @@ export default function InvestmentsPage() {
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden pt-16">
-        <TopNav />
-        <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6">
+        <TopNav desktopCenter={showPortfolioLayout ? (
+          <div className="hidden min-w-0 items-center gap-4 xl:flex">
+            <Header hidePeriodSelector />
+            {portfolioActions}
+          </div>
+        ) : undefined} />
+        <main className={showPortfolioLayout
+          ? 'flex-1 space-y-3 overflow-y-auto p-4 sm:px-6 sm:py-3'
+          : 'flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6'}>
           {!showAssetsLayout && (
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className={showPortfolioLayout
+            ? 'flex flex-wrap items-center justify-between gap-2 lg:flex-nowrap xl:hidden'
+            : 'flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4'}>
             <Header hidePeriodSelector />
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsMarketDataOpen(true)}
-                className="gap-1.5"
-              >
-                <RefreshCw
-                  className="size-4"
-                  aria-hidden="true"
-                />
-                {t('marketData.refresh')}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => handleOpenRecord('BUY')}
-                disabled={!isConfigured}
-                className="gap-1.5"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                {t('activities.record')}
-              </Button>
-            </div>
+            {showPortfolioLayout ? portfolioActions : (
+              <div className="flex flex-wrap items-center gap-2">
+                {refreshMarketDataButton}
+                {recordActivityButton}
+              </div>
+            )}
           </div>
           )}
 
@@ -261,7 +283,7 @@ export default function InvestmentsPage() {
                 onChange={setSelectedTab}
               />
 
-              {!showAssetsLayout && <HealthBanner
+              {!showAssetsLayout && !showPortfolioLayout && <HealthBanner
                 enabled={isConfigured}
                 onOpenStatus={() => setSelectedTab('status')}
               />}

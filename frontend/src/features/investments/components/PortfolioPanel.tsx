@@ -1,5 +1,3 @@
-import { useTranslation } from 'react-i18next';
-
 import type { AssetCatalog } from '../hooks/useInvestmentQueries';
 import type {
   AssetReference,
@@ -26,35 +24,25 @@ export function PortfolioPanel({
   onTrade,
   onRecord,
 }: PortfolioPanelProps) {
-  const { t } = useTranslation('investments');
-
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <PortfolioSummary portfolio={portfolio} />
+    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(15rem,1fr)] xl:grid-cols-[minmax(0,2fr)_minmax(15rem,1fr)_minmax(11rem,0.6fr)]">
+      <PositionsTable
+        portfolio={portfolio}
+        catalog={catalog}
+        onTrade={onTrade}
+      />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="min-w-0 xl:col-span-2">
-          <PositionsTable
-            portfolio={portfolio}
-            catalog={catalog}
-            onTrade={onTrade}
-          />
-        </div>
-
-        <div className="min-w-0">
-          <CashBalancesCard
-            balances={portfolio.cashBalances}
-            localCurrency={portfolio.localCurrency}
-            onDeposit={() => onRecord('DEPOSIT')}
-            onWithdraw={() => onRecord('WITHDRAW')}
-            onExchange={() => onRecord('EXCHANGE')}
-          />
-        </div>
+      <div className="min-w-0">
+        <CashBalancesCard
+          balances={portfolio.cashBalances}
+          localCurrency={portfolio.localCurrency}
+          onDeposit={() => onRecord('DEPOSIT')}
+          onWithdraw={() => onRecord('WITHDRAW')}
+          onExchange={() => onRecord('EXCHANGE')}
+        />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {t('portfolio.disclaimer')}
-      </p>
+      <PortfolioSummary portfolio={portfolio} />
     </div>
   );
 }

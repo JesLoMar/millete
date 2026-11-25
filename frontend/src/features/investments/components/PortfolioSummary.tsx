@@ -1,18 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import {
-  Coins,
-  PieChart,
-  TrendingDown,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
 import { Badge } from '@/shared/components/core/badge';
-import {
-  Card,
-  CardContent,
-} from '@/shared/components/core/card';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/i18nFormat';
 
@@ -26,55 +13,25 @@ interface PortfolioSummaryProps {
   portfolio: Portfolio;
 }
 
-function SummaryCard({
+function SummaryMetric({
   title,
   value,
   hint,
-  icon: Icon,
-  iconClassName,
   valueClassName,
 }: {
   title: string;
   value: string;
   hint?: string;
-  icon: LucideIcon;
-  iconClassName: string;
   valueClassName?: string;
 }) {
   return (
-    <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
-      <CardContent className="flex h-full flex-col justify-between gap-3 pt-6">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-            {title}
-          </p>
-          <div
-            className={cn(
-              'flex size-9 shrink-0 items-center justify-center rounded-lg',
-              iconClassName,
-            )}
-          >
-            <Icon className="size-4" aria-hidden="true" />
-          </div>
-        </div>
-
-        <div className="min-w-0">
-          <p
-            className={cn(
-              'truncate text-xl font-semibold tracking-tight tabular-nums sm:text-2xl',
-              valueClassName,
-            )}
-          >
-            {value}
-          </p>
-          {hint && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              {hint}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="min-w-0">
+      <dt className="text-xs text-muted-foreground">{title}</dt>
+      <dd className={cn('break-words text-lg font-semibold tracking-tight tabular-nums', valueClassName)}>
+        {value}
+      </dd>
+      {hint && <dd className="text-xs text-muted-foreground">{hint}</dd>}
+    </div>
   );
 }
 
@@ -101,8 +58,8 @@ export function PortfolioSummary({
   const isPositive = unrealized >= 0;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <aside className="min-w-0 space-y-3 lg:max-xl:col-span-2 xl:border-l xl:border-border xl:pl-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
         <h2 className="text-lg font-semibold text-foreground">
           {t('portfolio.summary')}
         </h2>
@@ -113,8 +70,8 @@ export function PortfolioSummary({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4 xl:grid-cols-1">
+        <SummaryMetric
           title={t('portfolio.totalValue')}
           value={formatCurrency(
             portfolio.totalInLocalCurrency,
@@ -123,30 +80,24 @@ export function PortfolioSummary({
           hint={t('portfolio.localCurrencyHint', {
             currency: portfolio.localCurrency,
           })}
-          icon={Wallet}
-          iconClassName="bg-primary/10 text-primary"
         />
 
-        <SummaryCard
+        <SummaryMetric
           title={t('portfolio.invested')}
           value={formatCurrency(invested, portfolio.localCurrency)}
           hint={t('portfolio.costBasisHint')}
-          icon={PieChart}
-          iconClassName="bg-accent text-accent-foreground"
         />
 
-        <SummaryCard
+        <SummaryMetric
           title={t('portfolio.marketValue')}
           value={formatCurrency(
             marketValue,
             portfolio.localCurrency,
           )}
           hint={t('portfolio.marketValueHint')}
-          icon={Coins}
-          iconClassName="bg-secondary text-secondary-foreground"
         />
 
-        <SummaryCard
+        <SummaryMetric
           title={t('portfolio.unrealizedGain')}
           value={formatCurrency(
             unrealized,
@@ -157,17 +108,12 @@ export function PortfolioSummary({
               ? formatPercent(gainPercentage)
               : t('portfolio.noCostBasis')
           }
-          icon={isPositive ? TrendingUp : TrendingDown}
-          iconClassName={
-            isPositive
-              ? 'bg-primary/10 text-primary'
-              : 'bg-destructive/10 text-destructive'
-          }
           valueClassName={
             isPositive ? 'text-primary' : 'text-destructive'
           }
         />
-      </div>
-    </div>
+      </dl>
+      <p className="text-xs text-muted-foreground">{t('portfolio.disclaimer')}</p>
+    </aside>
   );
 }

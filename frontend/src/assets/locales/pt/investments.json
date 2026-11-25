@@ -380,6 +380,7 @@
     "costBasis": "Custo de aquisição",
     "positions": "Posições",
     "noPositions": "Não existem posições abertas.",
+    "positionNotRecorded": "Nenhuma posição aberta registada",
     "localCurrencyHint": "Em {{currency}}",
     "costBasisHint": "Ao custo de aquisição",
     "marketValueHint": "Ao preço atual",

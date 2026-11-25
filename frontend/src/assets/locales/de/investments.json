@@ -380,6 +380,7 @@
     "costBasis": "Einstandswert",
     "positions": "Positionen",
     "noPositions": "Es gibt keine offenen Positionen.",
+    "positionNotRecorded": "Keine offene Position erfasst",
     "localCurrencyHint": "In {{currency}}",
     "costBasisHint": "Zu Anschaffungskosten",
     "marketValueHint": "Zum aktuellen Preis",
