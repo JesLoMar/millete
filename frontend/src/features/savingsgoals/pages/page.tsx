@@ -168,54 +168,56 @@ export const SavingsGoalsPage = () => {
   };
 
   const isSearching = debouncedSearch.trim().length > 0;
+  const dateHeader = <Header hidePeriodSelector />;
 
   return (
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
 
       <div className="flex flex-1 flex-col overflow-hidden pt-16">
-        <TopNav />
+        <TopNav desktopCenter={dateHeader} />
 
-        <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <Header hidePeriodSelector />
-
-            <div className="flex w-full flex-col sm:w-auto">
-              <SavingsGoalDialog />
-            </div>
+        <main className="flex-1 space-y-4 overflow-y-auto p-4 sm:px-6 sm:py-3">
+          <div className="flex justify-center lg:hidden">
+            <div className="min-w-0 max-w-full">{dateHeader}</div>
           </div>
 
           <div className="space-y-4">
-            <div className="relative">
-              <Input
-                type="text"
-                role="searchbox"
-                autoComplete="off"
-                enterKeyHint="search"
-                placeholder={t('searchPlaceholder')}
-                aria-label={t('searchPlaceholder')}
-                value={searchTerm}
-                onChange={(event) =>
-                  setSearchTerm(event.target.value)
-                }
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    setSearchTerm('');
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="relative min-w-0 max-w-96 flex-1">
+                <Input
+                  type="text"
+                  role="searchbox"
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  placeholder={t('searchPlaceholder')}
+                  aria-label={t('searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
                   }
-                }}
-                className="w-full pr-10"
-              />
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      setSearchTerm('');
+                    }
+                  }}
+                  className="w-full pr-10"
+                />
 
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={t('clearSearch')}
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              )}
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={t('clearSearch')}
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+              <div className="shrink-0">
+                <SavingsGoalDialog />
+              </div>
             </div>
 
             {isLoading ? (
