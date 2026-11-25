@@ -18,7 +18,9 @@ import type {
 } from '../types';
 import type { InvestmentTab } from '../components/InvestmentTabs';
 import { ActivityHistory } from '../components/ActivityHistory';
+import { AssetFormDialog } from '../components/AssetFormDialog';
 import { AssetsPanel } from '../components/AssetsPanel';
+import { CreateHoldingDialog } from '../components/CreateHoldingDialog';
 import { HealthBanner } from '../components/HealthBanner';
 import { HoldingsPanel } from '../components/HoldingsPanel';
 import { InvestmentTabs } from '../components/InvestmentTabs';
@@ -27,7 +29,7 @@ import { PanelState } from '../components/PanelState';
 import { PerformancePanel } from '../components/PerformancePanel';
 import { PortfolioPanel } from '../components/PortfolioPanel';
 import { RecordActivityDialog } from '../components/RecordActivityDialog';
-import { StatusPanel } from '../components/StatusPanel';
+import { StatusPanel, StatusRecheckButton } from '../components/StatusPanel';
 import { TrackingSetupDialog } from '../components/TrackingSetupDialog';
 import {
   useAssetCatalog,
@@ -57,6 +59,8 @@ export default function InvestmentsPage() {
     useState(false);
   const [isMarketDataOpen, setIsMarketDataOpen] =
     useState(false);
+  const [isAssetCreateOpen, setIsAssetCreateOpen] = useState(false);
+  const [isHoldingCreateOpen, setIsHoldingCreateOpen] = useState(false);
 
   const trackingQuery = useTracking();
   const isConfigured =
@@ -120,13 +124,6 @@ export default function InvestmentsPage() {
       {t('activities.record')}
     </Button>
   );
-  const portfolioActions = (
-    <div className="flex shrink-0 flex-wrap items-center gap-2">
-      {recordActivityButton}
-      {refreshMarketDataButton}
-    </div>
-  );
-
   const renderGatedContent = () => {
     if (showTrackingGate) {
       return (
@@ -191,10 +188,6 @@ export default function InvestmentsPage() {
       case 'assets':
         return (
           <AssetsPanel
-            canRegisterPositions={isConfigured}
-            onOpenMarketDataRefresh={() =>
-              setIsMarketDataOpen(true)
-            }
             status={<HealthBanner enabled={isConfigured} onOpenStatus={() => setSelectedTab('status')} />}
           />
         );
@@ -213,38 +206,20 @@ export default function InvestmentsPage() {
     <div className="flex min-h-dvh overflow-hidden bg-background">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden pt-16">
-        <TopNav desktopCenter={showPortfolioLayout ? (
-          <div className="hidden min-w-0 items-center gap-4 xl:flex">
-            <Header hidePeriodSelector />
-            {portfolioActions}
+        <TopNav desktopCenter={<Header hidePeriodSelector />} />
+        <main className="flex-1 space-y-3 overflow-y-auto p-4 sm:px-6 sm:py-3">
+          <div className="flex justify-center lg:hidden">
+            <Header className="w-fit max-w-full" hidePeriodSelector />
           </div>
-        ) : undefined} />
-        <main className={showPortfolioLayout
-          ? 'flex-1 space-y-3 overflow-y-auto p-4 sm:px-6 sm:py-3'
-          : 'flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-6 sm:p-6'}>
-          {!showAssetsLayout && (
-          <div className={showPortfolioLayout
-            ? 'flex flex-wrap items-center justify-between gap-2 lg:flex-nowrap xl:hidden'
-            : 'flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4'}>
-            <Header hidePeriodSelector />
 
-            {showPortfolioLayout ? portfolioActions : (
-              <div className="flex flex-wrap items-center gap-2">
-                {refreshMarketDataButton}
-                {recordActivityButton}
-              </div>
-            )}
-          </div>
-          )}
-
-          {!showAssetsLayout && <div className="space-y-1">
+          <div className="space-y-1">
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
               {t('title')}
             </h2>
             <p className="text-sm text-muted-foreground">
               {t('subtitle')}
             </p>
-          </div>}
+          </div>
 
           {trackingQuery.isLoading && (
             <div className="flex justify-center py-20">
@@ -275,10 +250,24 @@ export default function InvestmentsPage() {
 
           {!trackingQuery.isLoading && !trackingQuery.isError && (
             <>
-              <InvestmentTabs
-                active={activeTab}
-                onChange={setSelectedTab}
-              />
+              <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+                <InvestmentTabs active={activeTab} onChange={setSelectedTab} />
+                {(activeTab === 'portfolio' || activeTab === 'activity') && recordActivityButton}
+                {activeTab === 'assets' && (
+                  <Button type="button" size="sm" className="gap-1.5" onClick={() => setIsAssetCreateOpen(true)}>
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t('assets.newAsset')}
+                  </Button>
+                )}
+                {activeTab === 'holdings' && !showTrackingGate && (
+                  <Button type="button" size="sm" className="gap-1.5" onClick={() => setIsHoldingCreateOpen(true)}>
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t('holdings.newHolding')}
+                  </Button>
+                )}
+                {activeTab === 'status' && <StatusRecheckButton />}
+                {(activeTab === 'portfolio' || activeTab === 'assets' || activeTab === 'status') && refreshMarketDataButton}
+              </div>
 
               {!showAssetsLayout && !showPortfolioLayout && <HealthBanner
                 enabled={isConfigured}
@@ -290,6 +279,14 @@ export default function InvestmentsPage() {
           )}
         </main>
       </div>
+
+      {isAssetCreateOpen && (
+        <AssetFormDialog open canRegisterPositions={isConfigured} onOpenChange={setIsAssetCreateOpen} />
+      )}
+
+      {isHoldingCreateOpen && (
+        <CreateHoldingDialog open onOpenChange={setIsHoldingCreateOpen} />
+      )}
 
       {recordRequest && (
         <RecordActivityDialog

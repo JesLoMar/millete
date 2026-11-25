@@ -23,18 +23,12 @@ import {
 } from '@/shared/components/core/card';
 import { cn } from '@/lib/utils';
 import { notify } from '@/shared/utils/notifications/notify';
-import { getLocalCurrencyCode } from '@/shared/utils/i18nFormat';
 
 import { INVESTMENT_QUERY_KEYS } from '../constants';
-import {
-  useAssetCatalog,
-  useHealth,
-  useTracking,
-} from '../hooks/useInvestmentQueries';
+import { useHealth, useTracking } from '../hooks/useInvestmentQueries';
 import { investmentsService } from '../services/investments.service';
 import type { HealthIssueSeverity } from '../types';
 import { downloadJson, formatDateTime } from '../utils';
-import { MarketDataRefreshDialog } from './MarketDataRefreshDialog';
 import { PanelState } from './PanelState';
 import { RestoreLedgerDialog } from './RestoreLedgerDialog';
 import { TrackingSetupDialog } from './TrackingSetupDialog';
@@ -49,36 +43,40 @@ interface StatusPanelProps {
   onTrackingConfigured?: () => void;
 }
 
+export function StatusRecheckButton() {
+  const { t } = useTranslation('investments');
+  const healthQuery = useHealth();
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => void healthQuery.refetch()}
+      disabled={healthQuery.isFetching}
+      className="gap-1.5"
+    >
+      <RefreshCw className={cn('size-4', healthQuery.isFetching && 'animate-spin')} aria-hidden="true" />
+      {t('health.recheck')}
+    </Button>
+  );
+}
+
 export function StatusPanel({
   onTrackingConfigured,
 }: StatusPanelProps) {
   const { t } = useTranslation('investments');
   const queryClient = useQueryClient();
-  const catalog = useAssetCatalog();
   const trackingQuery = useTracking();
   const healthQuery = useHealth();
 
-  const localCurrency = getLocalCurrencyCode();
-
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
-  const [isMarketDataOpen, setIsMarketDataOpen] =
-    useState(false);
   const [isRestoreOpen, setIsRestoreOpen] = useState(false);
   const [isDownloading, setIsDownloading] =
     useState(false);
 
   const tracking = trackingQuery.data;
   const isConfigured = tracking?.configured === true;
-
-  const assetCurrencies = Array.from(
-    new Set(
-      catalog.entries
-        .map((entry) => entry.currency)
-        .filter((currency): currency is string =>
-          Boolean(currency),
-        ),
-    ),
-  );
 
   const issues = [...(healthQuery.data?.issues ?? [])].sort(
     (left, right) =>
@@ -185,23 +183,6 @@ export function StatusPanel({
                 <Badge variant="secondary">{issues.length}</Badge>
               )}
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void healthQuery.refetch()}
-              disabled={healthQuery.isFetching}
-              className="gap-1.5"
-            >
-              <RefreshCw
-                className={cn(
-                  'size-4',
-                  healthQuery.isFetching && 'animate-spin',
-                )}
-                aria-hidden="true"
-              />
-              {t('health.recheck')}
-            </Button>
           </div>
           <p className="text-xs text-muted-foreground">
             {healthQuery.data
@@ -302,20 +283,10 @@ export function StatusPanel({
           </p>
         </CardHeader>
 
-        <CardContent className="flex flex-col justify-between gap-3 pt-4 sm:flex-row sm:items-center">
+        <CardContent className="pt-4">
           <p className="text-xs text-muted-foreground">
             {t('marketData.statusHint')}
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsMarketDataOpen(true)}
-            className="gap-1.5 self-start"
-          >
-            <RefreshCw className="size-4" aria-hidden="true" />
-            {t('marketData.refresh')}
-          </Button>
         </CardContent>
       </Card>
 
@@ -393,18 +364,6 @@ export function StatusPanel({
             }
           }}
           onConfigured={() => onTrackingConfigured?.()}
-        />
-      )}
-
-      {isMarketDataOpen && (
-        <MarketDataRefreshDialog
-          localCurrency={localCurrency}
-          assetCurrencies={assetCurrencies}
-          onOpenChange={(open) => {
-            if (!open) {
-              setIsMarketDataOpen(false);
-            }
-          }}
         />
       )}
 

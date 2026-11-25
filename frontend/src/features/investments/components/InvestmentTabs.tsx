@@ -69,7 +69,7 @@ export function InvestmentTabs({
 
   return (
     <div
-      className="flex gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1 no-scrollbar"
+      className="flex w-fit min-w-0 max-w-full gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1 no-scrollbar"
       role="tablist"
       aria-label={t('title')}
     >

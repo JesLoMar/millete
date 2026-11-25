@@ -22,6 +22,7 @@ import { useCategoryExpenses } from '../hooks/useCategoryExpenses';
 import { useCategoryMutations } from '../hooks/useCategoryMutations';
 import type { Category } from '../types';
 import { getPeriodBudgetLimit } from '../utils/budget';
+import { AddCategoryDialog } from './AddCategoryDialog';
 import { CategoryRow } from './CategoryRow';
 import { CategoryRowsSkeleton } from './CategoryTableSkeleton';
 import { EditCategoryDialog } from './EditCategoryDialog';
@@ -222,8 +223,8 @@ export function CategoryTable({
         </div>
       )}
 
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="relative w-full sm:w-[320px]">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 max-[22.5rem]:grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-4">
+        <div className="relative w-full min-w-0 max-w-80">
           <Search
             className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
@@ -240,7 +241,11 @@ export function CategoryTable({
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="justify-self-start sm:justify-self-center">
+          <AddCategoryDialog />
+        </div>
+
+        <div className="col-span-full flex flex-wrap items-center gap-2 sm:col-span-1 sm:justify-end sm:gap-3">
           <span className="rounded-lg bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground">
             {t(`dashboard:header.period.${period}`)}
           </span>

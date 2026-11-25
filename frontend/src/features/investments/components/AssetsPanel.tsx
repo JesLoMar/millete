@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pencil,
-  Plus,
-  RefreshCw,
   Search,
   Tag,
   X,
@@ -44,8 +42,6 @@ import { PanelState } from './PanelState';
 import { RegisterAssetPriceDialog } from './RegisterAssetPriceDialog';
 
 interface AssetsPanelProps {
-  canRegisterPositions: boolean;
-  onOpenMarketDataRefresh: () => void;
   status: ReactNode;
 }
 
@@ -71,13 +67,7 @@ function assetPage<T>(assets: T[], requestedPage: number, pageSize: number) {
   };
 }
 
-type AssetFormState =
-  | { mode: 'create' }
-  | { mode: 'edit'; asset: UserAsset };
-
 export function AssetsPanel({
-  canRegisterPositions,
-  onOpenMarketDataRefresh,
   status,
 }: AssetsPanelProps) {
   const { t } = useTranslation('investments');
@@ -102,8 +92,7 @@ export function AssetsPanel({
     debouncedSearch || undefined,
   );
 
-  const [assetForm, setAssetForm] =
-    useState<AssetFormState | null>(null);
+  const [editingAsset, setEditingAsset] = useState<UserAsset | null>(null);
   const [priceAsset, setPriceAsset] =
     useState<UserAsset | null>(null);
 
@@ -117,40 +106,13 @@ export function AssetsPanel({
       <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Card className={panelClass}>
           <CardContent className="space-y-3 px-0">
-          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-foreground">
-                {t('assets.title')}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {t('assets.description')}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onOpenMarketDataRefresh}
-                className="gap-1.5"
-              >
-                <RefreshCw
-                  className="size-4"
-                  aria-hidden="true"
-                />
-                {t('marketData.refresh')}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setAssetForm({ mode: 'create' })}
-                className="gap-1.5"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                {t('assets.newAsset')}
-              </Button>
-            </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-foreground">
+              {t('assets.title')}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t('assets.description')}
+            </p>
           </div>
 
           <div className="relative">
@@ -226,16 +188,6 @@ export function AssetsPanel({
                     ? t('assets.userEmptyFiltered')
                     : t('assets.userEmpty')}
                 </p>
-                {!debouncedSearch && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAssetForm({ mode: 'create' })}
-                  >
-                    {t('assets.newAsset')}
-                  </Button>
-                )}
               </div>
             )}
 
@@ -311,12 +263,7 @@ export function AssetsPanel({
                               variant="ghost"
                               size="icon"
                               className="size-8"
-                              onClick={() =>
-                                setAssetForm({
-                                  mode: 'edit',
-                                  asset,
-                                })
-                              }
+                              onClick={() => setEditingAsset(asset)}
                               aria-label={t('common:actions.edit')}
                             >
                               <Pencil
@@ -446,25 +393,17 @@ export function AssetsPanel({
       </div>
       </div>
 
-      {assetForm && (
+      {editingAsset && (
         <AssetFormDialog
-          canRegisterPositions={canRegisterPositions}
-          key={
-            assetForm.mode === 'create'
-              ? 'create'
-              : `edit:${assetForm.asset.id}`
-          }
+          canRegisterPositions={false}
+          key={editingAsset.id}
           open
           onOpenChange={(open) => {
             if (!open) {
-              setAssetForm(null);
+              setEditingAsset(null);
             }
           }}
-          asset={
-            assetForm.mode === 'edit'
-              ? assetForm.asset
-              : null
-          }
+          asset={editingAsset}
         />
       )}
 

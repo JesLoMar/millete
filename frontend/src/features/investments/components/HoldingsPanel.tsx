@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { History, Plus } from 'lucide-react';
+import { History } from 'lucide-react';
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
@@ -32,7 +32,6 @@ import {
   formatQuantity,
 } from '../utils';
 import { AssetPicker } from './AssetPicker';
-import { CreateHoldingDialog } from './CreateHoldingDialog';
 import { PanelState } from './PanelState';
 import { ReplaceHoldingHistoryDialog } from './ReplaceHoldingHistoryDialog';
 
@@ -43,7 +42,6 @@ export function HoldingsPanel() {
   const [page, setPage] = useState(0);
   const [assetFilter, setAssetFilter] =
     useState<AssetReference | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [historyHolding, setHistoryHolding] =
     useState<Holding | null>(null);
 
@@ -77,25 +75,13 @@ export function HoldingsPanel() {
     <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-foreground">
-                {t('holdings.title')}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {t('holdings.description')}
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              className="gap-1.5 self-start"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              {t('holdings.newHolding')}
-            </Button>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-foreground">
+              {t('holdings.title')}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t('holdings.description')}
+            </p>
           </div>
 
           <div className="max-w-md">
@@ -137,16 +123,6 @@ export function HoldingsPanel() {
                     ? t('holdings.emptyFiltered')
                     : t('holdings.empty')}
                 </p>
-                {!assetFilter && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsCreateOpen(true)}
-                  >
-                    {t('holdings.newHolding')}
-                  </Button>
-                )}
               </div>
             )}
 
@@ -310,17 +286,6 @@ export function HoldingsPanel() {
             )}
         </CardContent>
       </Card>
-
-      {isCreateOpen && (
-        <CreateHoldingDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) {
-              setIsCreateOpen(false);
-            }
-          }}
-        />
-      )}
 
       {historyHolding && (
         <ReplaceHoldingHistoryDialog
