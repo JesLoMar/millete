@@ -58,15 +58,11 @@ export default function InvestmentsPage() {
   const [isMarketDataOpen, setIsMarketDataOpen] =
     useState(false);
 
-  // El instante de valoración se fija al montar la página para que las
-  // peticiones no cambien de clave en cada render.
-  const [asOf] = useState(() => new Date().toISOString());
-
   const trackingQuery = useTracking();
   const isConfigured =
     trackingQuery.data?.configured === true;
 
-  const portfolioQuery = usePortfolio(asOf, isConfigured);
+  const portfolioQuery = usePortfolio(isConfigured);
   const catalog = useAssetCatalog();
 
   const localCurrency = getLocalCurrencyCode();
@@ -195,6 +191,7 @@ export default function InvestmentsPage() {
       case 'assets':
         return (
           <AssetsPanel
+            canRegisterPositions={isConfigured}
             onOpenMarketDataRefresh={() =>
               setIsMarketDataOpen(true)
             }

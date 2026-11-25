@@ -36,12 +36,14 @@ import type {
 import { parseNumericInput } from '../utils';
 
 interface AssetFormDialogProps {
+  canRegisterPositions: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   asset?: UserAsset | null;
 }
 
 export function AssetFormDialog({
+  canRegisterPositions,
   open,
   onOpenChange,
   asset = null,
@@ -64,10 +66,17 @@ export function AssetFormDialog({
     asset?.origin ?? 'ACQUIRED',
   );
   const [initialPrice, setInitialPrice] = useState('0');
+  const [quantity, setQuantity] = useState('');
+  const [acquisitionCost, setAcquisitionCost] = useState('');
   const [showValidation, setShowValidation] = useState(false);
 
   const initialPriceValue = parseNumericInput(initialPrice);
+  const quantityValue = parseNumericInput(quantity);
+  const acquisitionCostValue = parseNumericInput(acquisitionCost);
   const normalizedSector = sector.trim().toUpperCase();
+  const validOpeningPosition =
+    quantityValue != null && quantityValue > 0 &&
+    acquisitionCostValue != null && acquisitionCostValue >= 0;
 
   const isValid =
     name.trim().length > 0 &&
@@ -75,7 +84,8 @@ export function AssetFormDialog({
     normalizedSector.length > 0 &&
     normalizedSector.length <= 120 &&
     (isEditing ||
-      (initialPriceValue != null && initialPriceValue >= 0));
+      (initialPriceValue != null && initialPriceValue >= 0 &&
+        (!canRegisterPositions || validOpeningPosition)));
 
   const isPending =
     createUserAsset.isPending || updateUserAsset.isPending;
@@ -102,6 +112,10 @@ export function AssetFormDialog({
           sector: normalizedSector,
           origin,
           initialPrice: initialPriceValue as number,
+          openingPosition: canRegisterPositions ? {
+            quantity: quantityValue as number,
+            acquisitionCost: acquisitionCostValue as number,
+          } : undefined,
         });
       }
 
@@ -250,6 +264,39 @@ export function AssetFormDialog({
                   {t('assets.form.initialPriceHelp')}
                 </p>
               </div>
+
+              {canRegisterPositions ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="asset-opening-quantity">{t('common.quantity')}</Label>
+                    <Input
+                      id="asset-opening-quantity"
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={quantity}
+                      onChange={(event) => setQuantity(event.target.value)}
+                      disabled={isPending}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="asset-opening-cost">
+                      {t('holdings.create.acquisitionCost', { currency: localCurrency })}
+                    </Label>
+                    <Input
+                      id="asset-opening-cost"
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={acquisitionCost}
+                      onChange={(event) => setAcquisitionCost(event.target.value)}
+                      disabled={isPending}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">{t('tracking.notConfiguredDescription')}</p>
+              )}
             </>
           )}
 
@@ -261,7 +308,9 @@ export function AssetFormDialog({
 
           {showValidation && !isValid && (
             <p className="text-sm text-destructive">
-              {t('assets.form.invalid')}
+              {t(!isEditing && canRegisterPositions && !validOpeningPosition
+                ? 'assets.form.invalidOpeningPosition'
+                : 'assets.form.invalid')}
             </p>
           )}
         </div>

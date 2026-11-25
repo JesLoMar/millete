@@ -446,6 +446,10 @@ export interface CreateUserAssetRequest {
   sector: string;
   origin: AssetOrigin;
   initialPrice: number;
+  openingPosition?: {
+    quantity: number;
+    acquisitionCost: number;
+  };
 }
 
 export interface UpdateUserAssetRequest {

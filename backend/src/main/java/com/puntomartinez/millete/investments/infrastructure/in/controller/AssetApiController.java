@@ -97,6 +97,7 @@ public class AssetApiController {
             AssetApiDTOs.RegisterUserAssetRequestDTO request,
             Authentication authentication
     ) {
+        var opening = request.openingPosition();
         UserAsset asset =
                 registerUserAsset.register(
                         user(authentication),
@@ -105,7 +106,9 @@ public class AssetApiController {
                                 request.type(),
                                 request.sector(),
                                 request.origin(),
-                                request.initialPrice()
+                                request.initialPrice(),
+                                opening == null ? null : new RegisterUserAssetUseCase.OpeningPosition(
+                                        opening.quantity(), opening.acquisitionCost())
                         )
                 );
 

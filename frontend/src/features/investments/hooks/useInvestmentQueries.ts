@@ -27,14 +27,11 @@ import type {
   UserAsset,
 } from '../types';
 
-export function usePortfolio(
-  asOf: string,
-  enabled: boolean = true,
-) {
+export function usePortfolio(enabled: boolean = true) {
   return useQuery<Portfolio>({
-    queryKey: [...INVESTMENT_QUERY_KEYS.portfolio, asOf],
+    queryKey: INVESTMENT_QUERY_KEYS.portfolio,
     queryFn: ({ signal }) =>
-      investmentsService.getPortfolio(asOf, signal),
+      investmentsService.getPortfolio(new Date().toISOString(), signal),
     enabled,
     staleTime: 30_000,
     retry: 1,

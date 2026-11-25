@@ -29,6 +29,7 @@ import { AssetPicker } from './AssetPicker';
 interface CreateHoldingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialAsset?: AssetReference;
 }
 
 /**
@@ -38,13 +39,14 @@ interface CreateHoldingDialogProps {
 export function CreateHoldingDialog({
   open,
   onOpenChange,
+  initialAsset,
 }: CreateHoldingDialogProps) {
   const { t } = useTranslation('investments');
   const { createHolding } = useInvestmentMutations();
   const catalog = useAssetCatalog();
   const localCurrency = getLocalCurrencyCode();
 
-  const [asset, setAsset] = useState<AssetReference | null>(null);
+  const [asset, setAsset] = useState<AssetReference | null>(initialAsset ?? null);
   const [snapshotAt, setSnapshotAt] = useState(
     nowDateTimeInputValue,
   );
@@ -97,17 +99,25 @@ export function CreateHoldingDialog({
       <DialogContent className="border-border bg-card sm:max-w-lg">
         <div className="max-h-[85dvh] space-y-4 overflow-y-auto pr-1">
           <DialogHeader>
-            <DialogTitle>{t('holdings.create.title')}</DialogTitle>
+            <DialogTitle>
+              {initialAsset
+                ? t('portfolio.registerPosition', { defaultValue: 'Register position' })
+                : t('holdings.create.title')}
+            </DialogTitle>
             <DialogDescription>
               {t('holdings.create.description')}
             </DialogDescription>
           </DialogHeader>
 
-          <AssetPicker
-            value={asset}
-            onChange={setAsset}
-            disabled={createHolding.isPending}
-          />
+          {initialAsset ? (
+            <p className="text-sm font-medium">{entry?.name ?? t('common.unknownAsset')}</p>
+          ) : (
+            <AssetPicker
+              value={asset}
+              onChange={setAsset}
+              disabled={createHolding.isPending}
+            />
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="holding-snapshot-at">

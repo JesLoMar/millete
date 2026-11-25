@@ -45,12 +45,14 @@ interface PositionsTableProps {
     type: 'BUY' | 'SELL',
     asset: AssetReference,
   ) => void;
+  onRegisterPosition: (asset: AssetReference) => void;
 }
 
 export function PositionsTable({
   portfolio,
   catalog,
   onTrade,
+  onRegisterPosition,
 }: PositionsTableProps) {
   const { t } = useTranslation('investments');
   const [page, setPage] = useState(0);
@@ -160,7 +162,7 @@ export function PositionsTable({
                           </span>
                           {!position && (
                             <span className="text-xs text-muted-foreground">
-                              {t('portfolio.positionNotRecorded')}
+                              {t('portfolio.positionNotRecorded', { defaultValue: 'No open position recorded' })}
                             </span>
                           )}
                         </div>
@@ -236,31 +238,37 @@ export function PositionsTable({
 
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => onTrade('BUY', reference)}
-                            aria-label={t('portfolio.buy')}
-                          >
-                            <Plus
-                              className="size-4 text-primary"
-                              aria-hidden="true"
-                            />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            disabled={!position}
-                            onClick={() => onTrade('SELL', reference)}
-                            aria-label={t('portfolio.sell')}
-                          >
-                            <Minus
-                              className="size-4 text-destructive"
-                              aria-hidden="true"
-                            />
-                          </Button>
+                          {!position ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onRegisterPosition(reference)}
+                            >
+                              {t('portfolio.registerPosition', { defaultValue: 'Register position' })}
+                            </Button>
+                          ) : (
+                            <>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => onTrade('BUY', reference)}
+                                aria-label={t('portfolio.buy')}
+                              >
+                                <Plus className="size-4 text-primary" aria-hidden="true" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => onTrade('SELL', reference)}
+                                aria-label={t('portfolio.sell')}
+                              >
+                                <Minus className="size-4 text-destructive" aria-hidden="true" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

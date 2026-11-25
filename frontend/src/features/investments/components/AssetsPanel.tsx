@@ -44,6 +44,7 @@ import { PanelState } from './PanelState';
 import { RegisterAssetPriceDialog } from './RegisterAssetPriceDialog';
 
 interface AssetsPanelProps {
+  canRegisterPositions: boolean;
   onOpenMarketDataRefresh: () => void;
   status: ReactNode;
 }
@@ -75,6 +76,7 @@ type AssetFormState =
   | { mode: 'edit'; asset: UserAsset };
 
 export function AssetsPanel({
+  canRegisterPositions,
   onOpenMarketDataRefresh,
   status,
 }: AssetsPanelProps) {
@@ -142,9 +144,7 @@ export function AssetsPanel({
               <Button
                 type="button"
                 size="sm"
-                onClick={() =>
-                  setAssetForm({ mode: 'create' })
-                }
+                onClick={() => setAssetForm({ mode: 'create' })}
                 className="gap-1.5"
               >
                 <Plus className="size-4" aria-hidden="true" />
@@ -231,9 +231,7 @@ export function AssetsPanel({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setAssetForm({ mode: 'create' })
-                    }
+                    onClick={() => setAssetForm({ mode: 'create' })}
                   >
                     {t('assets.newAsset')}
                   </Button>
@@ -450,6 +448,7 @@ export function AssetsPanel({
 
       {assetForm && (
         <AssetFormDialog
+          canRegisterPositions={canRegisterPositions}
           key={
             assetForm.mode === 'create'
               ? 'create'

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import type { AssetCatalog } from '../hooks/useInvestmentQueries';
 import type {
   AssetReference,
@@ -5,6 +7,7 @@ import type {
   Portfolio,
 } from '../types';
 import { CashBalancesCard } from './CashBalancesCard';
+import { CreateHoldingDialog } from './CreateHoldingDialog';
 import { PortfolioSummary } from './PortfolioSummary';
 import { PositionsTable } from './PositionsTable';
 
@@ -24,12 +27,15 @@ export function PortfolioPanel({
   onTrade,
   onRecord,
 }: PortfolioPanelProps) {
+  const [openingAsset, setOpeningAsset] = useState<AssetReference | null>(null);
+
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(15rem,1fr)] xl:grid-cols-[minmax(0,2fr)_minmax(15rem,1fr)_minmax(11rem,0.6fr)]">
       <PositionsTable
         portfolio={portfolio}
         catalog={catalog}
         onTrade={onTrade}
+        onRegisterPosition={setOpeningAsset}
       />
 
       <div className="min-w-0">
@@ -43,6 +49,13 @@ export function PortfolioPanel({
       </div>
 
       <PortfolioSummary portfolio={portfolio} />
+      {openingAsset && (
+        <CreateHoldingDialog
+          open
+          initialAsset={openingAsset}
+          onOpenChange={(open) => { if (!open) setOpeningAsset(null); }}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ package com.puntomartinez.millete.investments.infrastructure.in.controller.dto;
 import com.puntomartinez.millete.investments.domain.model.AssetOrigin;
 import com.puntomartinez.millete.investments.domain.model.AssetReferenceKind;
 import com.puntomartinez.millete.investments.domain.model.AssetType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -60,7 +61,16 @@ public final class AssetApiDTOs {
 
             @NotNull
             @DecimalMin("0")
-            BigDecimal initialPrice
+            BigDecimal initialPrice,
+
+            @Valid
+            OpeningPositionRequestDTO openingPosition
+    ) {
+    }
+
+    public record OpeningPositionRequestDTO(
+            @NotNull @DecimalMin(value = "0", inclusive = false) BigDecimal quantity,
+            @NotNull @DecimalMin("0") BigDecimal acquisitionCost
     ) {
     }
 

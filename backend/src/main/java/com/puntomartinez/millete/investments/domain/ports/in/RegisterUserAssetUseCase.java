@@ -19,7 +19,11 @@ public interface RegisterUserAssetUseCase {
             AssetType type,
             String sector,
             AssetOrigin origin,
-            BigDecimal initialPrice
+            BigDecimal initialPrice,
+            OpeningPosition openingPosition
     ) {
+    }
+
+    record OpeningPosition(BigDecimal quantity, BigDecimal acquisitionCost) {
     }
 }
