@@ -41,6 +41,7 @@ import {
   parseNumericInput,
 } from '../utils';
 import { AssetPicker } from './AssetPicker';
+import { CurrencySelect } from './CurrencySelect';
 
 interface RecordActivityDialogProps {
   open: boolean;
@@ -504,43 +505,33 @@ export function RecordActivityDialog({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <Label htmlFor="exchange-origin">
                     {t('record.currencyOrigin')}
                   </Label>
-                  <Input
+                  <CurrencySelect
                     id="exchange-origin"
-                    list="investment-currencies"
-                    maxLength={3}
-                    value={form.currencyOrigin}
+                    value={currencyOrigin}
+                    pairedCurrency={currencyDestination}
                     onChange={(event) =>
-                      update({
-                        currencyOrigin:
-                          event.target.value.toUpperCase(),
-                      })
+                      update({ currencyOrigin: event.target.value })
                     }
                     disabled={registerActivity.isPending}
-                    className="uppercase"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <Label htmlFor="exchange-destination">
                     {t('record.currencyDestination')}
                   </Label>
-                  <Input
+                  <CurrencySelect
                     id="exchange-destination"
-                    list="investment-currencies"
-                    maxLength={3}
-                    value={form.currencyDestination}
+                    value={currencyDestination}
+                    pairedCurrency={currencyOrigin}
                     onChange={(event) =>
-                      update({
-                        currencyDestination:
-                          event.target.value.toUpperCase(),
-                      })
+                      update({ currencyDestination: event.target.value })
                     }
                     disabled={registerActivity.isPending}
-                    className="uppercase"
                   />
                 </div>
               </div>

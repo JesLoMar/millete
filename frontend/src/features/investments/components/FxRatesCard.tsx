@@ -23,10 +23,7 @@ import {
 import { Pagination } from '@/shared/components/Pagination';
 import { formatNumber } from '@/shared/utils/i18nFormat';
 
-import {
-  ASSET_PAGE_SIZE,
-  CURRENCIES,
-} from '../constants';
+import { ASSET_PAGE_SIZE } from '../constants';
 import { useFxRates } from '../hooks/useInvestmentQueries';
 import type { FxRatePage } from '../types';
 import {
@@ -36,17 +33,12 @@ import {
   isValidCurrencyCode,
   toDateInputValue,
 } from '../utils';
+import { CurrencySelect } from './CurrencySelect';
 import { PanelState } from './PanelState';
 
 interface FxRatesCardProps {
   defaultBaseCurrency: string;
 }
-
-const availableCurrencies = typeof Intl.supportedValuesOf === 'function'
-  ? Intl.supportedValuesOf('currency')
-  : CURRENCIES;
-
-const currencySelectClass = 'h-9 w-full min-w-0 truncate rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50';
 
 function defaultFrom(): string {
   return toDateInputValue(
@@ -63,7 +55,7 @@ function defaultTo(): string {
 export function FxRatesCard({
   defaultBaseCurrency,
 }: FxRatesCardProps) {
-  const { t, i18n } = useTranslation('investments');
+  const { t } = useTranslation('investments');
   const initialBase = defaultBaseCurrency.trim().toUpperCase();
   const [baseCurrency, setBaseCurrency] = useState(
     defaultBaseCurrency,
@@ -75,14 +67,6 @@ export function FxRatesCard({
 
   const normalizedBase = baseCurrency.trim().toUpperCase();
   const normalizedQuote = quoteCurrency.trim().toUpperCase();
-  const locale = i18n.resolvedLanguage ?? i18n.language;
-  const currencyOptions = useMemo(() => {
-    const names = new Intl.DisplayNames(locale, { type: 'currency' });
-    return [...new Set([...availableCurrencies, ...CURRENCIES, normalizedBase, normalizedQuote])]
-      .filter(isValidCurrencyCode)
-      .sort()
-      .map((code) => <option key={code} value={code}>{code} — {names.of(code) ?? code}</option>);
-  }, [locale, normalizedBase, normalizedQuote]);
 
   const isRangeValid =
     from.length > 0 &&
@@ -171,17 +155,15 @@ export function FxRatesCard({
             <Label htmlFor="fx-base">
               {t('assets.fx.base')}
             </Label>
-            <select
+            <CurrencySelect
               id="fx-base"
               value={normalizedBase}
+              pairedCurrency={normalizedQuote}
               onChange={(event) => {
                 setBaseCurrency(event.target.value);
                 resetPage();
               }}
-              className={currencySelectClass}
-            >
-              {currencyOptions}
-            </select>
+            />
           </div>
 
           <div className="flex justify-center">
@@ -203,17 +185,15 @@ export function FxRatesCard({
             <Label htmlFor="fx-quote">
               {t('assets.fx.quote')}
             </Label>
-            <select
+            <CurrencySelect
               id="fx-quote"
               value={normalizedQuote}
+              pairedCurrency={normalizedBase}
               onChange={(event) => {
                 setQuoteCurrency(event.target.value);
                 resetPage();
               }}
-              className={currencySelectClass}
-            >
-              {currencyOptions}
-            </select>
+            />
           </div>
 
           <div className="col-span-3 grid grid-cols-2 gap-2">
