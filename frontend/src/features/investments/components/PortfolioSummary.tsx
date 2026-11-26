@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { ArrowLeftRight, ArrowUpFromLine, Plus } from 'lucide-react';
 import { Badge } from '@/shared/components/core/badge';
+import { Button } from '@/shared/components/core/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/i18nFormat';
 
@@ -11,7 +13,29 @@ import {
 
 interface PortfolioSummaryProps {
   portfolio: Portfolio;
+  onRecord: (type: 'DEPOSIT' | 'WITHDRAW' | 'EXCHANGE') => void;
 }
+
+const CASH_ACTIONS = [
+  {
+    type: 'DEPOSIT',
+    label: 'portfolio.deposit',
+    Icon: Plus,
+    iconClass: 'text-primary',
+  },
+  {
+    type: 'WITHDRAW',
+    label: 'portfolio.withdraw',
+    Icon: ArrowUpFromLine,
+    iconClass: 'text-destructive',
+  },
+  {
+    type: 'EXCHANGE',
+    label: 'portfolio.exchange',
+    Icon: ArrowLeftRight,
+    iconClass: 'text-muted-foreground',
+  },
+] as const;
 
 function SummaryMetric({
   title,
@@ -37,6 +61,7 @@ function SummaryMetric({
 
 export function PortfolioSummary({
   portfolio,
+  onRecord,
 }: PortfolioSummaryProps) {
   const { t } = useTranslation('investments');
 
@@ -114,6 +139,28 @@ export function PortfolioSummary({
         />
       </dl>
       <p className="text-xs text-muted-foreground">{t('portfolio.disclaimer')}</p>
+      <section className="space-y-2 border-t border-border pt-3">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t('portfolio.cashTitle')}
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          {t('portfolio.cashDescription')}
+        </p>
+        <div className="flex flex-wrap gap-1 xl:flex-col">
+          {CASH_ACTIONS.map(({ type, label, Icon, iconClass }) => (
+            <Button
+              key={type}
+              type="button"
+              variant="ghost"
+              className="min-h-10 justify-start px-2"
+              onClick={() => onRecord(type)}
+            >
+              <Icon className={cn('size-4', iconClass)} aria-hidden="true" />
+              {t(label)}
+            </Button>
+          ))}
+        </div>
+      </section>
     </aside>
   );
 }

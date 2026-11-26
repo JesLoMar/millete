@@ -395,6 +395,7 @@
     "loadError": "Impossible de charger le portefeuille.",
     "disclaimer": "La valorisation utilise le dernier prix et le dernier taux de change disponibles.",
     "cashTitle": "Trésorerie",
+    "cashBalancesTitle": "Soldes par devise",
     "cashDescription": "Soldes de trésorerie gérés dans le portefeuille.",
     "cashEmpty": "Il n'y a pas de trésorerie dans le portefeuille.",
     "cashMovements": "Mouvements",

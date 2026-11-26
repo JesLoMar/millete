@@ -395,6 +395,7 @@
     "loadError": "Não foi possível carregar a carteira.",
     "disclaimer": "A valorização usa o último preço e a última taxa de câmbio disponíveis.",
     "cashTitle": "Dinheiro",
+    "cashBalancesTitle": "Saldos por moeda",
     "cashDescription": "Saldos de dinheiro geridos na carteira.",
     "cashEmpty": "Não existe dinheiro na carteira.",
     "cashMovements": "Movimentos",

@@ -45,25 +45,17 @@ interface PositionsTableProps {
     type: 'BUY' | 'SELL',
     asset: AssetReference,
   ) => void;
-  onRegisterPosition: (asset: AssetReference) => void;
 }
 
 export function PositionsTable({
   portfolio,
   catalog,
   onTrade,
-  onRegisterPosition,
 }: PositionsTableProps) {
   const { t } = useTranslation('investments');
   const [page, setPage] = useState(0);
-  const positionKeys = new Set(portfolio.positions.map(({ assetReference }) => assetKey(assetReference)));
-  const rows = [
-    ...portfolio.positions.map((position) => ({ reference: position.assetReference, position })),
-    ...catalog.entries
-      .filter(({ reference }) => reference.kind === 'USER' && !positionKeys.has(assetKey(reference)))
-      .map(({ reference }) => ({ reference, position: null })),
-  ];
-  const total = rows.length;
+  const { positions } = portfolio;
+  const total = positions.length;
   const totalPages = Math.max(1, Math.ceil(total / POSITIONS_PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
   const offset = currentPage * POSITIONS_PAGE_SIZE;
@@ -112,11 +104,12 @@ export function PositionsTable({
               </TableHeader>
 
               <TableBody>
-                {rows.slice(offset, end).map(({ reference, position }) => {
+                {positions.slice(offset, end).map((position) => {
+                  const reference = position.assetReference;
                   const entry = catalog.getEntry(reference);
-                  const gainPercentage = position ? getPositionGainPercentage(position) : null;
+                  const gainPercentage = getPositionGainPercentage(position);
                   const isPositive =
-                    (position?.unrealizedGain ?? 0) >= 0;
+                    (position.unrealizedGain ?? 0) >= 0;
 
                   return (
                     <TableRow
@@ -158,22 +151,17 @@ export function PositionsTable({
                             ]
                               .filter(Boolean)
                               .join(' · ') ||
-                              (position ? t('common.none') : null)}
+                              t('common.none')}
                           </span>
-                          {!position && (
-                            <span className="text-xs text-muted-foreground">
-                              {t('portfolio.positionNotRecorded', { defaultValue: 'No open position recorded' })}
-                            </span>
-                          )}
                         </div>
                       </TableCell>
 
                       <TableCell className="text-right tabular-nums">
-                        {position ? formatQuantity(position.quantity) : '—'}
+                        {formatQuantity(position.quantity)}
                       </TableCell>
 
                       <TableCell className="text-right tabular-nums">
-                        {position?.costBasis != null
+                        {position.costBasis != null
                           ? formatCurrency(
                               position.costBasis,
                               position.valuationCurrency,
@@ -182,14 +170,13 @@ export function PositionsTable({
                       </TableCell>
 
                       <TableCell className="text-right tabular-nums">
-                        {position?.marketValue != null
+                        {position.marketValue != null
                           ? formatCurrency(
                               position.marketValue,
                               position.valuationCurrency,
                             )
                           : '—'}
-                        {position && (
-                          position.calculationStatus === 'NOT_CALCULABLE' ||
+                        {(position.calculationStatus === 'NOT_CALCULABLE' ||
                           position.estimated ||
                           position.historyIncomplete ||
                           position.unavailableReason
@@ -212,7 +199,7 @@ export function PositionsTable({
                       </TableCell>
 
                       <TableCell className="text-right tabular-nums">
-                        {position?.unrealizedGain != null ? (
+                        {position.unrealizedGain != null ? (
                           <div className="flex flex-col items-end">
                             <span
                               className={cn(
@@ -238,37 +225,24 @@ export function PositionsTable({
 
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
-                          {!position ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onRegisterPosition(reference)}
-                            >
-                              {t('portfolio.registerPosition', { defaultValue: 'Register position' })}
-                            </Button>
-                          ) : (
-                            <>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => onTrade('BUY', reference)}
-                                aria-label={t('portfolio.buy')}
-                              >
-                                <Plus className="size-4 text-primary" aria-hidden="true" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                onClick={() => onTrade('SELL', reference)}
-                                aria-label={t('portfolio.sell')}
-                              >
-                                <Minus className="size-4 text-destructive" aria-hidden="true" />
-                              </Button>
-                            </>
-                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => onTrade('BUY', reference)}
+                            aria-label={t('portfolio.buy')}
+                          >
+                            <Plus className="size-4 text-primary" aria-hidden="true" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => onTrade('SELL', reference)}
+                            aria-label={t('portfolio.sell')}
+                          >
+                            <Minus className="size-4 text-destructive" aria-hidden="true" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

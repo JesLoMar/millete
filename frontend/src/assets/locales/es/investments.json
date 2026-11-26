@@ -395,6 +395,7 @@
     "loadError": "No se pudo cargar la cartera.",
     "disclaimer": "La valoración usa el último precio y tipo de cambio disponibles.",
     "cashTitle": "Efectivo",
+    "cashBalancesTitle": "Saldos por moneda",
     "cashDescription": "Saldos de efectivo gestionados en la cartera.",
     "cashEmpty": "No hay efectivo en la cartera.",
     "cashMovements": "Movimientos",

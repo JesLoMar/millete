@@ -395,6 +395,7 @@
     "loadError": "ポートフォリオを読み込めませんでした。",
     "disclaimer": "評価には利用可能な最新の価格と為替レートを使用します。",
     "cashTitle": "現金",
+    "cashBalancesTitle": "通貨別残高",
     "cashDescription": "ポートフォリオ内で管理している現金残高です。",
     "cashEmpty": "ポートフォリオに現金はありません。",
     "cashMovements": "入出金",

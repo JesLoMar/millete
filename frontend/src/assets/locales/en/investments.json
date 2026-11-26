@@ -395,6 +395,7 @@
     "loadError": "Could not load the portfolio.",
     "disclaimer": "The valuation uses the latest available price and exchange rate.",
     "cashTitle": "Cash",
+    "cashBalancesTitle": "Balances by currency",
     "cashDescription": "Managed cash balances in the portfolio.",
     "cashEmpty": "There is no cash in the portfolio.",
     "cashMovements": "Movements",

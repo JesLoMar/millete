@@ -395,6 +395,7 @@
     "loadError": "Impossibile caricare il portafoglio.",
     "disclaimer": "La valorizzazione usa l'ultimo prezzo e l'ultimo tasso di cambio disponibili.",
     "cashTitle": "Liquidità",
+    "cashBalancesTitle": "Saldi per valuta",
     "cashDescription": "Saldi di liquidità gestiti nel portafoglio.",
     "cashEmpty": "Non c'è liquidità nel portafoglio.",
     "cashMovements": "Movimenti",

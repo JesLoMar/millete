@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowRight,
-  CheckCircle2,
   Info,
   XCircle,
 } from 'lucide-react';
@@ -54,15 +53,7 @@ export function HealthBanner({
   );
 
   if (issues.length === 0) {
-    return (
-      <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-        <CheckCircle2
-          className="size-4 text-primary"
-          aria-hidden="true"
-        />
-        {t('health.allGood')}
-      </div>
-    );
+    return null;
   }
 
   const hasError = issues.some(

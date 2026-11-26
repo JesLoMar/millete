@@ -395,6 +395,7 @@
     "loadError": "Das Portfolio konnte nicht geladen werden.",
     "disclaimer": "Die Bewertung nutzt den zuletzt verfügbaren Preis und Wechselkurs.",
     "cashTitle": "Bargeld",
+    "cashBalancesTitle": "Salden nach Währung",
     "cashDescription": "Verwaltete Bargeldbestände im Portfolio.",
     "cashEmpty": "Im Portfolio ist kein Bargeld vorhanden.",
     "cashMovements": "Bewegungen",
