@@ -108,10 +108,12 @@ export function applyTheme(
     backgroundParts[backgroundParts.length - 1] ?? '',
   );
 
-  root.style.colorScheme =
+  const colorScheme =
     Number.isFinite(lightness) && lightness < 50
       ? 'dark'
       : 'light';
+  root.style.colorScheme = colorScheme;
+  root.dataset.colorScheme = colorScheme;
 
   const metaThemeColor =
     root.ownerDocument.querySelector<HTMLMetaElement>(

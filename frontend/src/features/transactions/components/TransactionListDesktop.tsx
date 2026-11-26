@@ -58,8 +58,8 @@ export const TransactionListDesktop = memo(function TransactionListDesktop({
               className={cn(
                 'shrink-0',
                 isIncome
-                  ? 'text-primary'
-                  : 'text-destructive',
+                  ? 'text-financial-positive'
+                  : 'text-financial-negative',
               )}
               aria-hidden="true"
             >
@@ -114,8 +114,8 @@ export const TransactionListDesktop = memo(function TransactionListDesktop({
                 className={cn(
                   'text-sm font-bold tabular-nums',
                   isIncome
-                    ? 'text-primary'
-                    : 'text-foreground',
+                    ? 'text-financial-positive'
+                    : 'text-financial-negative',
                 )}
               >
                 {isIncome ? '+' : '-'}

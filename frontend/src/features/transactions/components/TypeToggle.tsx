@@ -20,7 +20,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
         className={cn(
           'flex-1 py-2 text-sm font-medium transition-colors',
           value === 'EXPENSE'
-            ? 'bg-destructive/20 text-destructive'
+            ? 'bg-financial-negative/10 text-financial-negative'
             : 'bg-background text-muted-foreground hover:text-foreground',
         )}
       >
@@ -34,7 +34,7 @@ export function TypeToggle({ value, onChange }: TypeToggleProps) {
         className={cn(
           'flex-1 py-2 text-sm font-medium transition-colors',
           value === 'INCOME'
-            ? 'bg-primary/20 text-primary'
+            ? 'bg-financial-positive/10 text-financial-positive'
             : 'bg-background text-muted-foreground hover:text-foreground',
         )}
       >

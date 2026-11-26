@@ -151,10 +151,10 @@ export function BudgetBars({
                       }}
                       className={
                         isOverLimit
-                          ? 'h-full w-full rounded-full bg-destructive'
+                          ? 'h-full w-full rounded-full bg-financial-negative'
                           : isNearLimit
                             ? 'h-full w-full rounded-full bg-warning'
-                            : 'h-full w-full rounded-full bg-primary'
+                            : 'h-full w-full rounded-full bg-financial-positive'
                       }
                     />
                   </div>
@@ -162,7 +162,7 @@ export function BudgetBars({
                   <div
                     className={
                       isOverLimit
-                        ? 'text-right text-xs font-medium text-destructive'
+                        ? 'text-right text-xs font-medium text-financial-negative'
                         : isNearLimit
                           ? 'text-right text-xs text-warning'
                           : 'text-right text-xs text-muted-foreground'

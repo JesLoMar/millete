@@ -205,8 +205,8 @@ export function PositionsTable({
                               className={cn(
                                 'font-medium',
                                 isPositive
-                                  ? 'text-primary'
-                                  : 'text-destructive',
+                                  ? 'text-financial-positive'
+                                  : 'text-financial-negative',
                               )}
                             >
                               {formatCurrency(
@@ -232,7 +232,7 @@ export function PositionsTable({
                             onClick={() => onTrade('BUY', reference)}
                             aria-label={t('portfolio.buy')}
                           >
-                            <Plus className="size-4 text-primary" aria-hidden="true" />
+                            <Plus className="size-4 text-financial-positive" aria-hidden="true" />
                           </Button>
                           <Button
                             type="button"
@@ -241,7 +241,7 @@ export function PositionsTable({
                             onClick={() => onTrade('SELL', reference)}
                             aria-label={t('portfolio.sell')}
                           >
-                            <Minus className="size-4 text-destructive" aria-hidden="true" />
+                            <Minus className="size-4 text-financial-negative" aria-hidden="true" />
                           </Button>
                         </div>
                       </TableCell>

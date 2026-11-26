@@ -122,18 +122,16 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                 } else {
                     y = drawSectionTitle(
                             context.content(),
-                            "Investment Positions and Results",
+                            "Investment Positions",
                             y
                     );
                     drawEmptyMessage(
                             context.content(),
-                            "No open positions or realized results.",
+                            "No open positions.",
                             y - SPACE_DIVIDER_TO_CONTENT
                     );
                     y -= SPACE_DIVIDER_TO_CONTENT + 30;
                 }
-
-                y = drawCashBalances(context, data.cashBalances(), y - SPACE_BETWEEN_SECTIONS);
 
                 y = drawSectionTitle(
                         context.content(),
@@ -361,32 +359,6 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                 y,
                 cardWidth,
                 cardHeight,
-                "INVESTMENTS VALUE",
-                formatMoney(summary.investmentsTotalValue(), summary.investmentCurrency()),
-                TEXT_COLOR_R,
-                TEXT_COLOR_G,
-                TEXT_COLOR_B
-        );
-
-        drawMetricCard(
-                content,
-                PAGE_MARGIN + cardWidth + gap,
-                y,
-                cardWidth,
-                cardHeight,
-                "ACTIVE INVESTMENTS",
-                String.valueOf(summary.activeInvestmentsCount()),
-                TEXT_COLOR_R,
-                TEXT_COLOR_G,
-                TEXT_COLOR_B
-        );
-
-        drawMetricCard(
-                content,
-                PAGE_MARGIN + ((cardWidth + gap) * 2),
-                y,
-                cardWidth,
-                cardHeight,
                 "SAVINGS GOALS",
                 String.valueOf(summary.activeSavingsGoalsCount()),
                 TEXT_COLOR_R,
@@ -396,7 +368,7 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
 
         drawMetricCard(
                 content,
-                PAGE_MARGIN + ((cardWidth + gap) * 3),
+                PAGE_MARGIN + cardWidth + gap,
                 y,
                 cardWidth,
                 cardHeight,
@@ -496,12 +468,12 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
     ) throws IOException {
         y = drawSectionTitle(
                 context.content(),
-                "Investment Positions and Results",
+                "Investment Positions",
                 y
         );
 
-        String[] headers = {"Asset / result", "Ticker", "Type", "Quantity", "Cost basis", "Value", "Result"};
-        float[] widths = {112, 48, 62, 55, 85, 85, 85};
+        String[] headers = {"Asset", "Last Recorded Price", "Average Purchase Price"};
+        float[] widths = {CONTENT_WIDTH - 320, 160, 160};
 
         float tableY =
                 y - SPACE_DIVIDER_TO_CONTENT;
@@ -542,12 +514,8 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
 
             String[] values = {
                     safe(investment.assetName()),
-                    safe(investment.ticker()),
-                    "REALIZED_RESULT".equals(investment.recordType()) ? "Realized" : safe(investment.type()),
-                    formatDecimal(investment.quantity(), 4),
-                    formatMoney(investment.purchasePrice(), investment.quoteCurrency()),
-                    formatMoney(investment.currentValue(), investment.valueCurrency()),
-                    formatMoney(investment.profitLoss(), investment.resultCurrency())
+                    formatUnitPrice(investment.latestPrice(), investment.latestPriceCurrency()),
+                    formatUnitPrice(investment.averagePurchasePrice(), investment.purchasePriceCurrency())
             };
 
             drawTableRow(
@@ -561,33 +529,6 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
             alternate = !alternate;
         }
 
-        return rowY;
-    }
-
-    private float drawCashBalances(PdfPageContext context, List<PdfExportData.CashRow> balances, float y) throws IOException {
-        y = drawSectionTitle(context.content(), "Investment Cash", y);
-        if (balances == null || balances.isEmpty()) {
-            drawEmptyMessage(context.content(), "No investment cash balances.", y - SPACE_DIVIDER_TO_CONTENT);
-            return y - SPACE_DIVIDER_TO_CONTENT - 30;
-        }
-        String[] headers = {"Currency", "Balance"};
-        float[] widths = {120, 160};
-        float tableY = y - SPACE_DIVIDER_TO_CONTENT;
-        drawTableHeader(context.content(), tableY, headers, widths);
-        float rowY = tableY - TABLE_HEADER_HEIGHT;
-        boolean alternate = false;
-        for (PdfExportData.CashRow row : balances) {
-            if (rowY < 55) {
-                context.startNewPage();
-                rowY = PAGE_SIZE.getHeight() - PAGE_MARGIN - TABLE_HEADER_HEIGHT;
-                drawTableHeader(context.content(), rowY, headers, widths);
-                rowY -= TABLE_HEADER_HEIGHT;
-            }
-            drawTableRowBackground(context.content(), rowY, widths, alternate);
-            drawTableRow(context.content(), rowY, new String[]{safe(row.currency()), formatMoney(row.balance(), row.currency())}, widths);
-            rowY -= TABLE_ROW_HEIGHT;
-            alternate = !alternate;
-        }
         return rowY;
     }
 
@@ -964,17 +905,12 @@ public class PdfBoxFileExportAdapter implements FilePdfExportPort {
                 : formatted;
     }
 
-    private static String formatDecimal(
-            BigDecimal value,
-            int decimals
-    ) {
+    private static String formatUnitPrice(BigDecimal value, String currency) {
         if (value == null) {
-            return "0";
+            return "—";
         }
-        return value.setScale(
-                decimals,
-                java.math.RoundingMode.HALF_UP
-        ).toPlainString();
+        BigDecimal significant = value.stripTrailingZeros();
+        return currency + " " + significant.setScale(Math.max(2, significant.scale())).toPlainString();
     }
 
     private static String formatDecimal(double value) {

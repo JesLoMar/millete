@@ -14,8 +14,8 @@ interface HistoryChartProps {
 }
 
 const series = [
-  { key: 'income', stroke: 'var(--color-primary)' },
-  { key: 'expenses', stroke: 'var(--color-destructive)', dash: '6 4' },
+  { key: 'income', stroke: 'var(--color-financial-positive)' },
+  { key: 'expenses', stroke: 'var(--color-financial-negative)', dash: '6 4' },
 ] as const
 
 const grid = [0, 25, 50, 75, 100]

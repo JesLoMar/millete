@@ -60,7 +60,7 @@ export function CashBalancesCard({
               <span
                 className={cn(
                   'ml-auto text-right text-sm font-semibold tabular-nums',
-                  amount < 0 ? 'text-destructive' : 'text-foreground',
+                  amount < 0 ? 'text-financial-negative' : 'text-foreground',
                 )}
               >
                 {formatCurrency(amount, currency)}

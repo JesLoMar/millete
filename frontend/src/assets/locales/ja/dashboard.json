@@ -191,7 +191,7 @@
     "title": "データをエクスポート",
     "configTitle": "エクスポート設定",
     "formatJSON": "JSON",
-    "formatJSONDesc": "すべてのユーザーデータをエクスポートします",
+    "formatJSONDesc": "投資を除くデータをエクスポートします",
     "formatZIP": "ZIP",
     "formatZIPDesc": "すべてのCSVを1つのファイルに",
     "formatCSV": "CSV",

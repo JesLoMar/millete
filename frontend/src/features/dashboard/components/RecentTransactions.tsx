@@ -135,8 +135,8 @@ export function RecentTransactions({
                     <p
                       className={`flex items-center gap-1 text-sm font-bold lg:text-xs ${
                         isExpense
-                          ? 'text-foreground'
-                          : 'text-primary'
+                          ? 'text-financial-negative'
+                          : 'text-financial-positive'
                       }`}
                     >
                       {isExpense ? (
@@ -153,8 +153,8 @@ export function RecentTransactions({
                       variant="outline"
                       className={`mt-1 h-4 py-0 text-xs font-normal lg:mt-0 ${
                         isExpense
-                          ? 'opacity-60'
-                          : 'text-primary border-primary/30'
+                          ? 'text-financial-negative border-financial-negative/30'
+                          : 'text-financial-positive border-financial-positive/30'
                       }`}
                     >
                       {isExpense

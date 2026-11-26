@@ -191,7 +191,7 @@
     "title": "Daten exportieren",
     "configTitle": "Export konfigurieren",
     "formatJSON": "JSON",
-    "formatJSONDesc": "Exportiert alle Ihre Benutzerdaten",
+    "formatJSONDesc": "Exportiert Ihre Daten ohne Anlagen",
     "formatZIP": "ZIP",
     "formatZIPDesc": "Alle CSVs in einer einzigen Datei",
     "formatCSV": "CSV",

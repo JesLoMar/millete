@@ -56,8 +56,8 @@ function MetricCard({
       <p
         className={cn(
           'mt-2 text-lg font-semibold tracking-tight tabular-nums',
-          tone === 'positive' && 'text-primary',
-          tone === 'negative' && 'text-destructive',
+          tone === 'positive' && 'text-financial-positive',
+          tone === 'negative' && 'text-financial-negative',
         )}
       >
         {value}
@@ -93,11 +93,11 @@ function AttributionRow({
           value != null &&
             value > 0 &&
             signed &&
-            'text-primary',
+            'text-financial-positive',
           value != null &&
             value < 0 &&
             signed &&
-            'text-destructive',
+            'text-financial-negative',
         )}
       >
         {value == null

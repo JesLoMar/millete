@@ -21,13 +21,13 @@ const CASH_ACTIONS = [
     type: 'DEPOSIT',
     label: 'portfolio.deposit',
     Icon: Plus,
-    iconClass: 'text-primary',
+    iconClass: 'text-financial-positive',
   },
   {
     type: 'WITHDRAW',
     label: 'portfolio.withdraw',
     Icon: ArrowUpFromLine,
-    iconClass: 'text-destructive',
+    iconClass: 'text-financial-negative',
   },
   {
     type: 'EXCHANGE',
@@ -134,7 +134,7 @@ export function PortfolioSummary({
               : t('portfolio.noCostBasis')
           }
           valueClassName={
-            isPositive ? 'text-primary' : 'text-destructive'
+            isPositive ? 'text-financial-positive' : 'text-financial-negative'
           }
         />
       </dl>

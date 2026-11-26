@@ -194,8 +194,8 @@ export function ClosedLotsTable({
                             className={cn(
                               'text-right font-medium tabular-nums',
                               isPositive
-                                ? 'text-primary'
-                                : 'text-destructive',
+                                ? 'text-financial-positive'
+                                : 'text-financial-negative',
                             )}
                           >
                             {formatCurrency(

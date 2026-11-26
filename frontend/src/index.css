@@ -15,6 +15,9 @@
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
+  /* Financial meaning stays independent of the theme accent. */
+  --color-financial-positive: #166534;
+  --color-financial-negative: #b91c1c;
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
@@ -82,6 +85,11 @@
     --sidebar-border: 42.1 42.9% 73.9%;
     --sidebar-ring: 25.7 77.8% 42.4%;
     color-scheme: light;
+  }
+
+  :root[data-color-scheme="dark"] {
+    --color-financial-positive: #4ade80;
+    --color-financial-negative: #ff7a7a;
   }
 }
 @layer base {

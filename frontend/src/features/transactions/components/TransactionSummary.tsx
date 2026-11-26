@@ -73,7 +73,7 @@ export function TransactionSummary({ period }: TransactionSummaryProps) {
                 <>
                   <span className="block wrap-break-word">{key === 'count' ? formatNumber(value) : formatCurrency(value)}</span>
                   <span className="flex flex-wrap gap-x-1 text-xs font-normal xl:text-sm">
-                    <span className={change === 0 ? 'text-muted-foreground' : favorable ? 'text-primary' : 'text-destructive'}>
+                    <span className={change === 0 ? 'text-muted-foreground' : favorable ? 'text-financial-positive' : 'text-financial-negative'}>
                       {formatNumber(change / 100, { style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 1 })}
                     </span>
                     <span className="text-muted-foreground">{periodLabel}</span>

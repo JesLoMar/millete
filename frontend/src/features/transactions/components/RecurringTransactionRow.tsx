@@ -44,8 +44,8 @@ export function RecurringTransactionRow({
           className={cn(
             'shrink-0',
             isIncome
-              ? 'text-primary'
-              : 'text-destructive',
+              ? 'text-financial-positive'
+              : 'text-financial-negative',
           )}
           aria-hidden="true"
         >
@@ -109,8 +109,8 @@ export function RecurringTransactionRow({
             className={cn(
               'text-sm font-bold tabular-nums',
               isIncome
-                ? 'text-primary'
-                : 'text-foreground',
+                ? 'text-financial-positive'
+                : 'text-financial-negative',
             )}
           >
             {isIncome ? '+' : '-'}
@@ -132,8 +132,8 @@ export function RecurringTransactionRow({
               className={cn(
                 'shrink-0',
                 isIncome
-                  ? 'text-primary'
-                  : 'text-destructive',
+                  ? 'text-financial-positive'
+                  : 'text-financial-negative',
               )}
               aria-hidden="true"
             >
@@ -148,8 +148,8 @@ export function RecurringTransactionRow({
               className={cn(
                 'text-base font-bold tabular-nums',
                 isIncome
-                  ? 'text-primary'
-                  : 'text-foreground',
+                  ? 'text-financial-positive'
+                  : 'text-financial-negative',
               )}
             >
               {isIncome ? '+' : '-'}

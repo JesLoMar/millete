@@ -266,7 +266,7 @@ export const DashboardPage = () => {
                   const favorable = key === 'expenses' ? change < 0 : change > 0
                   const changeColor = change === 0
                     ? 'text-muted-foreground'
-                    : favorable ? 'text-primary' : 'text-destructive'
+                    : favorable ? 'text-financial-positive' : 'text-financial-negative'
                   return (
                     <div key={key} className="min-w-0">
                       <dt className="text-xs font-medium text-muted-foreground lg:text-sm">

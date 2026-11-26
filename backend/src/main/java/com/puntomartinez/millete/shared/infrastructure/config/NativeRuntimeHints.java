@@ -53,11 +53,6 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
                 MemberCategory.INVOKE_PUBLIC_METHODS
         );
 
-        hints.reflection().registerType(
-                PdfExportData.CashRow.class,
-                MemberCategory.INVOKE_PUBLIC_METHODS
-        );
-
         registerSnapshotType(
                 hints,
                 InvestmentLedgerSnapshot.class

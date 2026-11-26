@@ -60,8 +60,8 @@ export const TransactionListMobile = memo(function TransactionListMobile({
                   className={cn(
                     'shrink-0',
                     isIncome
-                      ? 'text-primary'
-                      : 'text-destructive',
+                      ? 'text-financial-positive'
+                      : 'text-financial-negative',
                   )}
                   aria-hidden="true"
                 >
@@ -76,8 +76,8 @@ export const TransactionListMobile = memo(function TransactionListMobile({
                   className={cn(
                     'text-base font-bold tabular-nums',
                     isIncome
-                      ? 'text-primary'
-                      : 'text-foreground',
+                      ? 'text-financial-positive'
+                      : 'text-financial-negative',
                   )}
                 >
                   {isIncome ? '+' : '-'}
