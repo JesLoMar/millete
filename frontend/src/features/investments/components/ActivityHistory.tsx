@@ -10,10 +10,6 @@ import {
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
-import {
-  Card,
-  CardContent,
-} from '@/shared/components/core/card';
 import { Input } from '@/shared/components/core/input';
 import {
   Select,
@@ -186,18 +182,16 @@ export function ActivityHistory() {
   );
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-foreground">
-                {t('activities.title')}
-              </h2>
-              <Badge variant="secondary">
-                {totalElements}
-              </Badge>
-            </div>
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <aside
+        aria-labelledby="activity-filters-title"
+        className="min-w-0 xl:col-start-2 xl:row-start-1 xl:border-l xl:border-border xl:pl-4"
+      >
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+            <h2 id="activity-filters-title" className="text-base font-semibold">
+              {t('activities.filtersTitle')}
+            </h2>
 
             {hasFilters && (
               <Button
@@ -216,7 +210,7 @@ export function ActivityHistory() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <div className="space-y-1.5">
               <label
                 htmlFor="activity-filter-type"
@@ -312,7 +306,7 @@ export function ActivityHistory() {
               />
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-4">
+            <div className="col-span-full min-w-0">
               <AssetPicker
                 value={asset}
                 onChange={(value) => {
@@ -330,10 +324,19 @@ export function ActivityHistory() {
               <option key={code} value={code} />
             ))}
           </datalist>
-        </CardContent>
-      </Card>
+        </div>
+      </aside>
 
-      <Card className="overflow-hidden">
+      <section
+        aria-labelledby="activity-history-title"
+        className="min-w-0 space-y-3 xl:col-start-1 xl:row-start-1"
+      >
+        <div className="flex items-center gap-2 border-b border-border pb-2">
+          <h2 id="activity-history-title" className="text-base font-semibold">
+            {t('activities.title')}
+          </h2>
+          <Badge variant="secondary">{totalElements}</Badge>
+        </div>
         {query.isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2
@@ -595,7 +598,7 @@ export function ActivityHistory() {
             />
           </>
         )}
-      </Card>
+      </section>
 
       {detailActivity && (
         <ActivityDetailsDialog

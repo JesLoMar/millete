@@ -109,7 +109,10 @@ export function RecordActivityDialog({
   const [showValidation, setShowValidation] = useState(false);
 
   const selectedAsset = catalog.getEntry(form.asset);
+  const localCurrency = getLocalCurrencyCode();
   const isDividend = form.type === 'DIVIDEND';
+  const isCashTransfer =
+    form.type === 'DEPOSIT' || form.type === 'WITHDRAW';
   const isTrade =
     form.type === 'BUY' || form.type === 'SELL';
   const isCashDividend =
@@ -174,11 +177,10 @@ export function RecordActivityDialog({
           ? Boolean(form.asset) &&
             quantity != null &&
             quantity > 0
-          : form.type === 'DEPOSIT' ||
-              form.type === 'WITHDRAW'
+          : isCashTransfer
             ? amount != null &&
               amount > 0 &&
-              /^[A-Z]{3}$/.test(currency)
+              /^[A-Z]{3}$/.test(localCurrency)
             : form.type === 'EXCHANGE'
               ? amountOrigin != null &&
                 amountOrigin > 0 &&
@@ -235,16 +237,13 @@ export function RecordActivityDialog({
         quantity: quantity as number,
         comment,
       };
-    } else if (
-      form.type === 'DEPOSIT' ||
-      form.type === 'WITHDRAW'
-    ) {
+    } else if (isCashTransfer) {
       payload = {
         type: form.type,
         idempotencyKey: form.idempotencyKey,
         occurredAt,
         amount: amount as number,
-        currency,
+        currency: localCurrency,
         comment,
       };
     } else if (form.type === 'EXCHANGE') {
@@ -277,7 +276,6 @@ export function RecordActivityDialog({
     }
   };
 
-  const localCurrency = getLocalCurrencyCode();
   const assetCurrency =
     selectedAsset?.currency ?? localCurrency;
 
@@ -418,9 +416,7 @@ export function RecordActivityDialog({
             </div>
           )}
 
-          {(isCashDividend ||
-            form.type === 'DEPOSIT' ||
-            form.type === 'WITHDRAW') && (
+          {(isCashDividend || isCashTransfer) && (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="cash-amount">
@@ -443,20 +439,29 @@ export function RecordActivityDialog({
                 <Label htmlFor="cash-currency">
                   {t('record.currency')}
                 </Label>
-                <Input
-                  id="cash-currency"
-                  list="investment-currencies"
-                  maxLength={3}
-                  value={form.currency}
-                  onChange={(event) =>
-                    update({
-                      currency:
-                        event.target.value.toUpperCase(),
-                    })
-                  }
-                  disabled={registerActivity.isPending}
-                  className="uppercase"
-                />
+                {isCashTransfer ? (
+                  <Input
+                    id="cash-currency"
+                    value={localCurrency}
+                    readOnly
+                    className="bg-muted/50"
+                  />
+                ) : (
+                  <Input
+                    id="cash-currency"
+                    list="investment-currencies"
+                    maxLength={3}
+                    value={form.currency}
+                    onChange={(event) =>
+                      update({
+                        currency:
+                          event.target.value.toUpperCase(),
+                      })
+                    }
+                    disabled={registerActivity.isPending}
+                    className="uppercase"
+                  />
+                )}
               </div>
             </div>
           )}

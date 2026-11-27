@@ -30,6 +30,7 @@
     "filterType": "Type",
     "filterCurrency": "Devise",
     "filterAsset": "Actif",
+    "filtersTitle": "Filtres",
     "clearFilters": "Effacer les filtres",
     "settlementAmount": "Montant réglé",
     "appliedFxRate": "Taux de change appliqué",

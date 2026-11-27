@@ -30,6 +30,7 @@
     "filterType": "種類",
     "filterCurrency": "通貨",
     "filterAsset": "資産",
+    "filtersTitle": "フィルター",
     "clearFilters": "フィルターを解除",
     "settlementAmount": "決済金額",
     "appliedFxRate": "適用された為替レート",

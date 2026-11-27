@@ -30,6 +30,7 @@
     "filterType": "Tipo",
     "filterCurrency": "Moeda",
     "filterAsset": "Ativo",
+    "filtersTitle": "Filtros",
     "clearFilters": "Limpar filtros",
     "settlementAmount": "Montante liquidado",
     "appliedFxRate": "Taxa de câmbio aplicada",

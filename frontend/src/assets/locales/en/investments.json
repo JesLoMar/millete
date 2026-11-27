@@ -30,6 +30,7 @@
     "filterType": "Type",
     "filterCurrency": "Currency",
     "filterAsset": "Asset",
+    "filtersTitle": "Filters",
     "clearFilters": "Clear filters",
     "settlementAmount": "Settled amount",
     "appliedFxRate": "Applied exchange rate",

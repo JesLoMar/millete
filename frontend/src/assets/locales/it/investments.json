@@ -30,6 +30,7 @@
     "filterType": "Tipo",
     "filterCurrency": "Valuta",
     "filterAsset": "Attivo",
+    "filtersTitle": "Filtri",
     "clearFilters": "Cancella filtri",
     "settlementAmount": "Importo regolato",
     "appliedFxRate": "Tasso di cambio applicato",

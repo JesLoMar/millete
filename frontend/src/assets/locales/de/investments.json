@@ -30,6 +30,7 @@
     "filterType": "Typ",
     "filterCurrency": "Währung",
     "filterAsset": "Anlage",
+    "filtersTitle": "Filter",
     "clearFilters": "Filter zurücksetzen",
     "settlementAmount": "Abgerechneter Betrag",
     "appliedFxRate": "Angewandter Wechselkurs",
