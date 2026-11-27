@@ -1,15 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { History } from 'lucide-react';
+import { History, Layers } from 'lucide-react';
 
 import { Badge } from '@/shared/components/core/badge';
 import { Button } from '@/shared/components/core/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/core/card';
 import {
   Table,
   TableBody,
@@ -72,41 +66,43 @@ export function HoldingsPanel() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-foreground">
-              {t('holdings.title')}
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <aside
+        aria-labelledby="holdings-filters-title"
+        className="min-w-0 space-y-3 xl:col-start-2 xl:row-start-1 xl:border-l xl:border-border xl:pl-4"
+      >
+        <h2
+          id="holdings-filters-title"
+          className="border-b border-border pb-2 text-base font-semibold"
+        >
+          {t('activities.filtersTitle')}
+        </h2>
+        <AssetPicker
+          value={assetFilter}
+          onChange={handleFilterChange}
+          label={t('holdings.filterAsset')}
+          optional
+        />
+      </aside>
+
+      <section
+        aria-labelledby="holdings-list-title"
+        className="min-w-0 space-y-3 xl:col-start-1 xl:row-start-1"
+      >
+        <header className="space-y-1 border-b border-border pb-2">
+          <div className="flex items-center gap-2">
+            <h2 id="holdings-list-title" className="text-base font-semibold">
+              {t('holdings.table.title')}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              {t('holdings.description')}
-            </p>
-          </div>
-
-          <div className="max-w-md">
-            <AssetPicker
-              value={assetFilter}
-              onChange={handleFilterChange}
-              label={t('holdings.filterAsset')}
-              optional
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden">
-        <CardHeader className="border-b border-border">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle>{t('holdings.table.title')}</CardTitle>
             <Badge variant="secondary">{totalElements}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
+            {t('holdings.description')}{' '}
             {t('holdings.table.description')}
           </p>
-        </CardHeader>
+        </header>
 
-        <CardContent className="px-0">
+        <div>
           <PanelState
             isLoading={query.isLoading}
             isError={query.isError}
@@ -117,7 +113,11 @@ export function HoldingsPanel() {
           {!query.isLoading &&
             !query.isError &&
             holdings.length === 0 && (
-              <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+              <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+                <Layers
+                  className="size-8 text-muted-foreground/60"
+                  aria-hidden="true"
+                />
                 <p className="text-sm text-muted-foreground">
                   {assetFilter
                     ? t('holdings.emptyFiltered')
@@ -284,8 +284,8 @@ export function HoldingsPanel() {
                 />
               </>
             )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {historyHolding && (
         <ReplaceHoldingHistoryDialog

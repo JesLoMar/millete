@@ -7,12 +7,6 @@ import {
 } from 'lucide-react';
 
 import { Badge } from '@/shared/components/core/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/core/card';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/i18nFormat';
 
@@ -35,27 +29,27 @@ interface PerformancePanelProps {
   trackingStartAt: string | null;
 }
 
-interface MetricCardProps {
+interface PerformanceMetricProps {
   label: string;
   value: string;
   hint?: string;
   tone?: 'default' | 'positive' | 'negative';
 }
 
-function MetricCard({
+function PerformanceMetric({
   label,
   value,
   hint,
   tone = 'default',
-}: MetricCardProps) {
+}: PerformanceMetricProps) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+    <div className="min-w-0 border-b border-border pb-2">
+      <p className="text-xs font-medium text-muted-foreground">
         {label}
       </p>
       <p
         className={cn(
-          'mt-2 text-lg font-semibold tracking-tight tabular-nums',
+          'mt-1 text-base font-semibold tabular-nums wrap-anywhere',
           tone === 'positive' && 'text-financial-positive',
           tone === 'negative' && 'text-financial-negative',
         )}
@@ -85,11 +79,11 @@ function AttributionRow({
   signed = true,
 }: AttributionRowProps) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2 text-sm last:border-0">
-      <dt className="text-muted-foreground">{label}</dt>
+    <div className="flex items-baseline justify-between gap-2 border-b border-border/60 py-2 text-sm last:border-0">
+      <dt className="min-w-0 text-muted-foreground wrap-anywhere">{label}</dt>
       <dd
         className={cn(
-          'font-medium tabular-nums',
+          'max-w-1/2 shrink-0 text-right font-medium tabular-nums wrap-anywhere',
           value != null &&
             value > 0 &&
             signed &&
@@ -170,42 +164,51 @@ export function PerformancePanel({
       : null;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <Card>
-        <CardHeader className="border-b border-border">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
+      <aside
+        aria-labelledby="performance-summary-title"
+        className="min-w-0 space-y-3 xl:col-start-2 xl:row-start-1 xl:border-l xl:border-border xl:pl-4"
+      >
+        <header className="space-y-2 border-b border-border pb-2">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
               <BarChart3
                 className="size-4 text-muted-foreground"
                 aria-hidden="true"
               />
-              <CardTitle>{t('performance.title')}</CardTitle>
+              <h2
+                id="performance-summary-title"
+                className="text-base font-semibold"
+              >
+                {t('performance.title')}
+              </h2>
             </div>
-
-            <div className="flex flex-wrap gap-1">
-              {PERFORMANCE_PERIODS.map((definition) => (
-                <button
-                  key={definition.key}
-                  type="button"
-                  onClick={() => setPeriod(definition.key)}
-                  className={cn(
-                    'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                    period === definition.key
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
-                  )}
-                >
-                  {t(definition.labelKey)}
-                </button>
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('performance.description')}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t('performance.description')}
-          </p>
-        </CardHeader>
 
-        <CardContent className="space-y-4 pt-4">
+          <div className="flex flex-wrap gap-1">
+            {PERFORMANCE_PERIODS.map((definition) => (
+              <button
+                key={definition.key}
+                type="button"
+                aria-pressed={period === definition.key}
+                onClick={() => setPeriod(definition.key)}
+                className={cn(
+                  'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                  period === definition.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+                )}
+              >
+                {t(definition.labelKey)}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        <div className="space-y-3">
           {query.isLoading && (
             <div className="flex justify-center py-12">
               <Loader2
@@ -251,8 +254,8 @@ export function PerformancePanel({
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <MetricCard
+                  <div className="grid grid-cols-2 gap-3">
+                    <PerformanceMetric
                       label={t('performance.openingValue')}
                       value={
                         performance.openingValue == null
@@ -263,7 +266,7 @@ export function PerformancePanel({
                             )
                       }
                     />
-                    <MetricCard
+                    <PerformanceMetric
                       label={t('performance.endingValue')}
                       value={
                         performance.endingValue == null
@@ -274,7 +277,7 @@ export function PerformancePanel({
                             )
                       }
                     />
-                    <MetricCard
+                    <PerformanceMetric
                       label={t('performance.change')}
                       value={formatSignedCurrency(
                         performance.portfolioChange,
@@ -285,7 +288,7 @@ export function PerformancePanel({
                       )}
                       hint={t('performance.changeHint')}
                     />
-                    <MetricCard
+                    <PerformanceMetric
                       label={t('performance.return')}
                       value={formatPercent(derivedReturn)}
                       tone={getTone(derivedReturn)}
@@ -293,7 +296,7 @@ export function PerformancePanel({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="grid gap-3 sm:max-xl:grid-cols-2">
                     <div>
                       <h3 className="mb-2 text-sm font-semibold text-foreground">
                         {t('performance.flows')}
@@ -381,14 +384,16 @@ export function PerformancePanel({
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </aside>
 
-      <ClosedLotsTable
-        key={`${range.from}:${range.to}`}
-        from={range.from}
-        to={range.to}
-      />
+      <div className="min-w-0 xl:col-start-1 xl:row-start-1">
+        <ClosedLotsTable
+          key={`${range.from}:${range.to}`}
+          from={range.from}
+          to={range.to}
+        />
+      </div>
     </div>
   );
 }

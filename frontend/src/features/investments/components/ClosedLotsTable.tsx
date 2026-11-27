@@ -4,12 +4,6 @@ import { ReceiptText } from 'lucide-react';
 
 import { Badge } from '@/shared/components/core/badge';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/core/card';
-import {
   Table,
   TableBody,
   TableCell,
@@ -70,24 +64,24 @@ export function ClosedLotsTable({
   );
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b border-border">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <ReceiptText
-              className="size-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <CardTitle>{t('closedLots.title')}</CardTitle>
-          </div>
+    <section aria-labelledby="closed-lots-title" className="min-w-0 space-y-3">
+      <header className="space-y-1 border-b border-border pb-2">
+        <div className="flex items-center gap-2">
+          <ReceiptText
+            className="size-4 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <h2 id="closed-lots-title" className="text-base font-semibold">
+            {t('closedLots.title')}
+          </h2>
           <Badge variant="secondary">{totalElements}</Badge>
         </div>
         <p className="text-xs text-muted-foreground">
           {t('closedLots.description')}
         </p>
-      </CardHeader>
+      </header>
 
-      <CardContent className="px-0">
+      <div>
         <PanelState
           isLoading={query.isLoading}
           isError={query.isError}
@@ -98,9 +92,15 @@ export function ClosedLotsTable({
         {!query.isLoading &&
           !query.isError &&
           lots.length === 0 && (
-            <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-              {t('closedLots.empty')}
-            </p>
+            <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+              <ReceiptText
+                className="size-8 text-muted-foreground/60"
+                aria-hidden="true"
+              />
+              <p className="text-sm text-muted-foreground">
+                {t('closedLots.empty')}
+              </p>
+            </div>
           )}
 
         {!query.isLoading &&
@@ -250,7 +250,7 @@ export function ClosedLotsTable({
               />
             </>
           )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

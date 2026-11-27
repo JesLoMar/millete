@@ -29,7 +29,7 @@ import { PanelState } from '../components/PanelState';
 import { PerformancePanel } from '../components/PerformancePanel';
 import { PortfolioPanel } from '../components/PortfolioPanel';
 import { RecordActivityDialog } from '../components/RecordActivityDialog';
-import { StatusPanel, StatusRecheckButton } from '../components/StatusPanel';
+import { StatusPanel } from '../components/StatusPanel';
 import { TrackingSetupDialog } from '../components/TrackingSetupDialog';
 import {
   useAssetCatalog,
@@ -194,6 +194,7 @@ export default function InvestmentsPage() {
       case 'status':
         return (
           <StatusPanel
+            marketDataAction={refreshMarketDataButton}
             onTrackingConfigured={() =>
               setSelectedTab('portfolio')
             }
@@ -265,11 +266,10 @@ export default function InvestmentsPage() {
                     {t('holdings.newHolding')}
                   </Button>
                 )}
-                {activeTab === 'status' && <StatusRecheckButton />}
-                {(activeTab === 'portfolio' || activeTab === 'assets' || activeTab === 'status') && refreshMarketDataButton}
+                {(activeTab === 'portfolio' || activeTab === 'assets') && refreshMarketDataButton}
               </div>
 
-              {!showAssetsLayout && !showPortfolioLayout && <HealthBanner
+              {activeTab !== 'status' && !showAssetsLayout && !showPortfolioLayout && <HealthBanner
                 enabled={isConfigured}
                 onOpenStatus={() => setSelectedTab('status')}
               />}
