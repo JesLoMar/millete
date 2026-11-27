@@ -1,8 +1,10 @@
 import { FileDown, FileUp, FolderPlus, Loader2, PlusCircle, Sparkles } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/shared/components/core/button'
 import { AssistantDialog } from '@/features/assistant/components/AssistantDialog'
+import { assistantService } from '@/features/assistant/services/assistant.service'
 
 const actionButtonClass = 'group h-auto min-w-0 basis-[calc((100%_-_1.5rem)/3)] cursor-pointer flex-col justify-start gap-1.5 whitespace-normal px-0 py-1 text-center text-xs leading-tight text-foreground transition-colors hover:bg-transparent hover:shadow-none'
 
@@ -48,6 +50,12 @@ export function QuickActions({
   isImporting = false,
 }: QuickActionsProps) {
   const { t } = useTranslation('dashboard');
+  const { data: assistantAvailable, isSuccess } = useQuery({
+    queryKey: ['assistant', 'availability'],
+    queryFn: ({ signal }) => assistantService.availability(signal),
+    staleTime: 30_000,
+    retry: false,
+  })
   const isAnyLoading = isExporting || isImporting
 
   const allActions: Action[] = [
@@ -113,16 +121,18 @@ export function QuickActions({
           <ActionContent icon={action.icon} label={t(action.labelKey)} loading={action.isLoading} />
         </Button>
       ))}
-      <AssistantDialog
-        trigger={
-          <Button
-            variant="ghost"
-            className={actionButtonClass}
-          >
-            <ActionContent icon={Sparkles} label={t('assistant.title')} />
-          </Button>
-        }
-      />
+      {isSuccess && assistantAvailable && (
+        <AssistantDialog
+          trigger={
+            <Button
+              variant="ghost"
+              className={actionButtonClass}
+            >
+              <ActionContent icon={Sparkles} label={t('assistant.title')} />
+            </Button>
+          }
+        />
+      )}
     </fieldset>
   )
 }

@@ -215,10 +215,10 @@ The `manage.sh` script provides a unified interface for all common operations:
 
 | Command | Description |
 |---------|-------------|
-| `sh manage.sh start` | Start all services in the background |
+| `sh manage.sh start [--with-ai\|--without-ai]` | Start services in the background |
 | `sh manage.sh stop` | Stop running services without removing them |
 | `sh manage.sh restart` | Quickly restart containers (ignores config/.env updates) |
-| `sh manage.sh reload` | Rebuild images and recreate containers with new configs |
+| `sh manage.sh reload [--with-ai\|--without-ai]` | Rebuild images and recreate containers with new configs |
 | `sh manage.sh down` | Stop and remove containers and networks |
 | `sh manage.sh status` | Display container health and list recent backups |
 | `sh manage.sh logs [svc]` | Tail logs (optionally filter by service name) |
@@ -229,6 +229,26 @@ The `manage.sh` script provides a unified interface for all common operations:
 | `sh manage.sh clean-all` | WIPE everything (containers, volumes, and backups) |
 
 ### Common Workflows
+
+**Start or switch AI mode without editing configuration files:**
+
+```bash
+sh manage.sh start --with-ai
+sh manage.sh start --without-ai
+```
+
+`--with-ai` enables the backend assistant and starts Verdict. It still requires a
+reachable OpenAI-compatible model endpoint. `--without-ai` disables the assistant
+and stops Verdict if it was running, without removing its data. The flags also
+work with `reload`. Without a flag, the script keeps using the existing Compose
+and environment settings.
+
+The dashboard shows the assistant shortcut only if the authenticated
+`GET /api/v1/assistant/availability` check confirms that AI is enabled and Verdict
+has loaded the configured decider. This check does not verify the model endpoint.
+
+To stop the stack including an enabled Verdict service, use
+`docker compose --profile ai stop`.
 
 **View real-time logs:**
 ```bash

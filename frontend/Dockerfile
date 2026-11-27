@@ -1,13 +1,13 @@
 # =========================================================================
-# STAGE 1: BUILD (Compile the React application using Node 22 + PNPM)
+# STAGE 1: BUILD (Compile the React application using Node.js and pnpm)
 # =========================================================================
-FROM node:22-alpine AS builder
+FROM node:26.13.1-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS builder
 WORKDIR /app
 
 # Install pnpm globally (exact version required)
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@12.23.0 --activate
+RUN npm install --global pnpm@12.23.0
 
 # Copy dependency definition files first (Leverages Docker layer caching)
 COPY package.json pnpm-lock.yaml* ./
@@ -31,7 +31,7 @@ RUN pnpm run build
 # =========================================================================
 # STAGE 2: RUNTIME (Secure Rootless Nginx Server for Production)
 # =========================================================================
-FROM nginx:1.30.7-alpine3.24@sha256:bef154735288bc38d99fac41ae63730684bcc661503673a04a0f9bc526ba8598
+FROM nginx:1.30.8-alpine3.24@sha256:8eb04fe3b385090e9aa02961f77398ad09b6bf33ab07f6669a5bb7acce22c0d3
 
 # Require the Alpine security fixes for OpenSSL and zlib.
 RUN apk add --no-cache \

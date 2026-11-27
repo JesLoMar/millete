@@ -1,11 +1,31 @@
 package com.puntomartinez.millete.shared.infrastructure.config;
 
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.client.dto.StructuredChatCompletionRequestDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.client.dto.StructuredChatCompletionResponseDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddCategoryExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddRecurringTransactionExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddSavingsGoalContributionExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddSavingsGoalExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.AddTransactionExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.EditRecurringTransactionExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.EditSavingsGoalExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.ai.dto.EditTransactionExtractionDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionRequestDTO;
+import com.puntomartinez.millete.assistant.infrastructure.out.verdict.dto.VerdictDecisionResponseDTO;
 import com.puntomartinez.millete.dataexport.domain.model.InvestmentLedgerSnapshotDeserializer;
 import com.puntomartinez.millete.dataexport.domain.model.PdfExportData;
+import com.puntomartinez.millete.investments.domain.model.CashActivityDetails;
+import com.puntomartinez.millete.investments.domain.model.DividendUnitsDetails;
+import com.puntomartinez.millete.investments.domain.model.ExchangeActivityDetails;
 import com.puntomartinez.millete.investments.domain.model.InvestmentLedgerSnapshot;
+import com.puntomartinez.millete.investments.domain.model.OpeningPositionDetails;
+import com.puntomartinez.millete.investments.domain.model.SplitActivityDetails;
+import com.puntomartinez.millete.investments.domain.model.TradeActivityDetails;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
+import org.springframework.aot.hint.TypeReference;
 
 import java.util.UUID;
 
@@ -19,6 +39,15 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
 
         hints.reflection().registerType(
                 UUID[].class
+        );
+
+        hints.resources().registerPattern("db/migration/*.sql");
+        registerJsonBindingHints(hints);
+
+        // JJWT 0.12.6 instancia el constructor del generador de tokens por nombre.
+        hints.reflection().registerType(
+                TypeReference.of("io.jsonwebtoken.impl.DefaultJwtBuilder"),
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS
         );
 
         hints.resources().registerPattern(
@@ -137,6 +166,38 @@ public class NativeRuntimeHints implements RuntimeHintsRegistrar {
                 InvestmentLedgerSnapshotDeserializer.class,
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_METHODS
+        );
+    }
+
+    private void registerJsonBindingHints(RuntimeHints hints) {
+        var registrar = new BindingReflectionHintsRegistrar();
+
+        // Jackson lee y escribe estos detalles en persistencia, fuera de los controladores.
+        registrar.registerReflectionHints(
+                hints.reflection(),
+                TradeActivityDetails.class,
+                CashActivityDetails.class,
+                DividendUnitsDetails.class,
+                SplitActivityDetails.class,
+                ExchangeActivityDetails.class,
+                OpeningPositionDetails.class
+        );
+
+        // RestClient y los extractores del asistente enlazan estos DTO fuera de MVC.
+        registrar.registerReflectionHints(
+                hints.reflection(),
+                StructuredChatCompletionRequestDTO.class,
+                StructuredChatCompletionResponseDTO.class,
+                VerdictDecisionRequestDTO.class,
+                VerdictDecisionResponseDTO.class,
+                AddCategoryExtractionDTO.class,
+                AddRecurringTransactionExtractionDTO.class,
+                AddSavingsGoalContributionExtractionDTO.class,
+                AddSavingsGoalExtractionDTO.class,
+                AddTransactionExtractionDTO.class,
+                EditRecurringTransactionExtractionDTO.class,
+                EditSavingsGoalExtractionDTO.class,
+                EditTransactionExtractionDTO.class
         );
     }
 

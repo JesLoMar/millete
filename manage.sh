@@ -1,9 +1,45 @@
+start_services() {
+    action=$1
+    shift
 
+    case "$#:${1-}" in
+        0:) mode=default ;;
+        1:--with-ai) mode=with-ai ;;
+        1:--without-ai) mode=without-ai ;;
+        *)
+            printf 'Usage: sh manage.sh %s [--with-ai|--without-ai]\n' "$action" >&2
+            return 2
+            ;;
+    esac
+
+    case "$action" in
+        start)
+            echo "Starting services..."
+            set -- up -d
+            ;;
+        reload)
+            echo "Recreating containers with new configuration..."
+            set -- up -d --force-recreate --build
+            ;;
+    esac
+
+    case "$mode" in
+        with-ai)
+            MILLETE_AI_ENABLED=true docker compose --profile ai "$@"
+            ;;
+        without-ai)
+            COMPOSE_PROFILES= MILLETE_AI_ENABLED=false docker compose "$@" &&
+                COMPOSE_PROFILES= MILLETE_AI_ENABLED=false docker compose --profile ai stop verdict
+            ;;
+        default)
+            docker compose "$@"
+            ;;
+    esac
+}
 
 case "$1" in
-    start)
-        echo "Starting services..."
-        docker compose up -d
+    start|reload)
+        start_services "$@"
         ;;
     stop)
         echo "Stopping services (data preserved)..."
@@ -13,10 +49,6 @@ case "$1" in
         echo "Restarting containers..."
         echo "Note: For configuration or .env changes, use 'sh manage.sh reload' instead."
         docker compose restart
-        ;;
-    reload)
-        echo "Recreating containers with new configuration..."
-        docker compose up -d --force-recreate --build
         ;;
     down)
         echo "Removing containers and internal networks (data preserved)..."
@@ -162,10 +194,10 @@ case "$1" in
         echo "Usage: sh manage.sh [command]"
         echo ""
         echo "Commands:"
-        echo "  start           - Start all services in the background"
+        echo "  start [--with-ai|--without-ai]  - Start services in the background"
         echo "  stop            - Stop running services without removing them"
         echo "  restart         - Quickly restart containers (ignores config/.env updates)"
-        echo "  reload          - Rebuild images and recreate containers with new configs"
+        echo "  reload [--with-ai|--without-ai] - Rebuild images and recreate containers"
         echo "  down            - Stop and remove containers and networks"
         echo "  status          - Display container health and list recent backups"
         echo "  logs [svc]      - Tail logs (optionally filter by service name)"
